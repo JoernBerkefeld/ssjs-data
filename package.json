@@ -1,0 +1,33 @@
+{
+    "name": "ssjs-data",
+    "version": "0.1.0",
+    "description": "Canonical SSJS (Server-Side JavaScript) function catalog, Core library objects, Platform methods, and globals for SFMC tooling",
+    "type": "module",
+    "main": "src/index.js",
+    "exports": {
+        ".": "./src/index.js"
+    },
+    "files": ["src"],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/JoernBerkefeld/ssjs-data.git"
+    },
+    "bugs": {
+        "url": "https://github.com/JoernBerkefeld/ssjs-data/issues"
+    },
+    "homepage": "https://github.com/JoernBerkefeld/ssjs-data#readme",
+    "author": "Joern Berkefeld",
+    "keywords": [
+        "ssjs",
+        "sfmc",
+        "salesforce",
+        "marketing-cloud",
+        "server-side-javascript",
+        "wsproxy",
+        "platform-functions"
+    ],
+    "license": "MIT",
+    "engines": {
+        "node": ">=18.0.0"
+    }
+}
