@@ -60,6 +60,7 @@ export const SSJS_GLOBALS = [
         params: [{ name: 'customerKey', description: 'Customer key of the Content Builder asset', type: 'string' }],
         returnType: 'string',
         syntax: 'ContentBlockByKey(customerKey)',
+        example: 'var html = ContentBlockByKey("my-header-block");\nWrite(html);',
     },
     {
         name: 'ContentBlockByName',
@@ -70,6 +71,7 @@ export const SSJS_GLOBALS = [
         params: [{ name: 'name', description: 'Folder path and name of the Content Builder asset', type: 'string' }],
         returnType: 'string',
         syntax: 'ContentBlockByName(name)',
+        example: 'var html = ContentBlockByName("Shared Content/Footer");\nWrite(html);',
     },
     {
         name: 'ContentBlockByID',
@@ -80,6 +82,7 @@ export const SSJS_GLOBALS = [
         params: [{ name: 'id', description: 'Numeric ID of the Content Builder asset', type: 'number' }],
         returnType: 'string',
         syntax: 'ContentBlockByID(id)',
+        example: 'var html = ContentBlockByID(12345);\nWrite(html);',
     },
     {
         name: 'ContentAreaByKey',
@@ -90,6 +93,7 @@ export const SSJS_GLOBALS = [
         params: [{ name: 'key', description: 'External key of the classic content area', type: 'string' }],
         returnType: 'string',
         syntax: 'ContentAreaByKey(key)',
+        example: 'var html = ContentAreaByKey("my-content-area-key");\nWrite(html);',
     },
     {
         name: 'TreatAsContent',
@@ -101,6 +105,7 @@ export const SSJS_GLOBALS = [
         params: [{ name: 'content', description: 'String containing AMPscript or HTML to evaluate', type: 'string' }],
         returnType: 'string',
         syntax: 'TreatAsContent(content)',
+        example: 'var ampBlock = "%%[Set @msg = \'Dynamic content\']%% %%=v(@msg)=%%";\nWrite(TreatAsContent(ampBlock));',
     },
     {
         name: 'TreatAsContentArea',
@@ -111,6 +116,7 @@ export const SSJS_GLOBALS = [
         params: [{ name: 'content', description: 'Classic content area markup to render', type: 'string' }],
         returnType: 'string',
         syntax: 'TreatAsContentArea(content)',
+        example: 'var rendered = TreatAsContentArea("%%[ContentAreaByKey(\'my-key\')]%%");\nWrite(rendered);',
     },
     {
         name: 'String',
@@ -216,6 +222,7 @@ export const PLATFORM_METHODS = [
         ],
         returnType: 'void',
         syntax: 'Platform.Load(libraryName, version)',
+        example: 'Platform.Load("core", "1.1.5");\nvar de = DataExtension.Init("MyDE");\nvar rows = de.Rows.Retrieve();',
     },
 ];
 
@@ -270,6 +277,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'object',
         syntax: 'LookupOrderedRows(deName, sortCount, sortField, sortOrder, fieldName, fieldValue[, fieldName2, fieldValue2, ...])',
+        example: 'var rows = Platform.Function.LookupOrderedRows("MyDE", 10, "CreatedDate", "DESC", "Status", "active");\nfor (var i = 0; i < rows.length; i++) {\n    Write(rows[i]["Email"] + "<br>");\n}',
     },
     {
         name: 'InsertData',
@@ -297,6 +305,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'number',
         syntax: 'InsertDE(deName, fieldName1, value1[, fieldName2, value2, ...])',
+        example: 'var count = Platform.Function.InsertDE("MyDE", "Email", "jane@example.com", "Name", "Jane");',
     },
     {
         name: 'UpdateData',
@@ -312,6 +321,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'number',
         syntax: 'UpdateData(deName, fieldName1, value1, filterField, filterValue[, fieldName2, value2, ...])',
+        example: 'var count = Platform.Function.UpdateData("MyDE", "Status", "inactive", "Email", "jane@example.com");',
     },
     {
         name: 'UpdateDE',
@@ -327,6 +337,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'number',
         syntax: 'UpdateDE(deName, fieldName1, value1, filterField, filterValue[, fieldName2, value2, ...])',
+        example: 'var count = Platform.Function.UpdateDE("MyDE", "Status", "inactive", "Email", "jane@example.com");',
     },
     {
         name: 'UpsertData',
@@ -358,6 +369,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'number',
         syntax: 'UpsertDE(deName, fieldName1, value1, filterField, filterValue[, fieldName2, value2, ...])',
+        example: 'Platform.Function.UpsertDE("MyDE", 1, "Status", "active", "Email", "jane@example.com");',
     },
     {
         name: 'DeleteData',
@@ -371,6 +383,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'number',
         syntax: 'DeleteData(deName, filterField, filterValue[, filterField2, filterValue2, ...])',
+        example: 'var count = Platform.Function.DeleteData("MyDE", "Email", "jane@example.com");',
     },
     {
         name: 'DeleteDE',
@@ -384,6 +397,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'number',
         syntax: 'DeleteDE(deName, filterField, filterValue[, filterField2, filterValue2, ...])',
+        example: 'var count = Platform.Function.DeleteDE("MyDE", "Email", "jane@example.com");',
     },
     {
         name: 'ContentBlockByKey',
@@ -395,6 +409,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'ContentBlockByKey(customerKey)',
+        example: 'var html = Platform.Function.ContentBlockByKey("my-header-block");\nWrite(html);',
     },
     {
         name: 'ContentBlockByName',
@@ -406,6 +421,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'ContentBlockByName(name)',
+        example: 'var html = Platform.Function.ContentBlockByName("Shared Content/Footer");\nWrite(html);',
     },
     {
         name: 'ContentBlockByID',
@@ -417,6 +433,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'ContentBlockByID(id)',
+        example: 'var html = Platform.Function.ContentBlockByID(12345);\nWrite(html);',
     },
     {
         name: 'TreatAsContent',
@@ -428,6 +445,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'TreatAsContent(content)',
+        example: 'var result = Platform.Function.TreatAsContent("%%[Set @x = 1]%%%%=v(@x)=%%");\nWrite(result); // "1"',
     },
     {
         name: 'Substring',
@@ -441,6 +459,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'Substring(value, start[, length])',
+        example: 'var str = "Hello, World!";\nvar sub = Platform.Function.Substring(str, 1, 5);\nWrite(sub); // "Hello"',
     },
     {
         name: 'Trim',
@@ -452,6 +471,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'Trim(value)',
+        example: 'var clean = Platform.Function.Trim("  hello  ");\nWrite(clean); // "hello"',
     },
     {
         name: 'Replace',
@@ -465,6 +485,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'Replace(value, search, replacement)',
+        example: 'var result = Platform.Function.Replace("Hello, World!", "World", "SFMC");\nWrite(result); // "Hello, SFMC!"',
     },
     {
         name: 'IndexOf',
@@ -477,6 +498,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'number',
         syntax: 'IndexOf(value, search)',
+        example: 'var pos = Platform.Function.IndexOf("Hello, World!", "World");\nWrite(pos); // 7',
     },
     {
         name: 'Length',
@@ -488,6 +510,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'number',
         syntax: 'Length(value)',
+        example: 'var len = Platform.Function.Length("Hello");\nWrite(len); // 5',
     },
     {
         name: 'Uppercase',
@@ -499,6 +522,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'Uppercase(value)',
+        example: 'var upper = Platform.Function.Uppercase("hello");\nWrite(upper); // "HELLO"',
     },
     {
         name: 'Lowercase',
@@ -510,6 +534,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'Lowercase(value)',
+        example: 'var lower = Platform.Function.Lowercase("HELLO");\nWrite(lower); // "hello"',
     },
     {
         name: 'ProperCase',
@@ -521,6 +546,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'ProperCase(value)',
+        example: 'var title = Platform.Function.ProperCase("hello world");\nWrite(title); // "Hello World"',
     },
     {
         name: 'Char',
@@ -532,6 +558,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'Char(asciiCode)',
+        example: 'var tab = Platform.Function.Char(9); // tab character\nWrite("Col1" + tab + "Col2");',
     },
     {
         name: 'Concat',
@@ -544,6 +571,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'Concat(value1, value2[, ...])',
+        example: 'var full = Platform.Function.Concat("Hello", ", ", "World!");\nWrite(full); // "Hello, World!"',
     },
     {
         name: 'Format',
@@ -556,6 +584,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'Format(value, format[, ...])',
+        example: 'var price = Platform.Function.Format(1234.5, "C2");\nWrite(price); // "$1,234.50"',
     },
     {
         name: 'DateAdd',
@@ -569,6 +598,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'DateAdd(date, interval, datePart)',
+        example: 'var future = Platform.Function.DateAdd(Platform.Function.Now(), 7, "D");\nWrite(future); // date 7 days from now',
     },
     {
         name: 'DateDiff',
@@ -582,6 +612,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'number',
         syntax: 'DateDiff(date1, date2, datePart)',
+        example: 'var days = Platform.Function.DateDiff("2025-01-01", Platform.Function.Now(), "D");\nWrite(days); // days elapsed since Jan 1 2025',
     },
     {
         name: 'DateParse',
@@ -594,15 +625,26 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'object',
         syntax: 'DateParse(dateString[, format])',
+        example: 'var d = Platform.Function.DateParse("2025-08-05T12:00:00Z");\nWrite(Platform.Function.FormatDate(d, "MM/dd/yyyy")); // "08/05/2025"',
     },
     {
         name: 'Now',
         minArgs: 0,
-        maxArgs: 0,
-        description: 'Returns the current date and time of the SFMC server.',
-        params: [],
+        maxArgs: 1,
+        description:
+            'Returns the current system timestamp, or the timestamp of the triggering send when called with true.',
+        params: [
+            {
+                name: 'useContextTime',
+                description:
+                    'When true, returns the time the triggering send or activity was initiated. When false or omitted, returns the current system clock time.',
+                type: 'boolean',
+                optional: true,
+            },
+        ],
         returnType: 'string',
-        syntax: 'Now()',
+        syntax: 'Now([useContextTime])',
+        example: 'var current = Platform.Function.Now();\nWrite(current); // e.g. "8/5/2025 12:00:00 PM"\n\n// Use context time during triggered sends:\nvar sendTime = Platform.Function.Now(true);',
     },
     {
         name: 'FormatDate',
@@ -616,17 +658,33 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'FormatDate(date, format[, locale])',
+        example: 'var formatted = Platform.Function.FormatDate(Platform.Function.Now(), "MMMM d, yyyy");\nWrite(formatted); // e.g. "August 5, 2025"',
     },
     {
         name: 'SystemDateToLocalDate',
         minArgs: 1,
         maxArgs: 1,
-        description: "Converts a system date to the subscriber's local timezone.",
+        description:
+            'Converts a date-time value from Marketing Cloud system time (CST) to the local time of the account or user.',
         params: [
-            { name: 'date', description: 'System date to convert', type: 'string' },
+            { name: 'dateValue', description: 'Date-time string in system time (CST)', type: 'string' },
         ],
         returnType: 'string',
-        syntax: 'SystemDateToLocalDate(date)',
+        syntax: 'SystemDateToLocalDate(dateValue)',
+        example: 'var systemDate = Platform.Function.Now();\nvar localDate = Platform.Function.SystemDateToLocalDate(systemDate);\nWrite(localDate);',
+    },
+    {
+        name: 'LocalDateToSystemDate',
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST).',
+        params: [
+            { name: 'dateValue', description: 'Date-time string in local account/user time', type: 'string' },
+        ],
+        returnType: 'string',
+        syntax: 'LocalDateToSystemDate(dateValue)',
+        example: 'var localDate = "8/5/2025 12:00:00 PM";\nvar systemDate = Platform.Function.LocalDateToSystemDate(localDate);\nWrite(systemDate);',
     },
     {
         name: 'GetValue',
@@ -638,6 +696,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'GetValue(variableName)',
+        example: '// Retrieve an AMPscript variable from within SSJS:\nvar sk = Platform.Function.GetValue("SubscriberKey");\nWrite(sk);',
     },
     {
         name: 'SetValue',
@@ -650,6 +709,20 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'void',
         syntax: 'SetValue(variableName, value)',
+        example: 'Platform.Function.SetValue("greeting", "Hello from SSJS");\n// @greeting is now accessible in subsequent AMPscript blocks',
+    },
+    {
+        name: 'GetQueryStringParameter',
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Retrieves the value of a named query string parameter from the URL of the current CloudPages or landing page.',
+        params: [
+            { name: 'parameterName', description: 'Name of the query string parameter to retrieve', type: 'string' },
+        ],
+        returnType: 'string',
+        syntax: 'GetQueryStringParameter(parameterName)',
+        example: '// Page URL: /mypage?email=jane@example.com\nvar email = Platform.Function.GetQueryStringParameter("email");\nWrite(email); // "jane@example.com"',
     },
     {
         name: 'RaiseError',
@@ -662,6 +735,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'void',
         syntax: 'RaiseError(message[, skipSend])',
+        example: 'var status = Platform.Function.Lookup("MyDE", "Status", "Email", emailAddress);\nif (!status) {\n    Platform.Function.RaiseError("Subscriber not found", true);\n}',
     },
     {
         name: 'Redirect',
@@ -674,6 +748,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'void',
         syntax: 'Redirect(url[, permanent])',
+        example: 'Platform.Function.Redirect("https://www.example.com/thank-you");',
     },
     {
         name: 'CloudPagesURL',
@@ -702,6 +777,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'MicrositeURL(pageId[, param1, value1, ...])',
+        example: 'var url = Platform.Function.MicrositeURL(456, "source", "email");\nWrite(\'<a href="\' + url + \'">Visit microsite</a>\');',
     },
     {
         name: 'GUID',
@@ -724,6 +800,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'Base64Encode(value[, encoding])',
+        example: 'var encoded = Platform.Function.Base64Encode("username:password");\nWrite(encoded); // "dXNlcm5hbWU6cGFzc3dvcmQ="',
     },
     {
         name: 'Base64Decode',
@@ -736,6 +813,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'Base64Decode(value[, encoding])',
+        example: 'var decoded = Platform.Function.Base64Decode("dXNlcm5hbWU6cGFzc3dvcmQ=");\nWrite(decoded); // "username:password"',
     },
     {
         name: 'EncryptSymmetric',
@@ -754,6 +832,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'EncryptSymmetric(value, algorithm, passwordKey, password, saltKey, salt[, ivKey, iv])',
+        example: 'var encrypted = Platform.Function.EncryptSymmetric("sensitive data", "AES", "", "myPassword", "", "mySalt");\nWrite(encrypted);',
     },
     {
         name: 'DecryptSymmetric',
@@ -772,6 +851,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'DecryptSymmetric(value, algorithm, passwordKey, password, saltKey, salt[, ivKey, iv])',
+        example: 'var plain = Platform.Function.DecryptSymmetric(encryptedValue, "AES", "", "myPassword", "", "mySalt");\nWrite(plain);',
     },
     {
         name: 'SHA256',
@@ -784,6 +864,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'SHA256(value[, encoding])',
+        example: 'var hash = Platform.Function.SHA256(emailAddress);\nWrite(hash);',
     },
     {
         name: 'SHA512',
@@ -796,6 +877,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'SHA512(value[, encoding])',
+        example: 'var hash = Platform.Function.SHA512(emailAddress);\nWrite(hash);',
     },
     {
         name: 'MD5',
@@ -808,6 +890,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'MD5(value[, encoding])',
+        example: 'var hash = Platform.Function.MD5(emailAddress);\nWrite(hash);',
     },
     {
         name: 'IsEmailAddress',
@@ -819,6 +902,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'boolean',
         syntax: 'IsEmailAddress(value)',
+        example: 'if (Platform.Function.IsEmailAddress(emailInput)) {\n    Write("Valid email");\n} else {\n    Write("Invalid email format");\n}',
     },
     {
         name: 'IsNull',
@@ -830,6 +914,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'boolean',
         syntax: 'IsNull(value)',
+        example: 'var phone = Platform.Function.Lookup("MyDE", "Phone", "Email", email);\nif (Platform.Function.IsNull(phone)) {\n    Write("No phone on record");\n}',
     },
     {
         name: 'Empty',
@@ -841,6 +926,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'boolean',
         syntax: 'Empty(value)',
+        example: 'var city = Platform.Function.GetQueryStringParameter("city");\nif (Platform.Function.Empty(city)) {\n    city = "Unknown";\n}',
     },
     {
         name: 'IIf',
@@ -854,6 +940,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'any',
         syntax: 'IIf(condition, trueValue, falseValue)',
+        example: 'var label = Platform.Function.IIf(score > 50, "Pass", "Fail");\nWrite(label);',
     },
     {
         name: 'DataExtensionRowCount',
@@ -865,6 +952,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'number',
         syntax: 'DataExtensionRowCount(deName)',
+        example: 'var count = Platform.Function.DataExtensionRowCount("MyDE");\nWrite("Total rows: " + count);',
     },
     {
         name: 'CreateObject',
@@ -876,6 +964,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'object',
         syntax: 'CreateObject(objectType)',
+        example: 'var sub = Platform.Function.CreateObject("Subscriber");\nPlatform.Function.SetObjectProperty(sub, "EmailAddress", "jane@example.com");\nPlatform.Function.SetObjectProperty(sub, "SubscriberKey", "sk-123");',
     },
     {
         name: 'SetObjectProperty',
@@ -889,6 +978,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'void',
         syntax: 'SetObjectProperty(apiObject, propertyName, value)',
+        example: 'var sub = Platform.Function.CreateObject("Subscriber");\nPlatform.Function.SetObjectProperty(sub, "EmailAddress", "jane@example.com");',
     },
     {
         name: 'AddObjectArrayItem',
@@ -902,6 +992,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'void',
         syntax: 'AddObjectArrayItem(apiObject, propertyName, value)',
+        example: 'var ts = Platform.Function.CreateObject("TriggeredSend");\nPlatform.Function.AddObjectArrayItem(ts, "Subscribers", sub);',
     },
     {
         name: 'InvokeCreate',
@@ -916,6 +1007,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'InvokeCreate(apiObject[, statusMessage, errorCode, requestId])',
+        example: 'var sub = Platform.Function.CreateObject("Subscriber");\nPlatform.Function.SetObjectProperty(sub, "EmailAddress", "jane@example.com");\nvar statusMsg = "";\nvar errorCode = "";\nvar status = Platform.Function.InvokeCreate(sub, statusMsg, errorCode);\nWrite(status); // "OK" or "Error"',
     },
     {
         name: 'InvokeUpdate',
@@ -930,6 +1022,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'InvokeUpdate(apiObject[, statusMessage, errorCode, requestId])',
+        example: 'Platform.Function.SetObjectProperty(sub, "Status", "Unsubscribed");\nvar status = Platform.Function.InvokeUpdate(sub);\nWrite(status);',
     },
     {
         name: 'InvokeDelete',
@@ -944,6 +1037,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'InvokeDelete(apiObject[, statusMessage, errorCode, requestId])',
+        example: 'var status = Platform.Function.InvokeDelete(sub);\nWrite(status);',
     },
     {
         name: 'InvokeRetrieve',
@@ -959,6 +1053,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'object',
         syntax: 'InvokeRetrieve(apiObject, properties[, filter, statusMessage, requestId])',
+        example: 'var req = Platform.Function.CreateObject("RetrieveRequest");\nPlatform.Function.SetObjectProperty(req, "ObjectType", "Subscriber");\nvar props = ["EmailAddress", "Status"];\nvar results = Platform.Function.InvokeRetrieve(req, props);',
     },
     {
         name: 'InvokePerform',
@@ -973,6 +1068,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'InvokePerform(apiObject, action[, statusMessage, errorCode])',
+        example: 'var status = Platform.Function.InvokePerform(sendDef, "start");\nWrite(status);',
     },
     {
         name: 'InvokeConfigure',
@@ -987,6 +1083,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'InvokeConfigure(apiObject, action[, statusMessage, errorCode])',
+        example: 'var status = Platform.Function.InvokeConfigure(configObj, "create");\nWrite(status);',
     },
     {
         name: 'InvokeExecute',
@@ -1001,6 +1098,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'InvokeExecute(apiObject, method[, statusMessage, errorCode])',
+        example: 'var status = Platform.Function.InvokeExecute(execObj, "LogUnsubEvent");\nWrite(status);',
     },
     {
         name: 'AttributeValue',
@@ -1012,6 +1110,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'AttributeValue(attributeName)',
+        example: 'var phone = Platform.Function.AttributeValue("MobilePhone");\nif (phone) { Write(phone); }',
     },
     {
         name: 'HTTPGet',
@@ -1067,6 +1166,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'HTTPRequestHeader(headerName)',
+        example: 'var auth = Platform.Function.HTTPRequestHeader("Authorization");\nWrite(auth); // e.g. "Bearer abc123"',
     },
     {
         name: 'ParseJSON',
@@ -1100,6 +1200,7 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'URLEncode(value)',
+        example: 'var param = "hello world & more";\nvar encoded = Platform.Function.URLEncode(param);\nWrite("?q=" + encoded); // "?q=hello+world+%26+more"',
     },
 ];
 
@@ -1292,6 +1393,7 @@ export const HTTP_METHODS = [
         ],
         returnType: 'object',
         syntax: 'HTTP.Get(url[, headerNames, headerValues])',
+        example: 'var body = HTTP.Get("https://api.example.com/data");\nvar obj = Platform.Function.ParseJSON(String(body));',
     },
     {
         name: 'Post',
@@ -1307,6 +1409,7 @@ export const HTTP_METHODS = [
         ],
         returnType: 'object',
         syntax: 'HTTP.Post(url, contentType, payload[, headerNames, headerValues])',
+        example: 'var payload = Stringify({ email: "jane@example.com" });\nvar response = HTTP.Post("https://api.example.com/items", "application/json", payload);',
     },
     {
         name: 'GetRequest',
@@ -1316,6 +1419,7 @@ export const HTTP_METHODS = [
         params: [],
         returnType: 'object',
         syntax: 'HTTP.GetRequest()',
+        example: 'var req = HTTP.GetRequest();\nWrite(req.Method); // "GET"',
     },
     {
         name: 'PostRequest',
@@ -1325,6 +1429,7 @@ export const HTTP_METHODS = [
         params: [],
         returnType: 'object',
         syntax: 'HTTP.PostRequest()',
+        example: 'var postBody = HTTP.PostRequest();\nvar data = Platform.Function.ParseJSON(String(postBody));',
     },
 ];
 
@@ -1432,6 +1537,7 @@ export const WSPROXY_METHODS = [
         ],
         returnType: 'object',
         syntax: 'api.performItem(objectType, action, properties)',
+        example: 'var api = new WSProxy();\nvar result = api.performItem("QueryDefinition", "start", { ObjectID: queryObjectId });\nWrite(result.Status);',
     },
     {
         name: 'execute',
@@ -1444,6 +1550,7 @@ export const WSPROXY_METHODS = [
         ],
         returnType: 'object',
         syntax: 'api.execute(objectType, method)',
+        example: 'var api = new WSProxy();\nvar result = api.execute("DataExtensionObject", "clearData");\nWrite(result.Status);',
     },
     {
         name: 'setBatchSize',
@@ -1455,6 +1562,7 @@ export const WSPROXY_METHODS = [
         ],
         returnType: 'void',
         syntax: 'api.setBatchSize(batchSize)',
+        example: 'var api = new WSProxy();\napi.setBatchSize(200); // default is 2500\nvar result = api.retrieve("DataExtension", ["Name"], {});',
     },
     {
         name: 'setClientId',
@@ -1482,6 +1590,7 @@ export const WSPROXY_METHODS = [
         ],
         returnType: 'object',
         syntax: 'api.createBatch(objectType, propertiesArray)',
+        example: 'var api = new WSProxy();\nvar items = [\n    { CustomerKey: "MyDE", Properties: { Property: [{ Name: "Email", Value: "a@example.com" }] } },\n    { CustomerKey: "MyDE", Properties: { Property: [{ Name: "Email", Value: "b@example.com" }] } }\n];\nvar result = api.createBatch("DataExtensionObject", items);\nWrite(result.Status);',
     },
     {
         name: 'updateBatch',
@@ -1494,6 +1603,7 @@ export const WSPROXY_METHODS = [
         ],
         returnType: 'object',
         syntax: 'api.updateBatch(objectType, propertiesArray)',
+        example: 'var api = new WSProxy();\nvar items = [\n    { CustomerKey: "MyDE", Keys: { Key: [{ Name: "Email", Value: "a@example.com" }] }, Properties: { Property: [{ Name: "Status", Value: "active" }] } }\n];\nvar result = api.updateBatch("DataExtensionObject", items);\nWrite(result.Status);',
     },
     {
         name: 'deleteBatch',
@@ -1506,6 +1616,7 @@ export const WSPROXY_METHODS = [
         ],
         returnType: 'object',
         syntax: 'api.deleteBatch(objectType, propertiesArray)',
+        example: 'var api = new WSProxy();\nvar items = [\n    { CustomerKey: "MyDE", Keys: { Key: [{ Name: "Email", Value: "old@example.com" }] } }\n];\nvar result = api.deleteBatch("DataExtensionObject", items);\nWrite(result.Status);',
     },
 ];
 
@@ -1524,6 +1635,7 @@ export const PLATFORM_VARIABLE_METHODS = [
         ],
         returnType: 'string',
         syntax: 'Variable.GetValue(variableName)',
+        example: 'var sk = Variable.GetValue("SubscriberKey");\nWrite(sk);',
     },
     {
         name: 'SetValue',
@@ -1536,6 +1648,7 @@ export const PLATFORM_VARIABLE_METHODS = [
         ],
         returnType: 'void',
         syntax: 'Variable.SetValue(variableName, value)',
+        example: 'Variable.SetValue("greeting", "Hello from SSJS");\n// @greeting is now available in subsequent AMPscript blocks',
     },
 ];
 
@@ -1550,6 +1663,7 @@ export const PLATFORM_RESPONSE_METHODS = [
         ],
         returnType: 'string',
         syntax: 'Platform.Response.GetResponseHeader(headerName)',
+        example: 'var contentType = Platform.Response.GetResponseHeader("Content-Type");\nWrite(contentType);',
     },
     {
         name: 'SetResponseHeader',
@@ -1562,6 +1676,7 @@ export const PLATFORM_RESPONSE_METHODS = [
         ],
         returnType: 'void',
         syntax: 'Platform.Response.SetResponseHeader(headerName, value)',
+        example: 'Platform.Response.SetResponseHeader("Content-Type", "application/json");\nPlatform.Response.Write(Stringify({ status: "ok" }));',
     },
     {
         name: 'Redirect',
@@ -1576,6 +1691,7 @@ export const PLATFORM_RESPONSE_METHODS = [
         ],
         returnType: 'void',
         syntax: 'Platform.Response.Redirect(url[, permanent])',
+        example: 'Platform.Response.Redirect("https://pub.pages.example.com/thank-you");',
     },
     {
         name: 'Write',
@@ -1587,6 +1703,7 @@ export const PLATFORM_RESPONSE_METHODS = [
         ],
         returnType: 'void',
         syntax: 'Platform.Response.Write(content)',
+        example: 'var data = { name: "Jane", status: "active" };\nPlatform.Response.Write(Stringify(data));',
     },
 ];
 
@@ -1601,6 +1718,7 @@ export const PLATFORM_REQUEST_METHODS = [
         ],
         returnType: 'string',
         syntax: 'Platform.Request.GetQueryStringParameter(parameterName)',
+        example: '// Page URL: /mypage?email=jane@example.com\nvar email = Platform.Request.GetQueryStringParameter("email");\nWrite(email);',
     },
     {
         name: 'GetFormData',
@@ -1612,6 +1730,7 @@ export const PLATFORM_REQUEST_METHODS = [
         ],
         returnType: 'string',
         syntax: 'Platform.Request.GetFormData(fieldName)',
+        example: 'var firstName = Platform.Request.GetFormData("firstName");\nWrite("Hello, " + firstName + "!");',
     },
     {
         name: 'GetPostData',
@@ -1626,6 +1745,7 @@ export const PLATFORM_REQUEST_METHODS = [
         ],
         returnType: 'string',
         syntax: 'Platform.Request.GetPostData([encoding])',
+        example: '// Read raw POST body once and store it:\nvar rawBody = Platform.Request.GetPostData();\nvar payload = Platform.Function.ParseJSON(rawBody);',
     },
     {
         name: 'HasSSL',
@@ -1635,6 +1755,7 @@ export const PLATFORM_REQUEST_METHODS = [
         params: [],
         returnType: 'boolean',
         syntax: 'Platform.Request.HasSSL()',
+        example: 'if (Platform.Request.HasSSL()) {\n    Write("Secure connection");\n} else {\n    Platform.Response.Redirect("https://" + Platform.Request.RequestURL());\n}',
     },
     {
         name: 'Method',
@@ -1644,6 +1765,7 @@ export const PLATFORM_REQUEST_METHODS = [
         params: [],
         returnType: 'string',
         syntax: 'Platform.Request.Method()',
+        example: 'var method = Platform.Request.Method();\nif (method === "POST") {\n    var body = Platform.Request.GetPostData();\n    // handle POST\n}',
     },
     {
         name: 'RequestURL',
@@ -1653,6 +1775,7 @@ export const PLATFORM_REQUEST_METHODS = [
         params: [],
         returnType: 'string',
         syntax: 'Platform.Request.RequestURL()',
+        example: 'var url = Platform.Request.RequestURL();\nWrite("Current page: " + url);',
     },
     {
         name: 'GetCookieValue',
@@ -1664,6 +1787,7 @@ export const PLATFORM_REQUEST_METHODS = [
         ],
         returnType: 'string',
         syntax: 'Platform.Request.GetCookieValue(cookieName)',
+        example: 'var sessionId = Platform.Request.GetCookieValue("sessionId");\nif (sessionId) { Write("Session: " + sessionId); }',
     },
     {
         name: 'GetUserLanguages',
@@ -1673,6 +1797,7 @@ export const PLATFORM_REQUEST_METHODS = [
         params: [],
         returnType: 'string',
         syntax: 'Platform.Request.GetUserLanguages()',
+        example: 'var lang = Platform.Request.GetUserLanguages();\nWrite(lang); // e.g. "en-US,en;q=0.9"',
     },
 ];
 
@@ -1689,6 +1814,7 @@ export const PLATFORM_CLIENT_BROWSER_METHODS = [
         ],
         returnType: 'void',
         syntax: 'Platform.ClientBrowser.Redirect(url)',
+        example: 'Platform.ClientBrowser.Redirect("https://www.example.com/landing");',
     },
     {
         name: 'Write',
@@ -1700,6 +1826,7 @@ export const PLATFORM_CLIENT_BROWSER_METHODS = [
         ],
         returnType: 'void',
         syntax: 'Platform.ClientBrowser.Write(content)',
+        example: 'Platform.ClientBrowser.Write("<h1>Hello, World!</h1>");',
     },
     {
         name: 'SetCookie',
@@ -1716,6 +1843,7 @@ export const PLATFORM_CLIENT_BROWSER_METHODS = [
         ],
         returnType: 'void',
         syntax: 'Platform.ClientBrowser.SetCookie(name, value[, expires, path, domain, secure])',
+        example: 'Platform.ClientBrowser.SetCookie("userId", subscriberKey, "12/31/2025", "/", ".example.com", true);',
     },
     {
         name: 'RemoveCookie',
@@ -1727,6 +1855,7 @@ export const PLATFORM_CLIENT_BROWSER_METHODS = [
         ],
         returnType: 'void',
         syntax: 'Platform.ClientBrowser.RemoveCookie(name)',
+        example: 'Platform.ClientBrowser.RemoveCookie("userId");',
     },
     {
         name: 'SetResponseHeader',
@@ -1739,6 +1868,7 @@ export const PLATFORM_CLIENT_BROWSER_METHODS = [
         ],
         returnType: 'void',
         syntax: 'Platform.ClientBrowser.SetResponseHeader(headerName, value)',
+        example: 'Platform.ClientBrowser.SetResponseHeader("Cache-Control", "no-store, no-cache");',
     },
     {
         name: 'RemoveResponseHeader',
@@ -1750,11 +1880,40 @@ export const PLATFORM_CLIENT_BROWSER_METHODS = [
         ],
         returnType: 'void',
         syntax: 'Platform.ClientBrowser.RemoveResponseHeader(headerName)',
+        example: 'Platform.ClientBrowser.RemoveResponseHeader("X-Powered-By");',
     },
 ];
 
 export const platformClientBrowserMethodNames = new Set(
     PLATFORM_CLIENT_BROWSER_METHODS.map((m) => m.name.toLowerCase()),
+);
+
+// ── Platform.Recipient methods ───────────────────────────────────────────────
+// Methods available under Platform.Recipient.* for accessing recipient/subscriber
+// attribute values and sendable data extension fields during email sends.
+
+export const PLATFORM_RECIPIENT_METHODS = [
+    {
+        name: 'GetAttributeValue',
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Returns the value of a subscriber attribute or sendable data extension field for the current recipient.',
+        params: [
+            {
+                name: 'attributeName',
+                description: 'Name of the subscriber attribute or sendable DE field to retrieve',
+                type: 'string',
+            },
+        ],
+        returnType: 'string',
+        syntax: 'Platform.Recipient.GetAttributeValue(attributeName)',
+        example: 'var email = Platform.Recipient.GetAttributeValue("EmailAddress");\nPlatform.Response.Write(email);',
+    },
+];
+
+export const platformRecipientMethodNames = new Set(
+    PLATFORM_RECIPIENT_METHODS.map((m) => m.name.toLowerCase()),
 );
 
 // ── Script.Util HTTP constructors ────────────────────────────────────────────
