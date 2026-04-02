@@ -1540,6 +1540,40 @@ export const WSPROXY_METHODS = [
         example: 'var api = new WSProxy();\nvar result = api.performItem("QueryDefinition", "start", { ObjectID: queryObjectId });\nWrite(result.Status);',
     },
     {
+        name: 'performBatch',
+        minArgs: 3,
+        maxArgs: 4,
+        description: 'Executes a perform action on multiple Marketing Cloud objects in a single SOAP API call.',
+        params: [
+            { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
+            { name: 'propertiesArray', description: 'Array of property objects for the action', type: 'array' },
+            { name: 'verb', description: 'Action verb to execute (e.g. "start")', type: 'string' },
+            { name: 'performOptions', description: 'Properties of the SOAP PerformOptions object', type: 'object', optional: true },
+        ],
+        returnType: 'object',
+        syntax: 'api.performBatch(objectType, propertiesArray, verb[, performOptions])',
+        example:
+            'var api = new Script.Util.WSProxy();\n' +
+            'var items = [{ ObjectID: id1 }, { ObjectID: id2 }];\n' +
+            'var result = api.performBatch("QueryDefinition", items, "start");\n' +
+            'Write(result.Status);',
+    },
+    {
+        name: 'describe',
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Returns structural metadata (ObjectDefinition) for one or more SOAP API object types.',
+        params: [
+            { name: 'objectType', description: 'Object type name or array of type names to describe', type: 'string' },
+        ],
+        returnType: 'object',
+        syntax: 'api.describe(objectType)',
+        example:
+            'var api = new Script.Util.WSProxy();\n' +
+            'var result = api.describe("DataExtension");\n' +
+            'Write(Stringify(result.Results));',
+    },
+    {
         name: 'execute',
         minArgs: 2,
         maxArgs: 2,
