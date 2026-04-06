@@ -1,6 +1,6 @@
 {
     "name": "ssjs-data",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "description": "Canonical SSJS (Server-Side JavaScript) function catalog, Core library objects, Platform methods, and globals for SFMC tooling",
     "type": "module",
     "main": "src/index.js",
