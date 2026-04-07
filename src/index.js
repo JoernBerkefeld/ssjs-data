@@ -436,6 +436,32 @@ export const PLATFORM_FUNCTIONS = [
         example: 'var html = Platform.Function.ContentBlockByID(12345);\nWrite(html);',
     },
     {
+        name: 'ContentImageByKey',
+        minArgs: 1,
+        maxArgs: 2,
+        description: 'Returns an HTML img tag for a Content Builder image identified by its external key. An optional fallback key can be supplied if the primary image is not found.',
+        params: [
+            { name: 'key', description: 'External key of the Content Builder image', type: 'string' },
+            { name: 'fallbackKey', description: 'External key of a fallback image when the primary cannot be found', type: 'string', optional: true },
+        ],
+        returnType: 'string',
+        syntax: 'ContentImageByKey(key[, fallbackKey])',
+        example: 'var imgTag = Platform.Function.ContentImageByKey("hero-banner-key");\nWrite(imgTag);',
+    },
+    {
+        name: 'ContentImageByID',
+        minArgs: 1,
+        maxArgs: 2,
+        description: 'Returns an HTML img tag for a Content Builder image identified by its numeric ID. An optional fallback ID can be supplied if the primary image is not found.',
+        params: [
+            { name: 'id', description: 'Numeric ID of the Content Builder image', type: 'number' },
+            { name: 'fallbackId', description: 'Numeric ID of a fallback image when the primary cannot be found', type: 'number', optional: true },
+        ],
+        returnType: 'string',
+        syntax: 'ContentImageByID(id[, fallbackId])',
+        example: 'var imgTag = Platform.Function.ContentImageByID(98765);\nWrite(imgTag);',
+    },
+    {
         name: 'TreatAsContent',
         minArgs: 1,
         maxArgs: 1,
@@ -446,6 +472,30 @@ export const PLATFORM_FUNCTIONS = [
         returnType: 'string',
         syntax: 'TreatAsContent(content)',
         example: 'var result = Platform.Function.TreatAsContent("%%[Set @x = 1]%%%%=v(@x)=%%");\nWrite(result); // "1"',
+    },
+    {
+        name: 'BeginImpressionRegion',
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Marks the start of a named impression tracking region within content.',
+        params: [
+            { name: 'name', description: 'Name identifying the impression region', type: 'string' },
+        ],
+        returnType: 'void',
+        syntax: 'BeginImpressionRegion(name)',
+        example: 'Platform.Function.BeginImpressionRegion("hero-banner");\nWrite(heroContent);\nPlatform.Function.EndImpressionRegion();',
+    },
+    {
+        name: 'EndImpressionRegion',
+        minArgs: 0,
+        maxArgs: 1,
+        description: 'Marks the end of an impression tracking region within content.',
+        params: [
+            { name: 'closeAll', description: 'When true, closes all nested impression regions', type: 'boolean', optional: true },
+        ],
+        returnType: 'void',
+        syntax: 'EndImpressionRegion([closeAll])',
+        example: 'Platform.Function.BeginImpressionRegion("footer");\nWrite(footerContent);\nPlatform.Function.EndImpressionRegion();',
     },
     {
         name: 'Substring',
@@ -905,6 +955,18 @@ export const PLATFORM_FUNCTIONS = [
         example: 'if (Platform.Function.IsEmailAddress(emailInput)) {\n    Write("Valid email");\n} else {\n    Write("Invalid email format");\n}',
     },
     {
+        name: 'IsPhoneNumber',
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Evaluates whether a string contains a valid phone number.',
+        params: [
+            { name: 'value', description: 'String to evaluate', type: 'string' },
+        ],
+        returnType: 'boolean',
+        syntax: 'IsPhoneNumber(value)',
+        example: 'if (Platform.Function.IsPhoneNumber(phoneInput)) {\n    Write("Valid phone");\n} else {\n    Write("Invalid phone number");\n}',
+    },
+    {
         name: 'IsNull',
         minArgs: 1,
         maxArgs: 1,
@@ -1101,6 +1163,36 @@ export const PLATFORM_FUNCTIONS = [
         example: 'var status = Platform.Function.InvokeExecute(execObj, "LogUnsubEvent");\nWrite(status);',
     },
     {
+        name: 'InvokeExtract',
+        minArgs: 2,
+        maxArgs: 3,
+        description: 'Invokes the Extract SOAP API method on the specified object.',
+        params: [
+            { name: 'apiObject', description: 'SOAP API object on which to invoke Extract', type: 'object' },
+            { name: 'statusArray', description: 'Array that receives the status and RequestID of the API call', type: 'array' },
+            { name: 'options', description: 'Additional API options; may be null', type: 'object', optional: true },
+        ],
+        returnType: 'string',
+        syntax: 'InvokeExtract(apiObject, statusArray[, options])',
+        example: 'var statusArr = [];\nvar result = Platform.Function.InvokeExtract(extractObj, statusArr);\nWrite(result);',
+    },
+    {
+        name: 'InvokeSchedule',
+        minArgs: 3,
+        maxArgs: 5,
+        description: 'Invokes the Schedule SOAP API method on the specified object.',
+        params: [
+            { name: 'apiObject', description: 'SOAP API object on which to invoke Schedule', type: 'object' },
+            { name: 'action', description: 'Action to perform on the object', type: 'string' },
+            { name: 'schedule', description: 'Schedule definition object', type: 'object' },
+            { name: 'statusArray', description: 'Array that receives the status and RequestID of the API call', type: 'array', optional: true },
+            { name: 'options', description: 'Additional API options; may be null', type: 'object', optional: true },
+        ],
+        returnType: 'string',
+        syntax: 'InvokeSchedule(apiObject, action, schedule[, statusArray, options])',
+        example: 'var statusArr = [];\nvar result = Platform.Function.InvokeSchedule(sendDef, "start", scheduleDef, statusArr);\nWrite(result);',
+    },
+    {
         name: 'AttributeValue',
         minArgs: 1,
         maxArgs: 1,
@@ -1252,14 +1344,24 @@ export const CORE_LIBRARY_OBJECTS = [
         description: 'Manages triggered send definitions and fires individual sends.',
     },
     {
+        name: 'TriggeredSend.Tracking',
+        methods: ['Retrieve'],
+        description: 'Retrieves tracking data for a specific triggered send.',
+    },
+    {
         name: 'List',
         methods: [...STANDARD_METHODS, 'Subscribers'],
         description: 'Manages subscriber lists.',
     },
     {
         name: 'List.Subscribers',
-        methods: ['Init', 'Add', 'Remove', 'Retrieve'],
+        methods: ['Init', 'Add', 'Remove', 'Update', 'Upsert', 'Retrieve'],
         description: 'Manages the subscribers belonging to a specific list.',
+    },
+    {
+        name: 'List.Subscribers.Tracking',
+        methods: ['Retrieve'],
+        description: 'Retrieves tracking data for subscribers on a specific list.',
     },
     {
         name: 'ContentArea',
@@ -1278,8 +1380,13 @@ export const CORE_LIBRARY_OBJECTS = [
     },
     {
         name: 'Send',
-        methods: STANDARD_METHODS,
+        methods: [...STANDARD_METHODS, 'CancelSend'],
         description: 'Manages email send definitions.',
+    },
+    {
+        name: 'Send.Tracking',
+        methods: ['Retrieve'],
+        description: 'Retrieves tracking data for a specific send.',
     },
     {
         name: 'SendDefinition',
@@ -1318,8 +1425,13 @@ export const CORE_LIBRARY_OBJECTS = [
     },
     {
         name: 'AccountUser',
-        methods: STANDARD_METHODS,
+        methods: [...STANDARD_METHODS, 'Activate', 'Deactivate'],
         description: 'Manages user accounts within the Marketing Cloud business unit.',
+    },
+    {
+        name: 'Account.Tracking',
+        methods: ['Retrieve'],
+        description: 'Retrieves tracking data associated with account-level sends.',
     },
     {
         name: 'Portfolio',
@@ -1498,17 +1610,18 @@ export const WSPROXY_METHODS = [
     },
     {
         name: 'retrieve',
-        minArgs: 3,
-        maxArgs: 4,
-        description: 'Retrieves Marketing Cloud objects matching a filter via the SOAP API.',
+        minArgs: 2,
+        maxArgs: 5,
+        description: 'Retrieves Marketing Cloud objects matching an optional filter via the SOAP API. The third parameter is a simple or complex filter; the fourth sets RetrieveOptions; the fifth sets additional request properties such as QueryAllAccounts.',
         params: [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
             { name: 'columns', description: 'Array of property names to retrieve', type: 'array' },
-            { name: 'filter', description: 'Simple filter object with Property, SimpleOperator, and Value', type: 'object' },
-            { name: 'moreData', description: 'Pass true to retrieve additional batches', type: 'boolean', optional: true },
+            { name: 'filter', description: 'Simple or complex filter object', type: 'object', optional: true },
+            { name: 'retrieveOptions', description: 'Properties to set on the SOAP RetrieveOptions object', type: 'object', optional: true },
+            { name: 'requestProps', description: 'Additional request properties (e.g. QueryAllAccounts)', type: 'object', optional: true },
         ],
         returnType: 'object',
-        syntax: 'api.retrieve(objectType, columns, filter[, moreData])',
+        syntax: 'api.retrieve(objectType, columns[, filter[, retrieveOptions[, requestProps]]])',
         example:
             'var api = new WSProxy();\n' +
             'var cols = ["Name", "CustomerKey", "Status"];\n' +
@@ -1522,6 +1635,27 @@ export const WSPROXY_METHODS = [
             '    var rows = result.Results;\n' +
             '    for (var i = 0; i < rows.length; i++) {\n' +
             '        Write(rows[i].Name + "<br>");\n' +
+            '    }\n' +
+            '}',
+    },
+    {
+        name: 'getNextBatch',
+        minArgs: 2,
+        maxArgs: 2,
+        description: 'Retrieves the next page of results from a previous retrieve call that returned HasMoreRows = true.',
+        params: [
+            { name: 'objectType', description: 'SOAP API object type name used in the original retrieve call', type: 'string' },
+            { name: 'requestId', description: 'RequestID returned by the previous retrieve response', type: 'string' },
+        ],
+        returnType: 'object',
+        syntax: 'api.getNextBatch(objectType, requestId)',
+        example:
+            'var api = new WSProxy();\n' +
+            'var result = api.retrieve("DataExtension", ["Name"], {});\n' +
+            'while (result.HasMoreRows) {\n' +
+            '    result = api.getNextBatch("DataExtension", result.RequestID);\n' +
+            '    for (var i = 0; i < result.Results.length; i++) {\n' +
+            '        Write(result.Results[i].Name + "<br>");\n' +
             '    }\n' +
             '}',
     },
@@ -1611,6 +1745,21 @@ export const WSPROXY_METHODS = [
         example:
             'var api = new WSProxy();\n' +
             'api.setClientId({ ID: 12345 }); // target child BU by MID\n' +
+            'var result = api.retrieve("DataExtension", ["Name"], {});',
+    },
+    {
+        name: 'resetClientIds',
+        minArgs: 0,
+        maxArgs: 0,
+        description: 'Clears all client IDs set on the WSProxy instance, reverting to the default execution context credentials.',
+        params: [],
+        returnType: 'void',
+        syntax: 'api.resetClientIds()',
+        example:
+            'var api = new WSProxy();\n' +
+            'api.setClientId({ ID: 12345 });\n' +
+            '// ... perform cross-BU operations ...\n' +
+            'api.resetClientIds(); // revert to default context\n' +
             'var result = api.retrieve("DataExtension", ["Name"], {});',
     },
     {
@@ -1765,6 +1914,18 @@ export const PLATFORM_REQUEST_METHODS = [
         returnType: 'string',
         syntax: 'Platform.Request.GetFormData(fieldName)',
         example: 'var firstName = Platform.Request.GetFormData("firstName");\nWrite("Hello, " + firstName + "!");',
+    },
+    {
+        name: 'GetFormField',
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Retrieves data from a named form field, including values sent via POST.',
+        params: [
+            { name: 'name', description: 'Name of the form field to retrieve', type: 'string' },
+        ],
+        returnType: 'string',
+        syntax: 'Platform.Request.GetFormField(name)',
+        example: 'var email = Platform.Request.GetFormField("emailAddress");\nWrite(email);',
     },
     {
         name: 'GetPostData',
