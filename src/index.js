@@ -263,21 +263,22 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'LookupOrderedRows',
-        minArgs: 4,
+        minArgs: 5,
         maxArgs: INF,
         description:
-            'Returns an ordered result set from a Data Extension with sort and filter parameters.',
+            'Returns an ordered result set from a Data Extension. ' +
+            'The sort expression is a single string in the format "ColumnName ASC" or "ColumnName DESC". ' +
+            'Multiple columns can be separated by commas. Returns up to 2,000 rows; values below 1 for count default to 2,000.',
         params: [
             { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
-            { name: 'sortCount', description: 'Maximum number of rows to return', type: 'number' },
-            { name: 'sortField', description: 'Field name to sort by', type: 'string' },
-            { name: 'sortOrder', description: 'Sort direction (ASC or DESC)', type: 'string' },
-            { name: 'fieldName', description: 'Filter field name', type: 'string' },
-            { name: 'fieldValue', description: 'Filter field value', type: 'string' },
+            { name: 'count', description: 'Maximum number of rows to return; values below 1 return up to 2,000', type: 'number' },
+            { name: 'orderBy', description: 'Sort expression using "ColumnName ASC/DESC" syntax (e.g. "LastName ASC, FirstName ASC")', type: 'string' },
+            { name: 'fieldName', description: 'Filter field name or array of field names (AND logic)', type: 'string' },
+            { name: 'fieldValue', description: 'Filter value or array of values matching the filter field(s)', type: 'string' },
         ],
         returnType: 'object',
-        syntax: 'LookupOrderedRows(deName, sortCount, sortField, sortOrder, fieldName, fieldValue[, fieldName2, fieldValue2, ...])',
-        example: 'var rows = Platform.Function.LookupOrderedRows("MyDE", 10, "CreatedDate", "DESC", "Status", "active");\nfor (var i = 0; i < rows.length; i++) {\n    Write(rows[i]["Email"] + "<br>");\n}',
+        syntax: 'LookupOrderedRows(deName, count, orderBy, fieldName, fieldValue[, fieldName2, fieldValue2, ...])',
+        example: 'var rows = Platform.Function.LookupOrderedRows("MyDE", 10, "CreatedDate DESC", "Status", "active");\nfor (var i = 0; i < rows.length; i++) {\n    Write(rows[i]["Email"] + "<br>");\n}',
     },
     {
         name: 'InsertData',
@@ -777,15 +778,20 @@ export const PLATFORM_FUNCTIONS = [
     {
         name: 'RaiseError',
         minArgs: 1,
-        maxArgs: 2,
-        description: 'Stops execution and raises an error with an optional skip-send flag.',
+        maxArgs: 4,
+        description:
+            'Raises an error with an optional scope flag. ' +
+            'When the second parameter is true, the error stops only the current recipient\'s send. ' +
+            'When false, the error halts the entire send job.',
         params: [
-            { name: 'message', description: 'Error message to display', type: 'string' },
-            { name: 'skipSend', description: 'If true, suppresses the send operation', type: 'boolean', optional: true },
+            { name: 'message', description: 'Error message describing what went wrong', type: 'string' },
+            { name: 'currentRecipientOnly', description: 'When true, the error applies only to the current recipient. When false, the entire send job stops.', type: 'boolean', optional: true },
+            { name: 'errorCode', description: 'Short user-defined code identifying the error type', type: 'string', optional: true },
+            { name: 'errorNumber', description: 'User-defined numeric error code for reference', type: 'number', optional: true },
         ],
         returnType: 'void',
-        syntax: 'RaiseError(message[, skipSend])',
-        example: 'var status = Platform.Function.Lookup("MyDE", "Status", "Email", emailAddress);\nif (!status) {\n    Platform.Function.RaiseError("Subscriber not found", true);\n}',
+        syntax: 'RaiseError(message[, currentRecipientOnly[, errorCode[, errorNumber]]])',
+        example: 'var status = Platform.Function.Lookup("MyDE", "Status", "Email", emailAddress);\nif (!status) {\n    Platform.Function.RaiseError("Subscriber not found", true, "NOT_FOUND", 404);\n}',
     },
     {
         name: 'Redirect',
