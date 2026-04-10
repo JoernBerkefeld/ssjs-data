@@ -29,11 +29,13 @@ export const SSJS_GLOBALS = [
         type: 'function',
         minArgs: 1,
         maxArgs: 1,
-        description: 'Converts an object to its JSON text representation. Use this to serialize objects before writing or storing them. Not to be confused with the native String() function, which converts a CLR response object to a plain string.',
+        description:
+            'Converts an object to its JSON text representation. Use this to serialize objects before writing or storing them. Not to be confused with the native String() function, which converts a CLR response object to a plain string.',
         params: [{ name: 'value', description: 'Object to serialize', type: 'object' }],
         returnType: 'string',
         syntax: 'Stringify(value)',
-        example: 'var obj = { name: "Jane", age: 30 };\nvar jsonStr = Stringify(obj);\nWrite(jsonStr); // outputs: {"name":"Jane","age":30}',
+        example:
+            'var obj = { name: "Jane", age: 30 };\nvar jsonStr = Stringify(obj);\nWrite(jsonStr); // outputs: {"name":"Jane","age":30}',
     },
     {
         name: 'Variable',
@@ -57,7 +59,13 @@ export const SSJS_GLOBALS = [
         minArgs: 1,
         maxArgs: 1,
         description: 'Renders a Content Builder asset by its customer key.',
-        params: [{ name: 'customerKey', description: 'Customer key of the Content Builder asset', type: 'string' }],
+        params: [
+            {
+                name: 'customerKey',
+                description: 'Customer key of the Content Builder asset',
+                type: 'string',
+            },
+        ],
         returnType: 'string',
         syntax: 'ContentBlockByKey(customerKey)',
         example: 'var html = ContentBlockByKey("my-header-block");\nWrite(html);',
@@ -68,7 +76,13 @@ export const SSJS_GLOBALS = [
         minArgs: 1,
         maxArgs: 1,
         description: 'Renders a Content Builder asset by its folder path and name.',
-        params: [{ name: 'name', description: 'Folder path and name of the Content Builder asset', type: 'string' }],
+        params: [
+            {
+                name: 'name',
+                description: 'Folder path and name of the Content Builder asset',
+                type: 'string',
+            },
+        ],
         returnType: 'string',
         syntax: 'ContentBlockByName(name)',
         example: 'var html = ContentBlockByName("Shared Content/Footer");\nWrite(html);',
@@ -79,7 +93,9 @@ export const SSJS_GLOBALS = [
         minArgs: 1,
         maxArgs: 1,
         description: 'Renders a Content Builder asset by its numeric ID.',
-        params: [{ name: 'id', description: 'Numeric ID of the Content Builder asset', type: 'number' }],
+        params: [
+            { name: 'id', description: 'Numeric ID of the Content Builder asset', type: 'number' },
+        ],
         returnType: 'string',
         syntax: 'ContentBlockByID(id)',
         example: 'var html = ContentBlockByID(12345);\nWrite(html);',
@@ -90,7 +106,13 @@ export const SSJS_GLOBALS = [
         minArgs: 1,
         maxArgs: 1,
         description: 'Renders a classic content area by its external key.',
-        params: [{ name: 'key', description: 'External key of the classic content area', type: 'string' }],
+        params: [
+            {
+                name: 'key',
+                description: 'External key of the classic content area',
+                type: 'string',
+            },
+        ],
         returnType: 'string',
         syntax: 'ContentAreaByKey(key)',
         example: 'var html = ContentAreaByKey("my-content-area-key");\nWrite(html);',
@@ -102,10 +124,17 @@ export const SSJS_GLOBALS = [
         maxArgs: 1,
         description:
             'Evaluates a string containing AMPscript or HTML and returns the rendered result.',
-        params: [{ name: 'content', description: 'String containing AMPscript or HTML to evaluate', type: 'string' }],
+        params: [
+            {
+                name: 'content',
+                description: 'String containing AMPscript or HTML to evaluate',
+                type: 'string',
+            },
+        ],
         returnType: 'string',
         syntax: 'TreatAsContent(content)',
-        example: 'var ampBlock = "%%[Set @msg = \'Dynamic content\']%% %%=v(@msg)=%%";\nWrite(TreatAsContent(ampBlock));',
+        example:
+            'var ampBlock = "%%[Set @msg = \'Dynamic content\']%% %%=v(@msg)=%%";\nWrite(TreatAsContent(ampBlock));',
     },
     {
         name: 'TreatAsContentArea',
@@ -113,10 +142,17 @@ export const SSJS_GLOBALS = [
         minArgs: 1,
         maxArgs: 1,
         description: 'Renders a classic content area stored in the system.',
-        params: [{ name: 'content', description: 'Classic content area markup to render', type: 'string' }],
+        params: [
+            {
+                name: 'content',
+                description: 'Classic content area markup to render',
+                type: 'string',
+            },
+        ],
         returnType: 'string',
         syntax: 'TreatAsContentArea(content)',
-        example: 'var rendered = TreatAsContentArea("%%[ContentAreaByKey(\'my-key\')]%%");\nWrite(rendered);',
+        example:
+            'var rendered = TreatAsContentArea("%%[ContentAreaByKey(\'my-key\')]%%");\nWrite(rendered);',
     },
     {
         name: 'String',
@@ -128,7 +164,13 @@ export const SSJS_GLOBALS = [
             'Essential in SSJS for converting the CLR response object returned by Script.Util.HttpRequest.send().content ' +
             'into a JavaScript string that can be passed to Platform.Function.ParseJSON(). ' +
             'Unlike Stringify(), String() works on CLR/.NET objects and does not produce JSON output.',
-        params: [{ name: 'value', description: 'Value to convert to string (any type, including CLR objects)', type: 'any' }],
+        params: [
+            {
+                name: 'value',
+                description: 'Value to convert to string (any type, including CLR objects)',
+                type: 'any',
+            },
+        ],
         returnType: 'string',
         syntax: 'String(value)',
         example:
@@ -151,7 +193,14 @@ export const SSJS_GLOBALS = [
             'Native JavaScript Error constructor. Creates an Error object that can be thrown or caught. ' +
             'Use inside try/catch blocks for structured error handling in SSJS. ' +
             'The caught error object has a message property.',
-        params: [{ name: 'message', description: 'Human-readable description of the error', type: 'string', optional: true }],
+        params: [
+            {
+                name: 'message',
+                description: 'Human-readable description of the error',
+                type: 'string',
+                optional: true,
+            },
+        ],
         returnType: 'object',
         syntax: 'new Error([message])',
         example:
@@ -222,14 +271,15 @@ export const PLATFORM_METHODS = [
         ],
         returnType: 'void',
         syntax: 'Platform.Load(libraryName, version)',
-        example: 'Platform.Load("core", "1.1.5");\nvar de = DataExtension.Init("MyDE");\nvar rows = de.Rows.Retrieve();',
+        example:
+            'Platform.Load("core", "1.1.5");\nvar de = DataExtension.Init("MyDE");\nvar rows = de.Rows.Retrieve();',
     },
 ];
 
 // ── Platform.Function methods ────────────────────────────────────────────────
 // Methods available under Platform.Function.* without requiring Platform.Load.
 
-/** @type {Array<{name:string, minArgs:number, maxArgs:number, description:string, params?:Array<{name:string, description:string, type?:string, optional?:boolean}>, returnType?:string, syntax?:string}>} */
+/** @type {{name: string, minArgs: number, maxArgs: number, description: string, params?: {name: string, description: string, type?: string, optional?: boolean}[], returnType?: string, syntax?: string}[]} */
 export const PLATFORM_FUNCTIONS = [
     {
         name: 'Lookup',
@@ -245,7 +295,8 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'Lookup(deName, returnField, fieldName, fieldValue[, fieldName2, fieldValue2, ...])',
-        example: 'var email = Platform.Function.Lookup("Subscribers", "EmailAddress", "SubscriberKey", "abc123");',
+        example:
+            'var email = Platform.Function.Lookup("Subscribers", "EmailAddress", "SubscriberKey", "abc123");',
     },
     {
         name: 'LookupRows',
@@ -259,7 +310,8 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'object',
         syntax: 'LookupRows(deName, fieldName, fieldValue[, fieldName2, fieldValue2, ...])',
-        example: 'var rows = Platform.Function.LookupRows("MyDE", "Status", "active");\nfor (var i = 0; i < rows.length; i++) {\n    Write(rows[i]["Name"] + "<br>");\n}',
+        example:
+            'var rows = Platform.Function.LookupRows("MyDE", "Status", "active");\nfor (var i = 0; i < rows.length; i++) {\n    Write(rows[i]["Name"] + "<br>");\n}',
     },
     {
         name: 'LookupOrderedRows',
@@ -271,14 +323,32 @@ export const PLATFORM_FUNCTIONS = [
             'Multiple columns can be separated by commas. Returns up to 2,000 rows; values below 1 for count default to 2,000.',
         params: [
             { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
-            { name: 'count', description: 'Maximum number of rows to return; values below 1 return up to 2,000', type: 'number' },
-            { name: 'orderBy', description: 'Sort expression using "ColumnName ASC/DESC" syntax (e.g. "LastName ASC, FirstName ASC")', type: 'string' },
-            { name: 'fieldName', description: 'Filter field name or array of field names (AND logic)', type: 'string' },
-            { name: 'fieldValue', description: 'Filter value or array of values matching the filter field(s)', type: 'string' },
+            {
+                name: 'count',
+                description: 'Maximum number of rows to return; values below 1 return up to 2,000',
+                type: 'number',
+            },
+            {
+                name: 'orderBy',
+                description:
+                    'Sort expression using "ColumnName ASC/DESC" syntax (e.g. "LastName ASC, FirstName ASC")',
+                type: 'string',
+            },
+            {
+                name: 'fieldName',
+                description: 'Filter field name or array of field names (AND logic)',
+                type: 'string',
+            },
+            {
+                name: 'fieldValue',
+                description: 'Filter value or array of values matching the filter field(s)',
+                type: 'string',
+            },
         ],
         returnType: 'object',
         syntax: 'LookupOrderedRows(deName, count, orderBy, fieldName, fieldValue[, fieldName2, fieldValue2, ...])',
-        example: 'var rows = Platform.Function.LookupOrderedRows("MyDE", 10, "CreatedDate DESC", "Status", "active");\nfor (var i = 0; i < rows.length; i++) {\n    Write(rows[i]["Email"] + "<br>");\n}',
+        example:
+            'var rows = Platform.Function.LookupOrderedRows("MyDE", 10, "CreatedDate DESC", "Status", "active");\nfor (var i = 0; i < rows.length; i++) {\n    Write(rows[i]["Email"] + "<br>");\n}',
     },
     {
         name: 'InsertData',
@@ -287,12 +357,17 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Adds a new row to a Data Extension.',
         params: [
             { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
-            { name: 'fieldName1', description: 'First field name (additional field/value pairs may follow)', type: 'string' },
+            {
+                name: 'fieldName1',
+                description: 'First field name (additional field/value pairs may follow)',
+                type: 'string',
+            },
             { name: 'value1', description: 'Value for the first field', type: 'string' },
         ],
         returnType: 'number',
         syntax: 'InsertData(deName, fieldName1, value1[, fieldName2, value2, ...])',
-        example: 'var rowsAffected = Platform.Function.InsertData("MyDE", "Email", "jane@example.com", "Name", "Jane");',
+        example:
+            'var rowsAffected = Platform.Function.InsertData("MyDE", "Email", "jane@example.com", "Name", "Jane");',
     },
     {
         name: 'InsertDE',
@@ -301,12 +376,17 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Adds a new row to a Data Extension (alias for InsertData).',
         params: [
             { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
-            { name: 'fieldName1', description: 'First field name (additional field/value pairs may follow)', type: 'string' },
+            {
+                name: 'fieldName1',
+                description: 'First field name (additional field/value pairs may follow)',
+                type: 'string',
+            },
             { name: 'value1', description: 'Value for the first field', type: 'string' },
         ],
         returnType: 'number',
         syntax: 'InsertDE(deName, fieldName1, value1[, fieldName2, value2, ...])',
-        example: 'var count = Platform.Function.InsertDE("MyDE", "Email", "jane@example.com", "Name", "Jane");',
+        example:
+            'var count = Platform.Function.InsertDE("MyDE", "Email", "jane@example.com", "Name", "Jane");',
     },
     {
         name: 'UpdateData',
@@ -317,12 +397,21 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
             { name: 'fieldName1', description: 'Field name to update', type: 'string' },
             { name: 'value1', description: 'New value for the field', type: 'string' },
-            { name: 'filterField', description: 'Filter field name for identifying rows', type: 'string' },
-            { name: 'filterValue', description: 'Filter field value for identifying rows', type: 'string' },
+            {
+                name: 'filterField',
+                description: 'Filter field name for identifying rows',
+                type: 'string',
+            },
+            {
+                name: 'filterValue',
+                description: 'Filter field value for identifying rows',
+                type: 'string',
+            },
         ],
         returnType: 'number',
         syntax: 'UpdateData(deName, fieldName1, value1, filterField, filterValue[, fieldName2, value2, ...])',
-        example: 'var count = Platform.Function.UpdateData("MyDE", "Status", "inactive", "Email", "jane@example.com");',
+        example:
+            'var count = Platform.Function.UpdateData("MyDE", "Status", "inactive", "Email", "jane@example.com");',
     },
     {
         name: 'UpdateDE',
@@ -333,12 +422,21 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
             { name: 'fieldName1', description: 'Field name to update', type: 'string' },
             { name: 'value1', description: 'New value for the field', type: 'string' },
-            { name: 'filterField', description: 'Filter field name for identifying rows', type: 'string' },
-            { name: 'filterValue', description: 'Filter field value for identifying rows', type: 'string' },
+            {
+                name: 'filterField',
+                description: 'Filter field name for identifying rows',
+                type: 'string',
+            },
+            {
+                name: 'filterValue',
+                description: 'Filter field value for identifying rows',
+                type: 'string',
+            },
         ],
         returnType: 'number',
         syntax: 'UpdateDE(deName, fieldName1, value1, filterField, filterValue[, fieldName2, value2, ...])',
-        example: 'var count = Platform.Function.UpdateDE("MyDE", "Status", "inactive", "Email", "jane@example.com");',
+        example:
+            'var count = Platform.Function.UpdateDE("MyDE", "Status", "inactive", "Email", "jane@example.com");',
     },
     {
         name: 'UpsertData',
@@ -349,12 +447,21 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
             { name: 'fieldName1', description: 'Field name to set', type: 'string' },
             { name: 'value1', description: 'Value for the field', type: 'string' },
-            { name: 'filterField', description: 'Filter field name for identifying rows', type: 'string' },
-            { name: 'filterValue', description: 'Filter field value for identifying rows', type: 'string' },
+            {
+                name: 'filterField',
+                description: 'Filter field name for identifying rows',
+                type: 'string',
+            },
+            {
+                name: 'filterValue',
+                description: 'Filter field value for identifying rows',
+                type: 'string',
+            },
         ],
         returnType: 'number',
         syntax: 'UpsertData(deName, fieldName1, value1, filterField, filterValue[, fieldName2, value2, ...])',
-        example: 'Platform.Function.UpsertData("MyDE", 1, "Status", "active", "Email", "jane@example.com");',
+        example:
+            'Platform.Function.UpsertData("MyDE", 1, "Status", "active", "Email", "jane@example.com");',
     },
     {
         name: 'UpsertDE',
@@ -365,12 +472,21 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
             { name: 'fieldName1', description: 'Field name to set', type: 'string' },
             { name: 'value1', description: 'Value for the field', type: 'string' },
-            { name: 'filterField', description: 'Filter field name for identifying rows', type: 'string' },
-            { name: 'filterValue', description: 'Filter field value for identifying rows', type: 'string' },
+            {
+                name: 'filterField',
+                description: 'Filter field name for identifying rows',
+                type: 'string',
+            },
+            {
+                name: 'filterValue',
+                description: 'Filter field value for identifying rows',
+                type: 'string',
+            },
         ],
         returnType: 'number',
         syntax: 'UpsertDE(deName, fieldName1, value1, filterField, filterValue[, fieldName2, value2, ...])',
-        example: 'Platform.Function.UpsertDE("MyDE", 1, "Status", "active", "Email", "jane@example.com");',
+        example:
+            'Platform.Function.UpsertDE("MyDE", 1, "Status", "active", "Email", "jane@example.com");',
     },
     {
         name: 'DeleteData',
@@ -406,7 +522,11 @@ export const PLATFORM_FUNCTIONS = [
         maxArgs: 1,
         description: 'Renders a Content Builder asset referenced by customer key.',
         params: [
-            { name: 'customerKey', description: 'Customer key of the Content Builder asset', type: 'string' },
+            {
+                name: 'customerKey',
+                description: 'Customer key of the Content Builder asset',
+                type: 'string',
+            },
         ],
         returnType: 'string',
         syntax: 'ContentBlockByKey(customerKey)',
@@ -418,11 +538,16 @@ export const PLATFORM_FUNCTIONS = [
         maxArgs: 1,
         description: 'Renders a Content Builder asset referenced by folder path and name.',
         params: [
-            { name: 'name', description: 'Folder path and name of the Content Builder asset', type: 'string' },
+            {
+                name: 'name',
+                description: 'Folder path and name of the Content Builder asset',
+                type: 'string',
+            },
         ],
         returnType: 'string',
         syntax: 'ContentBlockByName(name)',
-        example: 'var html = Platform.Function.ContentBlockByName("Shared Content/Footer");\nWrite(html);',
+        example:
+            'var html = Platform.Function.ContentBlockByName("Shared Content/Footer");\nWrite(html);',
     },
     {
         name: 'ContentBlockByID',
@@ -440,23 +565,40 @@ export const PLATFORM_FUNCTIONS = [
         name: 'ContentImageByKey',
         minArgs: 1,
         maxArgs: 2,
-        description: 'Returns an HTML img tag for a Content Builder image identified by its external key. An optional fallback key can be supplied if the primary image is not found.',
+        description:
+            'Returns an HTML img tag for a Content Builder image identified by its external key. An optional fallback key can be supplied if the primary image is not found.',
         params: [
-            { name: 'key', description: 'External key of the Content Builder image', type: 'string' },
-            { name: 'fallbackKey', description: 'External key of a fallback image when the primary cannot be found', type: 'string', optional: true },
+            {
+                name: 'key',
+                description: 'External key of the Content Builder image',
+                type: 'string',
+            },
+            {
+                name: 'fallbackKey',
+                description: 'External key of a fallback image when the primary cannot be found',
+                type: 'string',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'ContentImageByKey(key[, fallbackKey])',
-        example: 'var imgTag = Platform.Function.ContentImageByKey("hero-banner-key");\nWrite(imgTag);',
+        example:
+            'var imgTag = Platform.Function.ContentImageByKey("hero-banner-key");\nWrite(imgTag);',
     },
     {
         name: 'ContentImageByID',
         minArgs: 1,
         maxArgs: 2,
-        description: 'Returns an HTML img tag for a Content Builder image identified by its numeric ID. An optional fallback ID can be supplied if the primary image is not found.',
+        description:
+            'Returns an HTML img tag for a Content Builder image identified by its numeric ID. An optional fallback ID can be supplied if the primary image is not found.',
         params: [
             { name: 'id', description: 'Numeric ID of the Content Builder image', type: 'number' },
-            { name: 'fallbackId', description: 'Numeric ID of a fallback image when the primary cannot be found', type: 'number', optional: true },
+            {
+                name: 'fallbackId',
+                description: 'Numeric ID of a fallback image when the primary cannot be found',
+                type: 'number',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'ContentImageByID(id[, fallbackId])',
@@ -468,11 +610,16 @@ export const PLATFORM_FUNCTIONS = [
         maxArgs: 1,
         description: 'Processes a string as AMPscript/HTML and returns rendered output.',
         params: [
-            { name: 'content', description: 'String containing AMPscript or HTML to evaluate', type: 'string' },
+            {
+                name: 'content',
+                description: 'String containing AMPscript or HTML to evaluate',
+                type: 'string',
+            },
         ],
         returnType: 'string',
         syntax: 'TreatAsContent(content)',
-        example: 'var result = Platform.Function.TreatAsContent("%%[Set @x = 1]%%%%=v(@x)=%%");\nWrite(result); // "1"',
+        example:
+            'var result = Platform.Function.TreatAsContent("%%[Set @x = 1]%%%%=v(@x)=%%");\nWrite(result); // "1"',
     },
     {
         name: 'BeginImpressionRegion',
@@ -484,7 +631,8 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'void',
         syntax: 'BeginImpressionRegion(name)',
-        example: 'Platform.Function.BeginImpressionRegion("hero-banner");\nWrite(heroContent);\nPlatform.Function.EndImpressionRegion();',
+        example:
+            'Platform.Function.BeginImpressionRegion("hero-banner");\nWrite(heroContent);\nPlatform.Function.EndImpressionRegion();',
     },
     {
         name: 'EndImpressionRegion',
@@ -492,11 +640,17 @@ export const PLATFORM_FUNCTIONS = [
         maxArgs: 1,
         description: 'Marks the end of an impression tracking region within content.',
         params: [
-            { name: 'closeAll', description: 'When true, closes all nested impression regions', type: 'boolean', optional: true },
+            {
+                name: 'closeAll',
+                description: 'When true, closes all nested impression regions',
+                type: 'boolean',
+                optional: true,
+            },
         ],
         returnType: 'void',
         syntax: 'EndImpressionRegion([closeAll])',
-        example: 'Platform.Function.BeginImpressionRegion("footer");\nWrite(footerContent);\nPlatform.Function.EndImpressionRegion();',
+        example:
+            'Platform.Function.BeginImpressionRegion("footer");\nWrite(footerContent);\nPlatform.Function.EndImpressionRegion();',
     },
     {
         name: 'Substring',
@@ -506,20 +660,24 @@ export const PLATFORM_FUNCTIONS = [
         params: [
             { name: 'value', description: 'Source string', type: 'string' },
             { name: 'start', description: 'Starting position (1-based)', type: 'number' },
-            { name: 'length', description: 'Number of characters to extract', type: 'number', optional: true },
+            {
+                name: 'length',
+                description: 'Number of characters to extract',
+                type: 'number',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'Substring(value, start[, length])',
-        example: 'var str = "Hello, World!";\nvar sub = Platform.Function.Substring(str, 1, 5);\nWrite(sub); // "Hello"',
+        example:
+            'var str = "Hello, World!";\nvar sub = Platform.Function.Substring(str, 1, 5);\nWrite(sub); // "Hello"',
     },
     {
         name: 'Trim',
         minArgs: 1,
         maxArgs: 1,
         description: 'Removes leading and trailing whitespace from a string.',
-        params: [
-            { name: 'value', description: 'String to trim', type: 'string' },
-        ],
+        params: [{ name: 'value', description: 'String to trim', type: 'string' }],
         returnType: 'string',
         syntax: 'Trim(value)',
         example: 'var clean = Platform.Function.Trim("  hello  ");\nWrite(clean); // "hello"',
@@ -536,7 +694,8 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'Replace(value, search, replacement)',
-        example: 'var result = Platform.Function.Replace("Hello, World!", "World", "SFMC");\nWrite(result); // "Hello, SFMC!"',
+        example:
+            'var result = Platform.Function.Replace("Hello, World!", "World", "SFMC");\nWrite(result); // "Hello, SFMC!"',
     },
     {
         name: 'IndexOf',
@@ -556,9 +715,7 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 1,
         maxArgs: 1,
         description: 'Returns the number of characters in a string.',
-        params: [
-            { name: 'value', description: 'String to measure', type: 'string' },
-        ],
+        params: [{ name: 'value', description: 'String to measure', type: 'string' }],
         returnType: 'number',
         syntax: 'Length(value)',
         example: 'var len = Platform.Function.Length("Hello");\nWrite(len); // 5',
@@ -568,9 +725,7 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 1,
         maxArgs: 1,
         description: 'Converts a string to uppercase.',
-        params: [
-            { name: 'value', description: 'String to convert', type: 'string' },
-        ],
+        params: [{ name: 'value', description: 'String to convert', type: 'string' }],
         returnType: 'string',
         syntax: 'Uppercase(value)',
         example: 'var upper = Platform.Function.Uppercase("hello");\nWrite(upper); // "HELLO"',
@@ -580,9 +735,7 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 1,
         maxArgs: 1,
         description: 'Converts a string to lowercase.',
-        params: [
-            { name: 'value', description: 'String to convert', type: 'string' },
-        ],
+        params: [{ name: 'value', description: 'String to convert', type: 'string' }],
         returnType: 'string',
         syntax: 'Lowercase(value)',
         example: 'var lower = Platform.Function.Lowercase("HELLO");\nWrite(lower); // "hello"',
@@ -592,24 +745,22 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 1,
         maxArgs: 1,
         description: 'Converts a string to title case.',
-        params: [
-            { name: 'value', description: 'String to convert', type: 'string' },
-        ],
+        params: [{ name: 'value', description: 'String to convert', type: 'string' }],
         returnType: 'string',
         syntax: 'ProperCase(value)',
-        example: 'var title = Platform.Function.ProperCase("hello world");\nWrite(title); // "Hello World"',
+        example:
+            'var title = Platform.Function.ProperCase("hello world");\nWrite(title); // "Hello World"',
     },
     {
         name: 'Char',
         minArgs: 1,
         maxArgs: 1,
         description: 'Returns the character for a given ASCII code.',
-        params: [
-            { name: 'asciiCode', description: 'ASCII character code', type: 'number' },
-        ],
+        params: [{ name: 'asciiCode', description: 'ASCII character code', type: 'number' }],
         returnType: 'string',
         syntax: 'Char(asciiCode)',
-        example: 'var tab = Platform.Function.Char(9); // tab character\nWrite("Col1" + tab + "Col2");',
+        example:
+            'var tab = Platform.Function.Char(9); // tab character\nWrite("Col1" + tab + "Col2");',
     },
     {
         name: 'Concat',
@@ -618,11 +769,16 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Joins two or more string values together.',
         params: [
             { name: 'value1', description: 'First string', type: 'string' },
-            { name: 'value2', description: 'Second string (additional strings may follow)', type: 'string' },
+            {
+                name: 'value2',
+                description: 'Second string (additional strings may follow)',
+                type: 'string',
+            },
         ],
         returnType: 'string',
         syntax: 'Concat(value1, value2[, ...])',
-        example: 'var full = Platform.Function.Concat("Hello", ", ", "World!");\nWrite(full); // "Hello, World!"',
+        example:
+            'var full = Platform.Function.Concat("Hello", ", ", "World!");\nWrite(full); // "Hello, World!"',
     },
     {
         name: 'Format',
@@ -635,7 +791,8 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'Format(value, format[, ...])',
-        example: 'var price = Platform.Function.Format(1234.5, "C2");\nWrite(price); // "$1,234.50"',
+        example:
+            'var price = Platform.Function.Format(1234.5, "C2");\nWrite(price); // "$1,234.50"',
     },
     {
         name: 'DateAdd',
@@ -645,11 +802,16 @@ export const PLATFORM_FUNCTIONS = [
         params: [
             { name: 'date', description: 'Date value to modify', type: 'string' },
             { name: 'interval', description: 'Number of intervals to add', type: 'number' },
-            { name: 'datePart', description: 'Date part to add (e.g. "Y", "M", "D", "H")', type: 'string' },
+            {
+                name: 'datePart',
+                description: 'Date part to add (e.g. "Y", "M", "D", "H")',
+                type: 'string',
+            },
         ],
         returnType: 'string',
         syntax: 'DateAdd(date, interval, datePart)',
-        example: 'var future = Platform.Function.DateAdd(Platform.Function.Now(), 7, "D");\nWrite(future); // date 7 days from now',
+        example:
+            'var future = Platform.Function.DateAdd(Platform.Function.Now(), 7, "D");\nWrite(future); // date 7 days from now',
     },
     {
         name: 'DateDiff',
@@ -659,11 +821,16 @@ export const PLATFORM_FUNCTIONS = [
         params: [
             { name: 'date1', description: 'First date value', type: 'string' },
             { name: 'date2', description: 'Second date value', type: 'string' },
-            { name: 'datePart', description: 'Date part for the interval (e.g. "Y", "M", "D", "H")', type: 'string' },
+            {
+                name: 'datePart',
+                description: 'Date part for the interval (e.g. "Y", "M", "D", "H")',
+                type: 'string',
+            },
         ],
         returnType: 'number',
         syntax: 'DateDiff(date1, date2, datePart)',
-        example: 'var days = Platform.Function.DateDiff("2025-01-01", Platform.Function.Now(), "D");\nWrite(days); // days elapsed since Jan 1 2025',
+        example:
+            'var days = Platform.Function.DateDiff("2025-01-01", Platform.Function.Now(), "D");\nWrite(days); // days elapsed since Jan 1 2025',
     },
     {
         name: 'DateParse',
@@ -676,7 +843,8 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'object',
         syntax: 'DateParse(dateString[, format])',
-        example: 'var d = Platform.Function.DateParse("2025-08-05T12:00:00Z");\nWrite(Platform.Function.FormatDate(d, "MM/dd/yyyy")); // "08/05/2025"',
+        example:
+            'var d = Platform.Function.DateParse("2025-08-05T12:00:00Z");\nWrite(Platform.Function.FormatDate(d, "MM/dd/yyyy")); // "08/05/2025"',
     },
     {
         name: 'Now',
@@ -695,7 +863,8 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'Now([useContextTime])',
-        example: 'var current = Platform.Function.Now();\nWrite(current); // e.g. "8/5/2025 12:00:00 PM"\n\n// Use context time during triggered sends:\nvar sendTime = Platform.Function.Now(true);',
+        example:
+            'var current = Platform.Function.Now();\nWrite(current); // e.g. "8/5/2025 12:00:00 PM"\n\n// Use context time during triggered sends:\nvar sendTime = Platform.Function.Now(true);',
     },
     {
         name: 'FormatDate',
@@ -705,11 +874,17 @@ export const PLATFORM_FUNCTIONS = [
         params: [
             { name: 'date', description: 'Date value to format', type: 'string' },
             { name: 'format', description: 'Date format pattern', type: 'string' },
-            { name: 'locale', description: 'Locale for date formatting', type: 'string', optional: true },
+            {
+                name: 'locale',
+                description: 'Locale for date formatting',
+                type: 'string',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'FormatDate(date, format[, locale])',
-        example: 'var formatted = Platform.Function.FormatDate(Platform.Function.Now(), "MMMM d, yyyy");\nWrite(formatted); // e.g. "August 5, 2025"',
+        example:
+            'var formatted = Platform.Function.FormatDate(Platform.Function.Now(), "MMMM d, yyyy");\nWrite(formatted); // e.g. "August 5, 2025"',
     },
     {
         name: 'SystemDateToLocalDate',
@@ -718,11 +893,16 @@ export const PLATFORM_FUNCTIONS = [
         description:
             'Converts a date-time value from Marketing Cloud system time (CST) to the local time of the account or user.',
         params: [
-            { name: 'dateValue', description: 'Date-time string in system time (CST)', type: 'string' },
+            {
+                name: 'dateValue',
+                description: 'Date-time string in system time (CST)',
+                type: 'string',
+            },
         ],
         returnType: 'string',
         syntax: 'SystemDateToLocalDate(dateValue)',
-        example: 'var systemDate = Platform.Function.Now();\nvar localDate = Platform.Function.SystemDateToLocalDate(systemDate);\nWrite(localDate);',
+        example:
+            'var systemDate = Platform.Function.Now();\nvar localDate = Platform.Function.SystemDateToLocalDate(systemDate);\nWrite(localDate);',
     },
     {
         name: 'LocalDateToSystemDate',
@@ -731,11 +911,16 @@ export const PLATFORM_FUNCTIONS = [
         description:
             'Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST).',
         params: [
-            { name: 'dateValue', description: 'Date-time string in local account/user time', type: 'string' },
+            {
+                name: 'dateValue',
+                description: 'Date-time string in local account/user time',
+                type: 'string',
+            },
         ],
         returnType: 'string',
         syntax: 'LocalDateToSystemDate(dateValue)',
-        example: 'var localDate = "8/5/2025 12:00:00 PM";\nvar systemDate = Platform.Function.LocalDateToSystemDate(localDate);\nWrite(systemDate);',
+        example:
+            'var localDate = "8/5/2025 12:00:00 PM";\nvar systemDate = Platform.Function.LocalDateToSystemDate(localDate);\nWrite(systemDate);',
     },
     {
         name: 'GetValue',
@@ -747,7 +932,8 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'GetValue(variableName)',
-        example: '// Retrieve an AMPscript variable from within SSJS:\nvar sk = Platform.Function.GetValue("SubscriberKey");\nWrite(sk);',
+        example:
+            '// Retrieve an AMPscript variable from within SSJS:\nvar sk = Platform.Function.GetValue("SubscriberKey");\nWrite(sk);',
     },
     {
         name: 'SetValue',
@@ -760,7 +946,8 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'void',
         syntax: 'SetValue(variableName, value)',
-        example: 'Platform.Function.SetValue("greeting", "Hello from SSJS");\n// @greeting is now accessible in subsequent AMPscript blocks',
+        example:
+            'Platform.Function.SetValue("greeting", "Hello from SSJS");\n// @greeting is now accessible in subsequent AMPscript blocks',
     },
     {
         name: 'GetQueryStringParameter',
@@ -769,11 +956,16 @@ export const PLATFORM_FUNCTIONS = [
         description:
             'Retrieves the value of a named query string parameter from the URL of the current CloudPages or landing page.',
         params: [
-            { name: 'parameterName', description: 'Name of the query string parameter to retrieve', type: 'string' },
+            {
+                name: 'parameterName',
+                description: 'Name of the query string parameter to retrieve',
+                type: 'string',
+            },
         ],
         returnType: 'string',
         syntax: 'GetQueryStringParameter(parameterName)',
-        example: '// Page URL: /mypage?email=jane@example.com\nvar email = Platform.Function.GetQueryStringParameter("email");\nWrite(email); // "jane@example.com"',
+        example:
+            '// Page URL: /mypage?email=jane@example.com\nvar email = Platform.Function.GetQueryStringParameter("email");\nWrite(email); // "jane@example.com"',
     },
     {
         name: 'RaiseError',
@@ -781,17 +973,38 @@ export const PLATFORM_FUNCTIONS = [
         maxArgs: 4,
         description:
             'Raises an error with an optional scope flag. ' +
-            'When the second parameter is true, the error stops only the current recipient\'s send. ' +
+            "When the second parameter is true, the error stops only the current recipient's send. " +
             'When false, the error halts the entire send job.',
         params: [
-            { name: 'message', description: 'Error message describing what went wrong', type: 'string' },
-            { name: 'currentRecipientOnly', description: 'When true, the error applies only to the current recipient. When false, the entire send job stops.', type: 'boolean', optional: true },
-            { name: 'errorCode', description: 'Short user-defined code identifying the error type', type: 'string', optional: true },
-            { name: 'errorNumber', description: 'User-defined numeric error code for reference', type: 'number', optional: true },
+            {
+                name: 'message',
+                description: 'Error message describing what went wrong',
+                type: 'string',
+            },
+            {
+                name: 'currentRecipientOnly',
+                description:
+                    'When true, the error applies only to the current recipient. When false, the entire send job stops.',
+                type: 'boolean',
+                optional: true,
+            },
+            {
+                name: 'errorCode',
+                description: 'Short user-defined code identifying the error type',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'errorNumber',
+                description: 'User-defined numeric error code for reference',
+                type: 'number',
+                optional: true,
+            },
         ],
         returnType: 'void',
         syntax: 'RaiseError(message[, currentRecipientOnly[, errorCode[, errorNumber]]])',
-        example: 'var status = Platform.Function.Lookup("MyDE", "Status", "Email", emailAddress);\nif (!status) {\n    Platform.Function.RaiseError("Subscriber not found", true, "NOT_FOUND", 404);\n}',
+        example:
+            'var status = Platform.Function.Lookup("MyDE", "Status", "Email", emailAddress);\nif (!status) {\n    Platform.Function.RaiseError("Subscriber not found", true, "NOT_FOUND", 404);\n}',
     },
     {
         name: 'Redirect',
@@ -800,7 +1013,12 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Redirects the browser to a specified URL.',
         params: [
             { name: 'url', description: 'URL to redirect to', type: 'string' },
-            { name: 'permanent', description: 'True for 301 permanent redirect', type: 'boolean', optional: true },
+            {
+                name: 'permanent',
+                description: 'True for 301 permanent redirect',
+                type: 'boolean',
+                optional: true,
+            },
         ],
         returnType: 'void',
         syntax: 'Redirect(url[, permanent])',
@@ -813,13 +1031,23 @@ export const PLATFORM_FUNCTIONS = [
         description:
             'Builds an encrypted URL for a CloudPages landing page with optional parameters.',
         params: [
-            { name: 'pageId', description: 'Page ID of the CloudPages landing page', type: 'number' },
+            {
+                name: 'pageId',
+                description: 'Page ID of the CloudPages landing page',
+                type: 'number',
+            },
             { name: 'param1', description: 'First parameter name', type: 'string', optional: true },
-            { name: 'value1', description: 'First parameter value', type: 'string', optional: true },
+            {
+                name: 'value1',
+                description: 'First parameter value',
+                type: 'string',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'CloudPagesURL(pageId[, param1, value1, ...])',
-        example: 'var url = Platform.Function.CloudPagesURL(123, "email", emailAddress, "sk", subscriberKey);\nWrite(\'<a href="\' + url + \'">Click here</a>\');',
+        example:
+            'var url = Platform.Function.CloudPagesURL(123, "email", emailAddress, "sk", subscriberKey);\nWrite(\'<a href="\' + url + \'">Click here</a>\');',
     },
     {
         name: 'MicrositeURL',
@@ -829,11 +1057,17 @@ export const PLATFORM_FUNCTIONS = [
         params: [
             { name: 'pageId', description: 'Page ID of the microsite page', type: 'number' },
             { name: 'param1', description: 'First parameter name', type: 'string', optional: true },
-            { name: 'value1', description: 'First parameter value', type: 'string', optional: true },
+            {
+                name: 'value1',
+                description: 'First parameter value',
+                type: 'string',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'MicrositeURL(pageId[, param1, value1, ...])',
-        example: 'var url = Platform.Function.MicrositeURL(456, "source", "email");\nWrite(\'<a href="\' + url + \'">Visit microsite</a>\');',
+        example:
+            'var url = Platform.Function.MicrositeURL(456, "source", "email");\nWrite(\'<a href="\' + url + \'">Visit microsite</a>\');',
     },
     {
         name: 'GUID',
@@ -843,7 +1077,8 @@ export const PLATFORM_FUNCTIONS = [
         params: [],
         returnType: 'string',
         syntax: 'GUID()',
-        example: 'var id = Platform.Function.GUID();\nWrite(id); // e.g. "550e8400-e29b-41d4-a716-446655440000"',
+        example:
+            'var id = Platform.Function.GUID();\nWrite(id); // e.g. "550e8400-e29b-41d4-a716-446655440000"',
     },
     {
         name: 'Base64Encode',
@@ -852,11 +1087,17 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Encodes a string value to Base64.',
         params: [
             { name: 'value', description: 'String to encode', type: 'string' },
-            { name: 'encoding', description: 'Character encoding to use', type: 'string', optional: true },
+            {
+                name: 'encoding',
+                description: 'Character encoding to use',
+                type: 'string',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'Base64Encode(value[, encoding])',
-        example: 'var encoded = Platform.Function.Base64Encode("username:password");\nWrite(encoded); // "dXNlcm5hbWU6cGFzc3dvcmQ="',
+        example:
+            'var encoded = Platform.Function.Base64Encode("username:password");\nWrite(encoded); // "dXNlcm5hbWU6cGFzc3dvcmQ="',
     },
     {
         name: 'Base64Decode',
@@ -865,11 +1106,17 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Decodes a Base64-encoded string back to plain text.',
         params: [
             { name: 'value', description: 'Base64-encoded string to decode', type: 'string' },
-            { name: 'encoding', description: 'Character encoding to use', type: 'string', optional: true },
+            {
+                name: 'encoding',
+                description: 'Character encoding to use',
+                type: 'string',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'Base64Decode(value[, encoding])',
-        example: 'var decoded = Platform.Function.Base64Decode("dXNlcm5hbWU6cGFzc3dvcmQ=");\nWrite(decoded); // "username:password"',
+        example:
+            'var decoded = Platform.Function.Base64Decode("dXNlcm5hbWU6cGFzc3dvcmQ=");\nWrite(decoded); // "username:password"',
     },
     {
         name: 'EncryptSymmetric',
@@ -879,16 +1126,35 @@ export const PLATFORM_FUNCTIONS = [
         params: [
             { name: 'value', description: 'String to encrypt', type: 'string' },
             { name: 'algorithm', description: 'Encryption algorithm (e.g. "AES")', type: 'string' },
-            { name: 'passwordKey', description: 'Key Management key name for the password', type: 'string' },
+            {
+                name: 'passwordKey',
+                description: 'Key Management key name for the password',
+                type: 'string',
+            },
             { name: 'password', description: 'Encryption password', type: 'string' },
-            { name: 'saltKey', description: 'Key Management key name for the salt', type: 'string' },
+            {
+                name: 'saltKey',
+                description: 'Key Management key name for the salt',
+                type: 'string',
+            },
             { name: 'salt', description: 'Salt value', type: 'string' },
-            { name: 'ivKey', description: 'Key Management key name for the initialization vector', type: 'string', optional: true },
-            { name: 'iv', description: 'Initialization vector value', type: 'string', optional: true },
+            {
+                name: 'ivKey',
+                description: 'Key Management key name for the initialization vector',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'iv',
+                description: 'Initialization vector value',
+                type: 'string',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'EncryptSymmetric(value, algorithm, passwordKey, password, saltKey, salt[, ivKey, iv])',
-        example: 'var encrypted = Platform.Function.EncryptSymmetric("sensitive data", "AES", "", "myPassword", "", "mySalt");\nWrite(encrypted);',
+        example:
+            'var encrypted = Platform.Function.EncryptSymmetric("sensitive data", "AES", "", "myPassword", "", "mySalt");\nWrite(encrypted);',
     },
     {
         name: 'DecryptSymmetric',
@@ -898,16 +1164,35 @@ export const PLATFORM_FUNCTIONS = [
         params: [
             { name: 'value', description: 'Encrypted string to decrypt', type: 'string' },
             { name: 'algorithm', description: 'Encryption algorithm (e.g. "AES")', type: 'string' },
-            { name: 'passwordKey', description: 'Key Management key name for the password', type: 'string' },
+            {
+                name: 'passwordKey',
+                description: 'Key Management key name for the password',
+                type: 'string',
+            },
             { name: 'password', description: 'Encryption password', type: 'string' },
-            { name: 'saltKey', description: 'Key Management key name for the salt', type: 'string' },
+            {
+                name: 'saltKey',
+                description: 'Key Management key name for the salt',
+                type: 'string',
+            },
             { name: 'salt', description: 'Salt value', type: 'string' },
-            { name: 'ivKey', description: 'Key Management key name for the initialization vector', type: 'string', optional: true },
-            { name: 'iv', description: 'Initialization vector value', type: 'string', optional: true },
+            {
+                name: 'ivKey',
+                description: 'Key Management key name for the initialization vector',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'iv',
+                description: 'Initialization vector value',
+                type: 'string',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'DecryptSymmetric(value, algorithm, passwordKey, password, saltKey, salt[, ivKey, iv])',
-        example: 'var plain = Platform.Function.DecryptSymmetric(encryptedValue, "AES", "", "myPassword", "", "mySalt");\nWrite(plain);',
+        example:
+            'var plain = Platform.Function.DecryptSymmetric(encryptedValue, "AES", "", "myPassword", "", "mySalt");\nWrite(plain);',
     },
     {
         name: 'SHA256',
@@ -953,48 +1238,44 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 1,
         maxArgs: 1,
         description: 'Checks whether a string is a valid email address format.',
-        params: [
-            { name: 'value', description: 'String to validate', type: 'string' },
-        ],
+        params: [{ name: 'value', description: 'String to validate', type: 'string' }],
         returnType: 'boolean',
         syntax: 'IsEmailAddress(value)',
-        example: 'if (Platform.Function.IsEmailAddress(emailInput)) {\n    Write("Valid email");\n} else {\n    Write("Invalid email format");\n}',
+        example:
+            'if (Platform.Function.IsEmailAddress(emailInput)) {\n    Write("Valid email");\n} else {\n    Write("Invalid email format");\n}',
     },
     {
         name: 'IsPhoneNumber',
         minArgs: 1,
         maxArgs: 1,
         description: 'Evaluates whether a string contains a valid phone number.',
-        params: [
-            { name: 'value', description: 'String to evaluate', type: 'string' },
-        ],
+        params: [{ name: 'value', description: 'String to evaluate', type: 'string' }],
         returnType: 'boolean',
         syntax: 'IsPhoneNumber(value)',
-        example: 'if (Platform.Function.IsPhoneNumber(phoneInput)) {\n    Write("Valid phone");\n} else {\n    Write("Invalid phone number");\n}',
+        example:
+            'if (Platform.Function.IsPhoneNumber(phoneInput)) {\n    Write("Valid phone");\n} else {\n    Write("Invalid phone number");\n}',
     },
     {
         name: 'IsNull',
         minArgs: 1,
         maxArgs: 1,
         description: 'Checks whether a value is null.',
-        params: [
-            { name: 'value', description: 'Value to check', type: 'any' },
-        ],
+        params: [{ name: 'value', description: 'Value to check', type: 'any' }],
         returnType: 'boolean',
         syntax: 'IsNull(value)',
-        example: 'var phone = Platform.Function.Lookup("MyDE", "Phone", "Email", email);\nif (Platform.Function.IsNull(phone)) {\n    Write("No phone on record");\n}',
+        example:
+            'var phone = Platform.Function.Lookup("MyDE", "Phone", "Email", email);\nif (Platform.Function.IsNull(phone)) {\n    Write("No phone on record");\n}',
     },
     {
         name: 'Empty',
         minArgs: 1,
         maxArgs: 1,
         description: 'Checks whether a string value is null, empty, or whitespace.',
-        params: [
-            { name: 'value', description: 'String to check', type: 'string' },
-        ],
+        params: [{ name: 'value', description: 'String to check', type: 'string' }],
         returnType: 'boolean',
         syntax: 'Empty(value)',
-        example: 'var city = Platform.Function.GetQueryStringParameter("city");\nif (Platform.Function.Empty(city)) {\n    city = "Unknown";\n}',
+        example:
+            'var city = Platform.Function.GetQueryStringParameter("city");\nif (Platform.Function.Empty(city)) {\n    city = "Unknown";\n}',
     },
     {
         name: 'IIf',
@@ -1004,7 +1285,11 @@ export const PLATFORM_FUNCTIONS = [
         params: [
             { name: 'condition', description: 'Boolean expression to evaluate', type: 'boolean' },
             { name: 'trueValue', description: 'Value returned if condition is true', type: 'any' },
-            { name: 'falseValue', description: 'Value returned if condition is false', type: 'any' },
+            {
+                name: 'falseValue',
+                description: 'Value returned if condition is false',
+                type: 'any',
+            },
         ],
         returnType: 'any',
         syntax: 'IIf(condition, trueValue, falseValue)',
@@ -1020,19 +1305,19 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'number',
         syntax: 'DataExtensionRowCount(deName)',
-        example: 'var count = Platform.Function.DataExtensionRowCount("MyDE");\nWrite("Total rows: " + count);',
+        example:
+            'var count = Platform.Function.DataExtensionRowCount("MyDE");\nWrite("Total rows: " + count);',
     },
     {
         name: 'CreateObject',
         minArgs: 1,
         maxArgs: 1,
         description: 'Instantiates a Marketing Cloud SOAP API object.',
-        params: [
-            { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
-        ],
+        params: [{ name: 'objectType', description: 'SOAP API object type name', type: 'string' }],
         returnType: 'object',
         syntax: 'CreateObject(objectType)',
-        example: 'var sub = Platform.Function.CreateObject("Subscriber");\nPlatform.Function.SetObjectProperty(sub, "EmailAddress", "jane@example.com");\nPlatform.Function.SetObjectProperty(sub, "SubscriberKey", "sk-123");',
+        example:
+            'var sub = Platform.Function.CreateObject("Subscriber");\nPlatform.Function.SetObjectProperty(sub, "EmailAddress", "jane@example.com");\nPlatform.Function.SetObjectProperty(sub, "SubscriberKey", "sk-123");',
     },
     {
         name: 'SetObjectProperty',
@@ -1046,7 +1331,8 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'void',
         syntax: 'SetObjectProperty(apiObject, propertyName, value)',
-        example: 'var sub = Platform.Function.CreateObject("Subscriber");\nPlatform.Function.SetObjectProperty(sub, "EmailAddress", "jane@example.com");',
+        example:
+            'var sub = Platform.Function.CreateObject("Subscriber");\nPlatform.Function.SetObjectProperty(sub, "EmailAddress", "jane@example.com");',
     },
     {
         name: 'AddObjectArrayItem',
@@ -1060,7 +1346,8 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'void',
         syntax: 'AddObjectArrayItem(apiObject, propertyName, value)',
-        example: 'var ts = Platform.Function.CreateObject("TriggeredSend");\nPlatform.Function.AddObjectArrayItem(ts, "Subscribers", sub);',
+        example:
+            'var ts = Platform.Function.CreateObject("TriggeredSend");\nPlatform.Function.AddObjectArrayItem(ts, "Subscribers", sub);',
     },
     {
         name: 'InvokeCreate',
@@ -1069,13 +1356,29 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Executes a SOAP API Create call on an API object.',
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
-            { name: 'statusMessage', description: 'Variable to receive the status message', type: 'string', optional: true },
-            { name: 'errorCode', description: 'Variable to receive the error code', type: 'string', optional: true },
-            { name: 'requestId', description: 'Variable to receive the request ID', type: 'string', optional: true },
+            {
+                name: 'statusMessage',
+                description: 'Variable to receive the status message',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'errorCode',
+                description: 'Variable to receive the error code',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'requestId',
+                description: 'Variable to receive the request ID',
+                type: 'string',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'InvokeCreate(apiObject[, statusMessage, errorCode, requestId])',
-        example: 'var sub = Platform.Function.CreateObject("Subscriber");\nPlatform.Function.SetObjectProperty(sub, "EmailAddress", "jane@example.com");\nvar statusMsg = "";\nvar errorCode = "";\nvar status = Platform.Function.InvokeCreate(sub, statusMsg, errorCode);\nWrite(status); // "OK" or "Error"',
+        example:
+            'var sub = Platform.Function.CreateObject("Subscriber");\nPlatform.Function.SetObjectProperty(sub, "EmailAddress", "jane@example.com");\nvar statusMsg = "";\nvar errorCode = "";\nvar status = Platform.Function.InvokeCreate(sub, statusMsg, errorCode);\nWrite(status); // "OK" or "Error"',
     },
     {
         name: 'InvokeUpdate',
@@ -1084,13 +1387,29 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Executes a SOAP API Update call on an API object.',
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
-            { name: 'statusMessage', description: 'Variable to receive the status message', type: 'string', optional: true },
-            { name: 'errorCode', description: 'Variable to receive the error code', type: 'string', optional: true },
-            { name: 'requestId', description: 'Variable to receive the request ID', type: 'string', optional: true },
+            {
+                name: 'statusMessage',
+                description: 'Variable to receive the status message',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'errorCode',
+                description: 'Variable to receive the error code',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'requestId',
+                description: 'Variable to receive the request ID',
+                type: 'string',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'InvokeUpdate(apiObject[, statusMessage, errorCode, requestId])',
-        example: 'Platform.Function.SetObjectProperty(sub, "Status", "Unsubscribed");\nvar status = Platform.Function.InvokeUpdate(sub);\nWrite(status);',
+        example:
+            'Platform.Function.SetObjectProperty(sub, "Status", "Unsubscribed");\nvar status = Platform.Function.InvokeUpdate(sub);\nWrite(status);',
     },
     {
         name: 'InvokeDelete',
@@ -1099,9 +1418,24 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Executes a SOAP API Delete call on an API object.',
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
-            { name: 'statusMessage', description: 'Variable to receive the status message', type: 'string', optional: true },
-            { name: 'errorCode', description: 'Variable to receive the error code', type: 'string', optional: true },
-            { name: 'requestId', description: 'Variable to receive the request ID', type: 'string', optional: true },
+            {
+                name: 'statusMessage',
+                description: 'Variable to receive the status message',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'errorCode',
+                description: 'Variable to receive the error code',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'requestId',
+                description: 'Variable to receive the request ID',
+                type: 'string',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'InvokeDelete(apiObject[, statusMessage, errorCode, requestId])',
@@ -1114,14 +1448,34 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Executes a SOAP API Retrieve call.',
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
-            { name: 'properties', description: 'Array of property names to retrieve', type: 'array' },
-            { name: 'filter', description: 'Filter object for the retrieve', type: 'object', optional: true },
-            { name: 'statusMessage', description: 'Variable to receive the status message', type: 'string', optional: true },
-            { name: 'requestId', description: 'Variable to receive the request ID', type: 'string', optional: true },
+            {
+                name: 'properties',
+                description: 'Array of property names to retrieve',
+                type: 'array',
+            },
+            {
+                name: 'filter',
+                description: 'Filter object for the retrieve',
+                type: 'object',
+                optional: true,
+            },
+            {
+                name: 'statusMessage',
+                description: 'Variable to receive the status message',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'requestId',
+                description: 'Variable to receive the request ID',
+                type: 'string',
+                optional: true,
+            },
         ],
         returnType: 'object',
         syntax: 'InvokeRetrieve(apiObject, properties[, filter, statusMessage, requestId])',
-        example: 'var req = Platform.Function.CreateObject("RetrieveRequest");\nPlatform.Function.SetObjectProperty(req, "ObjectType", "Subscriber");\nvar props = ["EmailAddress", "Status"];\nvar results = Platform.Function.InvokeRetrieve(req, props);',
+        example:
+            'var req = Platform.Function.CreateObject("RetrieveRequest");\nPlatform.Function.SetObjectProperty(req, "ObjectType", "Subscriber");\nvar props = ["EmailAddress", "Status"];\nvar results = Platform.Function.InvokeRetrieve(req, props);',
     },
     {
         name: 'InvokePerform',
@@ -1131,8 +1485,18 @@ export const PLATFORM_FUNCTIONS = [
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
             { name: 'action', description: 'Action to perform', type: 'string' },
-            { name: 'statusMessage', description: 'Variable to receive the status message', type: 'string', optional: true },
-            { name: 'errorCode', description: 'Variable to receive the error code', type: 'string', optional: true },
+            {
+                name: 'statusMessage',
+                description: 'Variable to receive the status message',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'errorCode',
+                description: 'Variable to receive the error code',
+                type: 'string',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'InvokePerform(apiObject, action[, statusMessage, errorCode])',
@@ -1146,12 +1510,23 @@ export const PLATFORM_FUNCTIONS = [
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
             { name: 'action', description: 'Configure action', type: 'string' },
-            { name: 'statusMessage', description: 'Variable to receive the status message', type: 'string', optional: true },
-            { name: 'errorCode', description: 'Variable to receive the error code', type: 'string', optional: true },
+            {
+                name: 'statusMessage',
+                description: 'Variable to receive the status message',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'errorCode',
+                description: 'Variable to receive the error code',
+                type: 'string',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'InvokeConfigure(apiObject, action[, statusMessage, errorCode])',
-        example: 'var status = Platform.Function.InvokeConfigure(configObj, "create");\nWrite(status);',
+        example:
+            'var status = Platform.Function.InvokeConfigure(configObj, "create");\nWrite(status);',
     },
     {
         name: 'InvokeExecute',
@@ -1161,12 +1536,23 @@ export const PLATFORM_FUNCTIONS = [
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
             { name: 'method', description: 'Execute method name', type: 'string' },
-            { name: 'statusMessage', description: 'Variable to receive the status message', type: 'string', optional: true },
-            { name: 'errorCode', description: 'Variable to receive the error code', type: 'string', optional: true },
+            {
+                name: 'statusMessage',
+                description: 'Variable to receive the status message',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'errorCode',
+                description: 'Variable to receive the error code',
+                type: 'string',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'InvokeExecute(apiObject, method[, statusMessage, errorCode])',
-        example: 'var status = Platform.Function.InvokeExecute(execObj, "LogUnsubEvent");\nWrite(status);',
+        example:
+            'var status = Platform.Function.InvokeExecute(execObj, "LogUnsubEvent");\nWrite(status);',
     },
     {
         name: 'InvokeExtract',
@@ -1174,13 +1560,27 @@ export const PLATFORM_FUNCTIONS = [
         maxArgs: 3,
         description: 'Invokes the Extract SOAP API method on the specified object.',
         params: [
-            { name: 'apiObject', description: 'SOAP API object on which to invoke Extract', type: 'object' },
-            { name: 'statusArray', description: 'Array that receives the status and RequestID of the API call', type: 'array' },
-            { name: 'options', description: 'Additional API options; may be null', type: 'object', optional: true },
+            {
+                name: 'apiObject',
+                description: 'SOAP API object on which to invoke Extract',
+                type: 'object',
+            },
+            {
+                name: 'statusArray',
+                description: 'Array that receives the status and RequestID of the API call',
+                type: 'array',
+            },
+            {
+                name: 'options',
+                description: 'Additional API options; may be null',
+                type: 'object',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'InvokeExtract(apiObject, statusArray[, options])',
-        example: 'var statusArr = [];\nvar result = Platform.Function.InvokeExtract(extractObj, statusArr);\nWrite(result);',
+        example:
+            'var statusArr = [];\nvar result = Platform.Function.InvokeExtract(extractObj, statusArr);\nWrite(result);',
     },
     {
         name: 'InvokeSchedule',
@@ -1188,15 +1588,30 @@ export const PLATFORM_FUNCTIONS = [
         maxArgs: 5,
         description: 'Invokes the Schedule SOAP API method on the specified object.',
         params: [
-            { name: 'apiObject', description: 'SOAP API object on which to invoke Schedule', type: 'object' },
+            {
+                name: 'apiObject',
+                description: 'SOAP API object on which to invoke Schedule',
+                type: 'object',
+            },
             { name: 'action', description: 'Action to perform on the object', type: 'string' },
             { name: 'schedule', description: 'Schedule definition object', type: 'object' },
-            { name: 'statusArray', description: 'Array that receives the status and RequestID of the API call', type: 'array', optional: true },
-            { name: 'options', description: 'Additional API options; may be null', type: 'object', optional: true },
+            {
+                name: 'statusArray',
+                description: 'Array that receives the status and RequestID of the API call',
+                type: 'array',
+                optional: true,
+            },
+            {
+                name: 'options',
+                description: 'Additional API options; may be null',
+                type: 'object',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'InvokeSchedule(apiObject, action, schedule[, statusArray, options])',
-        example: 'var statusArr = [];\nvar result = Platform.Function.InvokeSchedule(sendDef, "start", scheduleDef, statusArr);\nWrite(result);',
+        example:
+            'var statusArr = [];\nvar result = Platform.Function.InvokeSchedule(sendDef, "start", scheduleDef, statusArr);\nWrite(result);',
     },
     {
         name: 'AttributeValue',
@@ -1204,11 +1619,16 @@ export const PLATFORM_FUNCTIONS = [
         maxArgs: 1,
         description: 'Safely retrieves a subscriber attribute value, returning null if not found.',
         params: [
-            { name: 'attributeName', description: 'Name of the subscriber attribute', type: 'string' },
+            {
+                name: 'attributeName',
+                description: 'Name of the subscriber attribute',
+                type: 'string',
+            },
         ],
         returnType: 'string',
         syntax: 'AttributeValue(attributeName)',
-        example: 'var phone = Platform.Function.AttributeValue("MobilePhone");\nif (phone) { Write(phone); }',
+        example:
+            'var phone = Platform.Function.AttributeValue("MobilePhone");\nif (phone) { Write(phone); }',
     },
     {
         name: 'HTTPGet',
@@ -1217,8 +1637,18 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Performs an HTTP GET request and returns the response body.',
         params: [
             { name: 'url', description: 'URL to request', type: 'string' },
-            { name: 'headerNames', description: 'Array of header names', type: 'array', optional: true },
-            { name: 'headerValues', description: 'Array of header values', type: 'array', optional: true },
+            {
+                name: 'headerNames',
+                description: 'Array of header names',
+                type: 'array',
+                optional: true,
+            },
+            {
+                name: 'headerValues',
+                description: 'Array of header values',
+                type: 'array',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'HTTPGet(url[, headerNames, headerValues])',
@@ -1237,8 +1667,18 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'url', description: 'URL to post to', type: 'string' },
             { name: 'contentType', description: 'MIME type of the request body', type: 'string' },
             { name: 'payload', description: 'Request body content', type: 'string' },
-            { name: 'headerNames', description: 'Array of header names', type: 'array', optional: true },
-            { name: 'headerValues', description: 'Array of header values', type: 'array', optional: true },
+            {
+                name: 'headerNames',
+                description: 'Array of header names',
+                type: 'array',
+                optional: true,
+            },
+            {
+                name: 'headerValues',
+                description: 'Array of header values',
+                type: 'array',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'HTTPPost(url, contentType, payload[, headerNames, headerValues])',
@@ -1264,7 +1704,8 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         syntax: 'HTTPRequestHeader(headerName)',
-        example: 'var auth = Platform.Function.HTTPRequestHeader("Authorization");\nWrite(auth); // e.g. "Bearer abc123"',
+        example:
+            'var auth = Platform.Function.HTTPRequestHeader("Authorization");\nWrite(auth); // e.g. "Bearer abc123"',
     },
     {
         name: 'ParseJSON',
@@ -1274,7 +1715,11 @@ export const PLATFORM_FUNCTIONS = [
             'Parses a JSON-formatted string and returns the resulting JavaScript object. ' +
             'SFMC-native equivalent of JSON.parse(), which is not available in the legacy SSJS engine.',
         params: [
-            { name: 'jsonString', description: 'A valid JSON-formatted string to parse', type: 'string' },
+            {
+                name: 'jsonString',
+                description: 'A valid JSON-formatted string to parse',
+                type: 'string',
+            },
         ],
         returnType: 'object',
         syntax: 'ParseJSON(jsonString)',
@@ -1292,18 +1737,18 @@ export const PLATFORM_FUNCTIONS = [
         name: 'URLEncode',
         minArgs: 1,
         maxArgs: 1,
-        description: 'Encodes a string value so that it can be safely used as a URL query parameter or path component.',
-        params: [
-            { name: 'value', description: 'The string value to URL-encode', type: 'string' },
-        ],
+        description:
+            'Encodes a string value so that it can be safely used as a URL query parameter or path component.',
+        params: [{ name: 'value', description: 'The string value to URL-encode', type: 'string' }],
         returnType: 'string',
         syntax: 'URLEncode(value)',
-        example: 'var param = "hello world & more";\nvar encoded = Platform.Function.URLEncode(param);\nWrite("?q=" + encoded); // "?q=hello+world+%26+more"',
+        example:
+            'var param = "hello world & more";\nvar encoded = Platform.Function.URLEncode(param);\nWrite("?q=" + encoded); // "?q=hello+world+%26+more"',
     },
 ];
 
 export const platformFunctionLookup = new Map(
-    PLATFORM_FUNCTIONS.map((f) => [f.name.toLowerCase(), f]),
+    PLATFORM_FUNCTIONS.map((f) => [f.name.toLowerCase(), f])
 );
 
 export const platformFunctionNames = new Set(PLATFORM_FUNCTIONS.map((f) => f.name.toLowerCase()));
@@ -1314,7 +1759,7 @@ export const platformFunctionNames = new Set(PLATFORM_FUNCTIONS.map((f) => f.nam
 
 const STANDARD_METHODS = ['Init', 'Add', 'Remove', 'Update', 'Retrieve'];
 
-/** @type {Array<{name:string, methods:string[], description:string}>} */
+/** @type {{name: string, methods: string[], description: string}[]} */
 export const CORE_LIBRARY_OBJECTS = [
     {
         name: 'DataExtension',
@@ -1397,7 +1842,8 @@ export const CORE_LIBRARY_OBJECTS = [
     {
         name: 'SendDefinition',
         methods: [...STANDARD_METHODS, 'Send'],
-        description: 'Manages reusable Send Definition configurations that define all parameters for a send including content, audience, and delivery settings.',
+        description:
+            'Manages reusable Send Definition configurations that define all parameters for a send including content, audience, and delivery settings.',
     },
     {
         name: 'Template',
@@ -1497,7 +1943,7 @@ export const coreObjectLookup = new Map(CORE_LIBRARY_OBJECTS.map((o) => [o.name,
 
 // ── HTTP object methods ──────────────────────────────────────────────────────
 
-/** @type {Array<{name:string, minArgs:number, maxArgs:number, description:string, params?:Array<{name:string, description:string, type?:string, optional?:boolean}>, returnType?:string, syntax?:string}>} */
+/** @type {{name: string, minArgs: number, maxArgs: number, description: string, params?: {name: string, description: string, type?: string, optional?: boolean}[], returnType?: string, syntax?: string}[]} */
 export const HTTP_METHODS = [
     {
         name: 'Get',
@@ -1506,12 +1952,23 @@ export const HTTP_METHODS = [
         description: 'Performs an HTTP GET request returning the response body.',
         params: [
             { name: 'url', description: 'URL to request', type: 'string' },
-            { name: 'headerNames', description: 'Array of header names', type: 'array', optional: true },
-            { name: 'headerValues', description: 'Array of header values', type: 'array', optional: true },
+            {
+                name: 'headerNames',
+                description: 'Array of header names',
+                type: 'array',
+                optional: true,
+            },
+            {
+                name: 'headerValues',
+                description: 'Array of header values',
+                type: 'array',
+                optional: true,
+            },
         ],
         returnType: 'object',
         syntax: 'HTTP.Get(url[, headerNames, headerValues])',
-        example: 'var body = HTTP.Get("https://api.example.com/data");\nvar obj = Platform.Function.ParseJSON(String(body));',
+        example:
+            'var body = HTTP.Get("https://api.example.com/data");\nvar obj = Platform.Function.ParseJSON(String(body));',
     },
     {
         name: 'Post',
@@ -1522,12 +1979,23 @@ export const HTTP_METHODS = [
             { name: 'url', description: 'URL to post to', type: 'string' },
             { name: 'contentType', description: 'MIME type of the request body', type: 'string' },
             { name: 'payload', description: 'Request body content', type: 'string' },
-            { name: 'headerNames', description: 'Array of header names', type: 'array', optional: true },
-            { name: 'headerValues', description: 'Array of header values', type: 'array', optional: true },
+            {
+                name: 'headerNames',
+                description: 'Array of header names',
+                type: 'array',
+                optional: true,
+            },
+            {
+                name: 'headerValues',
+                description: 'Array of header values',
+                type: 'array',
+                optional: true,
+            },
         ],
         returnType: 'object',
         syntax: 'HTTP.Post(url, contentType, payload[, headerNames, headerValues])',
-        example: 'var payload = Stringify({ email: "jane@example.com" });\nvar response = HTTP.Post("https://api.example.com/items", "application/json", payload);',
+        example:
+            'var payload = Stringify({ email: "jane@example.com" });\nvar response = HTTP.Post("https://api.example.com/items", "application/json", payload);',
     },
     {
         name: 'GetRequest',
@@ -1547,7 +2015,8 @@ export const HTTP_METHODS = [
         params: [],
         returnType: 'object',
         syntax: 'HTTP.PostRequest()',
-        example: 'var postBody = HTTP.PostRequest();\nvar data = Platform.Function.ParseJSON(String(postBody));',
+        example:
+            'var postBody = HTTP.PostRequest();\nvar data = Platform.Function.ParseJSON(String(postBody));',
     },
 ];
 
@@ -1555,7 +2024,7 @@ export const httpMethodNames = new Set(HTTP_METHODS.map((m) => m.name.toLowerCas
 
 // ── WSProxy methods ──────────────────────────────────────────────────────────
 
-/** @type {Array<{name:string, minArgs:number, maxArgs:number, description:string, params?:Array<{name:string, description:string, type?:string, optional?:boolean}>, returnType?:string, syntax?:string}>} */
+/** @type {{name: string, minArgs: number, maxArgs: number, description: string, params?: {name: string, description: string, type?: string, optional?: boolean}[], returnType?: string, syntax?: string}[]} */
 export const WSPROXY_METHODS = [
     {
         name: 'createItem',
@@ -1602,7 +2071,11 @@ export const WSPROXY_METHODS = [
         description: 'Deletes a Marketing Cloud object via the SOAP API.',
         params: [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
-            { name: 'properties', description: 'Object properties identifying the item to delete', type: 'object' },
+            {
+                name: 'properties',
+                description: 'Object properties identifying the item to delete',
+                type: 'object',
+            },
         ],
         returnType: 'object',
         syntax: 'api.deleteItem(objectType, properties)',
@@ -1618,13 +2091,29 @@ export const WSPROXY_METHODS = [
         name: 'retrieve',
         minArgs: 2,
         maxArgs: 5,
-        description: 'Retrieves Marketing Cloud objects matching an optional filter via the SOAP API. The third parameter is a simple or complex filter; the fourth sets RetrieveOptions; the fifth sets additional request properties such as QueryAllAccounts.',
+        description:
+            'Retrieves Marketing Cloud objects matching an optional filter via the SOAP API. The third parameter is a simple or complex filter; the fourth sets RetrieveOptions; the fifth sets additional request properties such as QueryAllAccounts.',
         params: [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
             { name: 'columns', description: 'Array of property names to retrieve', type: 'array' },
-            { name: 'filter', description: 'Simple or complex filter object', type: 'object', optional: true },
-            { name: 'retrieveOptions', description: 'Properties to set on the SOAP RetrieveOptions object', type: 'object', optional: true },
-            { name: 'requestProps', description: 'Additional request properties (e.g. QueryAllAccounts)', type: 'object', optional: true },
+            {
+                name: 'filter',
+                description: 'Simple or complex filter object',
+                type: 'object',
+                optional: true,
+            },
+            {
+                name: 'retrieveOptions',
+                description: 'Properties to set on the SOAP RetrieveOptions object',
+                type: 'object',
+                optional: true,
+            },
+            {
+                name: 'requestProps',
+                description: 'Additional request properties (e.g. QueryAllAccounts)',
+                type: 'object',
+                optional: true,
+            },
         ],
         returnType: 'object',
         syntax: 'api.retrieve(objectType, columns[, filter[, retrieveOptions[, requestProps]]])',
@@ -1648,10 +2137,19 @@ export const WSPROXY_METHODS = [
         name: 'getNextBatch',
         minArgs: 2,
         maxArgs: 2,
-        description: 'Retrieves the next page of results from a previous retrieve call that returned HasMoreRows = true.',
+        description:
+            'Retrieves the next page of results from a previous retrieve call that returned HasMoreRows = true.',
         params: [
-            { name: 'objectType', description: 'SOAP API object type name used in the original retrieve call', type: 'string' },
-            { name: 'requestId', description: 'RequestID returned by the previous retrieve response', type: 'string' },
+            {
+                name: 'objectType',
+                description: 'SOAP API object type name used in the original retrieve call',
+                type: 'string',
+            },
+            {
+                name: 'requestId',
+                description: 'RequestID returned by the previous retrieve response',
+                type: 'string',
+            },
         ],
         returnType: 'object',
         syntax: 'api.getNextBatch(objectType, requestId)',
@@ -1672,23 +2170,38 @@ export const WSPROXY_METHODS = [
         description: 'Executes a perform action on a Marketing Cloud object.',
         params: [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
-            { name: 'action', description: 'Action to perform (e.g. "start", "stop")', type: 'string' },
+            {
+                name: 'action',
+                description: 'Action to perform (e.g. "start", "stop")',
+                type: 'string',
+            },
             { name: 'properties', description: 'Object properties for the action', type: 'object' },
         ],
         returnType: 'object',
         syntax: 'api.performItem(objectType, action, properties)',
-        example: 'var api = new WSProxy();\nvar result = api.performItem("QueryDefinition", "start", { ObjectID: queryObjectId });\nWrite(result.Status);',
+        example:
+            'var api = new WSProxy();\nvar result = api.performItem("QueryDefinition", "start", { ObjectID: queryObjectId });\nWrite(result.Status);',
     },
     {
         name: 'performBatch',
         minArgs: 3,
         maxArgs: 4,
-        description: 'Executes a perform action on multiple Marketing Cloud objects in a single SOAP API call.',
+        description:
+            'Executes a perform action on multiple Marketing Cloud objects in a single SOAP API call.',
         params: [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
-            { name: 'propertiesArray', description: 'Array of property objects for the action', type: 'array' },
+            {
+                name: 'propertiesArray',
+                description: 'Array of property objects for the action',
+                type: 'array',
+            },
             { name: 'verb', description: 'Action verb to execute (e.g. "start")', type: 'string' },
-            { name: 'performOptions', description: 'Properties of the SOAP PerformOptions object', type: 'object', optional: true },
+            {
+                name: 'performOptions',
+                description: 'Properties of the SOAP PerformOptions object',
+                type: 'object',
+                optional: true,
+            },
         ],
         returnType: 'object',
         syntax: 'api.performBatch(objectType, propertiesArray, verb[, performOptions])',
@@ -1702,9 +2215,14 @@ export const WSPROXY_METHODS = [
         name: 'describe',
         minArgs: 1,
         maxArgs: 1,
-        description: 'Returns structural metadata (ObjectDefinition) for one or more SOAP API object types.',
+        description:
+            'Returns structural metadata (ObjectDefinition) for one or more SOAP API object types.',
         params: [
-            { name: 'objectType', description: 'Object type name or array of type names to describe', type: 'string' },
+            {
+                name: 'objectType',
+                description: 'Object type name or array of type names to describe',
+                type: 'string',
+            },
         ],
         returnType: 'object',
         syntax: 'api.describe(objectType)',
@@ -1724,7 +2242,8 @@ export const WSPROXY_METHODS = [
         ],
         returnType: 'object',
         syntax: 'api.execute(objectType, method)',
-        example: 'var api = new WSProxy();\nvar result = api.execute("DataExtensionObject", "clearData");\nWrite(result.Status);',
+        example:
+            'var api = new WSProxy();\nvar result = api.execute("DataExtensionObject", "clearData");\nWrite(result.Status);',
     },
     {
         name: 'setBatchSize',
@@ -1732,11 +2251,16 @@ export const WSPROXY_METHODS = [
         maxArgs: 1,
         description: 'Sets the maximum number of objects per SOAP API batch.',
         params: [
-            { name: 'batchSize', description: 'Maximum number of objects per batch', type: 'number' },
+            {
+                name: 'batchSize',
+                description: 'Maximum number of objects per batch',
+                type: 'number',
+            },
         ],
         returnType: 'void',
         syntax: 'api.setBatchSize(batchSize)',
-        example: 'var api = new WSProxy();\napi.setBatchSize(200); // default is 2500\nvar result = api.retrieve("DataExtension", ["Name"], {});',
+        example:
+            'var api = new WSProxy();\napi.setBatchSize(200); // default is 2500\nvar result = api.retrieve("DataExtension", ["Name"], {});',
     },
     {
         name: 'setClientId',
@@ -1744,7 +2268,11 @@ export const WSPROXY_METHODS = [
         maxArgs: 1,
         description: 'Sets the business unit MID for cross-account operations.',
         params: [
-            { name: 'clientId', description: 'Object containing the MID of the target business unit', type: 'object' },
+            {
+                name: 'clientId',
+                description: 'Object containing the MID of the target business unit',
+                type: 'object',
+            },
         ],
         returnType: 'void',
         syntax: 'api.setClientId(clientId)',
@@ -1757,7 +2285,8 @@ export const WSPROXY_METHODS = [
         name: 'resetClientIds',
         minArgs: 0,
         maxArgs: 0,
-        description: 'Clears all client IDs set on the WSProxy instance, reverting to the default execution context credentials.',
+        description:
+            'Clears all client IDs set on the WSProxy instance, reverting to the default execution context credentials.',
         params: [],
         returnType: 'void',
         syntax: 'api.resetClientIds()',
@@ -1775,11 +2304,16 @@ export const WSPROXY_METHODS = [
         description: 'Creates multiple Marketing Cloud objects in a single SOAP API call.',
         params: [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
-            { name: 'propertiesArray', description: 'Array of property objects to create', type: 'array' },
+            {
+                name: 'propertiesArray',
+                description: 'Array of property objects to create',
+                type: 'array',
+            },
         ],
         returnType: 'object',
         syntax: 'api.createBatch(objectType, propertiesArray)',
-        example: 'var api = new WSProxy();\nvar items = [\n    { CustomerKey: "MyDE", Properties: { Property: [{ Name: "Email", Value: "a@example.com" }] } },\n    { CustomerKey: "MyDE", Properties: { Property: [{ Name: "Email", Value: "b@example.com" }] } }\n];\nvar result = api.createBatch("DataExtensionObject", items);\nWrite(result.Status);',
+        example:
+            'var api = new WSProxy();\nvar items = [\n    { CustomerKey: "MyDE", Properties: { Property: [{ Name: "Email", Value: "a@example.com" }] } },\n    { CustomerKey: "MyDE", Properties: { Property: [{ Name: "Email", Value: "b@example.com" }] } }\n];\nvar result = api.createBatch("DataExtensionObject", items);\nWrite(result.Status);',
     },
     {
         name: 'updateBatch',
@@ -1788,11 +2322,16 @@ export const WSPROXY_METHODS = [
         description: 'Updates multiple Marketing Cloud objects in a single SOAP API call.',
         params: [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
-            { name: 'propertiesArray', description: 'Array of property objects to update', type: 'array' },
+            {
+                name: 'propertiesArray',
+                description: 'Array of property objects to update',
+                type: 'array',
+            },
         ],
         returnType: 'object',
         syntax: 'api.updateBatch(objectType, propertiesArray)',
-        example: 'var api = new WSProxy();\nvar items = [\n    { CustomerKey: "MyDE", Keys: { Key: [{ Name: "Email", Value: "a@example.com" }] }, Properties: { Property: [{ Name: "Status", Value: "active" }] } }\n];\nvar result = api.updateBatch("DataExtensionObject", items);\nWrite(result.Status);',
+        example:
+            'var api = new WSProxy();\nvar items = [\n    { CustomerKey: "MyDE", Keys: { Key: [{ Name: "Email", Value: "a@example.com" }] }, Properties: { Property: [{ Name: "Status", Value: "active" }] } }\n];\nvar result = api.updateBatch("DataExtensionObject", items);\nWrite(result.Status);',
     },
     {
         name: 'deleteBatch',
@@ -1801,11 +2340,16 @@ export const WSPROXY_METHODS = [
         description: 'Deletes multiple Marketing Cloud objects in a single SOAP API call.',
         params: [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
-            { name: 'propertiesArray', description: 'Array of property objects to delete', type: 'array' },
+            {
+                name: 'propertiesArray',
+                description: 'Array of property objects to delete',
+                type: 'array',
+            },
         ],
         returnType: 'object',
         syntax: 'api.deleteBatch(objectType, propertiesArray)',
-        example: 'var api = new WSProxy();\nvar items = [\n    { CustomerKey: "MyDE", Keys: { Key: [{ Name: "Email", Value: "old@example.com" }] } }\n];\nvar result = api.deleteBatch("DataExtensionObject", items);\nWrite(result.Status);',
+        example:
+            'var api = new WSProxy();\nvar items = [\n    { CustomerKey: "MyDE", Keys: { Key: [{ Name: "Email", Value: "old@example.com" }] } }\n];\nvar result = api.deleteBatch("DataExtensionObject", items);\nWrite(result.Status);',
     },
 ];
 
@@ -1837,7 +2381,8 @@ export const PLATFORM_VARIABLE_METHODS = [
         ],
         returnType: 'void',
         syntax: 'Variable.SetValue(variableName, value)',
-        example: 'Variable.SetValue("greeting", "Hello from SSJS");\n// @greeting is now available in subsequent AMPscript blocks',
+        example:
+            'Variable.SetValue("greeting", "Hello from SSJS");\n// @greeting is now available in subsequent AMPscript blocks',
     },
 ];
 
@@ -1852,7 +2397,8 @@ export const PLATFORM_RESPONSE_METHODS = [
         ],
         returnType: 'string',
         syntax: 'Platform.Response.GetResponseHeader(headerName)',
-        example: 'var contentType = Platform.Response.GetResponseHeader("Content-Type");\nWrite(contentType);',
+        example:
+            'var contentType = Platform.Response.GetResponseHeader("Content-Type");\nWrite(contentType);',
     },
     {
         name: 'SetResponseHeader',
@@ -1865,7 +2411,8 @@ export const PLATFORM_RESPONSE_METHODS = [
         ],
         returnType: 'void',
         syntax: 'Platform.Response.SetResponseHeader(headerName, value)',
-        example: 'Platform.Response.SetResponseHeader("Content-Type", "application/json");\nPlatform.Response.Write(Stringify({ status: "ok" }));',
+        example:
+            'Platform.Response.SetResponseHeader("Content-Type", "application/json");\nPlatform.Response.Write(Stringify({ status: "ok" }));',
     },
     {
         name: 'Redirect',
@@ -1876,7 +2423,12 @@ export const PLATFORM_RESPONSE_METHODS = [
             'Second parameter: false (default) = 302 temporary redirect, true = 301 permanent redirect.',
         params: [
             { name: 'url', description: 'URL to redirect to', type: 'string' },
-            { name: 'permanent', description: 'True for 301 permanent redirect, false for 302 temporary', type: 'boolean', optional: true },
+            {
+                name: 'permanent',
+                description: 'True for 301 permanent redirect, false for 302 temporary',
+                type: 'boolean',
+                optional: true,
+            },
         ],
         returnType: 'void',
         syntax: 'Platform.Response.Redirect(url[, permanent])',
@@ -1888,11 +2440,16 @@ export const PLATFORM_RESPONSE_METHODS = [
         maxArgs: 1,
         description: 'Writes content to the page response output.',
         params: [
-            { name: 'content', description: 'Content string to write to the response', type: 'string' },
+            {
+                name: 'content',
+                description: 'Content string to write to the response',
+                type: 'string',
+            },
         ],
         returnType: 'void',
         syntax: 'Platform.Response.Write(content)',
-        example: 'var data = { name: "Jane", status: "active" };\nPlatform.Response.Write(Stringify(data));',
+        example:
+            'var data = { name: "Jane", status: "active" };\nPlatform.Response.Write(Stringify(data));',
     },
 ];
 
@@ -1903,23 +2460,27 @@ export const PLATFORM_REQUEST_METHODS = [
         maxArgs: 1,
         description: 'Retrieves the value of a URL query string parameter.',
         params: [
-            { name: 'parameterName', description: 'Name of the query string parameter', type: 'string' },
+            {
+                name: 'parameterName',
+                description: 'Name of the query string parameter',
+                type: 'string',
+            },
         ],
         returnType: 'string',
         syntax: 'Platform.Request.GetQueryStringParameter(parameterName)',
-        example: '// Page URL: /mypage?email=jane@example.com\nvar email = Platform.Request.GetQueryStringParameter("email");\nWrite(email);',
+        example:
+            '// Page URL: /mypage?email=jane@example.com\nvar email = Platform.Request.GetQueryStringParameter("email");\nWrite(email);',
     },
     {
         name: 'GetFormData',
         minArgs: 1,
         maxArgs: 1,
         description: 'Retrieves a named value from submitted form data.',
-        params: [
-            { name: 'fieldName', description: 'Name of the form field', type: 'string' },
-        ],
+        params: [{ name: 'fieldName', description: 'Name of the form field', type: 'string' }],
         returnType: 'string',
         syntax: 'Platform.Request.GetFormData(fieldName)',
-        example: 'var firstName = Platform.Request.GetFormData("firstName");\nWrite("Hello, " + firstName + "!");',
+        example:
+            'var firstName = Platform.Request.GetFormData("firstName");\nWrite("Hello, " + firstName + "!");',
     },
     {
         name: 'GetFormField',
@@ -1942,11 +2503,17 @@ export const PLATFORM_REQUEST_METHODS = [
             'CAVEAT: Only returns data on the FIRST call per request; subsequent calls return nothing. ' +
             'Store the result in a variable if you need it multiple times.',
         params: [
-            { name: 'encoding', description: 'Character encoding for the post data', type: 'string', optional: true },
+            {
+                name: 'encoding',
+                description: 'Character encoding for the post data',
+                type: 'string',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'Platform.Request.GetPostData([encoding])',
-        example: '// Read raw POST body once and store it:\nvar rawBody = Platform.Request.GetPostData();\nvar payload = Platform.Function.ParseJSON(rawBody);',
+        example:
+            '// Read raw POST body once and store it:\nvar rawBody = Platform.Request.GetPostData();\nvar payload = Platform.Function.ParseJSON(rawBody);',
     },
     {
         name: 'HasSSL',
@@ -1956,7 +2523,8 @@ export const PLATFORM_REQUEST_METHODS = [
         params: [],
         returnType: 'boolean',
         syntax: 'Platform.Request.HasSSL()',
-        example: 'if (Platform.Request.HasSSL()) {\n    Write("Secure connection");\n} else {\n    Platform.Response.Redirect("https://" + Platform.Request.RequestURL());\n}',
+        example:
+            'if (Platform.Request.HasSSL()) {\n    Write("Secure connection");\n} else {\n    Platform.Response.Redirect("https://" + Platform.Request.RequestURL());\n}',
     },
     {
         name: 'Method',
@@ -1966,7 +2534,8 @@ export const PLATFORM_REQUEST_METHODS = [
         params: [],
         returnType: 'string',
         syntax: 'Platform.Request.Method()',
-        example: 'var method = Platform.Request.Method();\nif (method === "POST") {\n    var body = Platform.Request.GetPostData();\n    // handle POST\n}',
+        example:
+            'var method = Platform.Request.Method();\nif (method === "POST") {\n    var body = Platform.Request.GetPostData();\n    // handle POST\n}',
     },
     {
         name: 'RequestURL',
@@ -1982,23 +2551,27 @@ export const PLATFORM_REQUEST_METHODS = [
         name: 'GetCookieValue',
         minArgs: 1,
         maxArgs: 1,
-        description: 'Retrieves the value of a named cookie from the HTTP request sent by the client browser.',
+        description:
+            'Retrieves the value of a named cookie from the HTTP request sent by the client browser.',
         params: [
             { name: 'cookieName', description: 'Name of the cookie to retrieve', type: 'string' },
         ],
         returnType: 'string',
         syntax: 'Platform.Request.GetCookieValue(cookieName)',
-        example: 'var sessionId = Platform.Request.GetCookieValue("sessionId");\nif (sessionId) { Write("Session: " + sessionId); }',
+        example:
+            'var sessionId = Platform.Request.GetCookieValue("sessionId");\nif (sessionId) { Write("Session: " + sessionId); }',
     },
     {
         name: 'GetUserLanguages',
         minArgs: 0,
         maxArgs: 0,
-        description: 'Returns the language preferences of the client browser as specified in the HTTP Accept-Language request header.',
+        description:
+            'Returns the language preferences of the client browser as specified in the HTTP Accept-Language request header.',
         params: [],
         returnType: 'string',
         syntax: 'Platform.Request.GetUserLanguages()',
-        example: 'var lang = Platform.Request.GetUserLanguages();\nWrite(lang); // e.g. "en-US,en;q=0.9"',
+        example:
+            'var lang = Platform.Request.GetUserLanguages();\nWrite(lang); // e.g. "en-US,en;q=0.9"',
     },
 ];
 
@@ -2011,7 +2584,11 @@ export const PLATFORM_CLIENT_BROWSER_METHODS = [
         maxArgs: 1,
         description: 'Redirects the client browser to a specified URL.',
         params: [
-            { name: 'url', description: 'The URL to redirect the client browser to', type: 'string' },
+            {
+                name: 'url',
+                description: 'The URL to redirect the client browser to',
+                type: 'string',
+            },
         ],
         returnType: 'void',
         syntax: 'Platform.ClientBrowser.Redirect(url)',
@@ -2023,7 +2600,11 @@ export const PLATFORM_CLIENT_BROWSER_METHODS = [
         maxArgs: 1,
         description: 'Writes content directly to the HTTP response sent to the client browser.',
         params: [
-            { name: 'content', description: 'The string content to write to the response output', type: 'string' },
+            {
+                name: 'content',
+                description: 'The string content to write to the response output',
+                type: 'string',
+            },
         ],
         returnType: 'void',
         syntax: 'Platform.ClientBrowser.Write(content)',
@@ -2037,23 +2618,43 @@ export const PLATFORM_CLIENT_BROWSER_METHODS = [
         params: [
             { name: 'name', description: 'Name of the cookie to set', type: 'string' },
             { name: 'value', description: 'Value to store in the cookie', type: 'string' },
-            { name: 'expires', description: 'Expiration date/time for the cookie', type: 'string', optional: true },
-            { name: 'path', description: 'URL path for which the cookie is valid', type: 'string', optional: true },
-            { name: 'domain', description: 'Domain for which the cookie is valid', type: 'string', optional: true },
-            { name: 'secure', description: 'If true, the cookie is only sent over HTTPS', type: 'boolean', optional: true },
+            {
+                name: 'expires',
+                description: 'Expiration date/time for the cookie',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'path',
+                description: 'URL path for which the cookie is valid',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'domain',
+                description: 'Domain for which the cookie is valid',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'secure',
+                description: 'If true, the cookie is only sent over HTTPS',
+                type: 'boolean',
+                optional: true,
+            },
         ],
         returnType: 'void',
         syntax: 'Platform.ClientBrowser.SetCookie(name, value[, expires, path, domain, secure])',
-        example: 'Platform.ClientBrowser.SetCookie("userId", subscriberKey, "12/31/2025", "/", ".example.com", true);',
+        example:
+            'Platform.ClientBrowser.SetCookie("userId", subscriberKey, "12/31/2025", "/", ".example.com", true);',
     },
     {
         name: 'RemoveCookie',
         minArgs: 1,
         maxArgs: 1,
-        description: 'Removes a cookie from the client browser by setting its expiration to a past date.',
-        params: [
-            { name: 'name', description: 'Name of the cookie to remove', type: 'string' },
-        ],
+        description:
+            'Removes a cookie from the client browser by setting its expiration to a past date.',
+        params: [{ name: 'name', description: 'Name of the cookie to remove', type: 'string' }],
         returnType: 'void',
         syntax: 'Platform.ClientBrowser.RemoveCookie(name)',
         example: 'Platform.ClientBrowser.RemoveCookie("userId");',
@@ -2062,10 +2663,19 @@ export const PLATFORM_CLIENT_BROWSER_METHODS = [
         name: 'SetResponseHeader',
         minArgs: 2,
         maxArgs: 2,
-        description: 'Sets a custom HTTP response header on the response sent to the client browser.',
+        description:
+            'Sets a custom HTTP response header on the response sent to the client browser.',
         params: [
-            { name: 'headerName', description: 'Name of the HTTP response header to set', type: 'string' },
-            { name: 'value', description: 'Value to assign to the response header', type: 'string' },
+            {
+                name: 'headerName',
+                description: 'Name of the HTTP response header to set',
+                type: 'string',
+            },
+            {
+                name: 'value',
+                description: 'Value to assign to the response header',
+                type: 'string',
+            },
         ],
         returnType: 'void',
         syntax: 'Platform.ClientBrowser.SetResponseHeader(headerName, value)',
@@ -2075,9 +2685,14 @@ export const PLATFORM_CLIENT_BROWSER_METHODS = [
         name: 'RemoveResponseHeader',
         minArgs: 1,
         maxArgs: 1,
-        description: 'Removes a previously set HTTP response header from the response sent to the client browser.',
+        description:
+            'Removes a previously set HTTP response header from the response sent to the client browser.',
         params: [
-            { name: 'headerName', description: 'Name of the HTTP response header to remove', type: 'string' },
+            {
+                name: 'headerName',
+                description: 'Name of the HTTP response header to remove',
+                type: 'string',
+            },
         ],
         returnType: 'void',
         syntax: 'Platform.ClientBrowser.RemoveResponseHeader(headerName)',
@@ -2086,7 +2701,7 @@ export const PLATFORM_CLIENT_BROWSER_METHODS = [
 ];
 
 export const platformClientBrowserMethodNames = new Set(
-    PLATFORM_CLIENT_BROWSER_METHODS.map((m) => m.name.toLowerCase()),
+    PLATFORM_CLIENT_BROWSER_METHODS.map((m) => m.name.toLowerCase())
 );
 
 // ── Platform.Recipient methods ───────────────────────────────────────────────
@@ -2109,19 +2724,20 @@ export const PLATFORM_RECIPIENT_METHODS = [
         ],
         returnType: 'string',
         syntax: 'Platform.Recipient.GetAttributeValue(attributeName)',
-        example: 'var email = Platform.Recipient.GetAttributeValue("EmailAddress");\nPlatform.Response.Write(email);',
+        example:
+            'var email = Platform.Recipient.GetAttributeValue("EmailAddress");\nPlatform.Response.Write(email);',
     },
 ];
 
 export const platformRecipientMethodNames = new Set(
-    PLATFORM_RECIPIENT_METHODS.map((m) => m.name.toLowerCase()),
+    PLATFORM_RECIPIENT_METHODS.map((m) => m.name.toLowerCase())
 );
 
 // ── Script.Util HTTP constructors ────────────────────────────────────────────
 // Request handler constructors under the Script.Util namespace.
 // Instantiated with `new Script.Util.HttpRequest(url)` etc.
 
-/** @type {Array<{name:string, minArgs:number, maxArgs:number, description:string, params?:Array<{name:string, description:string, type?:string, optional?:boolean}>, returnType?:string, syntax?:string, example?:string}>} */
+/** @type {{name: string, minArgs: number, maxArgs: number, description: string, params?: {name: string, description: string, type?: string, optional?: boolean}[], returnType?: string, syntax?: string, example?: string}[]} */
 export const SCRIPT_UTIL_CONSTRUCTORS = [
     {
         name: 'HttpRequest',
@@ -2157,9 +2773,7 @@ export const SCRIPT_UTIL_CONSTRUCTORS = [
             'Creates an HTTP GET request handler. Unlike Platform.Function.HTTPGet, this handler caches content for use in mail sends and supports custom headers. ' +
             'Only works with HTTP on port 80 and HTTPS on port 443. ' +
             'Call send() to execute the request and receive a Script.Util.HttpResponse object.',
-        params: [
-            { name: 'url', description: 'The URL to retrieve content from', type: 'string' },
-        ],
+        params: [{ name: 'url', description: 'The URL to retrieve content from', type: 'string' }],
         returnType: 'object',
         syntax: 'new Script.Util.HttpGet(url)',
         example:
@@ -2182,7 +2796,11 @@ export const SCRIPT_UTIL_CONSTRUCTORS = [
             'Call send() to execute the request and receive a Script.Util.HttpResponse object.',
         params: [
             { name: 'url', description: 'The destination URL', type: 'string' },
-            { name: 'contentType', description: 'Content-Type header value (e.g. "application/json")', type: 'string' },
+            {
+                name: 'contentType',
+                description: 'Content-Type header value (e.g. "application/json")',
+                type: 'string',
+            },
             { name: 'payload', description: 'Request body content as a string', type: 'string' },
         ],
         returnType: 'object',
@@ -2200,7 +2818,7 @@ export const SCRIPT_UTIL_CONSTRUCTORS = [
 // Methods available on a request object returned by Script.Util.HttpRequest,
 // Script.Util.HttpGet, or Script.Util.HttpPost.
 
-/** @type {Array<{name:string, minArgs:number, maxArgs:number, description:string, params?:Array<{name:string, description:string, type?:string, optional?:boolean}>, returnType?:string, syntax?:string, example?:string}>} */
+/** @type {{name: string, minArgs: number, maxArgs: number, description: string, params?: {name: string, description: string, type?: string, optional?: boolean}[], returnType?: string, syntax?: string, example?: string}[]} */
 export const SCRIPT_UTIL_REQUEST_METHODS = [
     {
         name: 'send',
@@ -2230,7 +2848,11 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
             'Sets a request header on the Script.Util HTTP request. ' +
             'Note: setting a custom header disables content caching for Script.Util.HttpGet.',
         params: [
-            { name: 'name', description: 'Header name (e.g. "Authorization", "Content-Type")', type: 'string' },
+            {
+                name: 'name',
+                description: 'Header name (e.g. "Authorization", "Content-Type")',
+                type: 'string',
+            },
             { name: 'value', description: 'Header value', type: 'string' },
         ],
         returnType: 'void',
@@ -2260,9 +2882,7 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
         minArgs: 1,
         maxArgs: 1,
         description: 'Removes a specific header from the request by name.',
-        params: [
-            { name: 'name', description: 'Name of the header to remove', type: 'string' },
-        ],
+        params: [{ name: 'name', description: 'Name of the header to remove', type: 'string' }],
         returnType: 'void',
         syntax: 'req.removeHeader(name)',
         example:
@@ -2279,15 +2899,21 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
 // Note: Array.prototype.indexOf, splice, and lastIndexOf exist but are broken;
 // use the polyfills from POLYFILLABLE_METHODS for correct behaviour.
 
-/** @type {Array<{name:string, owner:string, description:string, params?:Array<{name:string, description:string, type?:string, optional?:boolean}>, returnType?:string, syntax?:string, example?:string}>} */
+/** @type {{name: string, owner: string, description: string, params?: {name: string, description: string, type?: string, optional?: boolean}[], returnType?: string, syntax?: string, example?: string}[]} */
 export const ECMASCRIPT_BUILTINS = [
     // ── Array.prototype ──────────────────────────────────────────────────────
     {
         name: 'join',
         owner: 'Array.prototype',
-        description: 'Joins all array elements into a string, separated by the specified delimiter.',
+        description:
+            'Joins all array elements into a string, separated by the specified delimiter.',
         params: [
-            { name: 'separator', description: 'Delimiter string (default: ",")', type: 'string', optional: true },
+            {
+                name: 'separator',
+                description: 'Delimiter string (default: ",")',
+                type: 'string',
+                optional: true,
+            },
         ],
         returnType: 'string',
         syntax: 'array.join([separator])',
@@ -2296,9 +2922,14 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'push',
         owner: 'Array.prototype',
-        description: 'Appends one or more elements to the end of an array and returns the new length.',
+        description:
+            'Appends one or more elements to the end of an array and returns the new length.',
         params: [
-            { name: 'element', description: 'Element to append (repeat for multiple)', type: 'any' },
+            {
+                name: 'element',
+                description: 'Element to append (repeat for multiple)',
+                type: 'any',
+            },
         ],
         returnType: 'number',
         syntax: 'array.push(element[, ...])',
@@ -2325,9 +2956,14 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'unshift',
         owner: 'Array.prototype',
-        description: 'Inserts one or more elements at the start of an array and returns the new length.',
+        description:
+            'Inserts one or more elements at the start of an array and returns the new length.',
         params: [
-            { name: 'element', description: 'Element to prepend (repeat for multiple)', type: 'any' },
+            {
+                name: 'element',
+                description: 'Element to prepend (repeat for multiple)',
+                type: 'any',
+            },
         ],
         returnType: 'number',
         syntax: 'array.unshift(element[, ...])',
@@ -2336,10 +2972,9 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'concat',
         owner: 'Array.prototype',
-        description: 'Returns a new array formed by merging this array with other arrays or values.',
-        params: [
-            { name: 'value', description: 'Array or value to concatenate', type: 'any' },
-        ],
+        description:
+            'Returns a new array formed by merging this array with other arrays or values.',
+        params: [{ name: 'value', description: 'Array or value to concatenate', type: 'any' }],
         returnType: 'array',
         syntax: 'array.concat(value[, ...])',
         example: 'var a = [1, 2];\nvar b = [3, 4];\nvar c = a.concat(b); // [1, 2, 3, 4]',
@@ -2349,7 +2984,11 @@ export const ECMASCRIPT_BUILTINS = [
         owner: 'Array.prototype',
         description: 'Returns a shallow copy of a portion of an array.',
         params: [
-            { name: 'start', description: 'Start index (0-based, negative counts from end)', type: 'number' },
+            {
+                name: 'start',
+                description: 'Start index (0-based, negative counts from end)',
+                type: 'number',
+            },
             { name: 'end', description: 'End index (exclusive)', type: 'number', optional: true },
         ],
         returnType: 'array',
@@ -2361,7 +3000,13 @@ export const ECMASCRIPT_BUILTINS = [
         owner: 'Array.prototype',
         description: 'Sorts the array in place and returns it. Default sort is lexicographic.',
         params: [
-            { name: 'compareFn', description: 'Optional comparison function (a, b) returning negative, 0, or positive', type: 'function', optional: true },
+            {
+                name: 'compareFn',
+                description:
+                    'Optional comparison function (a, b) returning negative, 0, or positive',
+                type: 'function',
+                optional: true,
+            },
         ],
         returnType: 'array',
         syntax: 'array.sort([compareFn])',
@@ -2390,9 +3035,7 @@ export const ECMASCRIPT_BUILTINS = [
         name: 'charAt',
         owner: 'String.prototype',
         description: 'Returns the character at the specified index.',
-        params: [
-            { name: 'index', description: 'Zero-based character index', type: 'number' },
-        ],
+        params: [{ name: 'index', description: 'Zero-based character index', type: 'number' }],
         returnType: 'string',
         syntax: 'str.charAt(index)',
         example: 'var str = "Hello";\nWrite(str.charAt(1)); // "e"',
@@ -2401,9 +3044,7 @@ export const ECMASCRIPT_BUILTINS = [
         name: 'charCodeAt',
         owner: 'String.prototype',
         description: 'Returns the UTF-16 code unit at the specified index.',
-        params: [
-            { name: 'index', description: 'Zero-based character index', type: 'number' },
-        ],
+        params: [{ name: 'index', description: 'Zero-based character index', type: 'number' }],
         returnType: 'number',
         syntax: 'str.charCodeAt(index)',
         example: 'var str = "A";\nWrite(str.charCodeAt(0)); // 65',
@@ -2411,10 +3052,16 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'indexOf',
         owner: 'String.prototype',
-        description: 'Returns the index of the first occurrence of a substring, or -1 if not found.',
+        description:
+            'Returns the index of the first occurrence of a substring, or -1 if not found.',
         params: [
             { name: 'searchValue', description: 'Substring to search for', type: 'string' },
-            { name: 'fromIndex', description: 'Index to start the search from', type: 'number', optional: true },
+            {
+                name: 'fromIndex',
+                description: 'Index to start the search from',
+                type: 'number',
+                optional: true,
+            },
         ],
         returnType: 'number',
         syntax: 'str.indexOf(searchValue[, fromIndex])',
@@ -2426,7 +3073,12 @@ export const ECMASCRIPT_BUILTINS = [
         description: 'Returns the index of the last occurrence of a substring, or -1 if not found.',
         params: [
             { name: 'searchValue', description: 'Substring to search for', type: 'string' },
-            { name: 'fromIndex', description: 'Index to search backwards from', type: 'number', optional: true },
+            {
+                name: 'fromIndex',
+                description: 'Index to search backwards from',
+                type: 'number',
+                optional: true,
+            },
         ],
         returnType: 'number',
         syntax: 'str.lastIndexOf(searchValue[, fromIndex])',
@@ -2441,19 +3093,22 @@ export const ECMASCRIPT_BUILTINS = [
         ],
         returnType: 'array',
         syntax: 'str.match(regexp)',
-        example: 'var str = "test@example.com";\nvar matches = str.match(/[\\w.]+@[\\w.]+/);\nif (matches) { Write(matches[0]); }',
+        example:
+            'var str = "test@example.com";\nvar matches = str.match(/[\\w.]+@[\\w.]+/);\nif (matches) { Write(matches[0]); }',
     },
     {
         name: 'replace',
         owner: 'String.prototype',
-        description: 'Returns a new string with matches replaced by a replacement string or function.',
+        description:
+            'Returns a new string with matches replaced by a replacement string or function.',
         params: [
             { name: 'searchValue', description: 'Substring or RegExp to find', type: 'any' },
             { name: 'replaceValue', description: 'Replacement string', type: 'string' },
         ],
         returnType: 'string',
         syntax: 'str.replace(searchValue, replaceValue)',
-        example: 'var str = "Hello, world!";\nWrite(str.replace("world", "SSJS")); // "Hello, SSJS!"',
+        example:
+            'var str = "Hello, world!";\nWrite(str.replace("world", "SSJS")); // "Hello, SSJS!"',
     },
     {
         name: 'search',
@@ -2471,7 +3126,11 @@ export const ECMASCRIPT_BUILTINS = [
         owner: 'String.prototype',
         description: 'Extracts a section of a string and returns it as a new string.',
         params: [
-            { name: 'start', description: 'Start index (negative counts from end)', type: 'number' },
+            {
+                name: 'start',
+                description: 'Start index (negative counts from end)',
+                type: 'number',
+            },
             { name: 'end', description: 'End index (exclusive)', type: 'number', optional: true },
         ],
         returnType: 'string',
@@ -2484,7 +3143,12 @@ export const ECMASCRIPT_BUILTINS = [
         description: 'Splits a string into an array of substrings using a separator.',
         params: [
             { name: 'separator', description: 'String or RegExp to split on', type: 'any' },
-            { name: 'limit', description: 'Maximum number of substrings to return', type: 'number', optional: true },
+            {
+                name: 'limit',
+                description: 'Maximum number of substrings to return',
+                type: 'number',
+                optional: true,
+            },
         ],
         returnType: 'array',
         syntax: 'str.split(separator[, limit])',
@@ -2770,13 +3434,13 @@ export const UNSUPPORTED_SYNTAX = [
         feature: 'NewExpression',
         label: "the 'new' operator on user-defined constructors",
         suggestion:
-            "May cause a 500 if the function uses the revealing module pattern " +
-            "(var service = {...}; return service). " +
+            'May cause a 500 if the function uses the revealing module pattern ' +
+            '(var service = {...}; return service). ' +
             "Ensure the function assigns to 'this' instead (this.service = {...}).",
         nodeType: 'NewExpression',
         test: (node) => {
             const NATIVE = ['Date', 'RegExp', 'Error', 'Object', 'Array', 'WSProxy'];
-            return node.callee.type === 'Identifier' && NATIVE.indexOf(node.callee.name) === -1;
+            return node.callee.type === 'Identifier' && !NATIVE.includes(node.callee.name);
         },
     },
 ];
@@ -2804,7 +3468,7 @@ export const POLYFILLABLE_METHODS = [
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
-        description: "Array.prototype.copyWithin is not available in SFMC SSJS.",
+        description: 'Array.prototype.copyWithin is not available in SFMC SSJS.',
         polyfill:
             'Array.prototype.copyWithin = function (targetIndex, startIndex, count) {\n' +
             '    var n = count || 1;\n' +
@@ -2820,7 +3484,7 @@ export const POLYFILLABLE_METHODS = [
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
-        description: "Array.prototype.entries is not available in SFMC SSJS.",
+        description: 'Array.prototype.entries is not available in SFMC SSJS.',
         polyfill:
             'Array.prototype.entries = function () {\n' +
             '    var index = 0;\n' +
@@ -2841,7 +3505,7 @@ export const POLYFILLABLE_METHODS = [
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
-        description: "Array.prototype.fill is not available in SFMC SSJS.",
+        description: 'Array.prototype.fill is not available in SFMC SSJS.',
         polyfill:
             'Array.prototype.fill = function (value, startIndex, endIndex) {\n' +
             '    var start = startIndex || 0;\n' +
@@ -2858,10 +3522,10 @@ export const POLYFILLABLE_METHODS = [
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
-        description: "Array.prototype.filter is not available in SFMC SSJS.",
+        description: 'Array.prototype.filter is not available in SFMC SSJS.',
         polyfill:
             'Array.prototype.filter = function (predicate) {\n' +
-            '    if (typeof predicate !== \'function\') { return []; }\n' +
+            "    if (typeof predicate !== 'function') { return []; }\n" +
             '    var result = [];\n' +
             '    for (var i = 0; i < this.length; i++) {\n' +
             '        if (predicate(this[i], i, this)) { result.push(this[i]); }\n' +
@@ -2875,10 +3539,10 @@ export const POLYFILLABLE_METHODS = [
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
-        description: "Array.prototype.find is not available in SFMC SSJS.",
+        description: 'Array.prototype.find is not available in SFMC SSJS.',
         polyfill:
             'Array.prototype.find = function (predicate) {\n' +
-            '    if (typeof predicate !== \'function\') { return undefined; }\n' +
+            "    if (typeof predicate !== 'function') { return undefined; }\n" +
             '    for (var i = 0; i < this.length; i++) {\n' +
             '        if (predicate(this[i], i, this)) { return this[i]; }\n' +
             '    }\n' +
@@ -2891,10 +3555,10 @@ export const POLYFILLABLE_METHODS = [
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
-        description: "Array.prototype.findIndex is not available in SFMC SSJS.",
+        description: 'Array.prototype.findIndex is not available in SFMC SSJS.',
         polyfill:
             'Array.prototype.findIndex = function (predicate) {\n' +
-            '    if (typeof predicate !== \'function\') { return -1; }\n' +
+            "    if (typeof predicate !== 'function') { return -1; }\n" +
             '    for (var i = 0; i < this.length; i++) {\n' +
             '        if (predicate(this[i], i, this)) { return i; }\n' +
             '    }\n' +
@@ -2907,10 +3571,10 @@ export const POLYFILLABLE_METHODS = [
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
-        description: "Array.prototype.forEach is not available in SFMC SSJS.",
+        description: 'Array.prototype.forEach is not available in SFMC SSJS.',
         polyfill:
             'Array.prototype.forEach = function (callback) {\n' +
-            '    if (typeof callback !== \'function\') { return; }\n' +
+            "    if (typeof callback !== 'function') { return; }\n" +
             '    for (var i = 0; i < this.length; i++) {\n' +
             '        callback(this[i], i, this);\n' +
             '    }\n' +
@@ -2922,7 +3586,7 @@ export const POLYFILLABLE_METHODS = [
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
-        description: "Array.prototype.includes is not available in SFMC SSJS.",
+        description: 'Array.prototype.includes is not available in SFMC SSJS.',
         polyfill:
             'Array.prototype.includes = function (searchValue) {\n' +
             '    for (var i = 0; i < this.length; i++) {\n' +
@@ -2937,7 +3601,7 @@ export const POLYFILLABLE_METHODS = [
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: true,
-        description: "Array.prototype.indexOf is not available in SFMC SSJS.",
+        description: 'Array.prototype.indexOf is not available in SFMC SSJS.',
         polyfill:
             'Array.prototype.indexOf = function (searchValue, fromIndex) {\n' +
             '    var start = fromIndex || 0;\n' +
@@ -2953,7 +3617,8 @@ export const POLYFILLABLE_METHODS = [
         isStatic: false,
         category: 'broken',
         ambiguousWithString: true,
-        description: "Array.prototype.lastIndexOf exists in SFMC SSJS but always returns -1. A polyfill is needed for correct results.",
+        description:
+            'Array.prototype.lastIndexOf exists in SFMC SSJS but always returns -1. A polyfill is needed for correct results.',
         polyfill:
             'Array.prototype.lastIndexOf = function (searchValue, fromIndex) {\n' +
             '    var start = (fromIndex !== undefined) ? fromIndex : this.length - 1;\n' +
@@ -2969,10 +3634,10 @@ export const POLYFILLABLE_METHODS = [
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
-        description: "Array.prototype.map is not available in SFMC SSJS.",
+        description: 'Array.prototype.map is not available in SFMC SSJS.',
         polyfill:
             'Array.prototype.map = function (callback) {\n' +
-            '    if (typeof callback !== \'function\') { return []; }\n' +
+            "    if (typeof callback !== 'function') { return []; }\n" +
             '    var result = [];\n' +
             '    for (var i = 0; i < this.length; i++) {\n' +
             '        result.push(callback(this[i], i, this));\n' +
@@ -2986,10 +3651,10 @@ export const POLYFILLABLE_METHODS = [
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
-        description: "Array.prototype.reduce is not available in SFMC SSJS.",
+        description: 'Array.prototype.reduce is not available in SFMC SSJS.',
         polyfill:
             'Array.prototype.reduce = function (callback, initialValue) {\n' +
-            '    if (typeof callback !== \'function\') { return initialValue; }\n' +
+            "    if (typeof callback !== 'function') { return initialValue; }\n" +
             '    var accumulator = (arguments.length > 1) ? initialValue : this[0];\n' +
             '    var startIndex = (arguments.length > 1) ? 0 : 1;\n' +
             '    for (var i = startIndex; i < this.length; i++) {\n' +
@@ -3004,10 +3669,10 @@ export const POLYFILLABLE_METHODS = [
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
-        description: "Array.prototype.reduceRight is not available in SFMC SSJS.",
+        description: 'Array.prototype.reduceRight is not available in SFMC SSJS.',
         polyfill:
             'Array.prototype.reduceRight = function (callback, initialValue) {\n' +
-            '    if (typeof callback !== \'function\') { return initialValue; }\n' +
+            "    if (typeof callback !== 'function') { return initialValue; }\n" +
             '    var accumulator = (arguments.length > 1) ? initialValue : this[this.length - 1];\n' +
             '    var startIndex = (arguments.length > 1) ? this.length - 1 : this.length - 2;\n' +
             '    for (var i = startIndex; i >= 0; i--) {\n' +
@@ -3022,10 +3687,10 @@ export const POLYFILLABLE_METHODS = [
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
-        description: "Array.prototype.some is not available in SFMC SSJS.",
+        description: 'Array.prototype.some is not available in SFMC SSJS.',
         polyfill:
             'Array.prototype.some = function (predicate) {\n' +
-            '    if (typeof predicate !== \'function\') { return false; }\n' +
+            "    if (typeof predicate !== 'function') { return false; }\n" +
             '    for (var i = 0; i < this.length; i++) {\n' +
             '        if (predicate(this[i], i, this)) { return true; }\n' +
             '    }\n' +
@@ -3038,7 +3703,8 @@ export const POLYFILLABLE_METHODS = [
         isStatic: false,
         category: 'broken',
         ambiguousWithString: false,
-        description: "Array.prototype.splice exists in SFMC SSJS but ignores its first two parameters. A polyfill is needed for correct behavior.",
+        description:
+            'Array.prototype.splice exists in SFMC SSJS but ignores its first two parameters. A polyfill is needed for correct behavior.',
         polyfill:
             'Array.prototype.splice = function (startIndex, deleteCount) {\n' +
             '    var arr = this;\n' +
@@ -3069,10 +3735,10 @@ export const POLYFILLABLE_METHODS = [
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
-        description: "String.prototype.trim is not available in SFMC SSJS.",
+        description: 'String.prototype.trim is not available in SFMC SSJS.',
         polyfill:
             'String.prototype.trim = function () {\n' +
-            '    return this.replace(/^[\\s\\uFEFF\\xA0]+|[\\s\\uFEFF\\xA0]+$/g, \'\');\n' +
+            "    return this.replace(/^[\\s\\uFEFF\\xA0]+|[\\s\\uFEFF\\xA0]+$/g, '');\n" +
             '};',
     },
     {
@@ -3081,7 +3747,7 @@ export const POLYFILLABLE_METHODS = [
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
-        description: "String.prototype.startsWith is not available in SFMC SSJS.",
+        description: 'String.prototype.startsWith is not available in SFMC SSJS.',
         polyfill:
             'String.prototype.startsWith = function (searchString, position) {\n' +
             '    position = position || 0;\n' +
@@ -3094,7 +3760,7 @@ export const POLYFILLABLE_METHODS = [
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
-        description: "String.prototype.endsWith is not available in SFMC SSJS.",
+        description: 'String.prototype.endsWith is not available in SFMC SSJS.',
         polyfill:
             'String.prototype.endsWith = function (search, length) {\n' +
             '    var len = (length === undefined || length > this.length) ? this.length : length;\n' +
@@ -3107,10 +3773,10 @@ export const POLYFILLABLE_METHODS = [
         isStatic: true,
         category: 'unavailable',
         ambiguousWithString: false,
-        description: "Array.isArray is not available in SFMC SSJS.",
+        description: 'Array.isArray is not available in SFMC SSJS.',
         polyfill:
             'Array.isArray = function (value) {\n' +
-            '    return Object.prototype.toString.call(value) === \'[object Array]\';\n' +
+            "    return Object.prototype.toString.call(value) === '[object Array]';\n" +
             '};',
     },
     {
@@ -3119,7 +3785,7 @@ export const POLYFILLABLE_METHODS = [
         isStatic: true,
         category: 'unavailable',
         ambiguousWithString: false,
-        description: "Array.of is not available in SFMC SSJS.",
+        description: 'Array.of is not available in SFMC SSJS.',
         polyfill:
             'Array.of = function () {\n' +
             '    var result = [];\n' +
