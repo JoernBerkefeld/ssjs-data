@@ -1748,7 +1748,7 @@ export const PLATFORM_FUNCTIONS = [
 ];
 
 export const platformFunctionLookup = new Map(
-    PLATFORM_FUNCTIONS.map((f) => [f.name.toLowerCase(), f])
+    PLATFORM_FUNCTIONS.map((f) => [f.name.toLowerCase(), f]),
 );
 
 export const platformFunctionNames = new Set(PLATFORM_FUNCTIONS.map((f) => f.name.toLowerCase()));
@@ -2701,7 +2701,7 @@ export const PLATFORM_CLIENT_BROWSER_METHODS = [
 ];
 
 export const platformClientBrowserMethodNames = new Set(
-    PLATFORM_CLIENT_BROWSER_METHODS.map((m) => m.name.toLowerCase())
+    PLATFORM_CLIENT_BROWSER_METHODS.map((m) => m.name.toLowerCase()),
 );
 
 // ── Platform.Recipient methods ───────────────────────────────────────────────
@@ -2730,7 +2730,7 @@ export const PLATFORM_RECIPIENT_METHODS = [
 ];
 
 export const platformRecipientMethodNames = new Set(
-    PLATFORM_RECIPIENT_METHODS.map((m) => m.name.toLowerCase())
+    PLATFORM_RECIPIENT_METHODS.map((m) => m.name.toLowerCase()),
 );
 
 // ── Script.Util HTTP constructors ────────────────────────────────────────────
