@@ -4710,6 +4710,7 @@ export const httpMethodNames = new Set(HTTP_METHODS.map((m) => m.name.toLowerCas
 export const WSPROXY_METHODS = [
     {
         name: 'createItem',
+        isStatic: false,
         minArgs: 2,
         maxArgs: 2,
         description: 'Creates a new Marketing Cloud object via the SOAP API.',
@@ -4718,9 +4719,10 @@ export const WSPROXY_METHODS = [
             { name: 'properties', description: 'Object properties to set', type: 'object' },
         ],
         returnType: 'object',
-        syntax: 'api.createItem(objectType, properties)',
+        returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
+        syntax: '<WSProxyInstance>.createItem(objectType, properties)',
         example:
-            'var api = new WSProxy();\n' +
+            'var api = new Script.Util.WSProxy();\n' +
             'var result = api.createItem("DataExtensionObject", {\n' +
             '    CustomerKey: "MyDE",\n' +
             '    Properties: { Property: [{ Name: "Email", Value: "jane@example.com" }] }\n' +
@@ -4729,6 +4731,7 @@ export const WSPROXY_METHODS = [
     },
     {
         name: 'updateItem',
+        isStatic: false,
         minArgs: 2,
         maxArgs: 2,
         description: 'Updates an existing Marketing Cloud object via the SOAP API.',
@@ -4737,9 +4740,10 @@ export const WSPROXY_METHODS = [
             { name: 'properties', description: 'Object properties to update', type: 'object' },
         ],
         returnType: 'object',
-        syntax: 'api.updateItem(objectType, properties)',
+        returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
+        syntax: '<WSProxyInstance>.updateItem(objectType, properties)',
         example:
-            'var api = new WSProxy();\n' +
+            'var api = new Script.Util.WSProxy();\n' +
             'var result = api.updateItem("DataExtensionObject", {\n' +
             '    CustomerKey: "MyDE",\n' +
             '    Properties: { Property: [{ Name: "Status", Value: "inactive" }] }\n' +
@@ -4748,6 +4752,7 @@ export const WSPROXY_METHODS = [
     },
     {
         name: 'deleteItem',
+        isStatic: false,
         minArgs: 2,
         maxArgs: 2,
         description: 'Deletes a Marketing Cloud object via the SOAP API.',
@@ -4760,9 +4765,10 @@ export const WSPROXY_METHODS = [
             },
         ],
         returnType: 'object',
-        syntax: 'api.deleteItem(objectType, properties)',
+        returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
+        syntax: '<WSProxyInstance>.deleteItem(objectType, properties)',
         example:
-            'var api = new WSProxy();\n' +
+            'var api = new Script.Util.WSProxy();\n' +
             'var result = api.deleteItem("DataExtensionObject", {\n' +
             '    CustomerKey: "MyDE",\n' +
             '    Keys: { Key: [{ Name: "Email", Value: "jane@example.com" }] }\n' +
@@ -4771,6 +4777,7 @@ export const WSPROXY_METHODS = [
     },
     {
         name: 'retrieve',
+        isStatic: false,
         minArgs: 2,
         maxArgs: 5,
         description:
@@ -4798,9 +4805,10 @@ export const WSPROXY_METHODS = [
             },
         ],
         returnType: 'object',
-        syntax: 'api.retrieve(objectType, columns[, filter[, retrieveOptions[, requestProps]]])',
+        returnDescription: 'Object with Status, HasMoreRows, RequestID, and Results array.',
+        syntax: '<WSProxyInstance>.retrieve(objectType, columns[, filter[, retrieveOptions[, requestProps]]])',
         example:
-            'var api = new WSProxy();\n' +
+            'var api = new Script.Util.WSProxy();\n' +
             'var cols = ["Name", "CustomerKey", "Status"];\n' +
             'var filter = {\n' +
             '    Property: "Status",\n' +
@@ -4817,6 +4825,7 @@ export const WSPROXY_METHODS = [
     },
     {
         name: 'getNextBatch',
+        isStatic: false,
         minArgs: 2,
         maxArgs: 2,
         description:
@@ -4834,9 +4843,10 @@ export const WSPROXY_METHODS = [
             },
         ],
         returnType: 'object',
-        syntax: 'api.getNextBatch(objectType, requestId)',
+        returnDescription: 'Object with Status, HasMoreRows, RequestID, and Results array.',
+        syntax: '<WSProxyInstance>.getNextBatch(objectType, requestId)',
         example:
-            'var api = new WSProxy();\n' +
+            'var api = new Script.Util.WSProxy();\n' +
             'var result = api.retrieve("DataExtension", ["Name"], {});\n' +
             'while (result.HasMoreRows) {\n' +
             '    result = api.getNextBatch("DataExtension", result.RequestID);\n' +
@@ -4847,11 +4857,18 @@ export const WSPROXY_METHODS = [
     },
     {
         name: 'performItem',
+        isStatic: false,
         minArgs: 3,
-        maxArgs: 3,
-        description: 'Executes a perform action on a Marketing Cloud object.',
+        maxArgs: 4,
+        description: 'Executes a perform action on a single Marketing Cloud object.',
         params: [
             { name: 'objectType', description: 'SOAP API object type name.', type: 'string' },
+            {
+                name: 'properties',
+                description:
+                    'Object properties identifying the target item (e.g. { ObjectID: "..." }).',
+                type: 'object',
+            },
             {
                 name: 'action',
                 description: 'Action to perform. Only "Start" is valid (lowercase "start" fails).',
@@ -4859,18 +4876,23 @@ export const WSPROXY_METHODS = [
                 enum: ['Start'],
             },
             {
-                name: 'properties',
-                description: 'Object properties for the action.',
+                name: 'performOptions',
+                description: 'Properties of the SOAP PerformOptions object.',
                 type: 'object',
+                optional: true,
             },
         ],
         returnType: 'object',
-        syntax: 'api.performItem(objectType, action, properties)',
+        returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
+        syntax: '<WSProxyInstance>.performItem(objectType, properties, action[, performOptions])',
         example:
-            'var api = new WSProxy();\nvar result = api.performItem("QueryDefinition", "Start", { ObjectID: queryObjectId });\nWrite(result.Status);',
+            'var api = new Script.Util.WSProxy();\n' +
+            'var result = api.performItem("QueryDefinition", { ObjectID: queryObjectId }, "Start");\n' +
+            'Write(result.Status);',
     },
     {
         name: 'performBatch',
+        isStatic: false,
         minArgs: 3,
         maxArgs: 4,
         description:
@@ -4879,10 +4901,15 @@ export const WSPROXY_METHODS = [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
             {
                 name: 'propertiesArray',
-                description: 'Array of property objects for the action',
+                description: 'Array of property objects identifying the target items',
                 type: 'array',
             },
-            { name: 'verb', description: 'Action verb to execute (e.g. "start")', type: 'string' },
+            {
+                name: 'action',
+                description: 'Action to perform. Only "Start" is valid (lowercase "start" fails).',
+                type: 'string',
+                enum: ['Start'],
+            },
             {
                 name: 'performOptions',
                 description: 'Properties of the SOAP PerformOptions object',
@@ -4891,15 +4918,17 @@ export const WSPROXY_METHODS = [
             },
         ],
         returnType: 'object',
-        syntax: 'api.performBatch(objectType, propertiesArray, verb[, performOptions])',
+        returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
+        syntax: '<WSProxyInstance>.performBatch(objectType, propertiesArray, action[, performOptions])',
         example:
             'var api = new Script.Util.WSProxy();\n' +
             'var items = [{ ObjectID: id1 }, { ObjectID: id2 }];\n' +
-            'var result = api.performBatch("QueryDefinition", items, "start");\n' +
+            'var result = api.performBatch("QueryDefinition", items, "Start");\n' +
             'Write(result.Status);',
     },
     {
         name: 'describe',
+        isStatic: false,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -4912,7 +4941,9 @@ export const WSPROXY_METHODS = [
             },
         ],
         returnType: 'object',
-        syntax: 'api.describe(objectType)',
+        returnDescription:
+            'Object with Status and Results array containing ObjectDefinition entries.',
+        syntax: '<WSProxyInstance>.describe(objectType)',
         example:
             'var api = new Script.Util.WSProxy();\n' +
             'var result = api.describe("DataExtension");\n' +
@@ -4920,6 +4951,7 @@ export const WSPROXY_METHODS = [
     },
     {
         name: 'execute',
+        isStatic: false,
         minArgs: 2,
         maxArgs: 2,
         description: 'Executes a named method on a Marketing Cloud object.',
@@ -4933,15 +4965,20 @@ export const WSPROXY_METHODS = [
             },
         ],
         returnType: 'object',
-        syntax: 'api.execute(objectType, requestName)',
+        returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
+        syntax: '<WSProxyInstance>.execute(objectType, requestName)',
         example:
-            'var api = new WSProxy();\nvar result = api.execute("DataExtensionObject", "LogUnsubEvent");\nWrite(result.Status);',
+            'var api = new Script.Util.WSProxy();\n' +
+            'var result = api.execute("DataExtensionObject", "LogUnsubEvent");\n' +
+            'Write(result.Status);',
     },
     {
         name: 'setBatchSize',
+        isStatic: false,
         minArgs: 1,
         maxArgs: 1,
-        description: 'Sets the maximum number of objects per SOAP API batch.',
+        description:
+            'Sets the maximum number of objects returned per SOAP API page (default is 2500).',
         params: [
             {
                 name: 'batchSize',
@@ -4950,12 +4987,15 @@ export const WSPROXY_METHODS = [
             },
         ],
         returnType: 'void',
-        syntax: 'api.setBatchSize(batchSize)',
+        syntax: '<WSProxyInstance>.setBatchSize(batchSize)',
         example:
-            'var api = new WSProxy();\napi.setBatchSize(200); // default is 2500\nvar result = api.retrieve("DataExtension", ["Name"], {});',
+            'var api = new Script.Util.WSProxy();\n' +
+            'api.setBatchSize(200);\n' +
+            'var result = api.retrieve("DataExtension", ["Name"], {});',
     },
     {
         name: 'setClientId',
+        isStatic: false,
         minArgs: 1,
         maxArgs: 1,
         description: 'Sets the business unit MID for cross-account operations.',
@@ -4967,23 +5007,24 @@ export const WSPROXY_METHODS = [
             },
         ],
         returnType: 'void',
-        syntax: 'api.setClientId(clientId)',
+        syntax: '<WSProxyInstance>.setClientId(clientId)',
         example:
-            'var api = new WSProxy();\n' +
+            'var api = new Script.Util.WSProxy();\n' +
             'api.setClientId({ ID: 12345 }); // target child BU by MID\n' +
             'var result = api.retrieve("DataExtension", ["Name"], {});',
     },
     {
         name: 'resetClientIds',
+        isStatic: false,
         minArgs: 0,
         maxArgs: 0,
         description:
             'Clears all client IDs set on the WSProxy instance, reverting to the default execution context credentials.',
         params: [],
         returnType: 'void',
-        syntax: 'api.resetClientIds()',
+        syntax: '<WSProxyInstance>.resetClientIds()',
         example:
-            'var api = new WSProxy();\n' +
+            'var api = new Script.Util.WSProxy();\n' +
             'api.setClientId({ ID: 12345 });\n' +
             '// ... perform cross-BU operations ...\n' +
             'api.resetClientIds(); // revert to default context\n' +
@@ -4991,6 +5032,7 @@ export const WSPROXY_METHODS = [
     },
     {
         name: 'createBatch',
+        isStatic: false,
         minArgs: 2,
         maxArgs: 2,
         description: 'Creates multiple Marketing Cloud objects in a single SOAP API call.',
@@ -5003,12 +5045,20 @@ export const WSPROXY_METHODS = [
             },
         ],
         returnType: 'object',
-        syntax: 'api.createBatch(objectType, propertiesArray)',
+        returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
+        syntax: '<WSProxyInstance>.createBatch(objectType, propertiesArray)',
         example:
-            'var api = new WSProxy();\nvar items = [\n    { CustomerKey: "MyDE", Properties: { Property: [{ Name: "Email", Value: "a@example.com" }] } },\n    { CustomerKey: "MyDE", Properties: { Property: [{ Name: "Email", Value: "b@example.com" }] } }\n];\nvar result = api.createBatch("DataExtensionObject", items);\nWrite(result.Status);',
+            'var api = new Script.Util.WSProxy();\n' +
+            'var items = [\n' +
+            '    { CustomerKey: "MyDE", Properties: { Property: [{ Name: "Email", Value: "a@example.com" }] } },\n' +
+            '    { CustomerKey: "MyDE", Properties: { Property: [{ Name: "Email", Value: "b@example.com" }] } }\n' +
+            '];\n' +
+            'var result = api.createBatch("DataExtensionObject", items);\n' +
+            'Write(result.Status);',
     },
     {
         name: 'updateBatch',
+        isStatic: false,
         minArgs: 2,
         maxArgs: 2,
         description: 'Updates multiple Marketing Cloud objects in a single SOAP API call.',
@@ -5021,12 +5071,19 @@ export const WSPROXY_METHODS = [
             },
         ],
         returnType: 'object',
-        syntax: 'api.updateBatch(objectType, propertiesArray)',
+        returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
+        syntax: '<WSProxyInstance>.updateBatch(objectType, propertiesArray)',
         example:
-            'var api = new WSProxy();\nvar items = [\n    { CustomerKey: "MyDE", Keys: { Key: [{ Name: "Email", Value: "a@example.com" }] }, Properties: { Property: [{ Name: "Status", Value: "active" }] } }\n];\nvar result = api.updateBatch("DataExtensionObject", items);\nWrite(result.Status);',
+            'var api = new Script.Util.WSProxy();\n' +
+            'var items = [\n' +
+            '    { CustomerKey: "MyDE", Keys: { Key: [{ Name: "Email", Value: "a@example.com" }] }, Properties: { Property: [{ Name: "Status", Value: "active" }] } }\n' +
+            '];\n' +
+            'var result = api.updateBatch("DataExtensionObject", items);\n' +
+            'Write(result.Status);',
     },
     {
         name: 'deleteBatch',
+        isStatic: false,
         minArgs: 2,
         maxArgs: 2,
         description: 'Deletes multiple Marketing Cloud objects in a single SOAP API call.',
@@ -5039,9 +5096,15 @@ export const WSPROXY_METHODS = [
             },
         ],
         returnType: 'object',
-        syntax: 'api.deleteBatch(objectType, propertiesArray)',
+        returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
+        syntax: '<WSProxyInstance>.deleteBatch(objectType, propertiesArray)',
         example:
-            'var api = new WSProxy();\nvar items = [\n    { CustomerKey: "MyDE", Keys: { Key: [{ Name: "Email", Value: "old@example.com" }] } }\n];\nvar result = api.deleteBatch("DataExtensionObject", items);\nWrite(result.Status);',
+            'var api = new Script.Util.WSProxy();\n' +
+            'var items = [\n' +
+            '    { CustomerKey: "MyDE", Keys: { Key: [{ Name: "Email", Value: "old@example.com" }] } }\n' +
+            '];\n' +
+            'var result = api.deleteBatch("DataExtensionObject", items);\n' +
+            'Write(result.Status);',
     },
 ];
 
@@ -5587,7 +5650,7 @@ export const ERROR_UTIL_METHODS = [
         syntax: 'ErrorUtil.ThrowWSProxyError(result)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
-            'var api = new WSProxy();\n' +
+            'var api = new Script.Util.WSProxy();\n' +
             'var customerKey = "0b744ffa-bab5-458d-9e7d-fb05a7873380";\n' +
             'try {\n' +
             '    var result = api.retrieve(\n' +
@@ -5608,6 +5671,25 @@ export const ERROR_UTIL_METHODS = [
 
 /** @type {{name: string, minArgs: number, maxArgs: number, description: string, params?: {name: string, description: string, type?: string, optional?: boolean}[], returnType?: string, syntax?: string, example?: string}[]} */
 export const SCRIPT_UTIL_CONSTRUCTORS = [
+    {
+        name: 'WSProxy',
+        minArgs: 0,
+        maxArgs: 0,
+        description:
+            'Creates a WSProxy instance for making SOAP API calls against the Marketing Cloud web service. ' +
+            'No Platform.Load is required.',
+        params: [],
+        returnType: 'WSProxyInstance',
+        returnDescription:
+            'An authenticated WSProxy object bound to the current execution context.',
+        syntax: 'new Script.Util.WSProxy()',
+        example:
+            'var api = new Script.Util.WSProxy();\n' +
+            'var result = api.retrieve("DataExtension", ["Name", "CustomerKey"]);\n' +
+            'if (result.Status === "OK") {\n' +
+            '    Write(Stringify(result.Results));\n' +
+            '}',
+    },
     {
         name: 'HttpRequest',
         minArgs: 1,
