@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Canonical SSJS (Server-Side JavaScript) catalog for SFMC tooling.
  *
  * Single source of truth consumed by:
@@ -150,22 +150,7 @@ export const SSJS_GLOBALS = [
         aliasOf: 'Platform.Function.EndImpressionRegion',
         requiresCoreLoad: true,
     },
-    { name: 'Substring', aliasOf: 'Platform.Function.Substring' },
-    { name: 'Trim', aliasOf: 'Platform.Function.Trim' },
-    { name: 'Replace', aliasOf: 'Platform.Function.Replace' },
-    { name: 'IndexOf', aliasOf: 'Platform.Function.IndexOf' },
-    { name: 'Length', aliasOf: 'Platform.Function.Length' },
-    { name: 'Uppercase', aliasOf: 'Platform.Function.Uppercase' },
-    { name: 'Lowercase', aliasOf: 'Platform.Function.Lowercase' },
-    { name: 'ProperCase', aliasOf: 'Platform.Function.ProperCase' },
-    { name: 'Char', aliasOf: 'Platform.Function.Char' },
-    { name: 'Concat', aliasOf: 'Platform.Function.Concat' },
-    { name: 'Format', aliasOf: 'Platform.Function.Format', requiresCoreLoad: true },
-    { name: 'DateAdd', aliasOf: 'Platform.Function.DateAdd' },
-    { name: 'DateDiff', aliasOf: 'Platform.Function.DateDiff' },
-    { name: 'DateParse', aliasOf: 'Platform.Function.DateParse' },
     { name: 'Now', aliasOf: 'Platform.Function.Now', requiresCoreLoad: true },
-    { name: 'FormatDate', aliasOf: 'Platform.Function.FormatDate' },
     {
         name: 'SystemDateToLocalDate',
         aliasOf: 'Platform.Function.SystemDateToLocalDate',
@@ -176,21 +161,9 @@ export const SSJS_GLOBALS = [
         aliasOf: 'Platform.Function.LocalDateToSystemDate',
         requiresCoreLoad: true,
     },
-    { name: 'GetValue', aliasOf: 'Platform.Function.GetValue' },
-    { name: 'SetValue', aliasOf: 'Platform.Function.SetValue' },
-    { name: 'GetQueryStringParameter', aliasOf: 'Platform.Function.GetQueryStringParameter' },
     { name: 'RaiseError', aliasOf: 'Platform.Function.RaiseError' },
-    { name: 'Redirect', aliasOf: 'Platform.Function.Redirect', requiresCoreLoad: true },
-    { name: 'CloudPagesURL', aliasOf: 'Platform.Function.CloudPagesURL' },
-    { name: 'MicrositeURL', aliasOf: 'Platform.Function.MicrositeURL' },
+    { name: 'Redirect', aliasOf: 'Platform.Response.Redirect', requiresCoreLoad: true },
     { name: 'GUID', aliasOf: 'Platform.Function.GUID', requiresCoreLoad: true },
-    { name: 'Base64Encode', aliasOf: 'Platform.Function.Base64Encode', requiresCoreLoad: true },
-    { name: 'Base64Decode', aliasOf: 'Platform.Function.Base64Decode', requiresCoreLoad: true },
-    { name: 'EncryptSymmetric', aliasOf: 'Platform.Function.EncryptSymmetric' },
-    { name: 'DecryptSymmetric', aliasOf: 'Platform.Function.DecryptSymmetric' },
-    { name: 'SHA256', aliasOf: 'Platform.Function.SHA256' },
-    { name: 'SHA512', aliasOf: 'Platform.Function.SHA512' },
-    { name: 'MD5', aliasOf: 'Platform.Function.MD5' },
     {
         name: 'IsEmailAddress',
         aliasOf: 'Platform.Function.IsEmailAddress',
@@ -201,10 +174,6 @@ export const SSJS_GLOBALS = [
         aliasOf: 'Platform.Function.IsPhoneNumber',
         requiresCoreLoad: true,
     },
-    { name: 'IsNull', aliasOf: 'Platform.Function.IsNull' },
-    { name: 'Empty', aliasOf: 'Platform.Function.Empty' },
-    { name: 'IIf', aliasOf: 'Platform.Function.IIf' },
-    { name: 'DataExtensionRowCount', aliasOf: 'Platform.Function.DataExtensionRowCount' },
     { name: 'CreateObject', aliasOf: 'Platform.Function.CreateObject' },
     { name: 'SetObjectProperty', aliasOf: 'Platform.Function.SetObjectProperty' },
     { name: 'AddObjectArrayItem', aliasOf: 'Platform.Function.AddObjectArrayItem' },
@@ -217,12 +186,11 @@ export const SSJS_GLOBALS = [
     { name: 'InvokeExecute', aliasOf: 'Platform.Function.InvokeExecute' },
     { name: 'InvokeExtract', aliasOf: 'Platform.Function.InvokeExtract' },
     { name: 'InvokeSchedule', aliasOf: 'Platform.Function.InvokeSchedule' },
-    { name: 'AttributeValue', aliasOf: 'Platform.Function.AttributeValue' },
     { name: 'HTTPGet', aliasOf: 'Platform.Function.HTTPGet' },
     { name: 'HTTPPost', aliasOf: 'Platform.Function.HTTPPost' },
-    { name: 'HTTPRequestHeader', aliasOf: 'Platform.Function.HTTPRequestHeader' },
     { name: 'ParseJSON', aliasOf: 'Platform.Function.ParseJSON' },
-    { name: 'URLEncode', aliasOf: 'Platform.Function.URLEncode' },
+    { name: 'UrlEncode', aliasOf: 'Platform.Function.UrlEncode' },
+    { name: 'RedirectTo', aliasOf: 'Platform.Function.RedirectTo' },
     { name: 'Write', aliasOf: 'Platform.Function.Write', requiresCoreLoad: true },
     { name: 'Stringify', aliasOf: 'Platform.Function.Stringify', requiresCoreLoad: true },
     { name: 'IsCHTMLBrowser', aliasOf: 'Platform.Function.IsCHTMLBrowser', requiresCoreLoad: true },
@@ -682,200 +650,6 @@ export const PLATFORM_FUNCTIONS = [
             'Platform.Function.BeginImpressionRegion("footer");\nWrite(footerContent);\nPlatform.Function.EndImpressionRegion();',
     },
     {
-        name: 'Substring',
-        minArgs: 2,
-        maxArgs: 3,
-        description: 'Extracts part of a string starting at a given position.',
-        params: [
-            { name: 'value', description: 'Source string', type: 'string' },
-            { name: 'start', description: 'Starting position (1-based)', type: 'number' },
-            {
-                name: 'length',
-                description: 'Number of characters to extract',
-                type: 'number',
-                optional: true,
-            },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Function.Substring(value, start[, length])',
-        example:
-            'var str = "Hello, World!";\nvar sub = Platform.Function.Substring(str, 1, 5);\nWrite(sub); // "Hello"',
-    },
-    {
-        name: 'Trim',
-        minArgs: 1,
-        maxArgs: 1,
-        description: 'Removes leading and trailing whitespace from a string.',
-        params: [{ name: 'value', description: 'String to trim', type: 'string' }],
-        returnType: 'string',
-        syntax: 'Platform.Function.Trim(value)',
-        example: 'var clean = Platform.Function.Trim("  hello  ");\nWrite(clean); // "hello"',
-    },
-    {
-        name: 'Replace',
-        minArgs: 3,
-        maxArgs: 3,
-        description: 'Substitutes all occurrences of a substring within a string.',
-        params: [
-            { name: 'value', description: 'Source string', type: 'string' },
-            { name: 'search', description: 'Substring to find', type: 'string' },
-            { name: 'replacement', description: 'Replacement string', type: 'string' },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Function.Replace(value, search, replacement)',
-        example:
-            'var result = Platform.Function.Replace("Hello, World!", "World", "SFMC");\nWrite(result); // "Hello, SFMC!"',
-    },
-    {
-        name: 'IndexOf',
-        minArgs: 2,
-        maxArgs: 2,
-        description: 'Returns the zero-based position of the first occurrence of a substring.',
-        params: [
-            { name: 'value', description: 'String to search in', type: 'string' },
-            { name: 'search', description: 'Substring to find', type: 'string' },
-        ],
-        returnType: 'number',
-        syntax: 'Platform.Function.IndexOf(value, search)',
-        example: 'var pos = Platform.Function.IndexOf("Hello, World!", "World");\nWrite(pos); // 7',
-    },
-    {
-        name: 'Length',
-        minArgs: 1,
-        maxArgs: 1,
-        description: 'Returns the number of characters in a string.',
-        params: [{ name: 'value', description: 'String to measure', type: 'string' }],
-        returnType: 'number',
-        syntax: 'Platform.Function.Length(value)',
-        example: 'var len = Platform.Function.Length("Hello");\nWrite(len); // 5',
-    },
-    {
-        name: 'Uppercase',
-        minArgs: 1,
-        maxArgs: 1,
-        description: 'Converts a string to uppercase.',
-        params: [{ name: 'value', description: 'String to convert', type: 'string' }],
-        returnType: 'string',
-        syntax: 'Platform.Function.Uppercase(value)',
-        example: 'var upper = Platform.Function.Uppercase("hello");\nWrite(upper); // "HELLO"',
-    },
-    {
-        name: 'Lowercase',
-        minArgs: 1,
-        maxArgs: 1,
-        description: 'Converts a string to lowercase.',
-        params: [{ name: 'value', description: 'String to convert', type: 'string' }],
-        returnType: 'string',
-        syntax: 'Platform.Function.Lowercase(value)',
-        example: 'var lower = Platform.Function.Lowercase("HELLO");\nWrite(lower); // "hello"',
-    },
-    {
-        name: 'ProperCase',
-        minArgs: 1,
-        maxArgs: 1,
-        description: 'Converts a string to title case.',
-        params: [{ name: 'value', description: 'String to convert', type: 'string' }],
-        returnType: 'string',
-        syntax: 'Platform.Function.ProperCase(value)',
-        example:
-            'var title = Platform.Function.ProperCase("hello world");\nWrite(title); // "Hello World"',
-    },
-    {
-        name: 'Char',
-        minArgs: 1,
-        maxArgs: 1,
-        description: 'Returns the character for a given ASCII code.',
-        params: [{ name: 'asciiCode', description: 'ASCII character code', type: 'number' }],
-        returnType: 'string',
-        syntax: 'Platform.Function.Char(asciiCode)',
-        example:
-            'var tab = Platform.Function.Char(9); // tab character\nWrite("Col1" + tab + "Col2");',
-    },
-    {
-        name: 'Concat',
-        minArgs: 2,
-        maxArgs: INF,
-        description: 'Joins two or more string values together.',
-        params: [
-            { name: 'value1', description: 'First string', type: 'string' },
-            {
-                name: 'value2',
-                description: 'Second string (additional strings may follow)',
-                type: 'string',
-            },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Function.Concat(value1, value2[, ...])',
-        example:
-            'var full = Platform.Function.Concat("Hello", ", ", "World!");\nWrite(full); // "Hello, World!"',
-    },
-    {
-        name: 'Format',
-        minArgs: 2,
-        maxArgs: INF,
-        description: 'Formats a value according to a .NET format string.',
-        params: [
-            { name: 'value', description: 'Value to format', type: 'string' },
-            { name: 'format', description: '.NET format string', type: 'string' },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Function.Format(value, format[, ...])',
-        example:
-            'var price = Platform.Function.Format(1234.5, "C2");\nWrite(price); // "$1,234.50"',
-    },
-    {
-        name: 'DateAdd',
-        minArgs: 3,
-        maxArgs: 3,
-        description: 'Adds a specified interval to a date value.',
-        params: [
-            { name: 'date', description: 'Date value to modify', type: 'string' },
-            { name: 'interval', description: 'Number of intervals to add', type: 'number' },
-            {
-                name: 'datePart',
-                description: 'Date part to add (e.g. "Y", "M", "D", "H")',
-                type: 'string',
-            },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Function.DateAdd(date, interval, datePart)',
-        example:
-            'var future = Platform.Function.DateAdd(Platform.Function.Now(), 7, "D");\nWrite(future); // date 7 days from now',
-    },
-    {
-        name: 'DateDiff',
-        minArgs: 3,
-        maxArgs: 3,
-        description: 'Calculates the difference between two dates in a given interval.',
-        params: [
-            { name: 'date1', description: 'First date value', type: 'string' },
-            { name: 'date2', description: 'Second date value', type: 'string' },
-            {
-                name: 'datePart',
-                description: 'Date part for the interval (e.g. "Y", "M", "D", "H")',
-                type: 'string',
-            },
-        ],
-        returnType: 'number',
-        syntax: 'Platform.Function.DateDiff(date1, date2, datePart)',
-        example:
-            'var days = Platform.Function.DateDiff("2025-01-01", Platform.Function.Now(), "D");\nWrite(days); // days elapsed since Jan 1 2025',
-    },
-    {
-        name: 'DateParse',
-        minArgs: 1,
-        maxArgs: 2,
-        description: 'Converts a string representation to a date object.',
-        params: [
-            { name: 'dateString', description: 'String to parse as a date', type: 'string' },
-            { name: 'format', description: 'Date format pattern', type: 'string', optional: true },
-        ],
-        returnType: 'object',
-        syntax: 'Platform.Function.DateParse(dateString[, format])',
-        example:
-            'var d = Platform.Function.DateParse("2025-08-05T12:00:00Z");\nWrite(Platform.Function.FormatDate(d, "MM/dd/yyyy")); // "08/05/2025"',
-    },
-    {
         name: 'Now',
         minArgs: 0,
         maxArgs: 1,
@@ -894,26 +668,6 @@ export const PLATFORM_FUNCTIONS = [
         syntax: 'Platform.Function.Now([useContextTime])',
         example:
             'var current = Platform.Function.Now();\nWrite(current); // e.g. "8/5/2025 12:00:00 PM"\n\n// Use context time during triggered sends:\nvar sendTime = Platform.Function.Now(true);',
-    },
-    {
-        name: 'FormatDate',
-        minArgs: 2,
-        maxArgs: 3,
-        description: 'Formats a date value into a string with the specified pattern.',
-        params: [
-            { name: 'date', description: 'Date value to format', type: 'string' },
-            { name: 'format', description: 'Date format pattern', type: 'string' },
-            {
-                name: 'locale',
-                description: 'Locale for date formatting',
-                type: 'string',
-                optional: true,
-            },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Function.FormatDate(date, format[, locale])',
-        example:
-            'var formatted = Platform.Function.FormatDate(Platform.Function.Now(), "MMMM d, yyyy");\nWrite(formatted); // e.g. "August 5, 2025"',
     },
     {
         name: 'SystemDateToLocalDate',
@@ -950,51 +704,6 @@ export const PLATFORM_FUNCTIONS = [
         syntax: 'Platform.Function.LocalDateToSystemDate(dateValue)',
         example:
             'var localDate = "8/5/2025 12:00:00 PM";\nvar systemDate = Platform.Function.LocalDateToSystemDate(localDate);\nWrite(systemDate);',
-    },
-    {
-        name: 'GetValue',
-        minArgs: 1,
-        maxArgs: 1,
-        description: 'Retrieves the value of an AMPscript variable.',
-        params: [
-            { name: 'variableName', description: 'Name of the AMPscript variable', type: 'string' },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Function.GetValue(variableName)',
-        example:
-            '// Retrieve an AMPscript variable from within SSJS:\nvar sk = Platform.Function.GetValue("SubscriberKey");\nWrite(sk);',
-    },
-    {
-        name: 'SetValue',
-        minArgs: 2,
-        maxArgs: 2,
-        description: 'Assigns a value to an AMPscript variable.',
-        params: [
-            { name: 'variableName', description: 'Name of the AMPscript variable', type: 'string' },
-            { name: 'value', description: 'Value to assign', type: 'string' },
-        ],
-        returnType: 'void',
-        syntax: 'Platform.Function.SetValue(variableName, value)',
-        example:
-            'Platform.Function.SetValue("greeting", "Hello from SSJS");\n// @greeting is now accessible in subsequent AMPscript blocks',
-    },
-    {
-        name: 'GetQueryStringParameter',
-        minArgs: 1,
-        maxArgs: 1,
-        description:
-            'Retrieves the value of a named query string parameter from the URL of the current CloudPages or landing page.',
-        params: [
-            {
-                name: 'parameterName',
-                description: 'Name of the query string parameter to retrieve',
-                type: 'string',
-            },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Function.GetQueryStringParameter(parameterName)',
-        example:
-            '// Page URL: /mypage?email=jane@example.com\nvar email = Platform.Function.GetQueryStringParameter("email");\nWrite(email); // "jane@example.com"',
     },
     {
         name: 'RaiseError',
@@ -1036,69 +745,6 @@ export const PLATFORM_FUNCTIONS = [
             'var status = Platform.Function.Lookup("MyDE", "Status", "Email", emailAddress);\nif (!status) {\n    Platform.Function.RaiseError("Subscriber not found", true, "NOT_FOUND", 404);\n}',
     },
     {
-        name: 'Redirect',
-        minArgs: 1,
-        maxArgs: 2,
-        description: 'Redirects the browser to a specified URL.',
-        params: [
-            { name: 'url', description: 'URL to redirect to', type: 'string' },
-            {
-                name: 'permanent',
-                description: 'True for 301 permanent redirect',
-                type: 'boolean',
-                optional: true,
-            },
-        ],
-        returnType: 'void',
-        syntax: 'Platform.Function.Redirect(url[, permanent])',
-        example: 'Platform.Function.Redirect("https://www.example.com/thank-you");',
-    },
-    {
-        name: 'CloudPagesURL',
-        minArgs: 1,
-        maxArgs: INF,
-        description:
-            'Builds an encrypted URL for a CloudPages landing page with optional parameters.',
-        params: [
-            {
-                name: 'pageId',
-                description: 'Page ID of the CloudPages landing page',
-                type: 'number',
-            },
-            { name: 'param1', description: 'First parameter name', type: 'string', optional: true },
-            {
-                name: 'value1',
-                description: 'First parameter value',
-                type: 'string',
-                optional: true,
-            },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Function.CloudPagesURL(pageId[, param1, value1, ...])',
-        example:
-            'var url = Platform.Function.CloudPagesURL(123, "email", emailAddress, "sk", subscriberKey);\nWrite(\'<a href="\' + url + \'">Click here</a>\');',
-    },
-    {
-        name: 'MicrositeURL',
-        minArgs: 1,
-        maxArgs: INF,
-        description: 'Generates a tracking URL for a microsite page.',
-        params: [
-            { name: 'pageId', description: 'Page ID of the microsite page', type: 'number' },
-            { name: 'param1', description: 'First parameter name', type: 'string', optional: true },
-            {
-                name: 'value1',
-                description: 'First parameter value',
-                type: 'string',
-                optional: true,
-            },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Function.MicrositeURL(pageId[, param1, value1, ...])',
-        example:
-            'var url = Platform.Function.MicrositeURL(456, "source", "email");\nWrite(\'<a href="\' + url + \'">Visit microsite</a>\');',
-    },
-    {
         name: 'GUID',
         minArgs: 0,
         maxArgs: 0,
@@ -1108,159 +754,6 @@ export const PLATFORM_FUNCTIONS = [
         syntax: 'Platform.Function.GUID()',
         example:
             'var id = Platform.Function.GUID();\nWrite(id); // e.g. "550e8400-e29b-41d4-a716-446655440000"',
-    },
-    {
-        name: 'Base64Encode',
-        minArgs: 1,
-        maxArgs: 2,
-        description: 'Encodes a string value to Base64.',
-        params: [
-            { name: 'value', description: 'String to encode', type: 'string' },
-            {
-                name: 'encoding',
-                description: 'Character encoding to use',
-                type: 'string',
-                optional: true,
-            },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Function.Base64Encode(value[, encoding])',
-        example:
-            'var encoded = Platform.Function.Base64Encode("username:password");\nWrite(encoded); // "dXNlcm5hbWU6cGFzc3dvcmQ="',
-    },
-    {
-        name: 'Base64Decode',
-        minArgs: 1,
-        maxArgs: 2,
-        description: 'Decodes a Base64-encoded string back to plain text.',
-        params: [
-            { name: 'value', description: 'Base64-encoded string to decode', type: 'string' },
-            {
-                name: 'encoding',
-                description: 'Character encoding to use',
-                type: 'string',
-                optional: true,
-            },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Function.Base64Decode(value[, encoding])',
-        example:
-            'var decoded = Platform.Function.Base64Decode("dXNlcm5hbWU6cGFzc3dvcmQ=");\nWrite(decoded); // "username:password"',
-    },
-    {
-        name: 'EncryptSymmetric',
-        minArgs: 6,
-        maxArgs: 8,
-        description: 'Encrypts a string using symmetric encryption with a specified algorithm.',
-        params: [
-            { name: 'value', description: 'String to encrypt', type: 'string' },
-            { name: 'algorithm', description: 'Encryption algorithm (e.g. "AES")', type: 'string' },
-            {
-                name: 'passwordKey',
-                description: 'Key Management key name for the password',
-                type: 'string',
-            },
-            { name: 'password', description: 'Encryption password', type: 'string' },
-            {
-                name: 'saltKey',
-                description: 'Key Management key name for the salt',
-                type: 'string',
-            },
-            { name: 'salt', description: 'Salt value', type: 'string' },
-            {
-                name: 'ivKey',
-                description: 'Key Management key name for the initialization vector',
-                type: 'string',
-                optional: true,
-            },
-            {
-                name: 'iv',
-                description: 'Initialization vector value',
-                type: 'string',
-                optional: true,
-            },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Function.EncryptSymmetric(value, algorithm, passwordKey, password, saltKey, salt[, ivKey, iv])',
-        example:
-            'var encrypted = Platform.Function.EncryptSymmetric("sensitive data", "AES", "", "myPassword", "", "mySalt");\nWrite(encrypted);',
-    },
-    {
-        name: 'DecryptSymmetric',
-        minArgs: 6,
-        maxArgs: 8,
-        description: 'Decrypts a symmetrically encrypted string.',
-        params: [
-            { name: 'value', description: 'Encrypted string to decrypt', type: 'string' },
-            { name: 'algorithm', description: 'Encryption algorithm (e.g. "AES")', type: 'string' },
-            {
-                name: 'passwordKey',
-                description: 'Key Management key name for the password',
-                type: 'string',
-            },
-            { name: 'password', description: 'Encryption password', type: 'string' },
-            {
-                name: 'saltKey',
-                description: 'Key Management key name for the salt',
-                type: 'string',
-            },
-            { name: 'salt', description: 'Salt value', type: 'string' },
-            {
-                name: 'ivKey',
-                description: 'Key Management key name for the initialization vector',
-                type: 'string',
-                optional: true,
-            },
-            {
-                name: 'iv',
-                description: 'Initialization vector value',
-                type: 'string',
-                optional: true,
-            },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Function.DecryptSymmetric(value, algorithm, passwordKey, password, saltKey, salt[, ivKey, iv])',
-        example:
-            'var plain = Platform.Function.DecryptSymmetric(encryptedValue, "AES", "", "myPassword", "", "mySalt");\nWrite(plain);',
-    },
-    {
-        name: 'SHA256',
-        minArgs: 1,
-        maxArgs: 2,
-        description: 'Computes the SHA-256 hash of a string value.',
-        params: [
-            { name: 'value', description: 'String to hash', type: 'string' },
-            { name: 'encoding', description: 'Output encoding', type: 'string', optional: true },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Function.SHA256(value[, encoding])',
-        example: 'var hash = Platform.Function.SHA256(emailAddress);\nWrite(hash);',
-    },
-    {
-        name: 'SHA512',
-        minArgs: 1,
-        maxArgs: 2,
-        description: 'Computes the SHA-512 hash of a string value.',
-        params: [
-            { name: 'value', description: 'String to hash', type: 'string' },
-            { name: 'encoding', description: 'Output encoding', type: 'string', optional: true },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Function.SHA512(value[, encoding])',
-        example: 'var hash = Platform.Function.SHA512(emailAddress);\nWrite(hash);',
-    },
-    {
-        name: 'MD5',
-        minArgs: 1,
-        maxArgs: 2,
-        description: 'Computes the MD5 hash of a string value.',
-        params: [
-            { name: 'value', description: 'String to hash', type: 'string' },
-            { name: 'encoding', description: 'Output encoding', type: 'string', optional: true },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Function.MD5(value[, encoding])',
-        example: 'var hash = Platform.Function.MD5(emailAddress);\nWrite(hash);',
     },
     {
         name: 'IsEmailAddress',
@@ -1283,59 +776,6 @@ export const PLATFORM_FUNCTIONS = [
         syntax: 'Platform.Function.IsPhoneNumber(value)',
         example:
             'if (Platform.Function.IsPhoneNumber(phoneInput)) {\n    Write("Valid phone");\n} else {\n    Write("Invalid phone number");\n}',
-    },
-    {
-        name: 'IsNull',
-        minArgs: 1,
-        maxArgs: 1,
-        description: 'Checks whether a value is null.',
-        params: [{ name: 'value', description: 'Value to check', type: 'any' }],
-        returnType: 'boolean',
-        syntax: 'Platform.Function.IsNull(value)',
-        example:
-            'var phone = Platform.Function.Lookup("MyDE", "Phone", "Email", email);\nif (Platform.Function.IsNull(phone)) {\n    Write("No phone on record");\n}',
-    },
-    {
-        name: 'Empty',
-        minArgs: 1,
-        maxArgs: 1,
-        description: 'Checks whether a string value is null, empty, or whitespace.',
-        params: [{ name: 'value', description: 'String to check', type: 'string' }],
-        returnType: 'boolean',
-        syntax: 'Platform.Function.Empty(value)',
-        example:
-            'var city = Platform.Function.GetQueryStringParameter("city");\nif (Platform.Function.Empty(city)) {\n    city = "Unknown";\n}',
-    },
-    {
-        name: 'IIf',
-        minArgs: 3,
-        maxArgs: 3,
-        description: 'Returns one of two values based on a boolean condition.',
-        params: [
-            { name: 'condition', description: 'Boolean expression to evaluate', type: 'boolean' },
-            { name: 'trueValue', description: 'Value returned if condition is true', type: 'any' },
-            {
-                name: 'falseValue',
-                description: 'Value returned if condition is false',
-                type: 'any',
-            },
-        ],
-        returnType: 'any',
-        syntax: 'Platform.Function.IIf(condition, trueValue, falseValue)',
-        example: 'var label = Platform.Function.IIf(score > 50, "Pass", "Fail");\nWrite(label);',
-    },
-    {
-        name: 'DataExtensionRowCount',
-        minArgs: 1,
-        maxArgs: 1,
-        description: 'Returns the total number of rows in a Data Extension.',
-        params: [
-            { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
-        ],
-        returnType: 'number',
-        syntax: 'Platform.Function.DataExtensionRowCount(deName)',
-        example:
-            'var count = Platform.Function.DataExtensionRowCount("MyDE");\nWrite("Total rows: " + count);',
     },
     {
         name: 'CreateObject',
@@ -1643,23 +1083,6 @@ export const PLATFORM_FUNCTIONS = [
             'var statusArr = [];\nvar result = Platform.Function.InvokeSchedule(sendDef, "start", scheduleDef, statusArr);\nWrite(result);',
     },
     {
-        name: 'AttributeValue',
-        minArgs: 1,
-        maxArgs: 1,
-        description: 'Safely retrieves a subscriber attribute value, returning null if not found.',
-        params: [
-            {
-                name: 'attributeName',
-                description: 'Name of the subscriber attribute',
-                type: 'string',
-            },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Function.AttributeValue(attributeName)',
-        example:
-            'var phone = Platform.Function.AttributeValue("MobilePhone");\nif (phone) { Write(phone); }',
-    },
-    {
         name: 'HTTPGet',
         minArgs: 1,
         maxArgs: 3,
@@ -1724,19 +1147,6 @@ export const PLATFORM_FUNCTIONS = [
             ');',
     },
     {
-        name: 'HTTPRequestHeader',
-        minArgs: 1,
-        maxArgs: 1,
-        description: 'Retrieves the value of an HTTP request header.',
-        params: [
-            { name: 'headerName', description: 'Name of the HTTP request header', type: 'string' },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Function.HTTPRequestHeader(headerName)',
-        example:
-            'var auth = Platform.Function.HTTPRequestHeader("Authorization");\nWrite(auth); // e.g. "Bearer abc123"',
-    },
-    {
         name: 'ParseJSON',
         minArgs: 1,
         maxArgs: 1,
@@ -1763,16 +1173,54 @@ export const PLATFORM_FUNCTIONS = [
             'var result = Platform.Function.ParseJSON(String(resp.content));',
     },
     {
-        name: 'URLEncode',
+        name: 'RedirectTo',
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Encodes a string value so that it can be safely used as a URL query parameter or path component.',
-        params: [{ name: 'value', description: 'The string value to URL-encode', type: 'string' }],
-        returnType: 'string',
-        syntax: 'Platform.Function.URLEncode(value)',
+            'Specifies the target of an email link as a complete URL stored in an attribute, ' +
+            'data extension field, or variable. ' +
+            'Use only within the href attribute of an anchor tag in HTML emails. ' +
+            'In text emails, add the http:// prefix without spaces inside the parentheses. ' +
+            'Include anchor tags in the email body (not in retrieved link content) to retain click-tracking.',
+        params: [{ name: 'url', description: 'The URL to redirect to', type: 'string' }],
+        returnType: 'void',
+        syntax: 'Platform.Function.RedirectTo(url)',
         example:
-            'var param = "hello world & more";\nvar encoded = Platform.Function.URLEncode(param);\nWrite("?q=" + encoded); // "?q=hello+world+%26+more"',
+            'var email = "aruiz@example.com";\n' +
+            'var firstName = "Angela";\n' +
+            'var baseUrl = "https://example.com?email=";\n' +
+            'var nameJoin = "&name=";\n' +
+            'Platform.Function.RedirectTo(baseUrl.concat(email, nameJoin, firstName));\n' +
+            '// Use inside href: <a href="%%=RedirectTo(...)=%%">link</a>',
+    },
+    {
+        name: 'UrlEncode',
+        minArgs: 1,
+        maxArgs: 2,
+        description:
+            'Percent-encodes a complete URL. ' +
+            'When encodeReservedKeywords is false (default), only space characters are encoded as %20. ' +
+            'When true, all URL-reserved characters are also encoded (spaces become +).',
+        params: [
+            { name: 'url', description: 'The complete URL to encode', type: 'string' },
+            {
+                name: 'encodeReservedKeywords',
+                description:
+                    'When true, encodes all reserved characters; spaces become +. ' +
+                    'When false (default), only spaces are encoded as %20.',
+                type: 'boolean',
+                optional: true,
+                default: false,
+            },
+        ],
+        returnType: 'string',
+        syntax: 'Platform.Function.UrlEncode(url[, encodeReservedKeywords])',
+        example:
+            'var baseURL = "http://www.example.com?value=12+3 12;3";\n' +
+            'var encoded = Platform.Function.UrlEncode(baseURL);\n' +
+            'Write(encoded); // "http://www.example.com?value=12+3%2012;3"\n' +
+            'var encodedFull = Platform.Function.UrlEncode(baseURL, true);\n' +
+            'Write(encodedFull); // "http://www.example.com?value%3d12%2b3+12%3b3"',
     },
     {
         name: 'Write',
@@ -5598,6 +5046,64 @@ export const WSPROXY_METHODS = [
 ];
 
 export const wsproxyMethodNames = new Set(WSPROXY_METHODS.map((m) => m.name.toLowerCase()));
+
+// ── HTTPHeader (Core library) ─────────────────────────────────────────────────
+// Requires Platform.Load("core", "1") before use.
+
+export const HTTPHEADER_METHODS = [
+    {
+        name: 'GetValue',
+        minArgs: 1,
+        maxArgs: 1,
+        isStatic: false,
+        requiresCoreLoad: true,
+        description: 'Retrieves the value of the specified HTTP request header.',
+        params: [{ name: 'name', description: 'Name of the HTTP header to read', type: 'string' }],
+        returnType: 'string',
+        syntax: 'HTTPHeader.GetValue(name)',
+        example:
+            'Platform.Load("core", "1");\n' +
+            'var from = HTTPHeader.GetValue("From");\n' +
+            'Write(from);',
+    },
+    {
+        name: 'SetValue',
+        minArgs: 2,
+        maxArgs: 2,
+        isStatic: false,
+        requiresCoreLoad: true,
+        description:
+            'Sets the value of the specified HTTP header. ' +
+            'The host and content-length headers cannot be changed.',
+        params: [
+            { name: 'name', description: 'Name of the header to set', type: 'string' },
+            { name: 'value', description: 'Value to assign to the header', type: 'string' },
+        ],
+        returnType: 'void',
+        syntax: 'HTTPHeader.SetValue(name, value)',
+        example:
+            'Platform.Load("core", "1");\n' + 'HTTPHeader.SetValue("From", "aruiz@example.com");',
+    },
+    {
+        name: 'Remove',
+        minArgs: 1,
+        maxArgs: 1,
+        isStatic: false,
+        requiresCoreLoad: true,
+        description: 'Removes the specified entry from the HTTP header.',
+        params: [
+            { name: 'headerName', description: 'Name of the header to remove', type: 'string' },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        syntax: 'HTTPHeader.Remove(headerName)',
+        example:
+            'Platform.Load("core", "1");\n' +
+            'var result = HTTPHeader.Remove("From"); // returns "OK"',
+    },
+];
+
+export const httpHeaderMethodNames = new Set(HTTPHEADER_METHODS.map((m) => m.name.toLowerCase()));
 
 // ── Platform.Variable / Platform.Response / Platform.Request ─────────────────
 
