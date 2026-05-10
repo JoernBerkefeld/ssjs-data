@@ -5,6 +5,18 @@
  *   - eslint-plugin-sfmc  (globals, unknown-function detection, platform-load checks)
  *   - prettier-plugin-sfmc (language registration)
  *   - vscode-sfmc-language (completions, hover, diagnostics)
+ *
+ * Schema version: 0.3.0 — additive fields added in this version:
+ *   - isStatic?: boolean      — true for namespace-level calls (Class.Method()), false for instance calls
+ *   - deprecated?: boolean    — true for entries that resolve at runtime but should not be used in new code
+ *   - isProperty?: boolean    — true for entries accessed without parentheses (e.g. Platform.Request.HasSSL)
+ *   - requiresCoreLoad?: boolean — true when the call site requires a preceding Platform.Load("core", "<version>")
+ *   - aliasOf?: string        — names the canonical entry this one aliases (dual-call modeling)
+ *   - returnEnum?: (string|number|boolean)[] — allowed return literals when returnType is a primitive
+ *   - enum?: (string|number|boolean)[]       — allowed literals for a parameter value
+ *   - default?: string|number|boolean        — documented default value for a parameter
+ *   - optional?: boolean                     — equivalent to Required:No in the docs
+ *   - caseInsensitive?: boolean              — true for SOAP-style enums where casing is not enforced
  */
 
 const INF = Infinity;
@@ -13,146 +25,34 @@ const INF = Infinity;
 // Functions and objects available at the top scope of any SSJS execution context.
 
 export const SSJS_GLOBALS = [
-    {
-        name: 'Write',
-        type: 'function',
-        minArgs: 1,
-        maxArgs: 1,
-        description: 'Outputs a string to the rendered page.',
-        params: [{ name: 'content', description: 'String to output', type: 'string' }],
-        returnType: 'void',
-        syntax: 'Write(content)',
-        example: 'var greeting = "Hello, world!";\nWrite(greeting);',
-    },
-    {
-        name: 'Stringify',
-        type: 'function',
-        minArgs: 1,
-        maxArgs: 1,
-        description:
-            'Converts an object to its JSON text representation. Use this to serialize objects before writing or storing them. Not to be confused with the native String() function, which converts a CLR response object to a plain string.',
-        params: [{ name: 'value', description: 'Object to serialize', type: 'object' }],
-        returnType: 'string',
-        syntax: 'Stringify(value)',
-        example:
-            'var obj = { name: "Jane", age: 30 };\nvar jsonStr = Stringify(obj);\nWrite(jsonStr); // outputs: {"name":"Jane","age":30}',
-    },
+    // ── Native JS globals (not Platform.Function.* aliases) ──────────────────
     {
         name: 'Variable',
         type: 'object',
-        description: 'Provides access to AMPscript variables from SSJS context.',
+        description: 'Namespace marker — bare-name access to Platform.Variable.* methods.',
     },
     {
         name: 'Attribute',
         type: 'object',
-        description: 'Provides access to subscriber attribute values.',
+        description:
+            'Namespace for reading subscriber attribute values. ' +
+            'Call `Attribute.GetValue(name)` to retrieve an attribute for the current recipient. ' +
+            'Requires `Platform.Load("core", "1.1.5")` before use.',
+        requiresCoreLoad: true,
+    },
+    {
+        name: 'HTTPHeader',
+        type: 'object',
+        description:
+            'Object that provides access to HTTP request headers in SSJS CloudPage context. ' +
+            'Requires `Platform.Load("core", "1.1.5")` before use.',
+        requiresCoreLoad: true,
     },
     {
         name: 'Platform',
         type: 'object',
         description:
             'Root namespace for SFMC platform APIs including Function, Variable, Response, and Request.',
-    },
-    {
-        name: 'ContentBlockByKey',
-        type: 'function',
-        minArgs: 1,
-        maxArgs: 1,
-        description: 'Renders a Content Builder asset by its customer key.',
-        params: [
-            {
-                name: 'customerKey',
-                description: 'Customer key of the Content Builder asset',
-                type: 'string',
-            },
-        ],
-        returnType: 'string',
-        syntax: 'ContentBlockByKey(customerKey)',
-        example: 'var html = ContentBlockByKey("my-header-block");\nWrite(html);',
-    },
-    {
-        name: 'ContentBlockByName',
-        type: 'function',
-        minArgs: 1,
-        maxArgs: 1,
-        description: 'Renders a Content Builder asset by its folder path and name.',
-        params: [
-            {
-                name: 'name',
-                description: 'Folder path and name of the Content Builder asset',
-                type: 'string',
-            },
-        ],
-        returnType: 'string',
-        syntax: 'ContentBlockByName(name)',
-        example: 'var html = ContentBlockByName("Shared Content/Footer");\nWrite(html);',
-    },
-    {
-        name: 'ContentBlockByID',
-        type: 'function',
-        minArgs: 1,
-        maxArgs: 1,
-        description: 'Renders a Content Builder asset by its numeric ID.',
-        params: [
-            { name: 'id', description: 'Numeric ID of the Content Builder asset', type: 'number' },
-        ],
-        returnType: 'string',
-        syntax: 'ContentBlockByID(id)',
-        example: 'var html = ContentBlockByID(12345);\nWrite(html);',
-    },
-    {
-        name: 'ContentAreaByKey',
-        type: 'function',
-        minArgs: 1,
-        maxArgs: 1,
-        description: 'Renders a classic content area by its external key.',
-        params: [
-            {
-                name: 'key',
-                description: 'External key of the classic content area',
-                type: 'string',
-            },
-        ],
-        returnType: 'string',
-        syntax: 'ContentAreaByKey(key)',
-        example: 'var html = ContentAreaByKey("my-content-area-key");\nWrite(html);',
-    },
-    {
-        name: 'TreatAsContent',
-        type: 'function',
-        minArgs: 1,
-        maxArgs: 1,
-        description:
-            'Evaluates a string containing AMPscript or HTML and returns the rendered result.',
-        params: [
-            {
-                name: 'content',
-                description: 'String containing AMPscript or HTML to evaluate',
-                type: 'string',
-            },
-        ],
-        returnType: 'string',
-        syntax: 'TreatAsContent(content)',
-        example:
-            'var ampBlock = "%%[Set @msg = \'Dynamic content\']%% %%=v(@msg)=%%";\nWrite(TreatAsContent(ampBlock));',
-    },
-    {
-        name: 'TreatAsContentArea',
-        type: 'function',
-        minArgs: 1,
-        maxArgs: 1,
-        description: 'Renders a classic content area stored in the system.',
-        params: [
-            {
-                name: 'content',
-                description: 'Classic content area markup to render',
-                type: 'string',
-            },
-        ],
-        returnType: 'string',
-        syntax: 'TreatAsContentArea(content)',
-        example:
-            'var rendered = TreatAsContentArea("%%[ContentAreaByKey(\'my-key\')]%%");\nWrite(rendered);',
     },
     {
         name: 'String',
@@ -216,6 +116,134 @@ export const SSJS_GLOBALS = [
             '    Write("Error: " + e.message);\n' +
             '}',
     },
+    // ── Bare-name aliases for Platform.Function.* (dual-call rule) ───────────
+    // Every Platform.Function.X() is also callable as X(). The canonical
+    // definition lives in PLATFORM_FUNCTIONS. A subset requires a preceding
+    // Platform.Load("core", "1.1.5") call (requiresCoreLoad: true).
+    { name: 'Lookup', aliasOf: 'Platform.Function.Lookup' },
+    { name: 'LookupRows', aliasOf: 'Platform.Function.LookupRows' },
+    { name: 'LookupOrderedRows', aliasOf: 'Platform.Function.LookupOrderedRows' },
+    { name: 'InsertData', aliasOf: 'Platform.Function.InsertData' },
+    { name: 'InsertDE', aliasOf: 'Platform.Function.InsertDE' },
+    { name: 'UpdateData', aliasOf: 'Platform.Function.UpdateData' },
+    { name: 'UpdateDE', aliasOf: 'Platform.Function.UpdateDE' },
+    { name: 'UpsertData', aliasOf: 'Platform.Function.UpsertData' },
+    { name: 'UpsertDE', aliasOf: 'Platform.Function.UpsertDE' },
+    { name: 'DeleteData', aliasOf: 'Platform.Function.DeleteData' },
+    { name: 'DeleteDE', aliasOf: 'Platform.Function.DeleteDE' },
+    { name: 'ContentBlockByKey', aliasOf: 'Platform.Function.ContentBlockByKey' },
+    { name: 'ContentBlockByName', aliasOf: 'Platform.Function.ContentBlockByName' },
+    { name: 'ContentBlockByID', aliasOf: 'Platform.Function.ContentBlockByID' },
+    { name: 'ContentImageByKey', aliasOf: 'Platform.Function.ContentImageByKey' },
+    { name: 'ContentImageByID', aliasOf: 'Platform.Function.ContentImageByID' },
+    { name: 'TreatAsContent', aliasOf: 'Platform.Function.TreatAsContent' },
+    // deprecated Platform.Function.* aliases — NOT flagged requiresCoreLoad (Platform.Function.* is always available)
+    { name: 'ContentArea', aliasOf: 'Platform.Function.ContentArea', deprecated: true },
+    { name: 'ContentAreaByName', aliasOf: 'Platform.Function.ContentAreaByName', deprecated: true },
+    {
+        name: 'BeginImpressionRegion',
+        aliasOf: 'Platform.Function.BeginImpressionRegion',
+        requiresCoreLoad: true,
+    },
+    {
+        name: 'EndImpressionRegion',
+        aliasOf: 'Platform.Function.EndImpressionRegion',
+        requiresCoreLoad: true,
+    },
+    { name: 'Substring', aliasOf: 'Platform.Function.Substring' },
+    { name: 'Trim', aliasOf: 'Platform.Function.Trim' },
+    { name: 'Replace', aliasOf: 'Platform.Function.Replace' },
+    { name: 'IndexOf', aliasOf: 'Platform.Function.IndexOf' },
+    { name: 'Length', aliasOf: 'Platform.Function.Length' },
+    { name: 'Uppercase', aliasOf: 'Platform.Function.Uppercase' },
+    { name: 'Lowercase', aliasOf: 'Platform.Function.Lowercase' },
+    { name: 'ProperCase', aliasOf: 'Platform.Function.ProperCase' },
+    { name: 'Char', aliasOf: 'Platform.Function.Char' },
+    { name: 'Concat', aliasOf: 'Platform.Function.Concat' },
+    { name: 'Format', aliasOf: 'Platform.Function.Format', requiresCoreLoad: true },
+    { name: 'DateAdd', aliasOf: 'Platform.Function.DateAdd' },
+    { name: 'DateDiff', aliasOf: 'Platform.Function.DateDiff' },
+    { name: 'DateParse', aliasOf: 'Platform.Function.DateParse' },
+    { name: 'Now', aliasOf: 'Platform.Function.Now', requiresCoreLoad: true },
+    { name: 'FormatDate', aliasOf: 'Platform.Function.FormatDate' },
+    {
+        name: 'SystemDateToLocalDate',
+        aliasOf: 'Platform.Function.SystemDateToLocalDate',
+        requiresCoreLoad: true,
+    },
+    {
+        name: 'LocalDateToSystemDate',
+        aliasOf: 'Platform.Function.LocalDateToSystemDate',
+        requiresCoreLoad: true,
+    },
+    { name: 'GetValue', aliasOf: 'Platform.Function.GetValue' },
+    { name: 'SetValue', aliasOf: 'Platform.Function.SetValue' },
+    { name: 'GetQueryStringParameter', aliasOf: 'Platform.Function.GetQueryStringParameter' },
+    { name: 'RaiseError', aliasOf: 'Platform.Function.RaiseError' },
+    { name: 'Redirect', aliasOf: 'Platform.Function.Redirect', requiresCoreLoad: true },
+    { name: 'CloudPagesURL', aliasOf: 'Platform.Function.CloudPagesURL' },
+    { name: 'MicrositeURL', aliasOf: 'Platform.Function.MicrositeURL' },
+    { name: 'GUID', aliasOf: 'Platform.Function.GUID', requiresCoreLoad: true },
+    { name: 'Base64Encode', aliasOf: 'Platform.Function.Base64Encode', requiresCoreLoad: true },
+    { name: 'Base64Decode', aliasOf: 'Platform.Function.Base64Decode', requiresCoreLoad: true },
+    { name: 'EncryptSymmetric', aliasOf: 'Platform.Function.EncryptSymmetric' },
+    { name: 'DecryptSymmetric', aliasOf: 'Platform.Function.DecryptSymmetric' },
+    { name: 'SHA256', aliasOf: 'Platform.Function.SHA256' },
+    { name: 'SHA512', aliasOf: 'Platform.Function.SHA512' },
+    { name: 'MD5', aliasOf: 'Platform.Function.MD5' },
+    {
+        name: 'IsEmailAddress',
+        aliasOf: 'Platform.Function.IsEmailAddress',
+        requiresCoreLoad: true,
+    },
+    {
+        name: 'IsPhoneNumber',
+        aliasOf: 'Platform.Function.IsPhoneNumber',
+        requiresCoreLoad: true,
+    },
+    { name: 'IsNull', aliasOf: 'Platform.Function.IsNull' },
+    { name: 'Empty', aliasOf: 'Platform.Function.Empty' },
+    { name: 'IIf', aliasOf: 'Platform.Function.IIf' },
+    { name: 'DataExtensionRowCount', aliasOf: 'Platform.Function.DataExtensionRowCount' },
+    { name: 'CreateObject', aliasOf: 'Platform.Function.CreateObject' },
+    { name: 'SetObjectProperty', aliasOf: 'Platform.Function.SetObjectProperty' },
+    { name: 'AddObjectArrayItem', aliasOf: 'Platform.Function.AddObjectArrayItem' },
+    { name: 'InvokeCreate', aliasOf: 'Platform.Function.InvokeCreate' },
+    { name: 'InvokeUpdate', aliasOf: 'Platform.Function.InvokeUpdate' },
+    { name: 'InvokeDelete', aliasOf: 'Platform.Function.InvokeDelete' },
+    { name: 'InvokeRetrieve', aliasOf: 'Platform.Function.InvokeRetrieve' },
+    { name: 'InvokePerform', aliasOf: 'Platform.Function.InvokePerform' },
+    { name: 'InvokeConfigure', aliasOf: 'Platform.Function.InvokeConfigure' },
+    { name: 'InvokeExecute', aliasOf: 'Platform.Function.InvokeExecute' },
+    { name: 'InvokeExtract', aliasOf: 'Platform.Function.InvokeExtract' },
+    { name: 'InvokeSchedule', aliasOf: 'Platform.Function.InvokeSchedule' },
+    { name: 'AttributeValue', aliasOf: 'Platform.Function.AttributeValue' },
+    { name: 'HTTPGet', aliasOf: 'Platform.Function.HTTPGet' },
+    { name: 'HTTPPost', aliasOf: 'Platform.Function.HTTPPost' },
+    { name: 'HTTPRequestHeader', aliasOf: 'Platform.Function.HTTPRequestHeader' },
+    { name: 'ParseJSON', aliasOf: 'Platform.Function.ParseJSON' },
+    { name: 'URLEncode', aliasOf: 'Platform.Function.URLEncode' },
+    { name: 'Write', aliasOf: 'Platform.Function.Write', requiresCoreLoad: true },
+    { name: 'Stringify', aliasOf: 'Platform.Function.Stringify', requiresCoreLoad: true },
+    { name: 'IsCHTMLBrowser', aliasOf: 'Platform.Function.IsCHTMLBrowser', requiresCoreLoad: true },
+    // ── Core-library namespace markers ───────────────────────────────────────
+    {
+        name: 'DateTime',
+        type: 'object',
+        description:
+            'Namespace for time zone and date utilities. ' +
+            'Requires `Platform.Load("core", "1.1.5")` before use. ' +
+            'Access sub-namespaces such as `DateTime.TimeZone` for time zone operations.',
+        requiresCoreLoad: true,
+    },
+    {
+        name: 'ErrorUtil',
+        type: 'object',
+        description:
+            'Utility namespace for WSProxy error handling. ' +
+            'Call `ErrorUtil.ThrowWSProxyError(result)` to convert WSProxy error-status results into thrown exceptions.',
+        requiresCoreLoad: true,
+    },
 ];
 
 /**
@@ -227,6 +255,8 @@ export const SSJS_GLOBALS_MAP = Object.fromEntries([
     ['HTTP', 'readonly'],
     ['WSProxy', 'readonly'],
     ['Script', 'readonly'],
+    ['DateTime', 'readonly'],
+    ['ErrorUtil', 'readonly'],
     ['DataExtension', 'readonly'],
     ['Subscriber', 'readonly'],
     ['Email', 'readonly'],
@@ -241,7 +271,6 @@ export const SSJS_GLOBALS_MAP = Object.fromEntries([
     ['SenderProfile', 'readonly'],
     ['SendClassification', 'readonly'],
     ['FilterDefinition', 'readonly'],
-    ['SendDefinition', 'readonly'],
     ['Account', 'readonly'],
     ['AccountUser', 'readonly'],
     ['Portfolio', 'readonly'],
@@ -294,7 +323,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'fieldValue', description: 'Filter field value', type: 'string' },
         ],
         returnType: 'string',
-        syntax: 'Lookup(deName, returnField, fieldName, fieldValue[, fieldName2, fieldValue2, ...])',
+        syntax: 'Platform.Function.Lookup(deName, returnField, fieldName, fieldValue[, fieldName2, fieldValue2, ...])',
         example:
             'var email = Platform.Function.Lookup("Subscribers", "EmailAddress", "SubscriberKey", "abc123");',
     },
@@ -309,7 +338,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'fieldValue', description: 'Filter field value', type: 'string' },
         ],
         returnType: 'object',
-        syntax: 'LookupRows(deName, fieldName, fieldValue[, fieldName2, fieldValue2, ...])',
+        syntax: 'Platform.Function.LookupRows(deName, fieldName, fieldValue[, fieldName2, fieldValue2, ...])',
         example:
             'var rows = Platform.Function.LookupRows("MyDE", "Status", "active");\nfor (var i = 0; i < rows.length; i++) {\n    Write(rows[i]["Name"] + "<br>");\n}',
     },
@@ -346,7 +375,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'object',
-        syntax: 'LookupOrderedRows(deName, count, orderBy, fieldName, fieldValue[, fieldName2, fieldValue2, ...])',
+        syntax: 'Platform.Function.LookupOrderedRows(deName, count, orderBy, fieldName, fieldValue[, fieldName2, fieldValue2, ...])',
         example:
             'var rows = Platform.Function.LookupOrderedRows("MyDE", 10, "CreatedDate DESC", "Status", "active");\nfor (var i = 0; i < rows.length; i++) {\n    Write(rows[i]["Email"] + "<br>");\n}',
     },
@@ -365,7 +394,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'value1', description: 'Value for the first field', type: 'string' },
         ],
         returnType: 'number',
-        syntax: 'InsertData(deName, fieldName1, value1[, fieldName2, value2, ...])',
+        syntax: 'Platform.Function.InsertData(deName, fieldName1, value1[, fieldName2, value2, ...])',
         example:
             'var rowsAffected = Platform.Function.InsertData("MyDE", "Email", "jane@example.com", "Name", "Jane");',
     },
@@ -384,7 +413,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'value1', description: 'Value for the first field', type: 'string' },
         ],
         returnType: 'number',
-        syntax: 'InsertDE(deName, fieldName1, value1[, fieldName2, value2, ...])',
+        syntax: 'Platform.Function.InsertDE(deName, fieldName1, value1[, fieldName2, value2, ...])',
         example:
             'var count = Platform.Function.InsertDE("MyDE", "Email", "jane@example.com", "Name", "Jane");',
     },
@@ -409,7 +438,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'number',
-        syntax: 'UpdateData(deName, fieldName1, value1, filterField, filterValue[, fieldName2, value2, ...])',
+        syntax: 'Platform.Function.UpdateData(deName, fieldName1, value1, filterField, filterValue[, fieldName2, value2, ...])',
         example:
             'var count = Platform.Function.UpdateData("MyDE", "Status", "inactive", "Email", "jane@example.com");',
     },
@@ -434,7 +463,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'number',
-        syntax: 'UpdateDE(deName, fieldName1, value1, filterField, filterValue[, fieldName2, value2, ...])',
+        syntax: 'Platform.Function.UpdateDE(deName, fieldName1, value1, filterField, filterValue[, fieldName2, value2, ...])',
         example:
             'var count = Platform.Function.UpdateDE("MyDE", "Status", "inactive", "Email", "jane@example.com");',
     },
@@ -459,7 +488,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'number',
-        syntax: 'UpsertData(deName, fieldName1, value1, filterField, filterValue[, fieldName2, value2, ...])',
+        syntax: 'Platform.Function.UpsertData(deName, fieldName1, value1, filterField, filterValue[, fieldName2, value2, ...])',
         example:
             'Platform.Function.UpsertData("MyDE", 1, "Status", "active", "Email", "jane@example.com");',
     },
@@ -484,7 +513,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'number',
-        syntax: 'UpsertDE(deName, fieldName1, value1, filterField, filterValue[, fieldName2, value2, ...])',
+        syntax: 'Platform.Function.UpsertDE(deName, fieldName1, value1, filterField, filterValue[, fieldName2, value2, ...])',
         example:
             'Platform.Function.UpsertDE("MyDE", 1, "Status", "active", "Email", "jane@example.com");',
     },
@@ -499,7 +528,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'filterValue', description: 'Filter field value', type: 'string' },
         ],
         returnType: 'number',
-        syntax: 'DeleteData(deName, filterField, filterValue[, filterField2, filterValue2, ...])',
+        syntax: 'Platform.Function.DeleteData(deName, filterField, filterValue[, filterField2, filterValue2, ...])',
         example: 'var count = Platform.Function.DeleteData("MyDE", "Email", "jane@example.com");',
     },
     {
@@ -513,7 +542,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'filterValue', description: 'Filter field value', type: 'string' },
         ],
         returnType: 'number',
-        syntax: 'DeleteDE(deName, filterField, filterValue[, filterField2, filterValue2, ...])',
+        syntax: 'Platform.Function.DeleteDE(deName, filterField, filterValue[, filterField2, filterValue2, ...])',
         example: 'var count = Platform.Function.DeleteDE("MyDE", "Email", "jane@example.com");',
     },
     {
@@ -529,7 +558,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'ContentBlockByKey(customerKey)',
+        syntax: 'Platform.Function.ContentBlockByKey(customerKey)',
         example: 'var html = Platform.Function.ContentBlockByKey("my-header-block");\nWrite(html);',
     },
     {
@@ -545,7 +574,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'ContentBlockByName(name)',
+        syntax: 'Platform.Function.ContentBlockByName(name)',
         example:
             'var html = Platform.Function.ContentBlockByName("Shared Content/Footer");\nWrite(html);',
     },
@@ -558,7 +587,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'id', description: 'Numeric ID of the Content Builder asset', type: 'number' },
         ],
         returnType: 'string',
-        syntax: 'ContentBlockByID(id)',
+        syntax: 'Platform.Function.ContentBlockByID(id)',
         example: 'var html = Platform.Function.ContentBlockByID(12345);\nWrite(html);',
     },
     {
@@ -581,7 +610,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'ContentImageByKey(key[, fallbackKey])',
+        syntax: 'Platform.Function.ContentImageByKey(key[, fallbackKey])',
         example:
             'var imgTag = Platform.Function.ContentImageByKey("hero-banner-key");\nWrite(imgTag);',
     },
@@ -601,7 +630,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'ContentImageByID(id[, fallbackId])',
+        syntax: 'Platform.Function.ContentImageByID(id[, fallbackId])',
         example: 'var imgTag = Platform.Function.ContentImageByID(98765);\nWrite(imgTag);',
     },
     {
@@ -617,7 +646,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'TreatAsContent(content)',
+        syntax: 'Platform.Function.TreatAsContent(content)',
         example:
             'var result = Platform.Function.TreatAsContent("%%[Set @x = 1]%%%%=v(@x)=%%");\nWrite(result); // "1"',
     },
@@ -630,7 +659,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'name', description: 'Name identifying the impression region', type: 'string' },
         ],
         returnType: 'void',
-        syntax: 'BeginImpressionRegion(name)',
+        syntax: 'Platform.Function.BeginImpressionRegion(name)',
         example:
             'Platform.Function.BeginImpressionRegion("hero-banner");\nWrite(heroContent);\nPlatform.Function.EndImpressionRegion();',
     },
@@ -648,7 +677,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'void',
-        syntax: 'EndImpressionRegion([closeAll])',
+        syntax: 'Platform.Function.EndImpressionRegion([closeAll])',
         example:
             'Platform.Function.BeginImpressionRegion("footer");\nWrite(footerContent);\nPlatform.Function.EndImpressionRegion();',
     },
@@ -668,7 +697,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'Substring(value, start[, length])',
+        syntax: 'Platform.Function.Substring(value, start[, length])',
         example:
             'var str = "Hello, World!";\nvar sub = Platform.Function.Substring(str, 1, 5);\nWrite(sub); // "Hello"',
     },
@@ -679,7 +708,7 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Removes leading and trailing whitespace from a string.',
         params: [{ name: 'value', description: 'String to trim', type: 'string' }],
         returnType: 'string',
-        syntax: 'Trim(value)',
+        syntax: 'Platform.Function.Trim(value)',
         example: 'var clean = Platform.Function.Trim("  hello  ");\nWrite(clean); // "hello"',
     },
     {
@@ -693,7 +722,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'replacement', description: 'Replacement string', type: 'string' },
         ],
         returnType: 'string',
-        syntax: 'Replace(value, search, replacement)',
+        syntax: 'Platform.Function.Replace(value, search, replacement)',
         example:
             'var result = Platform.Function.Replace("Hello, World!", "World", "SFMC");\nWrite(result); // "Hello, SFMC!"',
     },
@@ -707,7 +736,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'search', description: 'Substring to find', type: 'string' },
         ],
         returnType: 'number',
-        syntax: 'IndexOf(value, search)',
+        syntax: 'Platform.Function.IndexOf(value, search)',
         example: 'var pos = Platform.Function.IndexOf("Hello, World!", "World");\nWrite(pos); // 7',
     },
     {
@@ -717,7 +746,7 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Returns the number of characters in a string.',
         params: [{ name: 'value', description: 'String to measure', type: 'string' }],
         returnType: 'number',
-        syntax: 'Length(value)',
+        syntax: 'Platform.Function.Length(value)',
         example: 'var len = Platform.Function.Length("Hello");\nWrite(len); // 5',
     },
     {
@@ -727,7 +756,7 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Converts a string to uppercase.',
         params: [{ name: 'value', description: 'String to convert', type: 'string' }],
         returnType: 'string',
-        syntax: 'Uppercase(value)',
+        syntax: 'Platform.Function.Uppercase(value)',
         example: 'var upper = Platform.Function.Uppercase("hello");\nWrite(upper); // "HELLO"',
     },
     {
@@ -737,7 +766,7 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Converts a string to lowercase.',
         params: [{ name: 'value', description: 'String to convert', type: 'string' }],
         returnType: 'string',
-        syntax: 'Lowercase(value)',
+        syntax: 'Platform.Function.Lowercase(value)',
         example: 'var lower = Platform.Function.Lowercase("HELLO");\nWrite(lower); // "hello"',
     },
     {
@@ -747,7 +776,7 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Converts a string to title case.',
         params: [{ name: 'value', description: 'String to convert', type: 'string' }],
         returnType: 'string',
-        syntax: 'ProperCase(value)',
+        syntax: 'Platform.Function.ProperCase(value)',
         example:
             'var title = Platform.Function.ProperCase("hello world");\nWrite(title); // "Hello World"',
     },
@@ -758,7 +787,7 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Returns the character for a given ASCII code.',
         params: [{ name: 'asciiCode', description: 'ASCII character code', type: 'number' }],
         returnType: 'string',
-        syntax: 'Char(asciiCode)',
+        syntax: 'Platform.Function.Char(asciiCode)',
         example:
             'var tab = Platform.Function.Char(9); // tab character\nWrite("Col1" + tab + "Col2");',
     },
@@ -776,7 +805,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'Concat(value1, value2[, ...])',
+        syntax: 'Platform.Function.Concat(value1, value2[, ...])',
         example:
             'var full = Platform.Function.Concat("Hello", ", ", "World!");\nWrite(full); // "Hello, World!"',
     },
@@ -790,7 +819,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'format', description: '.NET format string', type: 'string' },
         ],
         returnType: 'string',
-        syntax: 'Format(value, format[, ...])',
+        syntax: 'Platform.Function.Format(value, format[, ...])',
         example:
             'var price = Platform.Function.Format(1234.5, "C2");\nWrite(price); // "$1,234.50"',
     },
@@ -809,7 +838,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'DateAdd(date, interval, datePart)',
+        syntax: 'Platform.Function.DateAdd(date, interval, datePart)',
         example:
             'var future = Platform.Function.DateAdd(Platform.Function.Now(), 7, "D");\nWrite(future); // date 7 days from now',
     },
@@ -828,7 +857,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'number',
-        syntax: 'DateDiff(date1, date2, datePart)',
+        syntax: 'Platform.Function.DateDiff(date1, date2, datePart)',
         example:
             'var days = Platform.Function.DateDiff("2025-01-01", Platform.Function.Now(), "D");\nWrite(days); // days elapsed since Jan 1 2025',
     },
@@ -842,7 +871,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'format', description: 'Date format pattern', type: 'string', optional: true },
         ],
         returnType: 'object',
-        syntax: 'DateParse(dateString[, format])',
+        syntax: 'Platform.Function.DateParse(dateString[, format])',
         example:
             'var d = Platform.Function.DateParse("2025-08-05T12:00:00Z");\nWrite(Platform.Function.FormatDate(d, "MM/dd/yyyy")); // "08/05/2025"',
     },
@@ -862,7 +891,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'Now([useContextTime])',
+        syntax: 'Platform.Function.Now([useContextTime])',
         example:
             'var current = Platform.Function.Now();\nWrite(current); // e.g. "8/5/2025 12:00:00 PM"\n\n// Use context time during triggered sends:\nvar sendTime = Platform.Function.Now(true);',
     },
@@ -882,7 +911,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'FormatDate(date, format[, locale])',
+        syntax: 'Platform.Function.FormatDate(date, format[, locale])',
         example:
             'var formatted = Platform.Function.FormatDate(Platform.Function.Now(), "MMMM d, yyyy");\nWrite(formatted); // e.g. "August 5, 2025"',
     },
@@ -900,7 +929,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'SystemDateToLocalDate(dateValue)',
+        syntax: 'Platform.Function.SystemDateToLocalDate(dateValue)',
         example:
             'var systemDate = Platform.Function.Now();\nvar localDate = Platform.Function.SystemDateToLocalDate(systemDate);\nWrite(localDate);',
     },
@@ -918,7 +947,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'LocalDateToSystemDate(dateValue)',
+        syntax: 'Platform.Function.LocalDateToSystemDate(dateValue)',
         example:
             'var localDate = "8/5/2025 12:00:00 PM";\nvar systemDate = Platform.Function.LocalDateToSystemDate(localDate);\nWrite(systemDate);',
     },
@@ -931,7 +960,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'variableName', description: 'Name of the AMPscript variable', type: 'string' },
         ],
         returnType: 'string',
-        syntax: 'GetValue(variableName)',
+        syntax: 'Platform.Function.GetValue(variableName)',
         example:
             '// Retrieve an AMPscript variable from within SSJS:\nvar sk = Platform.Function.GetValue("SubscriberKey");\nWrite(sk);',
     },
@@ -945,7 +974,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'value', description: 'Value to assign', type: 'string' },
         ],
         returnType: 'void',
-        syntax: 'SetValue(variableName, value)',
+        syntax: 'Platform.Function.SetValue(variableName, value)',
         example:
             'Platform.Function.SetValue("greeting", "Hello from SSJS");\n// @greeting is now accessible in subsequent AMPscript blocks',
     },
@@ -963,7 +992,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'GetQueryStringParameter(parameterName)',
+        syntax: 'Platform.Function.GetQueryStringParameter(parameterName)',
         example:
             '// Page URL: /mypage?email=jane@example.com\nvar email = Platform.Function.GetQueryStringParameter("email");\nWrite(email); // "jane@example.com"',
     },
@@ -1002,7 +1031,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'void',
-        syntax: 'RaiseError(message[, currentRecipientOnly[, errorCode[, errorNumber]]])',
+        syntax: 'Platform.Function.RaiseError(message[, currentRecipientOnly[, errorCode[, errorNumber]]])',
         example:
             'var status = Platform.Function.Lookup("MyDE", "Status", "Email", emailAddress);\nif (!status) {\n    Platform.Function.RaiseError("Subscriber not found", true, "NOT_FOUND", 404);\n}',
     },
@@ -1021,7 +1050,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'void',
-        syntax: 'Redirect(url[, permanent])',
+        syntax: 'Platform.Function.Redirect(url[, permanent])',
         example: 'Platform.Function.Redirect("https://www.example.com/thank-you");',
     },
     {
@@ -1045,7 +1074,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'CloudPagesURL(pageId[, param1, value1, ...])',
+        syntax: 'Platform.Function.CloudPagesURL(pageId[, param1, value1, ...])',
         example:
             'var url = Platform.Function.CloudPagesURL(123, "email", emailAddress, "sk", subscriberKey);\nWrite(\'<a href="\' + url + \'">Click here</a>\');',
     },
@@ -1065,7 +1094,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'MicrositeURL(pageId[, param1, value1, ...])',
+        syntax: 'Platform.Function.MicrositeURL(pageId[, param1, value1, ...])',
         example:
             'var url = Platform.Function.MicrositeURL(456, "source", "email");\nWrite(\'<a href="\' + url + \'">Visit microsite</a>\');',
     },
@@ -1076,7 +1105,7 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Generates a new globally unique identifier string.',
         params: [],
         returnType: 'string',
-        syntax: 'GUID()',
+        syntax: 'Platform.Function.GUID()',
         example:
             'var id = Platform.Function.GUID();\nWrite(id); // e.g. "550e8400-e29b-41d4-a716-446655440000"',
     },
@@ -1095,7 +1124,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'Base64Encode(value[, encoding])',
+        syntax: 'Platform.Function.Base64Encode(value[, encoding])',
         example:
             'var encoded = Platform.Function.Base64Encode("username:password");\nWrite(encoded); // "dXNlcm5hbWU6cGFzc3dvcmQ="',
     },
@@ -1114,7 +1143,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'Base64Decode(value[, encoding])',
+        syntax: 'Platform.Function.Base64Decode(value[, encoding])',
         example:
             'var decoded = Platform.Function.Base64Decode("dXNlcm5hbWU6cGFzc3dvcmQ=");\nWrite(decoded); // "username:password"',
     },
@@ -1152,7 +1181,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'EncryptSymmetric(value, algorithm, passwordKey, password, saltKey, salt[, ivKey, iv])',
+        syntax: 'Platform.Function.EncryptSymmetric(value, algorithm, passwordKey, password, saltKey, salt[, ivKey, iv])',
         example:
             'var encrypted = Platform.Function.EncryptSymmetric("sensitive data", "AES", "", "myPassword", "", "mySalt");\nWrite(encrypted);',
     },
@@ -1190,7 +1219,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'DecryptSymmetric(value, algorithm, passwordKey, password, saltKey, salt[, ivKey, iv])',
+        syntax: 'Platform.Function.DecryptSymmetric(value, algorithm, passwordKey, password, saltKey, salt[, ivKey, iv])',
         example:
             'var plain = Platform.Function.DecryptSymmetric(encryptedValue, "AES", "", "myPassword", "", "mySalt");\nWrite(plain);',
     },
@@ -1204,7 +1233,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'encoding', description: 'Output encoding', type: 'string', optional: true },
         ],
         returnType: 'string',
-        syntax: 'SHA256(value[, encoding])',
+        syntax: 'Platform.Function.SHA256(value[, encoding])',
         example: 'var hash = Platform.Function.SHA256(emailAddress);\nWrite(hash);',
     },
     {
@@ -1217,7 +1246,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'encoding', description: 'Output encoding', type: 'string', optional: true },
         ],
         returnType: 'string',
-        syntax: 'SHA512(value[, encoding])',
+        syntax: 'Platform.Function.SHA512(value[, encoding])',
         example: 'var hash = Platform.Function.SHA512(emailAddress);\nWrite(hash);',
     },
     {
@@ -1230,7 +1259,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'encoding', description: 'Output encoding', type: 'string', optional: true },
         ],
         returnType: 'string',
-        syntax: 'MD5(value[, encoding])',
+        syntax: 'Platform.Function.MD5(value[, encoding])',
         example: 'var hash = Platform.Function.MD5(emailAddress);\nWrite(hash);',
     },
     {
@@ -1240,7 +1269,7 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Checks whether a string is a valid email address format.',
         params: [{ name: 'value', description: 'String to validate', type: 'string' }],
         returnType: 'boolean',
-        syntax: 'IsEmailAddress(value)',
+        syntax: 'Platform.Function.IsEmailAddress(value)',
         example:
             'if (Platform.Function.IsEmailAddress(emailInput)) {\n    Write("Valid email");\n} else {\n    Write("Invalid email format");\n}',
     },
@@ -1251,7 +1280,7 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Evaluates whether a string contains a valid phone number.',
         params: [{ name: 'value', description: 'String to evaluate', type: 'string' }],
         returnType: 'boolean',
-        syntax: 'IsPhoneNumber(value)',
+        syntax: 'Platform.Function.IsPhoneNumber(value)',
         example:
             'if (Platform.Function.IsPhoneNumber(phoneInput)) {\n    Write("Valid phone");\n} else {\n    Write("Invalid phone number");\n}',
     },
@@ -1262,7 +1291,7 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Checks whether a value is null.',
         params: [{ name: 'value', description: 'Value to check', type: 'any' }],
         returnType: 'boolean',
-        syntax: 'IsNull(value)',
+        syntax: 'Platform.Function.IsNull(value)',
         example:
             'var phone = Platform.Function.Lookup("MyDE", "Phone", "Email", email);\nif (Platform.Function.IsNull(phone)) {\n    Write("No phone on record");\n}',
     },
@@ -1273,7 +1302,7 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Checks whether a string value is null, empty, or whitespace.',
         params: [{ name: 'value', description: 'String to check', type: 'string' }],
         returnType: 'boolean',
-        syntax: 'Empty(value)',
+        syntax: 'Platform.Function.Empty(value)',
         example:
             'var city = Platform.Function.GetQueryStringParameter("city");\nif (Platform.Function.Empty(city)) {\n    city = "Unknown";\n}',
     },
@@ -1292,7 +1321,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'any',
-        syntax: 'IIf(condition, trueValue, falseValue)',
+        syntax: 'Platform.Function.IIf(condition, trueValue, falseValue)',
         example: 'var label = Platform.Function.IIf(score > 50, "Pass", "Fail");\nWrite(label);',
     },
     {
@@ -1304,7 +1333,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
         ],
         returnType: 'number',
-        syntax: 'DataExtensionRowCount(deName)',
+        syntax: 'Platform.Function.DataExtensionRowCount(deName)',
         example:
             'var count = Platform.Function.DataExtensionRowCount("MyDE");\nWrite("Total rows: " + count);',
     },
@@ -1315,7 +1344,7 @@ export const PLATFORM_FUNCTIONS = [
         description: 'Instantiates a Marketing Cloud SOAP API object.',
         params: [{ name: 'objectType', description: 'SOAP API object type name', type: 'string' }],
         returnType: 'object',
-        syntax: 'CreateObject(objectType)',
+        syntax: 'Platform.Function.CreateObject(objectType)',
         example:
             'var sub = Platform.Function.CreateObject("Subscriber");\nPlatform.Function.SetObjectProperty(sub, "EmailAddress", "jane@example.com");\nPlatform.Function.SetObjectProperty(sub, "SubscriberKey", "sk-123");',
     },
@@ -1330,7 +1359,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'value', description: 'Value to assign', type: 'any' },
         ],
         returnType: 'void',
-        syntax: 'SetObjectProperty(apiObject, propertyName, value)',
+        syntax: 'Platform.Function.SetObjectProperty(apiObject, propertyName, value)',
         example:
             'var sub = Platform.Function.CreateObject("Subscriber");\nPlatform.Function.SetObjectProperty(sub, "EmailAddress", "jane@example.com");',
     },
@@ -1345,7 +1374,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'value', description: 'Item to append', type: 'any' },
         ],
         returnType: 'void',
-        syntax: 'AddObjectArrayItem(apiObject, propertyName, value)',
+        syntax: 'Platform.Function.AddObjectArrayItem(apiObject, propertyName, value)',
         example:
             'var ts = Platform.Function.CreateObject("TriggeredSend");\nPlatform.Function.AddObjectArrayItem(ts, "Subscribers", sub);',
     },
@@ -1376,7 +1405,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'InvokeCreate(apiObject[, statusMessage, errorCode, requestId])',
+        syntax: 'Platform.Function.InvokeCreate(apiObject[, statusMessage, errorCode, requestId])',
         example:
             'var sub = Platform.Function.CreateObject("Subscriber");\nPlatform.Function.SetObjectProperty(sub, "EmailAddress", "jane@example.com");\nvar statusMsg = "";\nvar errorCode = "";\nvar status = Platform.Function.InvokeCreate(sub, statusMsg, errorCode);\nWrite(status); // "OK" or "Error"',
     },
@@ -1407,7 +1436,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'InvokeUpdate(apiObject[, statusMessage, errorCode, requestId])',
+        syntax: 'Platform.Function.InvokeUpdate(apiObject[, statusMessage, errorCode, requestId])',
         example:
             'Platform.Function.SetObjectProperty(sub, "Status", "Unsubscribed");\nvar status = Platform.Function.InvokeUpdate(sub);\nWrite(status);',
     },
@@ -1438,7 +1467,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'InvokeDelete(apiObject[, statusMessage, errorCode, requestId])',
+        syntax: 'Platform.Function.InvokeDelete(apiObject[, statusMessage, errorCode, requestId])',
         example: 'var status = Platform.Function.InvokeDelete(sub);\nWrite(status);',
     },
     {
@@ -1473,7 +1502,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'object',
-        syntax: 'InvokeRetrieve(apiObject, properties[, filter, statusMessage, requestId])',
+        syntax: 'Platform.Function.InvokeRetrieve(apiObject, properties[, filter, statusMessage, requestId])',
         example:
             'var req = Platform.Function.CreateObject("RetrieveRequest");\nPlatform.Function.SetObjectProperty(req, "ObjectType", "Subscriber");\nvar props = ["EmailAddress", "Status"];\nvar results = Platform.Function.InvokeRetrieve(req, props);',
     },
@@ -1499,7 +1528,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'InvokePerform(apiObject, action[, statusMessage, errorCode])',
+        syntax: 'Platform.Function.InvokePerform(apiObject, action[, statusMessage, errorCode])',
         example: 'var status = Platform.Function.InvokePerform(sendDef, "start");\nWrite(status);',
     },
     {
@@ -1524,7 +1553,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'InvokeConfigure(apiObject, action[, statusMessage, errorCode])',
+        syntax: 'Platform.Function.InvokeConfigure(apiObject, action[, statusMessage, errorCode])',
         example:
             'var status = Platform.Function.InvokeConfigure(configObj, "create");\nWrite(status);',
     },
@@ -1550,7 +1579,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'InvokeExecute(apiObject, method[, statusMessage, errorCode])',
+        syntax: 'Platform.Function.InvokeExecute(apiObject, method[, statusMessage, errorCode])',
         example:
             'var status = Platform.Function.InvokeExecute(execObj, "LogUnsubEvent");\nWrite(status);',
     },
@@ -1578,7 +1607,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'InvokeExtract(apiObject, statusArray[, options])',
+        syntax: 'Platform.Function.InvokeExtract(apiObject, statusArray[, options])',
         example:
             'var statusArr = [];\nvar result = Platform.Function.InvokeExtract(extractObj, statusArr);\nWrite(result);',
     },
@@ -1609,7 +1638,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'InvokeSchedule(apiObject, action, schedule[, statusArray, options])',
+        syntax: 'Platform.Function.InvokeSchedule(apiObject, action, schedule[, statusArray, options])',
         example:
             'var statusArr = [];\nvar result = Platform.Function.InvokeSchedule(sendDef, "start", scheduleDef, statusArr);\nWrite(result);',
     },
@@ -1626,7 +1655,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'AttributeValue(attributeName)',
+        syntax: 'Platform.Function.AttributeValue(attributeName)',
         example:
             'var phone = Platform.Function.AttributeValue("MobilePhone");\nif (phone) { Write(phone); }',
     },
@@ -1651,7 +1680,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'HTTPGet(url[, headerNames, headerValues])',
+        syntax: 'Platform.Function.HTTPGet(url[, headerNames, headerValues])',
         example:
             'var headerNames = ["Authorization"];\n' +
             'var headerValues = ["Bearer " + accessToken];\n' +
@@ -1681,7 +1710,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'HTTPPost(url, contentType, payload[, headerNames, headerValues])',
+        syntax: 'Platform.Function.HTTPPost(url, contentType, payload[, headerNames, headerValues])',
         example:
             'var payload = Stringify({ name: "Jane", status: "active" });\n' +
             'var headerNames = ["Authorization"];\n' +
@@ -1703,7 +1732,7 @@ export const PLATFORM_FUNCTIONS = [
             { name: 'headerName', description: 'Name of the HTTP request header', type: 'string' },
         ],
         returnType: 'string',
-        syntax: 'HTTPRequestHeader(headerName)',
+        syntax: 'Platform.Function.HTTPRequestHeader(headerName)',
         example:
             'var auth = Platform.Function.HTTPRequestHeader("Authorization");\nWrite(auth); // e.g. "Bearer abc123"',
     },
@@ -1722,7 +1751,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'object',
-        syntax: 'ParseJSON(jsonString)',
+        syntax: 'Platform.Function.ParseJSON(jsonString)',
         example:
             'var jsonString = \'{"name":"Jane","age":30}\';\n' +
             'var obj = Platform.Function.ParseJSON(jsonString);\n' +
@@ -1741,9 +1770,140 @@ export const PLATFORM_FUNCTIONS = [
             'Encodes a string value so that it can be safely used as a URL query parameter or path component.',
         params: [{ name: 'value', description: 'The string value to URL-encode', type: 'string' }],
         returnType: 'string',
-        syntax: 'URLEncode(value)',
+        syntax: 'Platform.Function.URLEncode(value)',
         example:
             'var param = "hello world & more";\nvar encoded = Platform.Function.URLEncode(param);\nWrite("?q=" + encoded); // "?q=hello+world+%26+more"',
+    },
+    {
+        name: 'Write',
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Outputs the specified string value to the rendered page. ' +
+            'Distinct from `Platform.Response.Write()`, which writes to the HTTP response output.',
+        params: [
+            {
+                name: 'content',
+                description: 'The string content to write to the page output.',
+                type: 'string',
+            },
+        ],
+        returnType: 'void',
+        syntax: 'Platform.Function.Write(content)',
+        example: 'Platform.Function.Write("Hello, world!");',
+    },
+    {
+        name: 'Stringify',
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Converts a JavaScript object into its JSON string representation. ' +
+            'Works only with known JSON-serializable types. ' +
+            'Not to be confused with `String()`, which converts CLR response objects to plain strings.',
+        params: [
+            {
+                name: 'object',
+                description: 'JavaScript object to serialize to JSON.',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnDescription: 'JSON string representation of the object.',
+        syntax: 'Platform.Function.Stringify(object)',
+        example:
+            'var json = Platform.Function.Stringify({ name: "Jane", age: 30 });\nPlatform.Function.Write(json);',
+    },
+    {
+        name: 'ContentArea',
+        minArgs: 1,
+        maxArgs: 4,
+        deprecated: true,
+        description:
+            'Retrieves content from a specified classic Content Area by numeric ID. ' +
+            'Deprecated — Content Areas are no longer supported on current SFMC infrastructure.',
+        params: [
+            { name: 'id', description: 'Numeric ID of the Content Area.', type: 'number' },
+            {
+                name: 'regionName',
+                description: 'Impression region for content.',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'stopOnError',
+                description: 'When true, throws on failure; when false the call proceeds.',
+                type: 'boolean',
+                optional: true,
+            },
+            {
+                name: 'fallbackContent',
+                description: 'Default content to display when the area cannot be retrieved.',
+                type: 'string',
+                optional: true,
+            },
+        ],
+        returnType: 'string',
+        returnDescription: 'Rendered content from the Content Area.',
+        syntax: 'Platform.Function.ContentArea(id[, regionName, stopOnError, fallbackContent])',
+        example:
+            'var content = Platform.Function.ContentArea(123456, "impressionRegion", false, "defaultContentHere");',
+    },
+    {
+        name: 'ContentAreaByName',
+        minArgs: 1,
+        maxArgs: 4,
+        deprecated: true,
+        description:
+            'Retrieves content from a specified classic Content Area by name. ' +
+            'Deprecated — Content Areas are no longer supported on current SFMC infrastructure.',
+        params: [
+            { name: 'name', description: 'Name of the Content Area.', type: 'string' },
+            {
+                name: 'regionName',
+                description: 'Impression region for content.',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'stopOnError',
+                description: 'When true, throws on failure; when false the call proceeds.',
+                type: 'boolean',
+                optional: true,
+            },
+            {
+                name: 'fallbackContent',
+                description: 'Default content to display when the area cannot be retrieved.',
+                type: 'string',
+                optional: true,
+            },
+        ],
+        returnType: 'string',
+        returnDescription: 'Rendered content from the Content Area.',
+        syntax: 'Platform.Function.ContentAreaByName(name[, regionName, stopOnError, fallbackContent])',
+        example: String.raw`var content = Platform.Function.ContentAreaByName("My Content\\myContentArea", "impressionRegion", false, "defaultContentHere");`,
+    },
+    {
+        name: 'IsCHTMLBrowser',
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Indicates whether the passed-in user-agent value represents a CHTML browser. ' +
+            'CHTML browsers (e.g. feature phones) use a modified version of HTML. ' +
+            'Returns true when the user agent is a CHTML browser.',
+        params: [
+            {
+                name: 'userAgentString',
+                description: 'User-agent string to evaluate.',
+                type: 'string',
+            },
+        ],
+        returnType: 'boolean',
+        returnDescription: 'True if the user agent represents a CHTML browser.',
+        syntax: 'Platform.Function.IsCHTMLBrowser(userAgentString)',
+        example:
+            'Platform.Response.Write(Platform.Request.UserAgent);\n' +
+            'Platform.Response.Write("<br>Is CHTML: ");\n' +
+            'Platform.Response.Write(Platform.Function.IsCHTMLBrowser(Platform.Request.UserAgent));',
     },
 ];
 
@@ -1763,65 +1923,117 @@ const STANDARD_METHODS = ['Init', 'Add', 'Remove', 'Update', 'Retrieve'];
 export const CORE_LIBRARY_OBJECTS = [
     {
         name: 'DataExtension',
-        methods: [...STANDARD_METHODS, 'Fields', 'Rows'],
-        description: 'Manages Data Extension definitions and their field schemas.',
+        methods: ['Init', 'Add', 'Retrieve'],
+        requiresCoreLoad: true,
+        description:
+            'Manages Data Extension definitions and their field schemas. ' +
+            'Note: Core Library DataExtension methods do not support enterprise-level data extensions.',
     },
     {
         name: 'DataExtension.Fields',
-        methods: ['Init', 'Retrieve'],
-        description: 'Accesses field definitions within a Data Extension.',
+        methods: ['Add', 'Retrieve', 'UpdateSendableField'],
+        requiresCoreLoad: true,
+        description: 'Accesses and manages field definitions within a Data Extension.',
     },
     {
         name: 'DataExtension.Rows',
-        methods: ['Init', 'Add', 'Remove', 'Update', 'Retrieve', 'Lookup'],
+        methods: ['Add', 'Retrieve', 'Update', 'Remove', 'Lookup'],
+        requiresCoreLoad: true,
         description:
             'Manages individual rows within a Data Extension. ' +
-            'CAVEAT: Rows.Retrieve() does NOT work on CloudPages. ' +
-            'The filter parameter is required despite the documentation saying it is optional.',
+            'CAVEAT: Rows.Retrieve() does NOT work on CloudPages.',
     },
     {
         name: 'Subscriber',
-        methods: [...STANDARD_METHODS, 'Unsubscribe', 'Upsert', 'Statistics'],
+        methods: [
+            'Init',
+            'Add',
+            'Retrieve',
+            'Update',
+            'Remove',
+            'Unsubscribe',
+            'Upsert',
+            'Statistics',
+        ],
+        requiresCoreLoad: true,
         description: 'Manages subscriber records in the account.',
     },
     {
+        name: 'Subscriber.Attributes',
+        methods: ['Retrieve'],
+        requiresCoreLoad: true,
+        description: 'Accesses attributes belonging to a specific subscriber.',
+    },
+    {
+        name: 'Subscriber.Lists',
+        methods: ['Retrieve'],
+        requiresCoreLoad: true,
+        description: 'Lists the subscriber lists a specific subscriber belongs to.',
+    },
+    {
         name: 'Email',
-        methods: STANDARD_METHODS,
+        methods: ['Init', 'Add', 'Retrieve', 'Update', 'Remove', 'Validate', 'CheckContent'],
+        requiresCoreLoad: true,
         description: 'Manages email message definitions.',
     },
     {
         name: 'TriggeredSend',
-        methods: [...STANDARD_METHODS, 'Send', 'Pause', 'Publish', 'Start'],
-        description: 'Manages triggered send definitions and fires individual sends.',
+        methods: ['Init', 'Add', 'Retrieve', 'Update', 'Send', 'Pause', 'Publish', 'Start'],
+        requiresCoreLoad: true,
+        description:
+            'Manages triggered send definitions and fires individual sends. ' +
+            'Note: TriggeredSend methods cannot be used in the context of an email message or email preview.',
     },
     {
         name: 'TriggeredSend.Tracking',
         methods: ['Retrieve'],
+        requiresCoreLoad: true,
         description: 'Retrieves tracking data for a specific triggered send.',
     },
     {
+        name: 'TriggeredSend.Tracking.Clicks',
+        methods: ['Retrieve'],
+        requiresCoreLoad: true,
+        description: 'Retrieves click tracking data for a specific triggered send.',
+    },
+    {
+        name: 'TriggeredSend.Tracking.TotalByInterval',
+        methods: ['Retrieve'],
+        requiresCoreLoad: true,
+        description: 'Returns aggregated tracking data for a triggered send by type and interval.',
+    },
+    {
         name: 'List',
-        methods: [...STANDARD_METHODS, 'Subscribers'],
+        methods: ['Init', 'Add', 'Retrieve', 'Remove', 'Subscribers'],
+        requiresCoreLoad: true,
         description: 'Manages subscriber lists.',
     },
     {
         name: 'List.Subscribers',
-        methods: ['Init', 'Add', 'Remove', 'Update', 'Upsert', 'Retrieve'],
+        methods: ['Add', 'Retrieve', 'Unsubscribe', 'Update', 'Upsert'],
+        requiresCoreLoad: true,
         description: 'Manages the subscribers belonging to a specific list.',
     },
     {
         name: 'List.Subscribers.Tracking',
         methods: ['Retrieve'],
+        requiresCoreLoad: true,
         description: 'Retrieves tracking data for subscribers on a specific list.',
     },
     {
-        name: 'ContentArea',
-        methods: STANDARD_METHODS,
-        description: 'Manages classic content area objects.',
+        name: 'ContentAreaObj',
+        methods: ['Init', 'Add', 'Retrieve', 'Update', 'Remove'],
+        deprecated: true,
+        requiresCoreLoad: true,
+        description:
+            'Manages classic content area objects. ' +
+            'DEPRECATED — Content Areas have been deprecated; new content areas cannot be created or updated. ' +
+            'Existing content areas remain readable on older accounts only.',
     },
     {
         name: 'Folder',
-        methods: STANDARD_METHODS,
+        methods: ['Init', 'Add', 'Retrieve', 'Update', 'Remove', 'SetID'],
+        requiresCoreLoad: true,
         description: 'Manages folder structures within the Marketing Cloud account.',
     },
     {
@@ -1831,38 +2043,59 @@ export const CORE_LIBRARY_OBJECTS = [
     },
     {
         name: 'Send',
-        methods: [...STANDARD_METHODS, 'CancelSend'],
-        description: 'Manages email send definitions.',
+        methods: ['Init', 'Add', 'Retrieve', 'RetrieveLists', 'Remove', 'CancelSend'],
+        requiresCoreLoad: true,
+        description: 'Manages email sends.',
     },
     {
         name: 'Send.Tracking',
-        methods: ['Retrieve'],
+        methods: ['Retrieve', 'ClickRetrieve', 'TotalByIntervalRetrieve'],
+        requiresCoreLoad: true,
         description: 'Retrieves tracking data for a specific send.',
     },
     {
-        name: 'SendDefinition',
-        methods: [...STANDARD_METHODS, 'Send'],
+        name: 'Send.Definition',
+        methods: [
+            'Init',
+            'Add',
+            'AddWithDE',
+            'AddWithFilterDefinition',
+            'Retrieve',
+            'Update',
+            'Remove',
+            'Send',
+        ],
+        requiresCoreLoad: true,
         description:
             'Manages reusable Send Definition configurations that define all parameters for a send including content, audience, and delivery settings.',
     },
     {
         name: 'Template',
-        methods: STANDARD_METHODS,
+        methods: ['Init', 'Add', 'Retrieve', 'Update'],
+        requiresCoreLoad: true,
         description: 'Manages email template definitions.',
     },
     {
         name: 'DeliveryProfile',
-        methods: STANDARD_METHODS,
-        description: 'Manages delivery profile configurations.',
+        methods: ['Init', 'Add', 'Update', 'Remove'],
+        requiresCoreLoad: true,
+        description:
+            'Manages delivery profile configurations. ' +
+            'Note: DeliveryProfile.Retrieve() does not exist.',
     },
     {
         name: 'SenderProfile',
-        methods: STANDARD_METHODS,
-        description: 'Manages sender profile definitions.',
+        methods: ['Init', 'Add', 'Update', 'Remove'],
+        requiresCoreLoad: true,
+        description:
+            'Manages sender profile definitions. ' +
+            'Note: SenderProfile.Retrieve() does not exist. ' +
+            'SenderProfile methods only work on landing pages — they cannot run inside email messages at send time.',
     },
     {
         name: 'SendClassification',
-        methods: STANDARD_METHODS,
+        methods: ['Init', 'Add', 'Retrieve', 'Update', 'Remove'],
+        requiresCoreLoad: true,
         description: 'Manages send classification settings.',
     },
     {
@@ -1872,74 +2105,3086 @@ export const CORE_LIBRARY_OBJECTS = [
     },
     {
         name: 'Account',
-        methods: STANDARD_METHODS,
+        methods: ['Init', 'Retrieve', 'Update'],
+        requiresCoreLoad: true,
         description: 'Manages Marketing Cloud account settings.',
     },
     {
         name: 'AccountUser',
-        methods: [...STANDARD_METHODS, 'Activate', 'Deactivate'],
+        methods: ['Init', 'Add', 'Retrieve', 'Update', 'Activate', 'Deactivate'],
+        requiresCoreLoad: true,
         description: 'Manages user accounts within the Marketing Cloud business unit.',
     },
     {
         name: 'Account.Tracking',
         methods: ['Retrieve'],
+        requiresCoreLoad: true,
         description: 'Retrieves tracking data associated with account-level sends.',
     },
     {
         name: 'Portfolio',
-        methods: STANDARD_METHODS,
+        methods: ['Init', 'Add', 'Retrieve', 'Update', 'Remove'],
+        requiresCoreLoad: true,
         description: 'Manages portfolio (file) items in the account.',
     },
     {
         name: 'BounceEvent',
         methods: ['Retrieve'],
+        requiresCoreLoad: true,
         description: 'Retrieves bounce event data for message sends.',
     },
     {
         name: 'ClickEvent',
         methods: ['Retrieve'],
+        requiresCoreLoad: true,
         description: 'Retrieves click tracking event data for message sends.',
     },
     {
         name: 'ForwardedEmailEvent',
         methods: ['Retrieve'],
+        requiresCoreLoad: true,
         description: 'Retrieves forwarded email event data for message sends.',
     },
     {
         name: 'ForwardedEmailOptInEvent',
         methods: ['Retrieve'],
+        requiresCoreLoad: true,
         description: 'Retrieves forwarded email opt-in event data for message sends.',
     },
     {
         name: 'NotSentEvent',
         methods: ['Retrieve'],
+        requiresCoreLoad: true,
         description: 'Retrieves not-sent event data for message sends.',
     },
     {
         name: 'OpenEvent',
         methods: ['Retrieve'],
+        requiresCoreLoad: true,
         description: 'Retrieves open tracking event data for message sends.',
     },
     {
         name: 'SentEvent',
         methods: ['Retrieve'],
+        requiresCoreLoad: true,
         description: 'Retrieves sent event data for message sends.',
     },
     {
         name: 'SurveyEvent',
         methods: ['Retrieve'],
+        requiresCoreLoad: true,
         description: 'Retrieves survey response event data for message sends.',
     },
     {
         name: 'UnsubEvent',
         methods: ['Retrieve'],
+        requiresCoreLoad: true,
         description: 'Retrieves unsubscribe event data for message sends.',
+    },
+    {
+        name: 'DateTime.TimeZone',
+        methods: ['Retrieve'],
+        requiresCoreLoad: true,
+        description: 'Time zone utilities for SSJS date/time conversions.',
     },
 ];
 
 export const coreObjectNames = new Set(CORE_LIBRARY_OBJECTS.map((o) => o.name));
 
 export const coreObjectLookup = new Map(CORE_LIBRARY_OBJECTS.map((o) => [o.name, o]));
+
+// ── Core Library — rich method definitions ───────────────────────────────────
+// Each export below provides full parameter/return/syntax/example metadata for
+// a Core Library namespace. The matching CORE_LIBRARY_OBJECTS entry lists the
+// method names; these exports carry the rich shapes for completions and hover.
+
+/** @type {import('./declarations.js').SsjsDataMethod[]} */
+export const ACCOUNT_METHODS = [
+    {
+        name: 'Init',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Initializes an Account instance bound to the specified external key. ' +
+            'Required before invoking any other Account method on the returned instance.',
+        params: [{ name: 'key', description: 'External key of the account.', type: 'string' }],
+        returnType: 'AccountInstance',
+        returnDescription: 'An initialized Account bound to the specified external key.',
+        syntax: 'Account.Init(key)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' + 'var myAccount = Account.Init("MyCustomerKey");',
+    },
+    {
+        name: 'Retrieve',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Retrieves accounts based on the specified filter criteria.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'Criteria used to search for the account. Use a filter expression or a JSON object containing filter and additional search parameters.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'List of results matching the filter.',
+        syntax: 'Account.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var getAcct = Account.Retrieve({Property:"CustomerKey",SimpleOperator:"equals",Value:"MyAccount"});',
+    },
+    {
+        name: 'Update',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Updates the account with the supplied attributes. ' +
+            'If `properties` includes `TimeZoneID`, the call uses that value to update the account time zone.',
+        params: [
+            { name: 'properties', description: 'Account attributes to change.', type: 'object' },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<AccountInstance>.Update(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var myAccount = Account.Init("MyCustomerKey");\n' +
+            'var status = myAccount.Update({ "FromName" : "Demo From Name" });',
+    },
+];
+
+/** @type {import('./declarations.js').SsjsDataMethod[]} */
+export const ACCOUNT_TRACKING_METHODS = [
+    {
+        name: 'Retrieve',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Returns an array of tracking data related to the accounts specified by the passed filter argument.',
+        params: [
+            {
+                name: 'filter',
+                description: 'Criteria used to search for the account.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'List of results matching the filter.',
+        syntax: 'Account.Tracking.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var acctTracking = Account.Tracking.Retrieve({Property:"CustomerKey",SimpleOperator:"equals",Value:"MyAccount"});',
+    },
+];
+
+/** @type {import('./declarations.js').SsjsDataMethod[]} */
+export const ACCOUNT_USER_METHODS = [
+    {
+        name: 'Init',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 2,
+        maxArgs: 2,
+        description:
+            'Initializes an AccountUser instance bound to the specified external key and client ID (MID). ' +
+            'Required before invoking any other AccountUser method on the returned instance.',
+        params: [
+            { name: 'targetUserKey', description: 'External key of the user.', type: 'string' },
+            { name: 'myClientID', description: 'MID of the business unit.', type: 'number' },
+        ],
+        returnType: 'AccountUserInstance',
+        returnDescription:
+            'An initialized AccountUser bound to the specified external key and client ID.',
+        syntax: 'AccountUser.Init(targetUserKey, myClientID)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var acctUser = AccountUser.Init("myAccountUser", 123456789);',
+    },
+    {
+        name: 'Add',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Creates a new account user from the supplied properties object.',
+        params: [
+            {
+                name: 'properties',
+                description:
+                    'JSON object describing the new account user (Name, UserID, Password, Email, ClientID, DefaultBusinessUnitKey, AssociatedBusinessUnits, ...).',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: 'AccountUser.Add(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var newUser = {\n' +
+            '    "Name": "Andrea Cruz",\n' +
+            '    "UserID": "acruz",\n' +
+            '    "Password": "insert new password here",\n' +
+            '    "Email": "acruz@example.com",\n' +
+            '    "ClientID": 123456789,\n' +
+            '    "DefaultBusinessUnitKey": "childBUKey",\n' +
+            '    "AssociatedBusinessUnits": ["childBUKey", "grandchildBUKey"]\n' +
+            '};\n' +
+            'var status = AccountUser.Add(newUser);',
+    },
+    {
+        name: 'Retrieve',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Retrieves account users based on the specified filter criteria.',
+        params: [
+            {
+                name: 'filter',
+                description: 'Criteria used to search for the account user.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'List of results matching the filter.',
+        syntax: 'AccountUser.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var accountUser = AccountUser.Retrieve({Property:"CustomerKey",SimpleOperator:"equals",Value:"MyAccount"});',
+    },
+    {
+        name: 'Update',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Updates the account user with the supplied attributes.',
+        params: [
+            {
+                name: 'properties',
+                description: 'Attributes of the account user to change.',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<AccountUserInstance>.Update(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var acctUser = AccountUser.Init("myAccountUser", 123456789);\n' +
+            'var status = acctUser.Update({ "Password": "XXXXX" });',
+    },
+    {
+        name: 'Activate',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description: 'Activates the account user.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<AccountUserInstance>.Activate()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var acctUser = AccountUser.Init("myAccountUser", 123456789);\n' +
+            'var status = acctUser.Activate();',
+    },
+    {
+        name: 'Deactivate',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description:
+            'Deactivates the account user. ' +
+            'Note: account users cannot be deleted via server-side JavaScript — deactivation is the only "removal" path.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<AccountUserInstance>.Deactivate()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var acctUser = AccountUser.Init("myAccountUser", 123456789);\n' +
+            'var status = acctUser.Deactivate();',
+    },
+];
+
+/** @type {import('./declarations.js').SsjsDataMethod[]} */
+export const PORTFOLIO_METHODS = [
+    {
+        name: 'Init',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Initializes a Portfolio instance bound to the specified external key. ' +
+            'Required before invoking any other Portfolio method on the returned instance.',
+        params: [{ name: 'key', description: 'External key of the portfolio.', type: 'string' }],
+        returnType: 'PortfolioInstance',
+        returnDescription: 'An initialized Portfolio bound to the specified external key.',
+        syntax: 'Portfolio.Init(key)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' + 'var portObj = Portfolio.Init("myPortfolioCK");',
+    },
+    {
+        name: 'Add',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Creates a new portfolio (file) object from the supplied properties.',
+        params: [
+            {
+                name: 'properties',
+                description:
+                    'JSON object describing the new portfolio item (DisplayName, CustomerKey, CategoryID, FileName, FileLocation).',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: 'Portfolio.Add(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var newPortfolio = {\n' +
+            '    DisplayName: "SSJS Portfolio Object",\n' +
+            '    CustomerKey: "myPortfolioCK",\n' +
+            '    CategoryID: 12345,\n' +
+            '    FileName: "logo.png",\n' +
+            '    FileLocation: "http://www.example.com/Portals/0/images/global/logo_main.png"\n' +
+            '};\n' +
+            'var status = Portfolio.Add(newPortfolio);',
+    },
+    {
+        name: 'Retrieve',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Returns an array of portfolio objects matching the specified filter.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'Criteria used to search for portfolio objects. PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'List of portfolio objects matching the filter.',
+        syntax: 'Portfolio.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var portObjArr = Portfolio.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "PortfolioObjectKey" });',
+    },
+    {
+        name: 'Update',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Updates the portfolio object with the supplied attributes.',
+        params: [
+            {
+                name: 'properties',
+                description: 'Attributes to change on the portfolio object.',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<PortfolioInstance>.Update(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var portObj = Portfolio.Init("myPortfolioCK");\n' +
+            'var status = portObj.Update({ DisplayName: "Updated SSJS Image" });',
+    },
+    {
+        name: 'Remove',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description: 'Removes the previously initialized portfolio object.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<PortfolioInstance>.Remove()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var portObj = Portfolio.Init("myPortfolioCK");\n' +
+            'var status = portObj.Remove();',
+    },
+];
+
+/** @type {import('./declarations.js').SsjsDataMethod[]} */
+export const CONTENT_AREA_OBJ_METHODS = [
+    {
+        name: 'Init',
+        isStatic: true,
+        deprecated: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Initializes a ContentAreaObj instance bound to the specified external key. ' +
+            'DEPRECATED — Content Areas have been deprecated; new content areas cannot be created or updated. Existing content areas remain readable on older accounts only.',
+        params: [{ name: 'key', description: 'External key of the content area.', type: 'string' }],
+        returnType: 'ContentAreaObjInstance',
+        returnDescription: 'An initialized ContentAreaObj bound to the specified external key.',
+        syntax: 'ContentAreaObj.Init(key)',
+        example: 'Platform.Load("core", "1.1.5");\n' + 'var area = ContentAreaObj.Init("myCA");',
+    },
+    {
+        name: 'Add',
+        isStatic: true,
+        deprecated: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Creates a new content area from the supplied properties. ' +
+            'DEPRECATED — calls fail on accounts where the Content Areas feature has been retired.',
+        params: [
+            {
+                name: 'properties',
+                description:
+                    'JSON object describing the new content area (CustomerKey, Name, CategoryID, Layout, LayoutSpecified, Content).',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: 'ContentAreaObj.Add(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var exampleArea = {\n' +
+            '    CustomerKey: "exampleArea",\n' +
+            '    Name: "SSJS Content Area Example",\n' +
+            '    CategoryID: 123456,\n' +
+            '    Layout: "RawText",\n' +
+            '    LayoutSpecified: true,\n' +
+            '    Content: "<b>This is example content</b>"\n' +
+            '};\n' +
+            'var status = ContentAreaObj.Add(exampleArea);',
+    },
+    {
+        name: 'Retrieve',
+        isStatic: true,
+        deprecated: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Returns an array of content areas matching the specified filter. ' +
+            'DEPRECATED — read-only access only; the Content Areas feature has been retired for new content.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'List of content areas matching the filter.',
+        syntax: 'ContentAreaObj.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var results = ContentAreaObj.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "myCA" });',
+    },
+    {
+        name: 'Update',
+        isStatic: false,
+        deprecated: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Updates the content area with the supplied attributes. ' +
+            'DEPRECATED — calls fail on accounts where the Content Areas feature has been retired.',
+        params: [
+            {
+                name: 'properties',
+                description: 'Attributes to change on the content area.',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<ContentAreaObjInstance>.Update(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var obj = ContentAreaObj.Init("myCA");\n' +
+            'var status = obj.Update({ Name: "Name Updated By SSJS" });',
+    },
+    {
+        name: 'Remove',
+        isStatic: false,
+        deprecated: true,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description:
+            'Removes the previously initialized content area. ' +
+            'DEPRECATED — calls fail on accounts where the Content Areas feature has been retired.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<ContentAreaObjInstance>.Remove()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var obj = ContentAreaObj.Init("myCA");\n' +
+            'var status = obj.Remove();',
+    },
+];
+
+/** @type {import('./declarations.js').SsjsDataMethod[]} */
+export const FOLDER_METHODS = [
+    {
+        name: 'Init',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 1,
+        description:
+            'Initializes a Folder instance, optionally bound to the specified external key. ' +
+            'When called without arguments, a subsequent `<FolderInstance>.SetID(id)` call is required to bind the instance to a specific folder.',
+        params: [
+            {
+                name: 'key',
+                description:
+                    'External key of the folder. Optional — pass nothing and use `SetID()` when the folder has no external key.',
+                type: 'string',
+                optional: true,
+            },
+        ],
+        returnType: 'FolderInstance',
+        returnDescription:
+            'An initialized Folder; bound to the specified external key when one is supplied.',
+        syntax: 'Folder.Init([key])',
+        example:
+            'Platform.Load("core", "1");\n' +
+            'var myFolder = Folder.Init("myFolder");\n' +
+            '// or, when the folder has no external key:\n' +
+            'var myIDFolder = Folder.Init();\n' +
+            'myIDFolder.SetID(12345);',
+    },
+    {
+        name: 'Add',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Creates a new folder as a child of an existing folder.',
+        params: [
+            {
+                name: 'properties',
+                description:
+                    'JSON object describing the new folder (Name, CustomerKey, Description, ContentType, IsActive, IsEditable, AllowChildren, ParentFolderID).',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: 'Folder.Add(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var newFolder = {\n' +
+            '    Name: "Test Add Folder",\n' +
+            '    CustomerKey: "test_folder_key",\n' +
+            '    Description: "Test added",\n' +
+            '    ContentType: "email",\n' +
+            '    IsActive: "true",\n' +
+            '    IsEditable: "true",\n' +
+            '    AllowChildren: "false",\n' +
+            '    ParentFolderID: 123456\n' +
+            '};\n' +
+            'var status = Folder.Add(newFolder);',
+    },
+    {
+        name: 'Retrieve',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Returns an array of folders matching the specified filter. ' +
+            'Supports simple `{Property, SimpleOperator, Value}` filters and complex filters with `LeftOperand`, `LogicalOperator`, `RightOperand`. Use dot notation (e.g. `ParentFolder.Name`) to filter on child fields.',
+        params: [
+            {
+                name: 'filter',
+                description: 'WSProxy-style filter object — simple or compound with `AND`/`OR`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'Array of folder objects (including nested `ParentFolder` info).',
+        syntax: 'Folder.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1");\n' +
+            'var folders = Folder.Retrieve({\n' +
+            '    Property: "ParentFolder.Name",\n' +
+            '    SimpleOperator: "equals",\n' +
+            '    Value: "RewardsProgram"\n' +
+            '});\n' +
+            'Write(Stringify(folders));',
+    },
+    {
+        name: 'Update',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Updates the folder with the supplied attributes.',
+        params: [
+            {
+                name: 'properties',
+                description: 'Attributes to change on the folder.',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<FolderInstance>.Update(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var myFolder = Folder.Init("myFolder");\n' +
+            'var status = myFolder.Update({ Name: "Updated Folder Name" });',
+    },
+    {
+        name: 'Remove',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description: 'Removes the previously initialized folder.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<FolderInstance>.Remove()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var myFolder = Folder.Init("myFolder");\n' +
+            'myFolder.Remove();',
+    },
+    {
+        name: 'SetID',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Binds a previously initialized Folder instance to a specific folder ID. ' +
+            'Use this when the folder has no external key, after calling `Folder.Init()` without arguments.',
+        params: [
+            {
+                name: 'id',
+                description: 'The folder ID to bind to this Folder instance.',
+                type: 'number',
+            },
+        ],
+        returnType: 'void',
+        returnDescription: 'No return value.',
+        syntax: '<FolderInstance>.SetID(id)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var myIDFolder = Folder.Init();\n' +
+            'myIDFolder.SetID(12345);',
+    },
+];
+
+/** @type {import('./declarations.js').SsjsDataMethod[]} */
+export const TEMPLATE_METHODS = [
+    {
+        name: 'Init',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Initializes a Template instance bound to the specified external key. ' +
+            'Required before invoking any other Template method on the returned instance.',
+        params: [{ name: 'key', description: 'External key of the template.', type: 'string' }],
+        returnType: 'TemplateInstance',
+        returnDescription: 'An initialized Template bound to the specified external key.',
+        syntax: 'Template.Init(key)',
+        example: 'Platform.Load("core", "1");\n' + 'var t = Template.Init("myTemplate");',
+    },
+    {
+        name: 'Add',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Creates a new template from the supplied properties.',
+        params: [
+            {
+                name: 'properties',
+                description:
+                    'JSON object describing the new template (CustomerKey, TemplateName, LayoutHTML).',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: 'Template.Add(properties)',
+        example:
+            'Platform.Load("core", "1");\n' +
+            'var myTemp = {\n' +
+            '    CustomerKey: "test_template",\n' +
+            '    TemplateName: "SSJS Test Template",\n' +
+            '    LayoutHTML: "this is some HTML"\n' +
+            '};\n' +
+            'var status = Template.Add(myTemp);',
+    },
+    {
+        name: 'Retrieve',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Returns an array of templates matching the specified filter. ' +
+            'Pass `{ Filter: { Property, SimpleOperator, Value }, QueryAllAccounts: true }` to query across all accessible accounts.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'PascalCase WSProxy-style filter object, optionally wrapped with `QueryAllAccounts: true`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'List of templates matching the filter.',
+        syntax: 'Template.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var getTemplate = Template.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "MyTemplate" });',
+    },
+    {
+        name: 'Update',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Updates the template with the supplied attributes.',
+        params: [
+            {
+                name: 'properties',
+                description: 'Attributes to change on the template.',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<TemplateInstance>.Update(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var myTemplate = Template.Init("myTemplateCK");\n' +
+            'var status = myTemplate.Update({ TemplateName: "Edited Template" });',
+    },
+];
+
+/** @type {import('./declarations.js').SsjsDataMethod[]} */
+export const DELIVERY_PROFILE_METHODS = [
+    {
+        name: 'Init',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Initializes a DeliveryProfile instance bound to the specified external key. ' +
+            'Required before invoking any other DeliveryProfile method on the returned instance.',
+        params: [
+            { name: 'key', description: 'External key of the delivery profile.', type: 'string' },
+        ],
+        returnType: 'DeliveryProfileInstance',
+        returnDescription: 'An initialized DeliveryProfile bound to the specified external key.',
+        syntax: 'DeliveryProfile.Init(key)',
+        example:
+            'Platform.Load("core", "1");\n' +
+            'var myProfile = DeliveryProfile.Init("myDeliveryProfile");',
+    },
+    {
+        name: 'Add',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Creates a new delivery profile from the supplied properties.',
+        params: [
+            {
+                name: 'properties',
+                description:
+                    'JSON object describing the new delivery profile (Name, CustomerKey, Description, SourceAddressType, ...).',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: 'DeliveryProfile.Add(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var newDP = {\n' +
+            '    Name: "SSJS Added Delivery Profile",\n' +
+            '    CustomerKey: "test_delivery_profile",\n' +
+            '    Description: "An SSJS Added Profile",\n' +
+            '    SourceAddressType: "DefaultPrivateIPAddress"\n' +
+            '};\n' +
+            'var status = DeliveryProfile.Add(newDP);',
+    },
+    {
+        name: 'Update',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Updates the delivery profile with the supplied attributes.',
+        params: [
+            {
+                name: 'properties',
+                description: 'Attributes to change on the delivery profile.',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<DeliveryProfileInstance>.Update(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var myProfile = DeliveryProfile.Init("myDeliveryProfile");\n' +
+            'var status = myProfile.Update({ Name: "SSJS Updated Delivery Profile" });',
+    },
+    {
+        name: 'Remove',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description: 'Removes the previously initialized delivery profile.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<DeliveryProfileInstance>.Remove()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var myProfile = DeliveryProfile.Init("myDeliveryProfile");\n' +
+            'var status = myProfile.Remove();',
+    },
+];
+
+/** @type {import('./declarations.js').SsjsDataMethod[]} */
+export const SENDER_PROFILE_METHODS = [
+    {
+        name: 'Init',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Initializes a SenderProfile instance bound to the specified external key. ' +
+            'Note: SenderProfile methods only work on landing pages — they cannot run inside email messages at send time.',
+        params: [
+            { name: 'key', description: 'External key of the sender profile.', type: 'string' },
+        ],
+        returnType: 'SenderProfileInstance',
+        returnDescription: 'An initialized SenderProfile bound to the specified external key.',
+        syntax: 'SenderProfile.Init(key)',
+        example:
+            'Platform.Load("core", "1");\n' +
+            'var myProfile = SenderProfile.Init("mySenderProfile");',
+    },
+    {
+        name: 'Add',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Creates a new sender profile from the supplied properties.',
+        params: [
+            {
+                name: 'properties',
+                description:
+                    'JSON object describing the new sender profile (Name, CustomerKey, Description, FromName, FromAddress, ...).',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: 'SenderProfile.Add(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var newSP = {\n' +
+            '    Name: "SSJS Added Send Profile",\n' +
+            '    CustomerKey: "test_send_profile",\n' +
+            '    Description: "An SSJS Added Profile",\n' +
+            '    FromName: "Andrea Cruz",\n' +
+            '    FromAddress: "acruz@example.com"\n' +
+            '};\n' +
+            'var status = SenderProfile.Add(newSP);',
+    },
+    {
+        name: 'Update',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Updates the sender profile with the supplied attributes.',
+        params: [
+            {
+                name: 'properties',
+                description: 'Attributes to change on the sender profile.',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<SenderProfileInstance>.Update(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var myProfile = SenderProfile.Init("mySenderProfile");\n' +
+            'var status = myProfile.Update({ Name: "SSJS Updated Sender Profile" });',
+    },
+    {
+        name: 'Remove',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description: 'Removes the previously initialized sender profile.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<SenderProfileInstance>.Remove()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var myProfile = SenderProfile.Init("mySenderProfile");\n' +
+            'var status = myProfile.Remove();',
+    },
+];
+
+/** @type {import('./declarations.js').SsjsDataMethod[]} */
+export const SEND_CLASSIFICATION_METHODS = [
+    {
+        name: 'Init',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Initializes a SendClassification instance bound to the specified external key. ' +
+            'Required before invoking any other SendClassification method on the returned instance.',
+        params: [
+            {
+                name: 'key',
+                description: 'External key of the send classification.',
+                type: 'string',
+            },
+        ],
+        returnType: 'SendClassificationInstance',
+        returnDescription: 'An initialized SendClassification bound to the specified external key.',
+        syntax: 'SendClassification.Init(key)',
+        example:
+            'Platform.Load("core", "1");\n' +
+            'var sc = SendClassification.Init("mySendClassification");',
+    },
+    {
+        name: 'Add',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Creates a new send classification from the supplied properties.',
+        params: [
+            {
+                name: 'properties',
+                description:
+                    'JSON object describing the new send classification (CustomerKey, Name, Description, SenderProfileKey, DeliveryProfileKey).',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: 'SendClassification.Add(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var newSC = {\n' +
+            '    CustomerKey: "mySCKey",\n' +
+            '    Name: "SSJS Test SC",\n' +
+            '    Description: "Test SSJS description",\n' +
+            '    SenderProfileKey: "mySPKey",\n' +
+            '    DeliveryProfileKey: "myDPKey"\n' +
+            '};\n' +
+            'SendClassification.Add(newSC);',
+    },
+    {
+        name: 'Retrieve',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Returns an array of send classifications matching the specified filter.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'List of send classifications matching the filter.',
+        syntax: 'SendClassification.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var results = SendClassification.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "mySendClassification" });',
+    },
+    {
+        name: 'Update',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Updates the send classification with the supplied attributes. ' +
+            'You must include both `SenderProfileKey` and `DeliveryProfileKey` in `properties` for the update to succeed.',
+        params: [
+            {
+                name: 'properties',
+                description:
+                    'Attributes to change. Must include `SenderProfileKey` and `DeliveryProfileKey`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<SendClassificationInstance>.Update(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var sc = SendClassification.Init("mySendClassification");\n' +
+            'var updatedSC = {\n' +
+            '    Name: "Updated Send Classification",\n' +
+            '    SenderProfileKey: "mySPKey",\n' +
+            '    DeliveryProfileKey: "myDPKey"\n' +
+            '};\n' +
+            'var status = sc.Update(updatedSC);',
+    },
+    {
+        name: 'Remove',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description: 'Removes the previously initialized send classification.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<SendClassificationInstance>.Remove()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var sc = SendClassification.Init("mySendClassification");\n' +
+            'var status = sc.Remove();',
+    },
+];
+
+/** @type {import('./declarations.js').SsjsDataMethod[]} */
+export const FILTER_DEFINITION_METHODS = [
+    {
+        name: 'Init',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Initializes a FilterDefinition instance bound to the specified external key. ' +
+            'Required before invoking any other FilterDefinition method on the returned instance.',
+        params: [
+            { name: 'key', description: 'External key of the filter definition.', type: 'string' },
+        ],
+        returnType: 'FilterDefinitionInstance',
+        returnDescription: 'An initialized FilterDefinition bound to the specified external key.',
+        syntax: 'FilterDefinition.Init(key)',
+        example: 'Platform.Load("core", "1");\n' + 'var fd = FilterDefinition.Init("myFilterDef");',
+    },
+    {
+        name: 'Add',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Creates a new filter definition from the supplied properties. ' +
+            'The `Filter` field accepts either a simple `{Property, SimpleOperator, Value}` filter or a complex filter with `LeftOperand`, `LogicalOperator`, `RightOperand`. ' +
+            '`DataSource.Type` must be `"SubscriberList"` or `"DataExtension"`.',
+        params: [
+            {
+                name: 'properties',
+                description:
+                    'JSON object describing the new filter definition (Name, CustomerKey, Filter, DataSource).',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: 'FilterDefinition.Add(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var filterObj = { Property: "LuckyNumber", SimpleOperator: "equals", Value: 77 };\n' +
+            'var newFD = {\n' +
+            '    Name: "SSJS Filter Definition",\n' +
+            '    CustomerKey: "myFilterDef",\n' +
+            '    Filter: filterObj,\n' +
+            '    DataSource: { Type: "SubscriberList", CustomerKey: "example_list_key" }\n' +
+            '};\n' +
+            'var status = FilterDefinition.Add(newFD);',
+    },
+    {
+        name: 'Retrieve',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Returns an array of filter definitions matching the specified filter.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'List of filter definitions matching the filter.',
+        syntax: 'FilterDefinition.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var results = FilterDefinition.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "myFilterDef" });',
+    },
+    {
+        name: 'Update',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Updates the filter definition with the supplied attributes.',
+        params: [
+            {
+                name: 'properties',
+                description: 'Attributes to change on the filter definition.',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<FilterDefinitionInstance>.Update(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var fd = FilterDefinition.Init("myFilterDef");\n' +
+            'var status = fd.Update({ Name: "Updated Name" });',
+    },
+    {
+        name: 'Remove',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description: 'Deletes the previously initialized filter definition.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<FilterDefinitionInstance>.Remove()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var myFD = FilterDefinition.Init("myFilterDef");\n' +
+            'myFD.Remove();',
+    },
+];
+
+/** @type {import('./declarations.js').SsjsDataMethod[]} */
+export const QUERY_DEFINITION_METHODS = [
+    {
+        name: 'Init',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Initializes a QueryDefinition instance bound to the specified external key. ' +
+            'Required before invoking any other QueryDefinition method on the returned instance.',
+        params: [
+            { name: 'key', description: 'External key of the query definition.', type: 'string' },
+        ],
+        returnType: 'QueryDefinitionInstance',
+        returnDescription: 'An initialized QueryDefinition bound to the specified external key.',
+        syntax: 'QueryDefinition.Init(key)',
+        example: 'Platform.Load("core", "1");\n' + 'var qd = QueryDefinition.Init("myQueryDef");',
+    },
+    {
+        name: 'Add',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Creates a new query definition from the supplied properties. ' +
+            'Pass an optional `CategoryID` to place the query inside a specific folder.',
+        params: [
+            {
+                name: 'properties',
+                description:
+                    'JSON object describing the new query definition (Name, CustomerKey, optional CategoryID, TargetUpdateType, TargetType, Target, QueryText).',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: 'QueryDefinition.Add(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var queryDef = {\n' +
+            '    Name: "Example Query Definition",\n' +
+            '    CustomerKey: "myQueryDef",\n' +
+            '    TargetUpdateType: "Overwrite",\n' +
+            '    TargetType: "DE",\n' +
+            '    Target: { Name: "Example Target DE", CustomerKey: "example_target_de" },\n' +
+            '    QueryText: "SELECT SubKey, Email, Name FROM [Example Target DE] where FavoriteItemID=77"\n' +
+            '};\n' +
+            'var status = QueryDefinition.Add(queryDef);',
+    },
+    {
+        name: 'Retrieve',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Returns an array of query definitions matching the specified filter. ' +
+            'Supports simple `{Property, SimpleOperator, Value}` filters and complex filters with `LeftOperand`, `LogicalOperator`, `RightOperand`.',
+        params: [
+            {
+                name: 'filter',
+                description: 'WSProxy-style filter object — simple or compound with `AND`/`OR`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription:
+            'Array of query definition objects (with nested `DataExtensionTarget` info when applicable).',
+        syntax: 'QueryDefinition.Retrieve(filter)',
+        example:
+            'Platform.Load("Core", "1");\n' +
+            'var result = QueryDefinition.Retrieve({\n' +
+            '    Property: "Status",\n' +
+            '    SimpleOperator: "equals",\n' +
+            '    Value: "Active"\n' +
+            '});\n' +
+            'Write(Stringify(result));',
+    },
+    {
+        name: 'Update',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Updates the query definition with the supplied attributes.',
+        params: [
+            {
+                name: 'properties',
+                description: 'Attributes to change on the query definition.',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<QueryDefinitionInstance>.Update(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var qd = QueryDefinition.Init("myQueryDef");\n' +
+            'var status = qd.Update({\n' +
+            '    Name: "Updated Query Definition Name",\n' +
+            '    QueryText: "SELECT SubKey, Email, Name FROM [Example Target DE] where FavoriteItemID=12"\n' +
+            '});',
+    },
+    {
+        name: 'Remove',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description: 'Removes the previously initialized query definition.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<QueryDefinitionInstance>.Remove()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var qd = QueryDefinition.Init("myQueryDef");\n' +
+            'var status = qd.Remove();',
+    },
+    {
+        name: 'Perform',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Executes the query definition. Runs the SQL and writes results into the configured target Data Extension.',
+        params: [
+            {
+                name: 'action',
+                description: 'The action to perform. Use `"start"` to execute the query.',
+                type: 'string',
+                enum: ['start'],
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<QueryDefinitionInstance>.Perform(action)',
+        example:
+            'Platform.Load("core", "1");\n' +
+            'var qd = QueryDefinition.Init("MY_QUERY_KEY");\n' +
+            'var result = qd.Perform("start");\n' +
+            'Write(Stringify(result));',
+    },
+];
+
+// ── List / Subscriber methods ────────────────────────────────────────────────
+
+export const LIST_METHODS = [
+    {
+        name: 'Init',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Initializes a List instance bound to the specified external key. ' +
+            'Required before invoking any other List method on the returned instance.',
+        params: [{ name: 'key', description: 'External key of the list.', type: 'string' }],
+        returnType: 'ListInstance',
+        returnDescription: 'An initialized List bound to the specified external key.',
+        syntax: 'List.Init(key)',
+        example: 'Platform.Load("core", "1");\n' + 'var myList = List.Init("myList");',
+    },
+    {
+        name: 'Add',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Creates a new list from the supplied properties and returns an initialized list instance. ' +
+            'Note: unlike most static `Add` methods, this returns a `ListInstance`, not `"OK"`.',
+        params: [
+            {
+                name: 'properties',
+                description:
+                    'JSON object describing the new list (CustomerKey, Name, Description, ...).',
+                type: 'object',
+            },
+        ],
+        returnType: 'ListInstance',
+        returnDescription: 'An initialized List bound to the newly-created list.',
+        syntax: 'List.Add(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var myNewList = List.Add({ CustomerKey: "libList", Name: "testLib", Description: "desc" });',
+    },
+    {
+        name: 'Retrieve',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Returns an array of lists matching the specified filter.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'List of list objects matching the filter.',
+        syntax: 'List.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var lists = List.Retrieve({ Property: "ListName", SimpleOperator: "equals", Value: "BirthdayList" });',
+    },
+    {
+        name: 'Remove',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description: 'Removes the previously initialized list.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<ListInstance>.Remove()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var myList = List.Init("myList");\n' +
+            'var status = myList.Remove();',
+    },
+];
+
+export const LIST_SUBSCRIBERS_METHODS = [
+    {
+        name: 'Add',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Adds a subscriber to the previously initialized list.',
+        params: [
+            {
+                name: 'properties',
+                description:
+                    'Object containing subscriber properties (EmailAddress, SubscriberKey, optionally list status).',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<ListInstance>.Subscribers.Add(properties)',
+        example:
+            'Platform.Load("core", "1");\n' +
+            'var list = List.Init("MY_LIST_KEY");\n' +
+            'var result = list.Subscribers.Add({\n' +
+            '    EmailAddress: "test@example.com",\n' +
+            '    SubscriberKey: "test@example.com"\n' +
+            '});\n' +
+            'Write(Stringify(result));',
+    },
+    {
+        name: 'Retrieve',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 1,
+        description:
+            'Returns the subscribers belonging to the previously initialized list. ' +
+            'Pass an optional filter to narrow the results; omit it to return all subscribers on the list.',
+        params: [
+            {
+                name: 'filter',
+                description: 'Optional WSProxy-style filter object to narrow the results.',
+                type: 'object',
+                optional: true,
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription:
+            'List of subscriber objects on the list (filtered when a filter is supplied).',
+        syntax: '<ListInstance>.Subscribers.Retrieve([filter])',
+        example:
+            'Platform.Load("core", "1");\n' +
+            'var list = List.Init("MY_LIST_KEY");\n' +
+            'var subscribers = list.Subscribers.Retrieve();',
+    },
+    {
+        name: 'Unsubscribe',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Removes the specified subscriber from the previously initialized list.',
+        params: [
+            {
+                name: 'emailAddress',
+                description:
+                    'Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.',
+                type: 'string',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<ListInstance>.Subscribers.Unsubscribe(emailAddress)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var myList = List.Init("myList");\n' +
+            'var status = myList.Subscribers.Unsubscribe("aruiz@example.com");',
+    },
+    {
+        name: 'Update',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 2,
+        maxArgs: 2,
+        description:
+            'Updates the status of the specified subscriber on the previously initialized list.',
+        params: [
+            {
+                name: 'emailAddress',
+                description:
+                    'Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.',
+                type: 'string',
+            },
+            {
+                name: 'status',
+                description: 'New status of the subscriber on the list.',
+                type: 'string',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<ListInstance>.Subscribers.Update(emailAddress, status)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var myList = List.Init("myList");\n' +
+            'var status = myList.Subscribers.Update("aruiz@example.com", "Active");',
+    },
+    {
+        name: 'Upsert',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 2,
+        maxArgs: 2,
+        description:
+            'Adds the subscriber if not on the list, otherwise updates the supplied attributes. ' +
+            "If `attributes.Status` is supplied, the subscriber's list status is updated.",
+        params: [
+            {
+                name: 'emailAddress',
+                description:
+                    'Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.',
+                type: 'string',
+            },
+            {
+                name: 'attributes',
+                description: 'Additional subscriber attributes to set or update.',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<ListInstance>.Subscribers.Upsert(emailAddress, attributes)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var myList = List.Init("myList");\n' +
+            'var status = myList.Subscribers.Upsert("aruiz@example.com", { ZipCode: "46202" });',
+    },
+];
+
+export const LIST_SUBSCRIBERS_TRACKING_METHODS = [
+    {
+        name: 'Retrieve',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Returns an array of tracking data for subscribers matching the filter.',
+        params: [
+            {
+                name: 'filter',
+                description: 'PascalCase WSProxy-style filter object identifying the subscribers.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'List of tracking records matching the filter.',
+        syntax: '<ListInstance>.Subscribers.Tracking.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var myList = List.Init("MyList");\n' +
+            'var results = myList.Subscribers.Tracking.Retrieve({ Property: "SubscriberKey", SimpleOperator: "equals", Value: "MyKey" });',
+    },
+];
+
+export const SUBSCRIBER_METHODS = [
+    {
+        name: 'Init',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Initializes a Subscriber instance bound to the specified subscriber key. ' +
+            'Required before invoking any instance method on the returned object.',
+        params: [{ name: 'key', description: 'Subscriber key.', type: 'string' }],
+        returnType: 'SubscriberInstance',
+        returnDescription: 'An initialized Subscriber bound to the specified key.',
+        syntax: 'Subscriber.Init(key)',
+        example: 'Platform.Load("core", "1");\n' + 'var sub = Subscriber.Init("mySubscriber");',
+    },
+    {
+        name: 'Add',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Creates a new subscriber from the supplied properties.',
+        params: [
+            {
+                name: 'properties',
+                description:
+                    'JSON object describing the new subscriber (EmailAddress, SubscriberKey, EmailTypePreference, Attributes, Lists, ...).',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: 'Subscriber.Add(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var newSubscriber = {\n' +
+            '    EmailAddress: "test.008@example.com",\n' +
+            '    SubscriberKey: "20100730001",\n' +
+            '    EmailTypePreference: "Text",\n' +
+            '    Attributes: { "First Name": "test.008", "Last Name": "test.008" },\n' +
+            '    Lists: { Status: "Active", ID: 12345, Action: "Create" }\n' +
+            '};\n' +
+            'var status = Subscriber.Add(newSubscriber);',
+    },
+    {
+        name: 'Retrieve',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Returns an array of subscribers matching the specified filter.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'List of subscribers matching the filter.',
+        syntax: 'Subscriber.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var results = Subscriber.Retrieve({ Property: "SubscriberKey", SimpleOperator: "equals", Value: "MySubscriberKey" });',
+    },
+    {
+        name: 'Upsert',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Creates a new subscriber, or updates an existing one matched by EmailAddress / SubscriberKey.',
+        params: [
+            {
+                name: 'properties',
+                description:
+                    'JSON object describing the subscriber (EmailAddress, SubscriberKey, Attributes, ...).',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: 'Subscriber.Upsert(properties)',
+        example:
+            'Platform.Load("core", "1");\n' +
+            'var sub = {\n' +
+            '    EmailAddress: "test@example.com",\n' +
+            '    SubscriberKey: "test@example.com",\n' +
+            '    Attributes: [ { Name: "FirstName", Value: "Jane" } ]\n' +
+            '};\n' +
+            'var result = Subscriber.Upsert(sub);\n' +
+            'Write(Stringify(result));',
+    },
+    {
+        name: 'Statistics',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Retrieves statistical data for the specified subscriber (sends, opens, clicks, bounces, unsubscribes).',
+        params: [
+            {
+                name: 'subscriberKey',
+                description: 'The subscriber key identifying the subscriber.',
+                type: 'string',
+            },
+        ],
+        returnType: 'object',
+        returnDescription: 'A single object with subscriber statistics (not an array).',
+        syntax: 'Subscriber.Statistics(subscriberKey)',
+        example:
+            'Platform.Load("core", "1");\n' +
+            'var stats = Subscriber.Statistics("test@example.com");\n' +
+            'Write(Stringify(stats));',
+    },
+    {
+        name: 'Update',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Updates the previously initialized subscriber with the supplied attributes.',
+        params: [
+            { name: 'properties', description: 'Subscriber properties to change.', type: 'object' },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<SubscriberInstance>.Update(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var subObj = Subscriber.Init("SubKey");\n' +
+            'var status = subObj.Update({ EmailTypePreference: "HTML", Attributes: { "First Name": "Test", "Last Name": "User" } });',
+    },
+    {
+        name: 'Remove',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description: 'Deletes the previously initialized subscriber.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<SubscriberInstance>.Remove()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var subObj = Subscriber.Init("SubKey");\n' +
+            'var status = subObj.Remove();',
+    },
+    {
+        name: 'Unsubscribe',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description: 'Sets the previously initialized subscriber\'s status to `"Unsubscribed"`.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<SubscriberInstance>.Unsubscribe()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var subObj = Subscriber.Init("SubKey");\n' +
+            'var status = subObj.Unsubscribe();',
+    },
+];
+
+export const SUBSCRIBER_ATTRIBUTES_METHODS = [
+    {
+        name: 'Retrieve',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description:
+            'Returns an array of attributes associated with the previously initialized subscriber.',
+        params: [],
+        returnType: 'object[]',
+        returnDescription: 'List of attribute objects for the subscriber.',
+        syntax: '<SubscriberInstance>.Attributes.Retrieve()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var subObj = Subscriber.Init("SubKey");\n' +
+            'var attributes = subObj.Attributes.Retrieve();',
+    },
+];
+
+export const SUBSCRIBER_LISTS_METHODS = [
+    {
+        name: 'Retrieve',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description: 'Returns the lists the previously initialized subscriber is a member of.',
+        params: [],
+        returnType: 'object[]',
+        returnDescription: 'List of list objects the subscriber belongs to.',
+        syntax: '<SubscriberInstance>.Lists.Retrieve()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var subObj = Subscriber.Init("SubKey");\n' +
+            'var listArray = subObj.Lists.Retrieve();',
+    },
+];
+
+// ── Email methods ────────────────────────────────────────────────────────────
+
+export const EMAIL_METHODS = [
+    {
+        name: 'Init',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Initializes an Email instance bound to the specified external key. ' +
+            'Required before invoking any other Email method on the returned instance. ' +
+            'External keys cannot be set in the UI — set one via SOAP API, or look up the value via `Email.Retrieve()`.',
+        params: [
+            { name: 'key', description: 'External key of the email message.', type: 'string' },
+        ],
+        returnType: 'EmailInstance',
+        returnDescription: 'An initialized Email bound to the specified external key.',
+        syntax: 'Email.Init(key)',
+        example: 'Platform.Load("core", "1");\n' + 'var myEmail = Email.Init("myEmail");',
+    },
+    {
+        name: 'Add',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Creates a new email message from the supplied properties and returns an initialized email instance. ' +
+            'Note: unlike most static `Add` methods, this returns an `EmailInstance`, not `"OK"`.',
+        params: [
+            {
+                name: 'properties',
+                description:
+                    'JSON object describing the new email (CustomerKey, Name, optional CategoryID, HTMLBody, TextBody, Subject, EmailType, ...).',
+                type: 'object',
+            },
+        ],
+        returnType: 'EmailInstance',
+        returnDescription: 'An initialized Email bound to the newly-created email message.',
+        syntax: 'Email.Add(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var newMail = {\n' +
+            '    CustomerKey: "test_email_key",\n' +
+            '    Name: "Test Email",\n' +
+            '    HTMLBody: "<b>This is a test email</b>",\n' +
+            '    TextBody: "This is a test email",\n' +
+            '    Subject: "Test Email Subject",\n' +
+            '    EmailType: "HTML",\n' +
+            '    CharacterSet: "US-ASCII"\n' +
+            '};\n' +
+            'var myEmail = Email.Add(newMail);',
+    },
+    {
+        name: 'Retrieve',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Returns an array of email messages matching the specified filter.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'List of email messages matching the filter.',
+        syntax: 'Email.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var results = Email.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "myEmail" });',
+    },
+    {
+        name: 'Update',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Updates the email message with the supplied attributes.',
+        params: [
+            {
+                name: 'properties',
+                description: 'Attributes to change on the email message.',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<EmailInstance>.Update(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var myEmail = Email.Init("myEmail");\n' +
+            'var status = myEmail.Update({ Name: "Updated Name", Subject: "Updated Email Subject" });',
+    },
+    {
+        name: 'Remove',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description: 'Removes the previously initialized email message.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<EmailInstance>.Remove()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var myEmail = Email.Init("myEmail");\n' +
+            'myEmail.Remove();',
+    },
+    {
+        name: 'Validate',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description:
+            'Runs validation checks on the previously initialized email message. ' +
+            'Returns a `{Task: {ValidationStatus: boolean, ValidationMessages: string}}` object.',
+        params: [],
+        returnType: 'object',
+        returnDescription:
+            'Validation result with `Task.ValidationStatus` (boolean) and `Task.ValidationMessages` (string).',
+        syntax: '<EmailInstance>.Validate()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var myEmail = Email.Init("myEmail");\n' +
+            'var results = myEmail.Validate();\n' +
+            'Write(results.Task.ValidationStatus);\n' +
+            'Write(results.Task.ValidationMessages);',
+    },
+    {
+        name: 'CheckContent',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description:
+            'Runs content checks on the previously initialized email message. ' +
+            'Returns a `{Task: {CheckPassed: boolean, ResultMessage: string}}` object.',
+        params: [],
+        returnType: 'object',
+        returnDescription:
+            'Content-check result with `Task.CheckPassed` (boolean) and `Task.ResultMessage` (string).',
+        syntax: '<EmailInstance>.CheckContent()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var myEmail = Email.Init("myEmail");\n' +
+            'var results = myEmail.CheckContent();\n' +
+            'Write(results.Task.CheckPassed);\n' +
+            'Write(results.Task.ResultMessage);',
+    },
+];
+
+// ── Send / SendDefinition / TriggeredSend methods ────────────────────────────
+
+export const SEND_METHODS = [
+    {
+        name: 'Init',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Initializes a Send instance bound to the specified send ID. ' +
+            'Required before invoking any other Send method on the returned instance.',
+        params: [{ name: 'id', description: 'Numeric ID of the send.', type: 'number' }],
+        returnType: 'SendInstance',
+        returnDescription: 'An initialized Send bound to the specified send ID.',
+        syntax: 'Send.Init(id)',
+        example: 'Platform.Load("core", "1");\n' + 'var s = Send.Init(12345);',
+    },
+    {
+        name: 'Add',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 2,
+        maxArgs: 3,
+        description:
+            'Creates a new send to the specified email and list(s). ' +
+            'Pass an `options` object to override From name, From address, subject, send time, etc.',
+        params: [
+            {
+                name: 'emailKey',
+                description: 'CustomerKey of the email message to associate with the send.',
+                type: 'string',
+            },
+            { name: 'listIds', description: 'Array of list IDs to send to.', type: 'array' },
+            {
+                name: 'options',
+                description:
+                    'Optional send options (FromName, FromAddress, Subject, send time, ...).',
+                type: 'object',
+                optional: true,
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: 'Send.Add(emailKey, listIds, [options])',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var status = Send.Add("test_email", [12345, 12346]);\n' +
+            'var options = { FromName: "JSON Specified Name", FromAddress: "aruiz@example.com", Subject: "JSON Test Mail" };\n' +
+            'var status2 = Send.Add("test_email", [12345, 12346], options);',
+    },
+    {
+        name: 'Retrieve',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Returns an array of sends matching the specified filter.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'PascalCase WSProxy-style filter object — simple or compound with `LeftOperand`/`LogicalOperator`/`RightOperand`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'List of sends matching the filter.',
+        syntax: 'Send.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var sends = Send.Retrieve({ Property: "ID", SimpleOperator: "equals", Value: 12345 });',
+    },
+    {
+        name: 'RetrieveLists',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Returns information about the lists targeted by a send. ' +
+            'Filter must restrict results to specific send ID(s).',
+        params: [
+            {
+                name: 'filter',
+                description: 'WSProxy-style filter restricting results to specific send ID(s).',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription:
+            'List of list objects associated with matching sends; throws on failure.',
+        syntax: 'Send.RetrieveLists(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var listsSentTo = Send.RetrieveLists({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });',
+    },
+    {
+        name: 'Remove',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description: 'Removes the previously initialized send.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<SendInstance>.Remove()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' + 'var s = Send.Init(12345);\n' + 's.Remove();',
+    },
+    {
+        name: 'CancelSend',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description: 'Attempts to cancel the previously initialized send.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<SendInstance>.CancelSend()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var mySend = Send.Init(12345);\n' +
+            'var status = mySend.CancelSend();',
+    },
+];
+
+export const SEND_TRACKING_METHODS = [
+    {
+        name: 'Retrieve',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Returns tracking data for sends matching the filter. ' +
+            'This is a static call on `Send.Tracking.*` — no `Send.Init()` is required.',
+        params: [{ name: 'filter', description: 'WSProxy-style filter object.', type: 'object' }],
+        returnType: 'object[]',
+        returnDescription: 'List of tracking records matching the filter.',
+        syntax: 'Send.Tracking.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var sendTracking = Send.Tracking.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });',
+    },
+    {
+        name: 'ClickRetrieve',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Returns click tracking data for the previously initialized send.',
+        params: [
+            {
+                name: 'filter',
+                description: 'WSProxy-style filter restricting results.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'List of click tracking records matching the filter.',
+        syntax: '<SendInstance>.Tracking.ClickRetrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var singleSend = Send.Init(12345);\n' +
+            'var results = singleSend.Tracking.ClickRetrieve({ Property: "ID", SimpleOperator: "equals", Value: 12345 });',
+    },
+    {
+        name: 'TotalByIntervalRetrieve',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 4,
+        maxArgs: 4,
+        description:
+            'Returns aggregated tracking data for the previously initialized send. ' +
+            'Aggregates by `type` over the date range, grouped by `groupBy`.',
+        params: [
+            {
+                name: 'type',
+                description: 'Type of data to aggregate.',
+                type: 'string',
+                enum: ['Send', 'Open', 'Click', 'Bounce', 'Unsubscribe'],
+            },
+            {
+                name: 'startDate',
+                description: 'Start date of the data period (MM-DD-YYYY).',
+                type: 'string',
+            },
+            {
+                name: 'endDate',
+                description: 'End date of the data period (MM-DD-YYYY).',
+                type: 'string',
+            },
+            {
+                name: 'groupBy',
+                description: 'Interval used to aggregate data.',
+                type: 'string',
+                enum: ['day', 'hour'],
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'List of aggregated tracking records.',
+        syntax: '<SendInstance>.Tracking.TotalByIntervalRetrieve(type, startDate, endDate, groupBy)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var singleSend = Send.Init(12345);\n' +
+            'var results = singleSend.Tracking.TotalByIntervalRetrieve("Click", "07-01-2010", "07-31-2010", "day");',
+    },
+];
+
+export const SEND_DEFINITION_METHODS = [
+    {
+        name: 'Init',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Initializes a SendDefinition instance bound to the specified external key. ' +
+            'Required before invoking any instance method on the returned object.',
+        params: [
+            { name: 'key', description: 'External key of the send definition.', type: 'string' },
+        ],
+        returnType: 'SendDefinitionInstance',
+        returnDescription: 'An initialized SendDefinition bound to the specified external key.',
+        syntax: 'Send.Definition.Init(key)',
+        example: 'Platform.Load("core", "1.1.5");\n' + 'var esd = Send.Definition.Init("myESD");',
+    },
+    {
+        name: 'Add',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 4,
+        maxArgs: 4,
+        description: 'Creates a new send definition.',
+        params: [
+            {
+                name: 'esdParams',
+                description:
+                    'Object with CustomerKey, Name, EmailSubject for the new send definition.',
+                type: 'object',
+            },
+            {
+                name: 'sendClassificationKey',
+                description: 'CustomerKey of the related send classification.',
+                type: 'string',
+            },
+            {
+                name: 'emailKey',
+                description: 'CustomerKey of the email message to use.',
+                type: 'string',
+            },
+            {
+                name: 'listIds',
+                description: 'Array of list IDs targeted by the send definition.',
+                type: 'array',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: 'Send.Definition.Add(esdParams, sendClassificationKey, emailKey, listIds)',
+        example:
+            'Platform.Load("core", "1");\n' +
+            'var esdParams = { CustomerKey: "example_esd", Name: "Example Send Definition", EmailSubject: "Sent By Example Send Definition" };\n' +
+            'Send.Definition.Add(esdParams, "example_sc_key", "example_email_key", [12345, 12346]);',
+    },
+    {
+        name: 'AddWithDE',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 5,
+        maxArgs: 5,
+        description: 'Creates a new send definition that targets a sendable Data Extension.',
+        params: [
+            {
+                name: 'esdParams',
+                description:
+                    'Object with CustomerKey, Name, EmailSubject for the new send definition.',
+                type: 'object',
+            },
+            {
+                name: 'sendClassificationKey',
+                description: 'CustomerKey of the related send classification.',
+                type: 'string',
+            },
+            {
+                name: 'emailKey',
+                description: 'CustomerKey of the email message to use.',
+                type: 'string',
+            },
+            {
+                name: 'sendableDataExtensionKey',
+                description: 'CustomerKey of the sendable Data Extension.',
+                type: 'string',
+            },
+            {
+                name: 'publicationListKey',
+                description: 'CustomerKey of the publication list to associate.',
+                type: 'string',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: 'Send.Definition.AddWithDE(esdParams, sendClassificationKey, emailKey, sendableDataExtensionKey, publicationListKey)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var esdParams = { CustomerKey: "ssjs_de_esd_1c", Name: "SSJS DE Test ESD3", EmailSubject: "Third send By Test DE Send Definition" };\n' +
+            'var status = Send.Definition.AddWithDE(esdParams, "scKey", "test_email", "deKey", "myPubList");',
+    },
+    {
+        name: 'AddWithFilterDefinition',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 5,
+        maxArgs: 5,
+        description:
+            'Creates a new send definition that targets the audience defined by a filter definition.',
+        params: [
+            {
+                name: 'esdParams',
+                description:
+                    'Object with CustomerKey, Name, EmailSubject for the new send definition.',
+                type: 'object',
+            },
+            {
+                name: 'sendClassificationKey',
+                description: 'CustomerKey of the related send classification.',
+                type: 'string',
+            },
+            {
+                name: 'emailKey',
+                description: 'CustomerKey of the email message to use.',
+                type: 'string',
+            },
+            {
+                name: 'filterDefinitionKey',
+                description: 'CustomerKey of the filter definition.',
+                type: 'string',
+            },
+            {
+                name: 'listId',
+                description: 'ID of the list targeted by the filter.',
+                type: 'number',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: 'Send.Definition.AddWithFilterDefinition(esdParams, sendClassificationKey, emailKey, filterDefinitionKey, listId)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var esdParams = { CustomerKey: "filterDef_esd", Name: "Example Filtered Send Definition", EmailSubject: "Sent By Filtered Send Definition" };\n' +
+            'var status = Send.Definition.AddWithFilterDefinition(esdParams, "scKey", "test_email", "fdKey", 144);',
+    },
+    {
+        name: 'Retrieve',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 1,
+        description:
+            'Returns an array of send definitions, optionally filtered. ' +
+            'When no filter is supplied, all send definitions are returned.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'Optional WSProxy-style filter object: `{Property, SimpleOperator, Value}`.',
+                type: 'object',
+                optional: true,
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription:
+            'List of send definitions matching the filter (or all when no filter is supplied).',
+        syntax: 'Send.Definition.Retrieve([filter])',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var esd = Send.Definition.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "ssjs_test_esd" });',
+    },
+    {
+        name: 'Update',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Updates the previously initialized send definition.',
+        params: [{ name: 'properties', description: 'Properties to update.', type: 'object' }],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<SendDefinitionInstance>.Update(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var sendDef = Send.Definition.Init("MY_SEND_DEF_KEY");\n' +
+            'var result = sendDef.Update({ Name: "Updated Send Definition Name" });',
+    },
+    {
+        name: 'Remove',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description: 'Deletes the previously initialized send definition.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<SendDefinitionInstance>.Remove()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var esd = Send.Definition.Init("myESD");\n' +
+            'var status = esd.Remove();',
+    },
+    {
+        name: 'Send',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description:
+            'Sends email messages to the lists associated with the previously initialized send definition.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<SendDefinitionInstance>.Send()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var esd = Send.Definition.Init("myESD");\n' +
+            'var status = esd.Send();',
+    },
+];
+
+export const TRIGGERED_SEND_METHODS = [
+    {
+        name: 'Init',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Initializes a TriggeredSend instance bound to the specified external key. ' +
+            'Required before invoking any instance method on the returned object. ' +
+            'Note: TriggeredSend methods cannot be used in the context of an email message or email preview.',
+        params: [
+            {
+                name: 'key',
+                description: 'External key of the triggered send definition.',
+                type: 'string',
+            },
+        ],
+        returnType: 'TriggeredSendInstance',
+        returnDescription: 'An initialized TriggeredSend bound to the specified external key.',
+        syntax: 'TriggeredSend.Init(key)',
+        example:
+            'Platform.Load("core", "1");\n' + 'var triggeredSend = TriggeredSend.Init("support");',
+    },
+    {
+        name: 'Add',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Creates a new triggered send definition from the supplied properties and returns an initialized TriggeredSend instance. ' +
+            'Note: unlike most static `Add` methods, this returns a `TriggeredSendInstance`, not `"OK"`.',
+        params: [
+            {
+                name: 'properties',
+                description:
+                    'JSON object describing the new triggered send definition (Name, CustomerKey, FromName, FromAddress, EmailID, SendClassificationID, ...).',
+                type: 'object',
+            },
+        ],
+        returnType: 'TriggeredSendInstance',
+        returnDescription:
+            'An initialized TriggeredSend bound to the newly-created triggered send definition.',
+        syntax: 'TriggeredSend.Add(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var newTSD = {\n' +
+            '    Name: "Test TSD",\n' +
+            '    CustomerKey: "ssjs_tsd_key",\n' +
+            '    FromName: "Test From Name",\n' +
+            '    FromAddress: "me@example.com",\n' +
+            '    EmailID: 12345,\n' +
+            '    SendClassificationID: 54321\n' +
+            '};\n' +
+            'var tsd = TriggeredSend.Add(newTSD);',
+    },
+    {
+        name: 'Retrieve',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Returns an array of triggered send definitions matching the specified filter.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'List of triggered send definitions matching the filter.',
+        syntax: 'TriggeredSend.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var results = TriggeredSend.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "ssjs_tsd_key" });',
+    },
+    {
+        name: 'Update',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Updates the previously initialized triggered send definition.',
+        params: [
+            {
+                name: 'properties',
+                description: 'Attributes to change on the triggered send definition.',
+                type: 'object',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<TriggeredSendInstance>.Update(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var tsd = TriggeredSend.Init("triggeredSend");\n' +
+            'var status = tsd.Update({ Name: "Updated TSD Name" });',
+    },
+    {
+        name: 'Start',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description: 'Starts (reactivates) a paused triggered send definition.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<TriggeredSendInstance>.Start()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var ts = TriggeredSend.Init("MY_TRIGGERED_SEND_KEY");\n' +
+            'var result = ts.Start();',
+    },
+    {
+        name: 'Pause',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description: 'Pauses an active triggered send definition.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<TriggeredSendInstance>.Pause()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var ts = TriggeredSend.Init("MY_TRIGGERED_SEND_KEY");\n' +
+            'var status = ts.Pause();',
+    },
+    {
+        name: 'Publish',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description:
+            'Publishes a triggered send definition, making it active and ready to accept sends. ' +
+            'Use this to move a definition from Draft / Inactive to Active.',
+        params: [],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<TriggeredSendInstance>.Publish()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var ts = TriggeredSend.Init("MY_TRIGGERED_SEND_KEY");\n' +
+            'var result = ts.Publish();',
+    },
+    {
+        name: 'Send',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 2,
+        description:
+            'Sends an email using the previously initialized triggered send definition. ' +
+            'On failure, inspect `<TriggeredSendInstance>.LastMessage` for error details.',
+        params: [
+            {
+                name: 'emailAddress',
+                description: 'Email address to send to. SubscriberKey is **not** supported.',
+                type: 'string',
+            },
+            {
+                name: 'sendTimeAttributes',
+                description: 'Optional object with dynamic attributes to include in the send.',
+                type: 'object',
+                optional: true,
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or "Error"; throws on a hard failure.',
+        syntax: '<TriggeredSendInstance>.Send(emailAddress, [sendTimeAttributes])',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var ts = TriggeredSend.Init("triggeredSend");\n' +
+            'var status = ts.Send("aruiz@example.com", { FirstName: "Angel", CouponCode: "AA1AF" });\n' +
+            'if (status != "OK") { var message = ts.LastMessage; }',
+    },
+];
+
+export const TRIGGERED_SEND_TRACKING_METHODS = [
+    {
+        name: 'Retrieve',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 1,
+        description:
+            'Returns tracking data for the previously initialized triggered send definition.',
+        params: [
+            {
+                name: 'filter',
+                description: 'Optional WSProxy-style filter object.',
+                type: 'object',
+                optional: true,
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'List of tracking records.',
+        syntax: '<TriggeredSendInstance>.Tracking.Retrieve([filter])',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var tsd = TriggeredSend.Init("MyTSDKey");\n' +
+            'var tsdTracking = tsd.Tracking.Retrieve();',
+    },
+];
+
+export const TRIGGERED_SEND_TRACKING_CLICKS_METHODS = [
+    {
+        name: 'Retrieve',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Returns click tracking information for the previously initialized triggered send definition.',
+        params: [
+            {
+                name: 'filter',
+                description: 'WSProxy-style filter restricting click results.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'List of click tracking records matching the filter.',
+        syntax: '<TriggeredSendInstance>.Tracking.Clicks.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var tsd = TriggeredSend.Init("MyTSDKey");\n' +
+            'var results = tsd.Tracking.Clicks.Retrieve({ Property: "SendUrlID", SimpleOperator: "equals", Value: 12345 });',
+    },
+];
+
+export const TRIGGERED_SEND_TRACKING_TOTAL_BY_INTERVAL_METHODS = [
+    {
+        name: 'Retrieve',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 4,
+        maxArgs: 4,
+        description:
+            'Returns aggregated tracking data for the previously initialized triggered send. ' +
+            'Aggregates by `type` over the date range, grouped by `groupBy`.',
+        params: [
+            {
+                name: 'type',
+                description: 'Type of data to aggregate.',
+                type: 'string',
+                enum: ['Send', 'Open', 'Click', 'Bounce', 'Unsubscribe'],
+            },
+            {
+                name: 'startDate',
+                description: 'Start date of the data period (MM-DD-YYYY).',
+                type: 'string',
+            },
+            {
+                name: 'endDate',
+                description: 'End date of the data period (MM-DD-YYYY).',
+                type: 'string',
+            },
+            {
+                name: 'groupBy',
+                description: 'Interval used to aggregate data.',
+                type: 'string',
+                enum: ['day', 'hour'],
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'List of aggregated tracking records.',
+        syntax: '<TriggeredSendInstance>.Tracking.TotalByInterval.Retrieve(type, startDate, endDate, groupBy)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var tsd = TriggeredSend.Init("MyTSDKey");\n' +
+            'var results = tsd.Tracking.TotalByInterval.Retrieve("Click", "07-01-2010", "07-31-2010", "day");',
+    },
+];
+
+// ── DataExtension (Core Library) methods ─────────────────────────────────────
+
+export const DATA_EXTENSION_METHODS = [
+    {
+        name: 'Init',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Initializes a DataExtension instance bound to the specified external key. ' +
+            'Required before invoking any `Fields` or `Rows` sub-namespace method on the returned instance. ' +
+            'Note: Core Library DataExtension methods do not support enterprise-level data extensions.',
+        params: [
+            { name: 'key', description: 'External key of the data extension.', type: 'string' },
+        ],
+        returnType: 'DataExtensionInstance',
+        returnDescription: 'An initialized DataExtension bound to the specified external key.',
+        syntax: 'DataExtension.Init(key)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var birthdayDE = DataExtension.Init("birthdayDE");',
+    },
+    {
+        name: 'Add',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Creates a new data extension from the supplied properties and returns an initialized DataExtension instance. ' +
+            'Note: unlike most static `Add` methods, this returns a `DataExtensionInstance`, not `"OK"`.',
+        params: [
+            {
+                name: 'properties',
+                description:
+                    'JSON object describing the new data extension (CustomerKey, Name, Fields[], optional SendableInfo).',
+                type: 'object',
+            },
+        ],
+        returnType: 'DataExtensionInstance',
+        returnDescription:
+            'An initialized DataExtension bound to the newly-created data extension.',
+        syntax: 'DataExtension.Add(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var deObj = {\n' +
+            '    CustomerKey: "SendableDE",\n' +
+            '    Name: "Sendable Data Extension",\n' +
+            '    Fields: [\n' +
+            '        { Name: "SubKey", FieldType: "Text", IsPrimaryKey: true, MaxLength: 50, IsRequired: true },\n' +
+            '        { Name: "SecondField", FieldType: "Text", MaxLength: 50 }\n' +
+            '    ],\n' +
+            '    SendableInfo: {\n' +
+            '        Field: { Name: "SubKey", FieldType: "Text" },\n' +
+            '        RelatesOn: "Subscriber Key"\n' +
+            '    }\n' +
+            '};\n' +
+            'var de = DataExtension.Add(deObj);',
+    },
+    {
+        name: 'Retrieve',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 2,
+        description:
+            'Returns an array of data extensions matching the specified filter. ' +
+            'Pass `queryAllAccounts: true` to search all accounts accessible to the authenticated user.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.',
+                type: 'object',
+            },
+            {
+                name: 'queryAllAccounts',
+                description:
+                    'When `true`, search across all accounts accessible to the authenticated user. Defaults to `false`.',
+                type: 'boolean',
+                optional: true,
+                default: false,
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription:
+            'List of data extensions matching the filter. Limit data extension external keys to 36 characters for downstream compatibility.',
+        syntax: 'DataExtension.Retrieve(filter, [queryAllAccounts])',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var results = DataExtension.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "myDEKey" });',
+    },
+];
+
+export const DATA_EXTENSION_FIELDS_METHODS = [
+    {
+        name: 'Add',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Adds a field to the previously initialized data extension. ' +
+            '`properties.Name` is required; the rest (`CustomerKey`, `FieldType`, `MaxLength`, `IsRequired`, `IsPrimaryKey`, `Ordinal`, `Scale`, `DefaultValue`) are optional. ' +
+            "`FieldType` accepts: 'Boolean', 'Date', 'Decimal', 'EmailAddress', 'Locale', 'Number', 'Phone', 'Text'.",
+        params: [
+            { name: 'properties', description: 'Object describing the new field.', type: 'object' },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<DataExtensionInstance>.Fields.Add(properties)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var de = DataExtension.Init("SSJSTest");\n' +
+            'var newField = { Name: "NewFieldV2", CustomerKey: "CustomerKey", FieldType: "Number", IsRequired: true, DefaultValue: "100" };\n' +
+            'var status = de.Fields.Add(newField);',
+    },
+    {
+        name: 'Retrieve',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 0,
+        description:
+            'Returns an array of field definitions for the previously initialized data extension.',
+        params: [],
+        returnType: 'object[]',
+        returnDescription: 'List of field-definition objects.',
+        syntax: '<DataExtensionInstance>.Fields.Retrieve()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var birthdayDE = DataExtension.Init("birthdayDE");\n' +
+            'var fields = birthdayDE.Fields.Retrieve();',
+    },
+    {
+        name: 'UpdateSendableField',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 2,
+        maxArgs: 2,
+        description:
+            'Updates which data extension field is used to relate the data extension to the All Subscribers list during sending. ' +
+            'Pass the name of the data extension field, and which subscriber attribute it should map to.',
+        params: [
+            {
+                name: 'deFieldName',
+                description:
+                    'Name of the data extension field that should make the connection to the subscriber list.',
+                type: 'string',
+            },
+            {
+                name: 'subscriberField',
+                description: 'Subscriber attribute to map the data extension field to.',
+                type: 'string',
+                enum: ['Subscriber Key', 'Subscriber Id'],
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription:
+            'Returns "OK" on success or throws on failure (assumed; doc has no `@returns`, treated as `"OK"` for consistency with sibling `Fields.*` methods).',
+        syntax: '<DataExtensionInstance>.Fields.UpdateSendableField(deFieldName, subscriberField)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var updateDE = DataExtension.Init("sendableDataExtension");\n' +
+            'var status = updateDE.Fields.UpdateSendableField("DifferentSubKey", "Subscriber Key");',
+    },
+];
+
+export const DATA_EXTENSION_ROWS_METHODS = [
+    {
+        name: 'Add',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Adds one or more rows to the previously initialized data extension.',
+        params: [
+            {
+                name: 'rowData',
+                description:
+                    "Array of objects, one per row to add. Each object's keys must match data extension field names.",
+                type: 'array',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<DataExtensionInstance>.Rows.Add(rowData)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var arrContacts = [\n' +
+            '    { Email: "jdoe@example.com", FirstName: "John", LastName: "Doe" },\n' +
+            '    { Email: "aruiz@example.com", FirstName: "Angel", LastName: "Ruiz" }\n' +
+            '];\n' +
+            'var birthdayDE = DataExtension.Init("birthdayDE");\n' +
+            'birthdayDE.Rows.Add(arrContacts);',
+    },
+    {
+        name: 'Lookup',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 2,
+        maxArgs: 4,
+        description:
+            'Returns rows where the specified columns equal the specified values (AND-joined). ' +
+            'Optionally limits results and orders by a field. ' +
+            'When initializing a data extension for `Lookup()` from an email message, you must use the data extension Name; on landing pages, either Name or external key works — make them identical to be safe.',
+        params: [
+            {
+                name: 'searchFieldNames',
+                description: 'Array of column names to match against.',
+                type: 'array',
+            },
+            {
+                name: 'searchValues',
+                description: 'Array of values to match (one per column, in order).',
+                type: 'array',
+            },
+            {
+                name: 'limit',
+                description: 'Maximum number of rows to return.',
+                type: 'number',
+                optional: true,
+            },
+            {
+                name: 'orderByFieldName',
+                description: 'Field to order results by.',
+                type: 'string',
+                optional: true,
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription: 'Rows matching the lookup criteria.',
+        syntax: '<DataExtensionInstance>.Rows.Lookup(searchFieldNames, searchValues, [limit], [orderByFieldName])',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var testDE = DataExtension.Init("testDE");\n' +
+            'var data = testDE.Rows.Lookup(["Age"], [25], 2, "LastName");',
+    },
+    {
+        name: 'Remove',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 2,
+        maxArgs: 2,
+        description:
+            'Deletes rows from the previously initialized data extension where the specified columns equal the specified values (AND-joined). ' +
+            'For large deletion requests, batch the work — this method times out on long-running deletes.',
+        params: [
+            {
+                name: 'columnNames',
+                description: 'Array of column names to match against.',
+                type: 'array',
+            },
+            {
+                name: 'columnValues',
+                description: 'Array of values to match (one per column, in order).',
+                type: 'array',
+            },
+        ],
+        returnType: 'number',
+        returnDescription: 'The number of rows that were modified (deleted).',
+        syntax: '<DataExtensionInstance>.Rows.Remove(columnNames, columnValues)',
+        example:
+            'Platform.Load("Core", "1.1.5");\n' +
+            'var memberDE = DataExtension.Init("MembershipRewards");\n' +
+            'var result = memberDE.Rows.Remove(["Area"], ["Kensington"]);',
+    },
+    {
+        name: 'Retrieve',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 0,
+        maxArgs: 1,
+        description:
+            'Retrieves up to 2500 rows from the previously initialized data extension. ' +
+            'When called without a filter, returns all rows (subject to the 2500-row cap). ' +
+            'Cannot be used in the context of an email message or email preview.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'WSProxy-style filter object — simple `{Property, SimpleOperator, Value}` or compound with `LeftOperand`/`LogicalOperator`/`RightOperand`. Optional per the example, despite the doc table marking `Required: Yes`.',
+                type: 'object',
+                optional: true,
+            },
+        ],
+        returnType: 'object[]',
+        returnDescription:
+            'Rows from the data extension matching the filter (or all rows when no filter is supplied).',
+        syntax: '<DataExtensionInstance>.Rows.Retrieve([filter])',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var birthdayDE = DataExtension.Init("birthdayDE");\n' +
+            'var data = birthdayDE.Rows.Retrieve();\n' +
+            'var filter = { Property: "Age", SimpleOperator: "greaterThan", Value: 20 };\n' +
+            'var moredata = birthdayDE.Rows.Retrieve(filter);',
+    },
+    {
+        name: 'Update',
+        isStatic: false,
+        requiresCoreLoad: true,
+        minArgs: 3,
+        maxArgs: 3,
+        description:
+            'Updates the columns of rows where `whereFieldNames` equal `whereValues` (AND-joined). ' +
+            'Throws if no row matches.',
+        params: [
+            {
+                name: 'rowData',
+                description:
+                    'Object whose keys are columns to update and values are the new values.',
+                type: 'object',
+            },
+            {
+                name: 'whereFieldNames',
+                description: 'Array of column names to match against.',
+                type: 'array',
+            },
+            {
+                name: 'whereValues',
+                description: 'Array of values to match (one per column, in order).',
+                type: 'array',
+            },
+        ],
+        returnType: 'string',
+        returnEnum: ['OK'],
+        returnDescription: 'Returns "OK" on success or throws on failure.',
+        syntax: '<DataExtensionInstance>.Rows.Update(rowData, whereFieldNames, whereValues)',
+        example:
+            'Platform.Load("Core", "1");\n' +
+            'var dataExt = DataExtension.Init("NTO Customer List");\n' +
+            'var fieldsToUpdate = { StateProvince: "QC", PreferredActivity: "Sailing" };\n' +
+            'var result = dataExt.Rows.Update(fieldsToUpdate, ["MemberId", "Country"], [9868600, "CA"]);',
+    },
+];
 
 // ── HTTP object methods ──────────────────────────────────────────────────────
 
@@ -1949,18 +5194,21 @@ export const HTTP_METHODS = [
         name: 'Get',
         minArgs: 1,
         maxArgs: 3,
-        description: 'Performs an HTTP GET request returning the response body.',
+        requiresCoreLoad: true,
+        description:
+            'Performs an HTTP GET request and returns the response body. ' +
+            'When supplying `headerNames` and `headerValues`, both arrays must have equal length and parallel ordering.',
         params: [
-            { name: 'url', description: 'URL to request', type: 'string' },
+            { name: 'url', description: 'URL to request.', type: 'string' },
             {
                 name: 'headerNames',
-                description: 'Array of header names',
+                description: 'Array of header names (co-required with headerValues).',
                 type: 'array',
                 optional: true,
             },
             {
                 name: 'headerValues',
-                description: 'Array of header values',
+                description: 'Array of header values, one per entry in headerNames (co-required).',
                 type: 'array',
                 optional: true,
             },
@@ -1968,26 +5216,31 @@ export const HTTP_METHODS = [
         returnType: 'object',
         syntax: 'HTTP.Get(url[, headerNames, headerValues])',
         example:
-            'var body = HTTP.Get("https://api.example.com/data");\nvar obj = Platform.Function.ParseJSON(String(body));',
+            'Platform.Load("core", "1.1.5");\n' +
+            'var body = HTTP.Get("https://api.example.com/data");\n' +
+            'var obj = Platform.Function.ParseJSON(String(body));',
     },
     {
         name: 'Post',
         minArgs: 3,
         maxArgs: 5,
-        description: 'Performs an HTTP POST request with a content type and payload.',
+        requiresCoreLoad: true,
+        description:
+            'Performs an HTTP POST request with a content type and payload. ' +
+            'When supplying `headerNames` and `headerValues`, both arrays must have equal length and parallel ordering.',
         params: [
-            { name: 'url', description: 'URL to post to', type: 'string' },
-            { name: 'contentType', description: 'MIME type of the request body', type: 'string' },
-            { name: 'payload', description: 'Request body content', type: 'string' },
+            { name: 'url', description: 'URL to post to.', type: 'string' },
+            { name: 'contentType', description: 'MIME type of the request body.', type: 'string' },
+            { name: 'payload', description: 'Request body content.', type: 'string' },
             {
                 name: 'headerNames',
-                description: 'Array of header names',
+                description: 'Array of header names (co-required with headerValues).',
                 type: 'array',
                 optional: true,
             },
             {
                 name: 'headerValues',
-                description: 'Array of header values',
+                description: 'Array of header values, one per entry in headerNames (co-required).',
                 type: 'array',
                 optional: true,
             },
@@ -1995,28 +5248,9 @@ export const HTTP_METHODS = [
         returnType: 'object',
         syntax: 'HTTP.Post(url, contentType, payload[, headerNames, headerValues])',
         example:
-            'var payload = Stringify({ email: "jane@example.com" });\nvar response = HTTP.Post("https://api.example.com/items", "application/json", payload);',
-    },
-    {
-        name: 'GetRequest',
-        minArgs: 0,
-        maxArgs: 0,
-        description: 'Returns the HTTP request object for the current page invocation.',
-        params: [],
-        returnType: 'object',
-        syntax: 'HTTP.GetRequest()',
-        example: 'var req = HTTP.GetRequest();\nWrite(req.Method); // "GET"',
-    },
-    {
-        name: 'PostRequest',
-        minArgs: 0,
-        maxArgs: 0,
-        description: 'Returns the HTTP post data for the current page invocation.',
-        params: [],
-        returnType: 'object',
-        syntax: 'HTTP.PostRequest()',
-        example:
-            'var postBody = HTTP.PostRequest();\nvar data = Platform.Function.ParseJSON(String(postBody));',
+            'Platform.Load("core", "1.1.5");\n' +
+            'var payload = Stringify({ email: "jane@example.com" });\n' +
+            'var response = HTTP.Post("https://api.example.com/items", "application/json", payload);',
     },
 ];
 
@@ -2169,18 +5403,23 @@ export const WSPROXY_METHODS = [
         maxArgs: 3,
         description: 'Executes a perform action on a Marketing Cloud object.',
         params: [
-            { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
+            { name: 'objectType', description: 'SOAP API object type name.', type: 'string' },
             {
                 name: 'action',
-                description: 'Action to perform (e.g. "start", "stop")',
+                description: 'Action to perform. Only "Start" is valid (lowercase "start" fails).',
                 type: 'string',
+                enum: ['Start'],
             },
-            { name: 'properties', description: 'Object properties for the action', type: 'object' },
+            {
+                name: 'properties',
+                description: 'Object properties for the action.',
+                type: 'object',
+            },
         ],
         returnType: 'object',
         syntax: 'api.performItem(objectType, action, properties)',
         example:
-            'var api = new WSProxy();\nvar result = api.performItem("QueryDefinition", "start", { ObjectID: queryObjectId });\nWrite(result.Status);',
+            'var api = new WSProxy();\nvar result = api.performItem("QueryDefinition", "Start", { ObjectID: queryObjectId });\nWrite(result.Status);',
     },
     {
         name: 'performBatch',
@@ -2237,13 +5476,18 @@ export const WSPROXY_METHODS = [
         maxArgs: 2,
         description: 'Executes a named method on a Marketing Cloud object.',
         params: [
-            { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
-            { name: 'method', description: 'Method name to execute', type: 'string' },
+            { name: 'objectType', description: 'SOAP API object type name.', type: 'string' },
+            {
+                name: 'requestName',
+                description: 'Name of the request to execute.',
+                type: 'string',
+                enum: ['LogUnsubEvent'],
+            },
         ],
         returnType: 'object',
-        syntax: 'api.execute(objectType, method)',
+        syntax: 'api.execute(objectType, requestName)',
         example:
-            'var api = new WSProxy();\nvar result = api.execute("DataExtensionObject", "clearData");\nWrite(result.Status);',
+            'var api = new WSProxy();\nvar result = api.execute("DataExtensionObject", "LogUnsubEvent");\nWrite(result.Status);',
     },
     {
         name: 'setBatchSize',
@@ -2367,8 +5611,11 @@ export const PLATFORM_VARIABLE_METHODS = [
             { name: 'variableName', description: 'Name of the AMPscript variable', type: 'string' },
         ],
         returnType: 'string',
-        syntax: 'Variable.GetValue(variableName)',
-        example: 'var sk = Variable.GetValue("SubscriberKey");\nWrite(sk);',
+        syntax: 'Platform.Variable.GetValue(variableName)',
+        example:
+            'var sk = Platform.Variable.GetValue("SubscriberKey");\n' +
+            'Write(sk);\n' +
+            '// Bare-name alias: Variable.GetValue("SubscriberKey")',
     },
     {
         name: 'SetValue',
@@ -2380,9 +5627,11 @@ export const PLATFORM_VARIABLE_METHODS = [
             { name: 'value', description: 'Value to assign', type: 'string' },
         ],
         returnType: 'void',
-        syntax: 'Variable.SetValue(variableName, value)',
+        syntax: 'Platform.Variable.SetValue(variableName, value)',
         example:
-            'Variable.SetValue("greeting", "Hello from SSJS");\n// @greeting is now available in subsequent AMPscript blocks',
+            'Platform.Variable.SetValue("greeting", "Hello from SSJS");\n' +
+            '// @greeting is now available in subsequent AMPscript blocks\n' +
+            '// Bare-name alias: Variable.SetValue("greeting", "Hello from SSJS")',
     },
 ];
 
@@ -2391,9 +5640,11 @@ export const PLATFORM_RESPONSE_METHODS = [
         name: 'GetResponseHeader',
         minArgs: 1,
         maxArgs: 1,
-        description: 'Gets the value of a response header.',
+        description:
+            'Gets the value of a response header. ' +
+            'Note: undocumented in current Salesforce help; available in legacy SFMC SSJS contexts. Use with caution.',
         params: [
-            { name: 'headerName', description: 'Name of the response header', type: 'string' },
+            { name: 'headerName', description: 'Name of the response header.', type: 'string' },
         ],
         returnType: 'string',
         syntax: 'Platform.Response.GetResponseHeader(headerName)',
@@ -2406,13 +5657,29 @@ export const PLATFORM_RESPONSE_METHODS = [
         maxArgs: 2,
         description: 'Sets a response header on the current page response.',
         params: [
-            { name: 'headerName', description: 'Name of the response header', type: 'string' },
-            { name: 'value', description: 'Value for the response header', type: 'string' },
+            { name: 'headerName', description: 'Name of the response header.', type: 'string' },
+            { name: 'value', description: 'Value for the response header.', type: 'string' },
         ],
         returnType: 'void',
         syntax: 'Platform.Response.SetResponseHeader(headerName, value)',
         example:
             'Platform.Response.SetResponseHeader("Content-Type", "application/json");\nPlatform.Response.Write(Stringify({ status: "ok" }));',
+    },
+    {
+        name: 'RemoveResponseHeader',
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Removes a previously set HTTP response header from the response.',
+        params: [
+            {
+                name: 'headerName',
+                description: 'Name of the HTTP response header to remove.',
+                type: 'string',
+            },
+        ],
+        returnType: 'void',
+        syntax: 'Platform.Response.RemoveResponseHeader(headerName)',
+        example: 'Platform.Response.RemoveResponseHeader("X-Powered-By");',
     },
     {
         name: 'Redirect',
@@ -2422,10 +5689,10 @@ export const PLATFORM_RESPONSE_METHODS = [
             'Redirects the current page to a new URL. ' +
             'Second parameter: false (default) = 302 temporary redirect, true = 301 permanent redirect.',
         params: [
-            { name: 'url', description: 'URL to redirect to', type: 'string' },
+            { name: 'url', description: 'URL to redirect to.', type: 'string' },
             {
                 name: 'permanent',
-                description: 'True for 301 permanent redirect, false for 302 temporary',
+                description: 'True for 301 permanent redirect, false for 302 temporary.',
                 type: 'boolean',
                 optional: true,
             },
@@ -2435,14 +5702,65 @@ export const PLATFORM_RESPONSE_METHODS = [
         example: 'Platform.Response.Redirect("https://pub.pages.example.com/thank-you");',
     },
     {
+        name: 'SetCookie',
+        minArgs: 2,
+        maxArgs: 6,
+        description: 'Sets a cookie on the client browser response.',
+        params: [
+            { name: 'name', description: 'Name of the cookie to set.', type: 'string' },
+            { name: 'value', description: 'Value to store in the cookie.', type: 'string' },
+            {
+                name: 'expires',
+                description: 'Expiration date/time for the cookie.',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'path',
+                description: 'URL path for which the cookie is valid.',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'domain',
+                description: 'Domain for which the cookie is valid.',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'secure',
+                description: 'If true, the cookie is only sent over HTTPS.',
+                type: 'boolean',
+                optional: true,
+            },
+        ],
+        returnType: 'void',
+        syntax: 'Platform.Response.SetCookie(name, value[, expires, path, domain, secure])',
+        example:
+            'Platform.Response.SetCookie("userId", subscriberKey, "12/31/2025", "/", ".example.com", true);',
+    },
+    {
+        name: 'RemoveCookie',
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Removes a cookie from the client browser by setting its expiration to a past date.',
+        params: [{ name: 'name', description: 'Name of the cookie to remove.', type: 'string' }],
+        returnType: 'void',
+        syntax: 'Platform.Response.RemoveCookie(name)',
+        example: 'Platform.Response.RemoveCookie("userId");',
+    },
+    {
         name: 'Write',
         minArgs: 1,
         maxArgs: 1,
-        description: 'Writes content to the page response output.',
+        description:
+            'Writes content to the HTTP response output. ' +
+            'Distinct from the bare-name `Write()` / `Platform.Function.Write()`, which write to the rendered page output.',
         params: [
             {
                 name: 'content',
-                description: 'Content string to write to the response',
+                description: 'Content string to write to the response.',
                 type: 'string',
             },
         ],
@@ -2450,6 +5768,29 @@ export const PLATFORM_RESPONSE_METHODS = [
         syntax: 'Platform.Response.Write(content)',
         example:
             'var data = { name: "Jane", status: "active" };\nPlatform.Response.Write(Stringify(data));',
+    },
+    // ── Response properties (no parentheses — isProperty: true) ──────────────
+    {
+        name: 'ContentType',
+        minArgs: 0,
+        maxArgs: 0,
+        isProperty: true,
+        description: 'Gets or sets the Content-Type of the HTTP response.',
+        params: [],
+        returnType: 'string',
+        syntax: 'Platform.Response.ContentType',
+        example: 'Platform.Response.ContentType = "application/json";',
+    },
+    {
+        name: 'CharacterSet',
+        minArgs: 0,
+        maxArgs: 0,
+        isProperty: true,
+        description: 'Gets or sets the character set of the HTTP response.',
+        params: [],
+        returnType: 'string',
+        syntax: 'Platform.Response.CharacterSet',
+        example: 'Platform.Response.CharacterSet = "UTF-8";',
     },
 ];
 
@@ -2462,7 +5803,7 @@ export const PLATFORM_REQUEST_METHODS = [
         params: [
             {
                 name: 'parameterName',
-                description: 'Name of the query string parameter',
+                description: 'Name of the query string parameter.',
                 type: 'string',
             },
         ],
@@ -2472,23 +5813,12 @@ export const PLATFORM_REQUEST_METHODS = [
             '// Page URL: /mypage?email=jane@example.com\nvar email = Platform.Request.GetQueryStringParameter("email");\nWrite(email);',
     },
     {
-        name: 'GetFormData',
-        minArgs: 1,
-        maxArgs: 1,
-        description: 'Retrieves a named value from submitted form data.',
-        params: [{ name: 'fieldName', description: 'Name of the form field', type: 'string' }],
-        returnType: 'string',
-        syntax: 'Platform.Request.GetFormData(fieldName)',
-        example:
-            'var firstName = Platform.Request.GetFormData("firstName");\nWrite("Hello, " + firstName + "!");',
-    },
-    {
         name: 'GetFormField',
         minArgs: 1,
         maxArgs: 1,
         description: 'Retrieves data from a named form field, including values sent via POST.',
         params: [
-            { name: 'name', description: 'Name of the form field to retrieve', type: 'string' },
+            { name: 'name', description: 'Name of the form field to retrieve.', type: 'string' },
         ],
         returnType: 'string',
         syntax: 'Platform.Request.GetFormField(name)',
@@ -2505,7 +5835,7 @@ export const PLATFORM_REQUEST_METHODS = [
         params: [
             {
                 name: 'encoding',
-                description: 'Character encoding for the post data',
+                description: 'Character encoding for the post data.',
                 type: 'string',
                 optional: true,
             },
@@ -2516,45 +5846,13 @@ export const PLATFORM_REQUEST_METHODS = [
             '// Read raw POST body once and store it:\nvar rawBody = Platform.Request.GetPostData();\nvar payload = Platform.Function.ParseJSON(rawBody);',
     },
     {
-        name: 'HasSSL',
-        minArgs: 0,
-        maxArgs: 0,
-        description: 'Returns true if the current request was made over HTTPS.',
-        params: [],
-        returnType: 'boolean',
-        syntax: 'Platform.Request.HasSSL()',
-        example:
-            'if (Platform.Request.HasSSL()) {\n    Write("Secure connection");\n} else {\n    Platform.Response.Redirect("https://" + Platform.Request.RequestURL());\n}',
-    },
-    {
-        name: 'Method',
-        minArgs: 0,
-        maxArgs: 0,
-        description: 'Returns the HTTP method (GET, POST, etc.) of the current request.',
-        params: [],
-        returnType: 'string',
-        syntax: 'Platform.Request.Method()',
-        example:
-            'var method = Platform.Request.Method();\nif (method === "POST") {\n    var body = Platform.Request.GetPostData();\n    // handle POST\n}',
-    },
-    {
-        name: 'RequestURL',
-        minArgs: 0,
-        maxArgs: 0,
-        description: 'Returns the full URL of the current page request.',
-        params: [],
-        returnType: 'string',
-        syntax: 'Platform.Request.RequestURL()',
-        example: 'var url = Platform.Request.RequestURL();\nWrite("Current page: " + url);',
-    },
-    {
         name: 'GetCookieValue',
         minArgs: 1,
         maxArgs: 1,
         description:
             'Retrieves the value of a named cookie from the HTTP request sent by the client browser.',
         params: [
-            { name: 'cookieName', description: 'Name of the cookie to retrieve', type: 'string' },
+            { name: 'cookieName', description: 'Name of the cookie to retrieve.', type: 'string' },
         ],
         returnType: 'string',
         syntax: 'Platform.Request.GetCookieValue(cookieName)',
@@ -2573,136 +5871,126 @@ export const PLATFORM_REQUEST_METHODS = [
         example:
             'var lang = Platform.Request.GetUserLanguages();\nWrite(lang); // e.g. "en-US,en;q=0.9"',
     },
-];
-
-// ── Platform.ClientBrowser methods ──────────────────────────────────────────
-
-export const PLATFORM_CLIENT_BROWSER_METHODS = [
     {
-        name: 'Redirect',
+        name: 'GetRequestHeader',
         minArgs: 1,
         maxArgs: 1,
-        description: 'Redirects the client browser to a specified URL.',
+        description: 'Returns the value of the named HTTP request header, or null if not present.',
         params: [
             {
-                name: 'url',
-                description: 'The URL to redirect the client browser to',
+                name: 'headerName',
+                description: 'Name of the HTTP request header to retrieve.',
                 type: 'string',
             },
         ],
-        returnType: 'void',
-        syntax: 'Platform.ClientBrowser.Redirect(url)',
-        example: 'Platform.ClientBrowser.Redirect("https://www.example.com/landing");',
-    },
-    {
-        name: 'Write',
-        minArgs: 1,
-        maxArgs: 1,
-        description: 'Writes content directly to the HTTP response sent to the client browser.',
-        params: [
-            {
-                name: 'content',
-                description: 'The string content to write to the response output',
-                type: 'string',
-            },
-        ],
-        returnType: 'void',
-        syntax: 'Platform.ClientBrowser.Write(content)',
-        example: 'Platform.ClientBrowser.Write("<h1>Hello, World!</h1>");',
-    },
-    {
-        name: 'SetCookie',
-        minArgs: 2,
-        maxArgs: 6,
-        description: 'Sets a cookie on the client browser response.',
-        params: [
-            { name: 'name', description: 'Name of the cookie to set', type: 'string' },
-            { name: 'value', description: 'Value to store in the cookie', type: 'string' },
-            {
-                name: 'expires',
-                description: 'Expiration date/time for the cookie',
-                type: 'string',
-                optional: true,
-            },
-            {
-                name: 'path',
-                description: 'URL path for which the cookie is valid',
-                type: 'string',
-                optional: true,
-            },
-            {
-                name: 'domain',
-                description: 'Domain for which the cookie is valid',
-                type: 'string',
-                optional: true,
-            },
-            {
-                name: 'secure',
-                description: 'If true, the cookie is only sent over HTTPS',
-                type: 'boolean',
-                optional: true,
-            },
-        ],
-        returnType: 'void',
-        syntax: 'Platform.ClientBrowser.SetCookie(name, value[, expires, path, domain, secure])',
+        returnType: 'string',
+        syntax: 'Platform.Request.GetRequestHeader(headerName)',
         example:
-            'Platform.ClientBrowser.SetCookie("userId", subscriberKey, "12/31/2025", "/", ".example.com", true);',
+            'var auth = Platform.Request.GetRequestHeader("Authorization");\nif (auth) { Write("Auth: " + auth); }',
+    },
+    // ── Request properties (no parentheses — isProperty: true) ───────────────
+    {
+        name: 'Browser',
+        minArgs: 0,
+        maxArgs: 0,
+        isProperty: true,
+        description: 'Returns an object describing the client browser.',
+        params: [],
+        returnType: 'object',
+        syntax: 'Platform.Request.Browser',
+        example: 'var browser = Platform.Request.Browser;\nWrite(Stringify(browser));',
     },
     {
-        name: 'RemoveCookie',
-        minArgs: 1,
-        maxArgs: 1,
-        description:
-            'Removes a cookie from the client browser by setting its expiration to a past date.',
-        params: [{ name: 'name', description: 'Name of the cookie to remove', type: 'string' }],
-        returnType: 'void',
-        syntax: 'Platform.ClientBrowser.RemoveCookie(name)',
-        example: 'Platform.ClientBrowser.RemoveCookie("userId");',
+        name: 'ClientIP',
+        minArgs: 0,
+        maxArgs: 0,
+        isProperty: true,
+        description: 'Returns the IP address of the client.',
+        params: [],
+        returnType: 'string',
+        syntax: 'Platform.Request.ClientIP',
+        example: 'Write(Platform.Request.ClientIP);',
     },
     {
-        name: 'SetResponseHeader',
-        minArgs: 2,
-        maxArgs: 2,
-        description:
-            'Sets a custom HTTP response header on the response sent to the client browser.',
-        params: [
-            {
-                name: 'headerName',
-                description: 'Name of the HTTP response header to set',
-                type: 'string',
-            },
-            {
-                name: 'value',
-                description: 'Value to assign to the response header',
-                type: 'string',
-            },
-        ],
-        returnType: 'void',
-        syntax: 'Platform.ClientBrowser.SetResponseHeader(headerName, value)',
-        example: 'Platform.ClientBrowser.SetResponseHeader("Cache-Control", "no-store, no-cache");',
+        name: 'HasSSL',
+        minArgs: 0,
+        maxArgs: 0,
+        isProperty: true,
+        description: 'Returns true if the current request was made over HTTPS.',
+        params: [],
+        returnType: 'boolean',
+        syntax: 'Platform.Request.HasSSL',
+        example:
+            'if (Platform.Request.HasSSL) {\n    Write("Secure connection");\n} else {\n    Platform.Response.Redirect("https://" + Platform.Request.RequestURL);\n}',
     },
     {
-        name: 'RemoveResponseHeader',
-        minArgs: 1,
-        maxArgs: 1,
-        description:
-            'Removes a previously set HTTP response header from the response sent to the client browser.',
-        params: [
-            {
-                name: 'headerName',
-                description: 'Name of the HTTP response header to remove',
-                type: 'string',
-            },
-        ],
-        returnType: 'void',
-        syntax: 'Platform.ClientBrowser.RemoveResponseHeader(headerName)',
-        example: 'Platform.ClientBrowser.RemoveResponseHeader("X-Powered-By");',
+        name: 'IsSSL',
+        minArgs: 0,
+        maxArgs: 0,
+        isProperty: true,
+        description: 'Returns true if the current request was made over HTTPS (alias of HasSSL).',
+        params: [],
+        returnType: 'boolean',
+        syntax: 'Platform.Request.IsSSL',
+        example: 'Write(Platform.Request.IsSSL);',
+    },
+    {
+        name: 'Method',
+        minArgs: 0,
+        maxArgs: 0,
+        isProperty: true,
+        description: 'Returns the HTTP method (GET, POST, etc.) of the current request.',
+        params: [],
+        returnType: 'string',
+        syntax: 'Platform.Request.Method',
+        example:
+            'var method = Platform.Request.Method;\nif (method === "POST") {\n    var body = Platform.Request.GetPostData();\n    // handle POST\n}',
+    },
+    {
+        name: 'QueryString',
+        minArgs: 0,
+        maxArgs: 0,
+        isProperty: true,
+        description: 'Returns the full query string of the current request URL.',
+        params: [],
+        returnType: 'string',
+        syntax: 'Platform.Request.QueryString',
+        example: 'Write(Platform.Request.QueryString);',
+    },
+    {
+        name: 'ReferrerURL',
+        minArgs: 0,
+        maxArgs: 0,
+        isProperty: true,
+        description: 'Returns the referrer URL from the HTTP Referer header.',
+        params: [],
+        returnType: 'string',
+        syntax: 'Platform.Request.ReferrerURL',
+        example: 'Write(Platform.Request.ReferrerURL);',
+    },
+    {
+        name: 'RequestURL',
+        minArgs: 0,
+        maxArgs: 0,
+        isProperty: true,
+        description: 'Returns the full URL of the current page request.',
+        params: [],
+        returnType: 'string',
+        syntax: 'Platform.Request.RequestURL',
+        example: 'Write("Current page: " + Platform.Request.RequestURL);',
+    },
+    {
+        name: 'UserAgent',
+        minArgs: 0,
+        maxArgs: 0,
+        isProperty: true,
+        description: 'Returns the user-agent string from the HTTP request.',
+        params: [],
+        returnType: 'string',
+        syntax: 'Platform.Request.UserAgent',
+        example: 'Write(Platform.Request.UserAgent);',
     },
 ];
-
-export const platformClientBrowserMethodNames = new Set(
-    PLATFORM_CLIENT_BROWSER_METHODS.map((m) => m.name.toLowerCase()),
-);
 
 // ── Platform.Recipient methods ───────────────────────────────────────────────
 // Methods available under Platform.Recipient.* for accessing recipient/subscriber
@@ -2732,6 +6020,81 @@ export const PLATFORM_RECIPIENT_METHODS = [
 export const platformRecipientMethodNames = new Set(
     PLATFORM_RECIPIENT_METHODS.map((m) => m.name.toLowerCase()),
 );
+
+// ── DateTime.TimeZone methods ────────────────────────────────────────────────
+// Methods on the DateTime.TimeZone namespace. Require Platform.Load("core", "1.1.5").
+
+export const DATE_TIME_TIMEZONE_METHODS = [
+    {
+        name: 'Retrieve',
+        minArgs: 1,
+        maxArgs: 1,
+        isStatic: true,
+        requiresCoreLoad: true,
+        description:
+            'Retrieves an array of time zones matching the specified filter criteria. ' +
+            'If no filter is supplied the function returns all available time zones.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        syntax: 'DateTime.TimeZone.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var timezones = DateTime.TimeZone.Retrieve({ Property: "ID", SimpleOperator: "equals", Value: 1 });\n' +
+            'Write(Stringify(timezones));',
+    },
+];
+
+// ── ErrorUtil methods ────────────────────────────────────────────────────────
+// Utility functions for WSProxy error handling. Require Platform.Load("core", "1.1.5").
+
+export const ERROR_UTIL_METHODS = [
+    {
+        name: 'ThrowWSProxyError',
+        minArgs: 1,
+        maxArgs: 1,
+        isStatic: true,
+        requiresCoreLoad: true,
+        description:
+            'Inspects a WSProxy result object and throws an exception when its `Status` property ' +
+            'starts with `"Error:"`. WSProxy methods never raise exceptions on SOAP-level errors — ' +
+            'instead they return a result object whose `Status` field signals the outcome. ' +
+            'Wrap WSProxy calls in a `try`/`catch` block and call this function immediately after ' +
+            'each call to convert non-OK results into catchable exceptions.',
+        params: [
+            {
+                name: 'result',
+                description:
+                    'Result object returned by any WSProxy method. ' +
+                    'Minimum shape: `{ Status: string, RequestID: string, Results: object[] }`. ' +
+                    'Retrieve and perform variants may include additional fields.',
+                type: 'object',
+            },
+        ],
+        returnType: 'void',
+        syntax: 'ErrorUtil.ThrowWSProxyError(result)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var api = new WSProxy();\n' +
+            'var customerKey = "0b744ffa-bab5-458d-9e7d-fb05a7873380";\n' +
+            'try {\n' +
+            '    var result = api.retrieve(\n' +
+            '        "DataExtensionObject[" + customerKey + "]",\n' +
+            '        ["FirstName", "LastName", "EmailAddress"]\n' +
+            '    );\n' +
+            '    ErrorUtil.ThrowWSProxyError(result);\n' +
+            '    // process successful results\n' +
+            '} catch (ex) {\n' +
+            '    // custom error-handling logic\n' +
+            '}',
+    },
+];
 
 // ── Script.Util HTTP constructors ────────────────────────────────────────────
 // Request handler constructors under the Script.Util namespace.
