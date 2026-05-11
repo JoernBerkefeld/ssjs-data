@@ -210,6 +210,39 @@ export const SSJS_GLOBALS = [
             'Call `ErrorUtil.ThrowWSProxyError(result)` to convert WSProxy error-status results into thrown exceptions.',
         requiresCoreLoad: true,
     },
+    {
+        name: 'Format',
+        type: 'function',
+        minArgs: 2,
+        maxArgs: 2,
+        requiresCoreLoad: true,
+        description:
+            'Applies a formatting rule to a string or numeric value. ' +
+            'Use format codes such as `C` (currency), `D` (decimal), `N` (number with separators), ' +
+            '`P` (percentage), `O` (ISO 8601 date), `s` (sortable date), `d` (short date), `t` (12-hour time), etc. ' +
+            'Append a digit to control decimal places, e.g. `C2` for two decimal places.',
+        params: [
+            {
+                name: 'textToFormat',
+                description: 'The string or number to apply a formatting rule to.',
+                type: 'string|number',
+            },
+            {
+                name: 'formatCode',
+                description:
+                    'A format code to apply. Numeric: C, D, E, F, G, N, P (append digit for decimal places). ' +
+                    'Date/time: d, M, f, g, O, r, s, t, T, or a custom pattern.',
+                type: 'string',
+            },
+        ],
+        returnType: 'string',
+        syntax: 'Format(textToFormat, formatCode)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var price = Format(4213.65, "C2");  // "$4,213.65"\n' +
+            'var isoDate = Format("2024-08-05T13:41:23", "O");  // "2024-08-05T13:41:23.0000000"\n' +
+            'Write(price + " / " + isoDate);',
+    },
 ];
 
 /**
@@ -760,7 +793,7 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 1,
         maxArgs: 2,
         description:
-            'Returns an HTML img tag for a Content Builder image identified by its external key. An optional fallback key can be supplied if the primary image is not found.',
+            'Returns an HTML img tag for a Content Builder image identified by its external key. An optional fallback image ID can be supplied if the primary image is not found.',
         params: [
             {
                 name: 'key',
@@ -768,14 +801,14 @@ export const PLATFORM_FUNCTIONS = [
                 type: 'string',
             },
             {
-                name: 'fallbackKey',
-                description: 'External key of a fallback image when the primary cannot be found',
-                type: 'string',
+                name: 'fallbackId',
+                description: 'Numeric ID of a fallback image when the primary cannot be found',
+                type: 'number',
                 optional: true,
             },
         ],
         returnType: 'string',
-        syntax: 'Platform.Function.ContentImageByKey(key[, fallbackKey])',
+        syntax: 'Platform.Function.ContentImageByKey(key[, fallbackId])',
         example:
             'var imgTag = Platform.Function.ContentImageByKey("hero-banner-key");\nWrite(imgTag);',
     },
@@ -1380,16 +1413,16 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Parses a JSON-formatted string and returns the resulting JavaScript object. ' +
+            'Parses a JSON-formatted string (or array of strings) and returns the resulting JavaScript object (or array of objects). ' +
             'SFMC-native equivalent of JSON.parse(), which is not available in the legacy SSJS engine.',
         params: [
             {
                 name: 'jsonString',
-                description: 'A valid JSON-formatted string to parse',
-                type: 'string',
+                description: 'A valid JSON-formatted string or array of JSON strings to parse',
+                type: 'string|string[]',
             },
         ],
-        returnType: 'object',
+        returnType: 'object|object[]',
         syntax: 'Platform.Function.ParseJSON(jsonString)',
         example:
             'var jsonString = \'{"name":"Jane","age":30}\';\n' +
@@ -4523,6 +4556,230 @@ export const TRIGGERED_SEND_TRACKING_TOTAL_BY_INTERVAL_METHODS = [
     },
 ];
 
+// ── Event methods ─────────────────────────────────────────────────────────────
+// Shared Retrieve method for all Core Library event objects:
+// BounceEvent, ClickEvent, ForwardedEmailEvent, ForwardedEmailOptInEvent,
+// NotSentEvent, OpenEvent, SentEvent, SurveyEvent, UnsubEvent.
+// Each object exposes an identical Retrieve(filter) signature.
+// Require Platform.Load("core", "1.1.5").
+
+export const EVENT_METHODS = [
+    {
+        name: 'Retrieve',
+        owner: 'BounceEvent',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Retrieves bounce event data for message sends matching the specified filter.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        syntax: 'BounceEvent.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var bounces = BounceEvent.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });\n' +
+            'Write(Stringify(bounces));',
+    },
+    {
+        name: 'Retrieve',
+        owner: 'ClickEvent',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Retrieves click tracking event data for message sends matching the specified filter.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        syntax: 'ClickEvent.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var clicks = ClickEvent.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });\n' +
+            'Write(Stringify(clicks));',
+    },
+    {
+        name: 'Retrieve',
+        owner: 'ForwardedEmailEvent',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Retrieves forwarded email event data for message sends matching the specified filter.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        syntax: 'ForwardedEmailEvent.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var forwards = ForwardedEmailEvent.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });\n' +
+            'Write(Stringify(forwards));',
+    },
+    {
+        name: 'Retrieve',
+        owner: 'ForwardedEmailOptInEvent',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Retrieves forwarded email opt-in event data for message sends matching the specified filter.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        syntax: 'ForwardedEmailOptInEvent.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var optIns = ForwardedEmailOptInEvent.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });\n' +
+            'Write(Stringify(optIns));',
+    },
+    {
+        name: 'Retrieve',
+        owner: 'NotSentEvent',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Retrieves not-sent event data for message sends matching the specified filter.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        syntax: 'NotSentEvent.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var notSent = NotSentEvent.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });\n' +
+            'Write(Stringify(notSent));',
+    },
+    {
+        name: 'Retrieve',
+        owner: 'OpenEvent',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Retrieves open tracking event data for message sends matching the specified filter.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        syntax: 'OpenEvent.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var opens = OpenEvent.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });\n' +
+            'Write(Stringify(opens));',
+    },
+    {
+        name: 'Retrieve',
+        owner: 'SentEvent',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description: 'Retrieves sent event data for message sends matching the specified filter.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        syntax: 'SentEvent.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var sent = SentEvent.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });\n' +
+            'Write(Stringify(sent));',
+    },
+    {
+        name: 'Retrieve',
+        owner: 'SurveyEvent',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Retrieves survey response event data for message sends matching the specified filter.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        syntax: 'SurveyEvent.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var surveys = SurveyEvent.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });\n' +
+            'Write(Stringify(surveys));',
+    },
+    {
+        name: 'Retrieve',
+        owner: 'UnsubEvent',
+        isStatic: true,
+        requiresCoreLoad: true,
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Retrieves unsubscribe event data for message sends matching the specified filter.',
+        params: [
+            {
+                name: 'filter',
+                description:
+                    'Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.',
+                type: 'object',
+            },
+        ],
+        returnType: 'object[]',
+        syntax: 'UnsubEvent.Retrieve(filter)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var unsubs = UnsubEvent.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });\n' +
+            'Write(Stringify(unsubs));',
+    },
+];
+
 // ── DataExtension (Core Library) methods ─────────────────────────────────────
 
 export const DATA_EXTENSION_METHODS = [
@@ -4899,31 +5156,29 @@ export const HTTP_METHODS = [
     },
     {
         name: 'Post',
-        minArgs: 3,
+        minArgs: 5,
         maxArgs: 5,
         requiresCoreLoad: true,
         description:
             'Performs an HTTP POST request with a content type and payload. ' +
-            'When supplying `headerNames` and `headerValues`, both arrays must have equal length and parallel ordering.',
+            'Pass empty arrays for `headerNames` and `headerValues` if no custom headers are needed.',
         params: [
             { name: 'url', description: 'URL to post to.', type: 'string' },
             { name: 'contentType', description: 'MIME type of the request body.', type: 'string' },
             { name: 'payload', description: 'Request body content.', type: 'string' },
             {
                 name: 'headerNames',
-                description: 'Array of header names (co-required with headerValues).',
-                type: 'array',
-                optional: true,
+                description: 'Array of header names to include in the request.',
+                type: 'string[]',
             },
             {
                 name: 'headerValues',
-                description: 'Array of header values, one per entry in headerNames (co-required).',
+                description: 'Array of header values, one per entry in headerNames.',
                 type: 'array',
-                optional: true,
             },
         ],
         returnType: 'object',
-        syntax: 'HTTP.Post(url, contentType, payload[, headerNames, headerValues])',
+        syntax: 'HTTP.Post(url, contentType, payload, headerNames, headerValues)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
             'var payload = Stringify({ email: "jane@example.com" });\n' +
@@ -5435,21 +5690,6 @@ export const PLATFORM_VARIABLE_METHODS = [
 
 export const PLATFORM_RESPONSE_METHODS = [
     {
-        name: 'GetResponseHeader',
-        minArgs: 1,
-        maxArgs: 1,
-        description:
-            'Gets the value of a response header. ' +
-            'Note: undocumented in current Salesforce help; available in legacy SFMC SSJS contexts. Use with caution.',
-        params: [
-            { name: 'headerName', description: 'Name of the response header.', type: 'string' },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Response.GetResponseHeader(headerName)',
-        example:
-            'var contentType = Platform.Response.GetResponseHeader("Content-Type");\nWrite(contentType);',
-    },
-    {
         name: 'SetResponseHeader',
         minArgs: 2,
         maxArgs: 2,
@@ -5481,28 +5721,28 @@ export const PLATFORM_RESPONSE_METHODS = [
     },
     {
         name: 'Redirect',
-        minArgs: 1,
+        minArgs: 2,
         maxArgs: 2,
         description:
             'Redirects the current page to a new URL. ' +
-            'Second parameter: false (default) = 302 temporary redirect, true = 301 permanent redirect.',
+            'Pass false for a 302 temporary redirect or true for a 301 permanent redirect. ' +
+            'Do not use 301 if you want browsers to re-check the original URL later.',
         params: [
             { name: 'url', description: 'URL to redirect to.', type: 'string' },
             {
-                name: 'permanent',
+                name: 'movedPermanently',
                 description: 'True for 301 permanent redirect, false for 302 temporary.',
                 type: 'boolean',
-                optional: true,
             },
         ],
         returnType: 'void',
-        syntax: 'Platform.Response.Redirect(url[, permanent])',
-        example: 'Platform.Response.Redirect("https://pub.pages.example.com/thank-you");',
+        syntax: 'Platform.Response.Redirect(url, movedPermanently)',
+        example: 'Platform.Response.Redirect("https://pub.pages.example.com/thank-you", false);',
     },
     {
         name: 'SetCookie',
         minArgs: 2,
-        maxArgs: 6,
+        maxArgs: 4,
         description: 'Sets a cookie on the client browser response.',
         params: [
             { name: 'name', description: 'Name of the cookie to set.', type: 'string' },
@@ -5514,18 +5754,6 @@ export const PLATFORM_RESPONSE_METHODS = [
                 optional: true,
             },
             {
-                name: 'path',
-                description: 'URL path for which the cookie is valid.',
-                type: 'string',
-                optional: true,
-            },
-            {
-                name: 'domain',
-                description: 'Domain for which the cookie is valid.',
-                type: 'string',
-                optional: true,
-            },
-            {
                 name: 'secure',
                 description: 'If true, the cookie is only sent over HTTPS.',
                 type: 'boolean',
@@ -5533,9 +5761,8 @@ export const PLATFORM_RESPONSE_METHODS = [
             },
         ],
         returnType: 'void',
-        syntax: 'Platform.Response.SetCookie(name, value[, expires, path, domain, secure])',
-        example:
-            'Platform.Response.SetCookie("userId", subscriberKey, "12/31/2025", "/", ".example.com", true);',
+        syntax: 'Platform.Response.SetCookie(name, value[, expires, secure])',
+        example: 'Platform.Response.SetCookie("userId", subscriberKey, "12/31/2025", true);',
     },
     {
         name: 'RemoveCookie',
@@ -5819,6 +6046,38 @@ export const platformRecipientMethodNames = new Set(
     PLATFORM_RECIPIENT_METHODS.map((m) => m.name.toLowerCase()),
 );
 
+// ── Attribute methods ────────────────────────────────────────────────────────
+// Methods on the bare `Attribute` global. Require Platform.Load("core", "1.1.5").
+// Preferred over Platform.Recipient.GetAttributeValue() for readability.
+
+export const ATTRIBUTE_METHODS = [
+    {
+        name: 'GetValue',
+        minArgs: 1,
+        maxArgs: 1,
+        isStatic: true,
+        requiresCoreLoad: true,
+        description:
+            'Returns the value of the specified subscriber attribute or sendable data extension field for the current recipient. ' +
+            'Preferred over Platform.Recipient.GetAttributeValue() — both methods are equivalent.',
+        params: [
+            {
+                name: 'name',
+                description: 'Name of the subscriber attribute or sendable DE field to retrieve.',
+                type: 'string',
+            },
+        ],
+        returnType: 'string',
+        syntax: 'Attribute.GetValue(name)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var email = Attribute.GetValue("EmailAddress");\n' +
+            'Write(email);',
+    },
+];
+
+export const attributeMethodNames = new Set(ATTRIBUTE_METHODS.map((m) => m.name.toLowerCase()));
+
 // ── DateTime.TimeZone methods ────────────────────────────────────────────────
 // Methods on the DateTime.TimeZone namespace. Require Platform.Load("core", "1.1.5").
 
@@ -5967,36 +6226,11 @@ export const SCRIPT_UTIL_CONSTRUCTORS = [
             '    Platform.Response.Write(Platform.Function.Stringify(result));\n' +
             '}',
     },
-    {
-        name: 'HttpPost',
-        minArgs: 3,
-        maxArgs: 3,
-        description:
-            'Creates an HTTP POST request handler with a URL, content type, and payload. ' +
-            'Call send() to execute the request and receive a Script.Util.HttpResponse object.',
-        params: [
-            { name: 'url', description: 'The destination URL', type: 'string' },
-            {
-                name: 'contentType',
-                description: 'Content-Type header value (e.g. "application/json")',
-                type: 'string',
-            },
-            { name: 'payload', description: 'Request body content as a string', type: 'string' },
-        ],
-        returnType: 'object',
-        syntax: 'new Script.Util.HttpPost(url, contentType, payload)',
-        example:
-            'var payload = Stringify({ name: "Jane", status: "active" });\n' +
-            'var req = new Script.Util.HttpPost("https://api.example.com/items", "application/json", payload);\n' +
-            'req.setHeader("Authorization", "Bearer " + accessToken);\n' +
-            'var resp = req.send();\n' +
-            'var result = Platform.Function.ParseJSON(String(resp.content));',
-    },
 ];
 
 // ── Script.Util request object methods ──────────────────────────────────────
 // Methods available on a request object returned by Script.Util.HttpRequest,
-// Script.Util.HttpGet, or Script.Util.HttpPost.
+// Methods available on a request object returned by Script.Util.HttpRequest or Script.Util.HttpGet.
 
 /** @type {{name: string, minArgs: number, maxArgs: number, description: string, params?: {name: string, description: string, type?: string, optional?: boolean}[], returnType?: string, syntax?: string, example?: string}[]} */
 export const SCRIPT_UTIL_REQUEST_METHODS = [
