@@ -252,7 +252,7 @@ export const SSJS_GLOBALS = [
 export const SSJS_GLOBALS_MAP = Object.fromEntries([
     ...SSJS_GLOBALS.map((g) => [g.name, 'readonly']),
     ['HTTP', 'readonly'],
-    ['WSProxy', 'readonly'],
+
     ['Script', 'readonly'],
     ['DateTime', 'readonly'],
     ['ErrorUtil', 'readonly'],
@@ -6853,7 +6853,7 @@ export const UNSUPPORTED_SYNTAX = [
             "Ensure the function assigns to 'this' instead (this.service = {...}).",
         nodeType: 'NewExpression',
         test: (node) => {
-            const NATIVE = ['Date', 'RegExp', 'Error', 'Object', 'Array', 'WSProxy'];
+            const NATIVE = ['Date', 'RegExp', 'Error', 'Object', 'Array'];
             return node.callee.type === 'Identifier' && !NATIVE.includes(node.callee.name);
         },
     },
