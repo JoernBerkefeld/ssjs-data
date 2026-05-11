@@ -7294,6 +7294,8 @@ for (const [className, methods] of [
 // Event objects share the EVENT_METHODS array — group by owner
 for (const m of EVENT_METHODS) {
     const key = m.owner.toLowerCase();
-    if (!coreMethodArityLookup.has(key)) coreMethodArityLookup.set(key, new Map());
+    if (!coreMethodArityLookup.has(key)) {
+        coreMethodArityLookup.set(key, new Map());
+    }
     coreMethodArityLookup.get(key).set(m.name.toLowerCase(), m);
 }
