@@ -19,8 +19,6 @@
  *   - caseInsensitive?: boolean              — true for SOAP-style enums where casing is not enforced
  */
 
-const INF = Infinity;
-
 // ── Global functions ─────────────────────────────────────────────────────────
 // Functions and objects available at the top scope of any SSJS execution context.
 
@@ -281,43 +279,74 @@ export const PLATFORM_FUNCTIONS = [
     {
         name: 'Lookup',
         minArgs: 4,
-        maxArgs: INF,
+        maxArgs: 4,
         description:
-            'Retrieves a single field value from a Data Extension row matching filter criteria.',
+            'Retrieves a single field value from a Data Extension row matching filter criteria. ' +
+            'To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).',
         params: [
             { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
             { name: 'returnField', description: 'Name of the field to return', type: 'string' },
-            { name: 'fieldName', description: 'Filter field name', type: 'string' },
-            { name: 'fieldValue', description: 'Filter field value', type: 'string' },
+            {
+                name: 'whereFieldNames',
+                description:
+                    'Filter field name, or an array of field names connected with AND logic',
+                type: 'string|string[]',
+            },
+            {
+                name: 'whereFieldValues',
+                description:
+                    'Filter field value matching whereFieldNames; must be an array of equal length when whereFieldNames is an array',
+                type: 'string|array',
+            },
         ],
         returnType: 'string',
-        syntax: 'Platform.Function.Lookup(deName, returnField, fieldName, fieldValue[, fieldName2, fieldValue2, ...])',
+        syntax: 'Platform.Function.Lookup(deName, returnField, whereFieldNames, whereFieldValues)',
         example:
-            'var email = Platform.Function.Lookup("Subscribers", "EmailAddress", "SubscriberKey", "abc123");',
+            '// Single filter:\n' +
+            'var email = Platform.Function.Lookup("Subscribers", "EmailAddress", "SubscriberKey", "abc123");\n\n' +
+            '// Multiple filters (AND logic):\n' +
+            'var phone = Platform.Function.Lookup("CustomerData", "Phone", ["FirstName", "LastName"], ["Carolyn", "Baumgartner"]);',
     },
     {
         name: 'LookupRows',
         minArgs: 3,
-        maxArgs: INF,
-        description: 'Returns a result set of rows from a Data Extension matching filter criteria.',
+        maxArgs: 3,
+        description:
+            'Returns a result set of rows from a Data Extension matching filter criteria. ' +
+            'Returns up to 2,000 rows. To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).',
         params: [
             { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
-            { name: 'fieldName', description: 'Filter field name', type: 'string' },
-            { name: 'fieldValue', description: 'Filter field value', type: 'string' },
+            {
+                name: 'whereFieldNames',
+                description:
+                    'Filter field name, or an array of field names connected with AND logic',
+                type: 'string|string[]',
+            },
+            {
+                name: 'whereFieldValues',
+                description:
+                    'Filter field value matching whereFieldNames; must be an array of equal length when whereFieldNames is an array',
+                type: 'string|array',
+            },
         ],
         returnType: 'object',
-        syntax: 'Platform.Function.LookupRows(deName, fieldName, fieldValue[, fieldName2, fieldValue2, ...])',
+        syntax: 'Platform.Function.LookupRows(deName, whereFieldNames, whereFieldValues)',
         example:
-            'var rows = Platform.Function.LookupRows("MyDE", "Status", "active");\nfor (var i = 0; i < rows.length; i++) {\n    Write(rows[i]["Name"] + "<br>");\n}',
+            '// Single filter:\n' +
+            'var rows = Platform.Function.LookupRows("MyDE", "Status", "active");\n' +
+            'for (var i = 0; i < rows.length; i++) {\n    Write(rows[i]["Name"] + "<br>");\n}\n\n' +
+            '// Multiple filters (AND logic):\n' +
+            'var rows2 = Platform.Function.LookupRows("CustomerData", ["PreferredLanguage", "RewardsTier"], ["English", "Gold"]);',
     },
     {
         name: 'LookupOrderedRows',
         minArgs: 5,
-        maxArgs: INF,
+        maxArgs: 5,
         description:
             'Returns an ordered result set from a Data Extension. ' +
             'The sort expression is a single string in the format "ColumnName ASC" or "ColumnName DESC". ' +
-            'Multiple columns can be separated by commas. Returns up to 2,000 rows; values below 1 for count default to 2,000.',
+            'Multiple columns can be separated by commas. Returns up to 2,000 rows; values below 1 for count default to 2,000. ' +
+            'To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).',
         params: [
             { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
             {
@@ -332,191 +361,286 @@ export const PLATFORM_FUNCTIONS = [
                 type: 'string',
             },
             {
-                name: 'fieldName',
-                description: 'Filter field name or array of field names (AND logic)',
-                type: 'string',
+                name: 'whereFieldNames',
+                description:
+                    'Filter field name, or an array of field names connected with AND logic',
+                type: 'string|string[]',
             },
             {
-                name: 'fieldValue',
-                description: 'Filter value or array of values matching the filter field(s)',
-                type: 'string',
+                name: 'whereFieldValues',
+                description:
+                    'Filter field value matching whereFieldNames; must be an array of equal length when whereFieldNames is an array',
+                type: 'string|array',
             },
         ],
         returnType: 'object',
-        syntax: 'Platform.Function.LookupOrderedRows(deName, count, orderBy, fieldName, fieldValue[, fieldName2, fieldValue2, ...])',
+        syntax: 'Platform.Function.LookupOrderedRows(deName, count, orderBy, whereFieldNames, whereFieldValues)',
         example:
-            'var rows = Platform.Function.LookupOrderedRows("MyDE", 10, "CreatedDate DESC", "Status", "active");\nfor (var i = 0; i < rows.length; i++) {\n    Write(rows[i]["Email"] + "<br>");\n}',
+            '// Single filter, sorted by LastName ASC:\n' +
+            'var rows = Platform.Function.LookupOrderedRows("MyDE", 10, "LastName ASC", "RewardsTier", "Silver");\n' +
+            'for (var i = 0; i < rows.length; i++) {\n    Write(rows[i]["Email"] + "<br>");\n}\n\n' +
+            '// Multiple filters (AND logic):\n' +
+            'var rows2 = Platform.Function.LookupOrderedRows("CustomerData", 0, "LastName ASC", ["PreferredLanguage", "RewardsTier"], ["English", "Silver"]);',
     },
     {
         name: 'InsertData',
-        minArgs: 4,
-        maxArgs: INF,
-        description: 'Adds a new row to a Data Extension.',
+        minArgs: 3,
+        maxArgs: 3,
+        description:
+            'Adds a new row to a Data Extension. ' +
+            'Use this function in CloudPages, landing pages, microsites, and SMS messages. ' +
+            'Use InsertDE() for email contexts.',
         params: [
             { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
             {
-                name: 'fieldName1',
-                description: 'First field name (additional field/value pairs may follow)',
-                type: 'string',
+                name: 'fieldNames',
+                description: 'Array of column names to populate',
+                type: 'string[]',
             },
-            { name: 'value1', description: 'Value for the first field', type: 'string' },
+            {
+                name: 'fieldValues',
+                description: 'Array of values aligned to fieldNames',
+                type: 'array',
+            },
         ],
         returnType: 'number',
-        syntax: 'Platform.Function.InsertData(deName, fieldName1, value1[, fieldName2, value2, ...])',
+        syntax: 'Platform.Function.InsertData(deName, fieldNames, fieldValues)',
         example:
-            'var rowsAffected = Platform.Function.InsertData("MyDE", "Email", "jane@example.com", "Name", "Jane");',
+            'var rowsAffected = Platform.Function.InsertData("MyDE", ["Email", "Name"], ["jane@example.com", "Jane"]);',
     },
     {
         name: 'InsertDE',
-        minArgs: 4,
-        maxArgs: INF,
-        description: 'Adds a new row to a Data Extension (alias for InsertData).',
+        minArgs: 3,
+        maxArgs: 3,
+        description:
+            'Adds a new row to a Data Extension. ' +
+            'Use this function in email contexts. ' +
+            'Use InsertData() for CloudPages, landing pages, microsites, and SMS messages.',
         params: [
             { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
             {
-                name: 'fieldName1',
-                description: 'First field name (additional field/value pairs may follow)',
-                type: 'string',
+                name: 'fieldNames',
+                description: 'Array of column names to populate',
+                type: 'string[]',
             },
-            { name: 'value1', description: 'Value for the first field', type: 'string' },
+            {
+                name: 'fieldValues',
+                description: 'Array of values aligned to fieldNames',
+                type: 'array',
+            },
         ],
-        returnType: 'number',
-        syntax: 'Platform.Function.InsertDE(deName, fieldName1, value1[, fieldName2, value2, ...])',
+        returnType: 'void',
+        syntax: 'Platform.Function.InsertDE(deName, fieldNames, fieldValues)',
         example:
-            'var count = Platform.Function.InsertDE("MyDE", "Email", "jane@example.com", "Name", "Jane");',
+            'Platform.Function.InsertDE("MyDE", ["Email", "Name"], ["jane@example.com", "Jane"]);',
     },
     {
         name: 'UpdateData',
         minArgs: 5,
-        maxArgs: INF,
-        description: 'Modifies existing rows in a Data Extension matching filter criteria.',
+        maxArgs: 5,
+        description:
+            'Modifies existing rows in a Data Extension matching filter criteria. ' +
+            'Use this function in CloudPages, landing pages, microsites, and SMS messages. ' +
+            'Use UpdateDE() for email contexts.',
         params: [
             { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
-            { name: 'fieldName1', description: 'Field name to update', type: 'string' },
-            { name: 'value1', description: 'New value for the field', type: 'string' },
             {
-                name: 'filterField',
-                description: 'Filter field name for identifying rows',
-                type: 'string',
+                name: 'whereFieldNames',
+                description:
+                    'Column name(s) to identify the rows to update; use an array for multiple columns (AND logic)',
+                type: 'string|string[]',
             },
             {
-                name: 'filterValue',
-                description: 'Filter field value for identifying rows',
-                type: 'string',
+                name: 'whereFieldValues',
+                description:
+                    'Value(s) to match in whereFieldNames; must be an array of equal length when whereFieldNames is an array',
+                type: 'string|array',
+            },
+            {
+                name: 'fieldNames',
+                description: 'Array of column names to update',
+                type: 'string[]',
+            },
+            {
+                name: 'fieldValues',
+                description: 'Array of new values aligned to fieldNames',
+                type: 'array',
             },
         ],
         returnType: 'number',
-        syntax: 'Platform.Function.UpdateData(deName, fieldName1, value1, filterField, filterValue[, fieldName2, value2, ...])',
+        syntax: 'Platform.Function.UpdateData(deName, whereFieldNames, whereFieldValues, fieldNames, fieldValues)',
         example:
-            'var count = Platform.Function.UpdateData("MyDE", "Status", "inactive", "Email", "jane@example.com");',
+            'var count = Platform.Function.UpdateData("MyDE", ["Email"], ["jane@example.com"], ["Status"], ["inactive"]);',
     },
     {
         name: 'UpdateDE',
         minArgs: 5,
-        maxArgs: INF,
-        description: 'Modifies existing rows in a Data Extension (alias for UpdateData).',
+        maxArgs: 5,
+        description:
+            'Modifies existing rows in a Data Extension matching filter criteria. ' +
+            'Use this function in email contexts. ' +
+            'Use UpdateData() for CloudPages, landing pages, microsites, and SMS messages.',
         params: [
             { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
-            { name: 'fieldName1', description: 'Field name to update', type: 'string' },
-            { name: 'value1', description: 'New value for the field', type: 'string' },
             {
-                name: 'filterField',
-                description: 'Filter field name for identifying rows',
-                type: 'string',
+                name: 'whereFieldNames',
+                description:
+                    'Column name(s) to identify the rows to update; use an array for multiple columns (AND logic)',
+                type: 'string|string[]',
             },
             {
-                name: 'filterValue',
-                description: 'Filter field value for identifying rows',
-                type: 'string',
+                name: 'whereFieldValues',
+                description:
+                    'Value(s) to match in whereFieldNames; must be an array of equal length when whereFieldNames is an array',
+                type: 'string|array',
+            },
+            {
+                name: 'fieldNames',
+                description: 'Array of column names to update',
+                type: 'string[]',
+            },
+            {
+                name: 'fieldValues',
+                description: 'Array of new values aligned to fieldNames',
+                type: 'array',
             },
         ],
         returnType: 'number',
-        syntax: 'Platform.Function.UpdateDE(deName, fieldName1, value1, filterField, filterValue[, fieldName2, value2, ...])',
+        syntax: 'Platform.Function.UpdateDE(deName, whereFieldNames, whereFieldValues, fieldNames, fieldValues)',
         example:
-            'var count = Platform.Function.UpdateDE("MyDE", "Status", "inactive", "Email", "jane@example.com");',
+            'var count = Platform.Function.UpdateDE("MyDE", ["Email"], ["jane@example.com"], ["Status"], ["inactive"]);',
     },
     {
         name: 'UpsertData',
         minArgs: 5,
-        maxArgs: INF,
-        description: 'Inserts a new row or updates an existing one in a Data Extension.',
+        maxArgs: 5,
+        description:
+            'Inserts a new row or updates an existing one in a Data Extension. ' +
+            'Use this function in non-sendable contexts such as CloudPages and landing pages.',
         params: [
             { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
-            { name: 'fieldName1', description: 'Field name to set', type: 'string' },
-            { name: 'value1', description: 'Value for the field', type: 'string' },
             {
-                name: 'filterField',
-                description: 'Filter field name for identifying rows',
-                type: 'string',
+                name: 'whereFieldNames',
+                description:
+                    'Column name(s) to identify an existing row; use an array for multiple columns (AND logic)',
+                type: 'string|string[]',
             },
             {
-                name: 'filterValue',
-                description: 'Filter field value for identifying rows',
-                type: 'string',
+                name: 'whereFieldValues',
+                description:
+                    'Value(s) to match in whereFieldNames; must be an array of equal length when whereFieldNames is an array',
+                type: 'string|array',
+            },
+            {
+                name: 'fieldNames',
+                description: 'Array of column names to insert or update',
+                type: 'string[]',
+            },
+            {
+                name: 'fieldValues',
+                description: 'Array of values aligned to fieldNames',
+                type: 'array',
             },
         ],
         returnType: 'number',
-        syntax: 'Platform.Function.UpsertData(deName, fieldName1, value1, filterField, filterValue[, fieldName2, value2, ...])',
+        syntax: 'Platform.Function.UpsertData(deName, whereFieldNames, whereFieldValues, fieldNames, fieldValues)',
         example:
-            'Platform.Function.UpsertData("MyDE", 1, "Status", "active", "Email", "jane@example.com");',
+            'var count = Platform.Function.UpsertData("CustomerData", ["ID"], ["12345"], ["Company", "Country"], ["exampleCompany", "USA"]);',
     },
     {
         name: 'UpsertDE',
         minArgs: 5,
-        maxArgs: INF,
-        description: 'Inserts or updates a Data Extension row (alias for UpsertData).',
+        maxArgs: 5,
+        description:
+            'Inserts a new row or updates an existing one in a Data Extension. ' +
+            'Use this function in sendable contexts such as email messages.',
         params: [
             { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
-            { name: 'fieldName1', description: 'Field name to set', type: 'string' },
-            { name: 'value1', description: 'Value for the field', type: 'string' },
             {
-                name: 'filterField',
-                description: 'Filter field name for identifying rows',
-                type: 'string',
+                name: 'whereFieldNames',
+                description:
+                    'Column name(s) to identify an existing row; use an array for multiple columns (AND logic)',
+                type: 'string|string[]',
             },
             {
-                name: 'filterValue',
-                description: 'Filter field value for identifying rows',
-                type: 'string',
+                name: 'whereFieldValues',
+                description:
+                    'Value(s) to match in whereFieldNames; must be an array of equal length when whereFieldNames is an array',
+                type: 'string|array',
+            },
+            {
+                name: 'fieldNames',
+                description: 'Array of column names to insert or update',
+                type: 'string[]',
+            },
+            {
+                name: 'fieldValues',
+                description: 'Array of values aligned to fieldNames',
+                type: 'array',
             },
         ],
         returnType: 'number',
-        syntax: 'Platform.Function.UpsertDE(deName, fieldName1, value1, filterField, filterValue[, fieldName2, value2, ...])',
+        syntax: 'Platform.Function.UpsertDE(deName, whereFieldNames, whereFieldValues, fieldNames, fieldValues)',
         example:
-            'Platform.Function.UpsertDE("MyDE", 1, "Status", "active", "Email", "jane@example.com");',
+            'var count = Platform.Function.UpsertDE("CustomerData", ["ID"], ["12345"], ["Company", "Country"], ["exampleCompany", "USA"]);',
     },
     {
         name: 'DeleteData',
         minArgs: 3,
-        maxArgs: INF,
-        description: 'Removes rows from a Data Extension matching filter criteria.',
+        maxArgs: 3,
+        description:
+            'Removes rows from a Data Extension matching filter criteria. ' +
+            'Use this function in non-sendable contexts such as CloudPages and landing pages. ' +
+            'Use DeleteDE() for email contexts.',
         params: [
             { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
-            { name: 'filterField', description: 'Filter field name', type: 'string' },
-            { name: 'filterValue', description: 'Filter field value', type: 'string' },
+            {
+                name: 'whereFieldNames',
+                description: 'Array of column names to match for deletion',
+                type: 'string[]',
+            },
+            {
+                name: 'whereFieldValues',
+                description:
+                    'Array of values aligned to whereFieldNames that identify rows to delete',
+                type: 'array',
+            },
         ],
         returnType: 'number',
-        syntax: 'Platform.Function.DeleteData(deName, filterField, filterValue[, filterField2, filterValue2, ...])',
-        example: 'var count = Platform.Function.DeleteData("MyDE", "Email", "jane@example.com");',
+        syntax: 'Platform.Function.DeleteData(deName, whereFieldNames, whereFieldValues)',
+        example:
+            'var count = Platform.Function.DeleteData("MyDE", ["Email"], ["jane@example.com"]);',
     },
     {
         name: 'DeleteDE',
         minArgs: 3,
-        maxArgs: INF,
-        description: 'Removes rows from a Data Extension (alias for DeleteData).',
+        maxArgs: 3,
+        description:
+            'Removes rows from a Data Extension matching filter criteria. ' +
+            'Use this function in email contexts. ' +
+            'Use DeleteData() for CloudPages, landing pages, microsites, and SMS messages.',
         params: [
             { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
-            { name: 'filterField', description: 'Filter field name', type: 'string' },
-            { name: 'filterValue', description: 'Filter field value', type: 'string' },
+            {
+                name: 'whereFieldNames',
+                description: 'Array of column names to match for deletion',
+                type: 'string[]',
+            },
+            {
+                name: 'whereFieldValues',
+                description:
+                    'Array of values aligned to whereFieldNames that identify rows to delete',
+                type: 'array',
+            },
         ],
         returnType: 'number',
-        syntax: 'Platform.Function.DeleteDE(deName, filterField, filterValue[, filterField2, filterValue2, ...])',
-        example: 'var count = Platform.Function.DeleteDE("MyDE", "Email", "jane@example.com");',
+        syntax: 'Platform.Function.DeleteDE(deName, whereFieldNames, whereFieldValues)',
+        example: 'var count = Platform.Function.DeleteDE("MyDE", ["Email"], ["jane@example.com"]);',
     },
     {
         name: 'ContentBlockByKey',
         minArgs: 1,
-        maxArgs: 1,
+        maxArgs: 4,
         description: 'Renders a Content Builder asset referenced by customer key.',
         params: [
             {
@@ -524,39 +648,112 @@ export const PLATFORM_FUNCTIONS = [
                 description: 'Customer key of the Content Builder asset',
                 type: 'string',
             },
+            {
+                name: 'regionName',
+                description: 'Impression region name for tracking',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'stopOnError',
+                description:
+                    'When true, returns an exception and terminates if content cannot be retrieved. When false, the call proceeds.',
+                type: 'boolean',
+                optional: true,
+            },
+            {
+                name: 'fallbackContent',
+                description: 'Default content to display if the call does not return content',
+                type: 'string',
+                optional: true,
+            },
         ],
         returnType: 'string',
-        syntax: 'Platform.Function.ContentBlockByKey(customerKey)',
-        example: 'var html = Platform.Function.ContentBlockByKey("my-header-block");\nWrite(html);',
+        syntax: 'Platform.Function.ContentBlockByKey(customerKey[, regionName, stopOnError, fallbackContent])',
+        example:
+            'var html = Platform.Function.ContentBlockByKey("my-header-block");\nWrite(html);\n\n' +
+            '// With optional params:\n' +
+            'var html2 = Platform.Function.ContentBlockByKey("my-header-block", "impressionRegion", false, "defaultContent");',
     },
     {
         name: 'ContentBlockByName',
         minArgs: 1,
-        maxArgs: 1,
-        description: 'Renders a Content Builder asset referenced by folder path and name.',
+        maxArgs: 5,
+        description:
+            'Renders a Content Builder asset referenced by folder path and name. ' +
+            'If the same name is used across multiple folders, supply the full path.',
         params: [
             {
                 name: 'name',
                 description: 'Folder path and name of the Content Builder asset',
                 type: 'string',
             },
+            {
+                name: 'regionName',
+                description: 'Impression region name for tracking',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'stopOnError',
+                description:
+                    'When true, returns an error if the content area cannot be found or is invalid. When false, no error is returned.',
+                type: 'boolean',
+                optional: true,
+            },
+            {
+                name: 'fallbackContent',
+                description:
+                    'Default content to return if an error occurs. Defaults to empty string.',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'statusVariable',
+                description:
+                    'Receives the status of the call: 0 = success, -1 = no content or invalid content area',
+                type: 'number',
+                optional: true,
+            },
         ],
         returnType: 'string',
-        syntax: 'Platform.Function.ContentBlockByName(name)',
+        syntax: 'Platform.Function.ContentBlockByName(name[, regionName, stopOnError, fallbackContent, statusVariable])',
         example:
             'var html = Platform.Function.ContentBlockByName("Shared Content/Footer");\nWrite(html);',
     },
     {
         name: 'ContentBlockByID',
         minArgs: 1,
-        maxArgs: 1,
+        maxArgs: 4,
         description: 'Renders a Content Builder asset by its numeric identifier.',
         params: [
             { name: 'id', description: 'Numeric ID of the Content Builder asset', type: 'number' },
+            {
+                name: 'regionName',
+                description: 'Impression region name for tracking',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'stopOnError',
+                description:
+                    'When true, returns an exception and terminates if content cannot be retrieved. When false, the call proceeds.',
+                type: 'boolean',
+                optional: true,
+            },
+            {
+                name: 'fallbackContent',
+                description: 'Default content to display if the call does not return content',
+                type: 'string',
+                optional: true,
+            },
         ],
         returnType: 'string',
-        syntax: 'Platform.Function.ContentBlockByID(id)',
-        example: 'var html = Platform.Function.ContentBlockByID(12345);\nWrite(html);',
+        syntax: 'Platform.Function.ContentBlockByID(id[, regionName, stopOnError, fallbackContent])',
+        example:
+            'var html = Platform.Function.ContentBlockByID(12345);\nWrite(html);\n\n' +
+            '// With optional params:\n' +
+            'var html2 = Platform.Function.ContentBlockByID(12345, "impressionRegion", false, "defaultContent");',
     },
     {
         name: 'ContentImageByKey',
@@ -820,208 +1017,199 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'InvokeCreate',
-        minArgs: 1,
-        maxArgs: 4,
+        minArgs: 3,
+        maxArgs: 3,
         description: 'Executes a SOAP API Create call on an API object.',
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
             {
-                name: 'statusMessage',
-                description: 'Variable to receive the status message',
-                type: 'string',
-                optional: true,
+                name: 'status',
+                description:
+                    'Array that receives the status and request ID of the API call (e.g. [0, 0])',
+                type: 'array',
             },
             {
-                name: 'errorCode',
-                description: 'Variable to receive the error code',
-                type: 'string',
-                optional: true,
-            },
-            {
-                name: 'requestId',
-                description: 'Variable to receive the request ID',
-                type: 'string',
-                optional: true,
+                name: 'options',
+                description:
+                    'API configure options to include in the call. Can contain a null value.',
+                type: 'object',
             },
         ],
-        returnType: 'string',
-        syntax: 'Platform.Function.InvokeCreate(apiObject[, statusMessage, errorCode, requestId])',
+        returnType: 'object',
+        syntax: 'Platform.Function.InvokeCreate(apiObject, status, options)',
         example:
-            'var sub = Platform.Function.CreateObject("Subscriber");\nPlatform.Function.SetObjectProperty(sub, "EmailAddress", "jane@example.com");\nvar statusMsg = "";\nvar errorCode = "";\nvar status = Platform.Function.InvokeCreate(sub, statusMsg, errorCode);\nWrite(status); // "OK" or "Error"',
+            'var StatusAndRequestID = [0, 0];\n' +
+            'var result = Platform.Function.InvokeCreate(CreateRequest, StatusAndRequestID, null);\n' +
+            'var status = StatusAndRequestID[0];\n' +
+            'var requestID = StatusAndRequestID[1];',
     },
     {
         name: 'InvokeUpdate',
-        minArgs: 1,
-        maxArgs: 4,
+        minArgs: 3,
+        maxArgs: 3,
         description: 'Executes a SOAP API Update call on an API object.',
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
             {
-                name: 'statusMessage',
-                description: 'Variable to receive the status message',
-                type: 'string',
-                optional: true,
+                name: 'status',
+                description:
+                    'Array that receives the status and request ID of the API call (e.g. [0, 0])',
+                type: 'array',
             },
             {
-                name: 'errorCode',
-                description: 'Variable to receive the error code',
-                type: 'string',
-                optional: true,
-            },
-            {
-                name: 'requestId',
-                description: 'Variable to receive the request ID',
-                type: 'string',
-                optional: true,
+                name: 'options',
+                description:
+                    'API configure options to include in the call. Can contain a null value.',
+                type: 'object',
             },
         ],
-        returnType: 'string',
-        syntax: 'Platform.Function.InvokeUpdate(apiObject[, statusMessage, errorCode, requestId])',
+        returnType: 'object',
+        syntax: 'Platform.Function.InvokeUpdate(apiObject, status, options)',
         example:
-            'Platform.Function.SetObjectProperty(sub, "Status", "Unsubscribed");\nvar status = Platform.Function.InvokeUpdate(sub);\nWrite(status);',
+            'var StatusAndRequestID = [0, 0];\n' +
+            'var result = Platform.Function.InvokeUpdate(UpdateRequest, StatusAndRequestID, null);\n' +
+            'var status = StatusAndRequestID[0];\n' +
+            'var requestID = StatusAndRequestID[1];',
     },
     {
         name: 'InvokeDelete',
-        minArgs: 1,
-        maxArgs: 4,
+        minArgs: 3,
+        maxArgs: 3,
         description: 'Executes a SOAP API Delete call on an API object.',
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
             {
-                name: 'statusMessage',
-                description: 'Variable to receive the status message',
-                type: 'string',
-                optional: true,
-            },
-            {
-                name: 'errorCode',
-                description: 'Variable to receive the error code',
-                type: 'string',
-                optional: true,
-            },
-            {
-                name: 'requestId',
-                description: 'Variable to receive the request ID',
-                type: 'string',
-                optional: true,
-            },
-        ],
-        returnType: 'string',
-        syntax: 'Platform.Function.InvokeDelete(apiObject[, statusMessage, errorCode, requestId])',
-        example: 'var status = Platform.Function.InvokeDelete(sub);\nWrite(status);',
-    },
-    {
-        name: 'InvokeRetrieve',
-        minArgs: 3,
-        maxArgs: 5,
-        description: 'Executes a SOAP API Retrieve call.',
-        params: [
-            { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
-            {
-                name: 'properties',
-                description: 'Array of property names to retrieve',
+                name: 'status',
+                description:
+                    'Array that receives the status and request ID of the API call (e.g. [0, 0])',
                 type: 'array',
             },
             {
-                name: 'filter',
-                description: 'Filter object for the retrieve',
+                name: 'options',
+                description:
+                    'API configure options to include in the call. Can contain a null value.',
                 type: 'object',
-                optional: true,
-            },
-            {
-                name: 'statusMessage',
-                description: 'Variable to receive the status message',
-                type: 'string',
-                optional: true,
-            },
-            {
-                name: 'requestId',
-                description: 'Variable to receive the request ID',
-                type: 'string',
-                optional: true,
             },
         ],
         returnType: 'object',
-        syntax: 'Platform.Function.InvokeRetrieve(apiObject, properties[, filter, statusMessage, requestId])',
+        syntax: 'Platform.Function.InvokeDelete(apiObject, status, options)',
         example:
-            'var req = Platform.Function.CreateObject("RetrieveRequest");\nPlatform.Function.SetObjectProperty(req, "ObjectType", "Subscriber");\nvar props = ["EmailAddress", "Status"];\nvar results = Platform.Function.InvokeRetrieve(req, props);',
+            'var StatusAndRequestID = [0, 0];\n' +
+            'var result = Platform.Function.InvokeDelete(DeleteRequest, StatusAndRequestID, null);\n' +
+            'var status = StatusAndRequestID[0];\n' +
+            'var requestID = StatusAndRequestID[1];',
+    },
+    {
+        name: 'InvokeRetrieve',
+        minArgs: 2,
+        maxArgs: 2,
+        description: 'Executes a SOAP API Retrieve call.',
+        params: [
+            {
+                name: 'apiObject',
+                description: 'SOAP API RetrieveRequest object instance',
+                type: 'object',
+            },
+            {
+                name: 'status',
+                description:
+                    'Array that receives the status and request ID of the API call (e.g. [0, 0])',
+                type: 'array',
+            },
+        ],
+        returnType: 'object',
+        syntax: 'Platform.Function.InvokeRetrieve(apiObject, status)',
+        example:
+            'var RetrieveRequest = Platform.Function.CreateObject("RetrieveRequest");\n' +
+            'Platform.Function.SetObjectProperty(RetrieveRequest, "ObjectType", "Email");\n' +
+            'Platform.Function.AddObjectArrayItem(RetrieveRequest, "Properties", "Email.Name");\n' +
+            'var StatusAndRequestID = [0, 0];\n' +
+            'var Emails = Platform.Function.InvokeRetrieve(RetrieveRequest, StatusAndRequestID);',
     },
     {
         name: 'InvokePerform',
-        minArgs: 2,
+        minArgs: 4,
         maxArgs: 4,
         description: 'Executes a SOAP API Perform action on an API object.',
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
-            { name: 'action', description: 'Action to perform', type: 'string' },
+            { name: 'method', description: 'Method to perform on the object', type: 'string' },
             {
-                name: 'statusMessage',
-                description: 'Variable to receive the status message',
-                type: 'string',
-                optional: true,
+                name: 'status',
+                description:
+                    'Array that receives the status, error code, and perform response of the API call (e.g. [0, 0, 0])',
+                type: 'array',
             },
             {
-                name: 'errorCode',
-                description: 'Variable to receive the error code',
-                type: 'string',
-                optional: true,
+                name: 'options',
+                description:
+                    'API configure options to include in the call. Can contain a null value.',
+                type: 'object',
             },
         ],
-        returnType: 'string',
-        syntax: 'Platform.Function.InvokePerform(apiObject, action[, statusMessage, errorCode])',
-        example: 'var status = Platform.Function.InvokePerform(sendDef, "start");\nWrite(status);',
+        returnType: 'object',
+        syntax: 'Platform.Function.InvokePerform(apiObject, method, status, options)',
+        example:
+            'var StatusAndRequestID = [0, 0, 0];\n' +
+            'var result = Platform.Function.InvokePerform(APIObject, "Validate", StatusAndRequestID, null);\n' +
+            'var statusMessage = StatusAndRequestID[0];\n' +
+            'var errorCode = StatusAndRequestID[1];\n' +
+            'var performResponse = StatusAndRequestID[2];',
     },
     {
         name: 'InvokeConfigure',
-        minArgs: 2,
+        minArgs: 4,
         maxArgs: 4,
         description: 'Executes a SOAP API Configure call on an API object.',
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
-            { name: 'action', description: 'Configure action', type: 'string' },
+            { name: 'method', description: 'Method to perform on the object', type: 'string' },
             {
-                name: 'statusMessage',
-                description: 'Variable to receive the status message',
-                type: 'string',
-                optional: true,
+                name: 'status',
+                description:
+                    'Array that receives the status and request ID of the API call (e.g. [0, 0])',
+                type: 'array',
             },
             {
-                name: 'errorCode',
-                description: 'Variable to receive the error code',
-                type: 'string',
-                optional: true,
+                name: 'options',
+                description:
+                    'API configure options to include in the call. Can contain a null value.',
+                type: 'object',
             },
         ],
-        returnType: 'string',
-        syntax: 'Platform.Function.InvokeConfigure(apiObject, action[, statusMessage, errorCode])',
+        returnType: 'object',
+        syntax: 'Platform.Function.InvokeConfigure(apiObject, method, status, options)',
         example:
-            'var status = Platform.Function.InvokeConfigure(configObj, "create");\nWrite(status);',
+            'var StatusAndRequestID = [0, 0];\n' +
+            'var result = Platform.Function.InvokeConfigure(ConfigureObject, "create", StatusAndRequestID, null);',
     },
     {
         name: 'InvokeExecute',
-        minArgs: 2,
-        maxArgs: 4,
+        minArgs: 3,
+        maxArgs: 3,
         description: 'Executes a SOAP API Execute call on an API object.',
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
-            { name: 'method', description: 'Execute method name', type: 'string' },
             {
-                name: 'statusMessage',
-                description: 'Variable to receive the status message',
-                type: 'string',
-                optional: true,
+                name: 'status',
+                description:
+                    'Array that receives the status and request ID of the API call (e.g. [0, 0])',
+                type: 'array',
             },
             {
-                name: 'errorCode',
-                description: 'Variable to receive the error code',
-                type: 'string',
-                optional: true,
+                name: 'options',
+                description:
+                    'API configure options to include in the call. Can contain a null value.',
+                type: 'object',
             },
         ],
-        returnType: 'string',
-        syntax: 'Platform.Function.InvokeExecute(apiObject, method[, statusMessage, errorCode])',
+        returnType: 'object',
+        syntax: 'Platform.Function.InvokeExecute(apiObject, status, options)',
         example:
-            'var status = Platform.Function.InvokeExecute(execObj, "LogUnsubEvent");\nWrite(status);',
+            'var StatusAndRequestID = [0, 0];\n' +
+            'var result = Platform.Function.InvokeExecute(ExecuteRequest, StatusAndRequestID, null);\n' +
+            'var status = StatusAndRequestID[0];\n' +
+            'var requestID = StatusAndRequestID[1];',
     },
     {
         name: 'InvokeExtract',
@@ -1084,37 +1272,70 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'HTTPGet',
-        minArgs: 1,
-        maxArgs: 3,
-        description: 'Performs an HTTP GET request and returns the response body.',
+        minArgs: 2,
+        maxArgs: 6,
+        description:
+            'Performs an HTTP GET request and returns the response body. ' +
+            'Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds.',
         params: [
             { name: 'url', description: 'URL to request', type: 'string' },
             {
+                name: 'continueOnError',
+                description:
+                    'When true, the request terminates if an error occurs. When false, the request continues on error.',
+                type: 'boolean',
+            },
+            {
+                name: 'emptyContentHandling',
+                description:
+                    'How to handle a URL that returns empty content: 0 = allow empty, 1 = return error, 2 = skip subscriber',
+                type: 'number',
+                optional: true,
+            },
+            {
                 name: 'headerNames',
-                description: 'Array of header names',
-                type: 'array',
+                description: 'Array of header names to include in the GET request',
+                type: 'string[]',
                 optional: true,
             },
             {
                 name: 'headerValues',
-                description: 'Array of header values',
-                type: 'array',
+                description: 'Array of header values corresponding to headerNames',
+                type: 'string[]',
+                optional: true,
+            },
+            {
+                name: 'statusVariable',
+                description:
+                    'Array that receives the status code: 0 = success, -1 = URL not found, -2 = HTTP error, -3 = success but no content',
+                type: 'number[]',
                 optional: true,
             },
         ],
         returnType: 'string',
-        syntax: 'Platform.Function.HTTPGet(url[, headerNames, headerValues])',
+        syntax: 'Platform.Function.HTTPGet(url, continueOnError[, emptyContentHandling, headerNames, headerValues, statusVariable])',
         example:
-            'var headerNames = ["Authorization"];\n' +
-            'var headerValues = ["Bearer " + accessToken];\n' +
-            'var responseBody = Platform.Function.HTTPGet("https://api.example.com/data", headerNames, headerValues);\n' +
-            'var obj = Platform.Function.ParseJSON(responseBody);',
+            'var status = [0];\n' +
+            'var content = Platform.Function.HTTPGet(\n' +
+            '    "https://api.example.com/data",\n' +
+            '    false,\n' +
+            '    0,\n' +
+            '    ["x-request-id"],\n' +
+            '    ["sampleValue"],\n' +
+            '    status\n' +
+            ');\n' +
+            'if (status[0] === 0) {\n' +
+            '    var obj = Platform.Function.ParseJSON(content);\n' +
+            '}',
     },
     {
         name: 'HTTPPost',
         minArgs: 3,
-        maxArgs: 5,
-        description: 'Performs an HTTP POST request with a content type and payload.',
+        maxArgs: 6,
+        description:
+            'Performs an HTTP POST request with a content type and payload. ' +
+            'Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. ' +
+            'Returns the HTTP status code (e.g. 200 for success).',
         params: [
             { name: 'url', description: 'URL to post to', type: 'string' },
             { name: 'contentType', description: 'MIME type of the request body', type: 'string' },
@@ -1122,29 +1343,37 @@ export const PLATFORM_FUNCTIONS = [
             {
                 name: 'headerNames',
                 description: 'Array of header names',
-                type: 'array',
+                type: 'string[]',
                 optional: true,
             },
             {
                 name: 'headerValues',
-                description: 'Array of header values',
+                description: 'Array of header values corresponding to headerNames',
+                type: 'string[]',
+                optional: true,
+            },
+            {
+                name: 'response',
+                description: 'Array that receives the response body from the POST request',
                 type: 'array',
                 optional: true,
             },
         ],
-        returnType: 'string',
-        syntax: 'Platform.Function.HTTPPost(url, contentType, payload[, headerNames, headerValues])',
+        returnType: 'number',
+        syntax: 'Platform.Function.HTTPPost(url, contentType, payload[, headerNames, headerValues, response])',
         example:
-            'var payload = Stringify({ name: "Jane", status: "active" });\n' +
             'var headerNames = ["Authorization"];\n' +
             'var headerValues = ["Bearer " + accessToken];\n' +
-            'var response = Platform.Function.HTTPPost(\n' +
+            'var response;\n' +
+            'var statusCode = Platform.Function.HTTPPost(\n' +
             '    "https://api.example.com/items",\n' +
             '    "application/json",\n' +
-            '    payload,\n' +
+            '    Stringify({ name: "Jane", status: "active" }),\n' +
             '    headerNames,\n' +
-            '    headerValues\n' +
-            ');',
+            '    headerValues,\n' +
+            '    response\n' +
+            ');\n' +
+            'if (statusCode == 200) { Write(response[0]); }',
     },
     {
         name: 'ParseJSON',
