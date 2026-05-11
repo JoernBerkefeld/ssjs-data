@@ -6330,7 +6330,7 @@ export const ECMASCRIPT_BUILTINS = [
             },
         ],
         returnType: 'string',
-        syntax: 'array.join([separator])',
+        syntax: 'Array.join([separator])',
         example: 'var arr = ["a", "b", "c"];\nvar str = arr.join(", "); // "a, b, c"',
     },
     {
@@ -6346,7 +6346,7 @@ export const ECMASCRIPT_BUILTINS = [
             },
         ],
         returnType: 'number',
-        syntax: 'array.push(element[, ...])',
+        syntax: 'Array.push(element[, ...])',
         example: 'var arr = [1, 2];\narr.push(3);\n// arr is now [1, 2, 3]',
     },
     {
@@ -6355,7 +6355,7 @@ export const ECMASCRIPT_BUILTINS = [
         description: 'Removes and returns the last element from an array.',
         params: [],
         returnType: 'any',
-        syntax: 'array.pop()',
+        syntax: 'Array.pop()',
         example: 'var arr = [1, 2, 3];\nvar last = arr.pop(); // 3',
     },
     {
@@ -6364,7 +6364,7 @@ export const ECMASCRIPT_BUILTINS = [
         description: 'Removes and returns the first element from an array.',
         params: [],
         returnType: 'any',
-        syntax: 'array.shift()',
+        syntax: 'Array.shift()',
         example: 'var arr = [1, 2, 3];\nvar first = arr.shift(); // 1',
     },
     {
@@ -6380,7 +6380,7 @@ export const ECMASCRIPT_BUILTINS = [
             },
         ],
         returnType: 'number',
-        syntax: 'array.unshift(element[, ...])',
+        syntax: 'Array.unshift(element[, ...])',
         example: 'var arr = [2, 3];\narr.unshift(1);\n// arr is now [1, 2, 3]',
     },
     {
@@ -6390,7 +6390,7 @@ export const ECMASCRIPT_BUILTINS = [
             'Returns a new array formed by merging this array with other arrays or values.',
         params: [{ name: 'value', description: 'Array or value to concatenate', type: 'any' }],
         returnType: 'array',
-        syntax: 'array.concat(value[, ...])',
+        syntax: 'Array.concat(value[, ...])',
         example: 'var a = [1, 2];\nvar b = [3, 4];\nvar c = a.concat(b); // [1, 2, 3, 4]',
     },
     {
@@ -6406,7 +6406,7 @@ export const ECMASCRIPT_BUILTINS = [
             { name: 'end', description: 'End index (exclusive)', type: 'number', optional: true },
         ],
         returnType: 'array',
-        syntax: 'array.slice([start[, end]])',
+        syntax: 'Array.slice([start[, end]])',
         example: 'var arr = [1, 2, 3, 4, 5];\nvar sub = arr.slice(1, 3); // [2, 3]',
     },
     {
@@ -6423,7 +6423,7 @@ export const ECMASCRIPT_BUILTINS = [
             },
         ],
         returnType: 'array',
-        syntax: 'array.sort([compareFn])',
+        syntax: 'Array.sort([compareFn])',
         example: 'var arr = [3, 1, 2];\narr.sort(function(a, b) { return a - b; }); // [1, 2, 3]',
     },
     {
@@ -6432,7 +6432,7 @@ export const ECMASCRIPT_BUILTINS = [
         description: 'Reverses the elements of an array in place.',
         params: [],
         returnType: 'array',
-        syntax: 'array.reverse()',
+        syntax: 'Array.reverse()',
         example: 'var arr = [1, 2, 3];\narr.reverse(); // [3, 2, 1]',
     },
     {
@@ -6441,7 +6441,7 @@ export const ECMASCRIPT_BUILTINS = [
         description: 'Returns the number of elements in the array.',
         params: [],
         returnType: 'number',
-        syntax: 'array.length',
+        syntax: 'Array.length',
         example: 'var arr = [1, 2, 3];\nWrite(arr.length); // 3',
     },
     // ── String.prototype ─────────────────────────────────────────────────────
@@ -6451,7 +6451,7 @@ export const ECMASCRIPT_BUILTINS = [
         description: 'Returns the character at the specified index.',
         params: [{ name: 'index', description: 'Zero-based character index', type: 'number' }],
         returnType: 'string',
-        syntax: 'str.charAt(index)',
+        syntax: 'String.charAt(index)',
         example: 'var str = "Hello";\nWrite(str.charAt(1)); // "e"',
     },
     {
@@ -6460,7 +6460,7 @@ export const ECMASCRIPT_BUILTINS = [
         description: 'Returns the UTF-16 code unit at the specified index.',
         params: [{ name: 'index', description: 'Zero-based character index', type: 'number' }],
         returnType: 'number',
-        syntax: 'str.charCodeAt(index)',
+        syntax: 'String.charCodeAt(index)',
         example: 'var str = "A";\nWrite(str.charCodeAt(0)); // 65',
     },
     {
@@ -6478,7 +6478,7 @@ export const ECMASCRIPT_BUILTINS = [
             },
         ],
         returnType: 'number',
-        syntax: 'str.indexOf(searchValue[, fromIndex])',
+        syntax: 'String.indexOf(searchValue[, fromIndex])',
         example: 'var str = "Hello, world!";\nWrite(str.indexOf("world")); // 7',
     },
     {
@@ -6495,7 +6495,7 @@ export const ECMASCRIPT_BUILTINS = [
             },
         ],
         returnType: 'number',
-        syntax: 'str.lastIndexOf(searchValue[, fromIndex])',
+        syntax: 'String.lastIndexOf(searchValue[, fromIndex])',
         example: 'var str = "abcabc";\nWrite(str.lastIndexOf("b")); // 4',
     },
     {
@@ -6506,7 +6506,7 @@ export const ECMASCRIPT_BUILTINS = [
             { name: 'regexp', description: 'Regular expression to match against', type: 'RegExp' },
         ],
         returnType: 'array',
-        syntax: 'str.match(regexp)',
+        syntax: 'String.match(regexp)',
         example:
             'var str = "test@example.com";\nvar matches = str.match(/[\\w.]+@[\\w.]+/);\nif (matches) { Write(matches[0]); }',
     },
@@ -6520,7 +6520,7 @@ export const ECMASCRIPT_BUILTINS = [
             { name: 'replaceValue', description: 'Replacement string', type: 'string' },
         ],
         returnType: 'string',
-        syntax: 'str.replace(searchValue, replaceValue)',
+        syntax: 'String.replace(searchValue, replaceValue)',
         example:
             'var str = "Hello, world!";\nWrite(str.replace("world", "SSJS")); // "Hello, SSJS!"',
     },
@@ -6532,7 +6532,7 @@ export const ECMASCRIPT_BUILTINS = [
             { name: 'regexp', description: 'Regular expression to search for', type: 'RegExp' },
         ],
         returnType: 'number',
-        syntax: 'str.search(regexp)',
+        syntax: 'String.search(regexp)',
         example: 'var str = "foo123bar";\nWrite(str.search(/\\d+/)); // 3',
     },
     {
@@ -6548,7 +6548,7 @@ export const ECMASCRIPT_BUILTINS = [
             { name: 'end', description: 'End index (exclusive)', type: 'number', optional: true },
         ],
         returnType: 'string',
-        syntax: 'str.slice(start[, end])',
+        syntax: 'String.slice(start[, end])',
         example: 'var str = "Hello, world!";\nWrite(str.slice(7, 12)); // "world"',
     },
     {
@@ -6565,7 +6565,7 @@ export const ECMASCRIPT_BUILTINS = [
             },
         ],
         returnType: 'array',
-        syntax: 'str.split(separator[, limit])',
+        syntax: 'String.split(separator[, limit])',
         example: 'var str = "a,b,c";\nvar parts = str.split(","); // ["a", "b", "c"]',
     },
     {
@@ -6577,7 +6577,7 @@ export const ECMASCRIPT_BUILTINS = [
             { name: 'end', description: 'End index (exclusive)', type: 'number', optional: true },
         ],
         returnType: 'string',
-        syntax: 'str.substring(start[, end])',
+        syntax: 'String.substring(start[, end])',
         example: 'var str = "Hello, world!";\nWrite(str.substring(7, 12)); // "world"',
     },
     {
@@ -6586,7 +6586,7 @@ export const ECMASCRIPT_BUILTINS = [
         description: 'Returns the string converted to lowercase.',
         params: [],
         returnType: 'string',
-        syntax: 'str.toLowerCase()',
+        syntax: 'String.toLowerCase()',
         example: 'var str = "Hello World";\nWrite(str.toLowerCase()); // "hello world"',
     },
     {
@@ -6595,7 +6595,7 @@ export const ECMASCRIPT_BUILTINS = [
         description: 'Returns the string converted to uppercase.',
         params: [],
         returnType: 'string',
-        syntax: 'str.toUpperCase()',
+        syntax: 'String.toUpperCase()',
         example: 'var str = "Hello World";\nWrite(str.toUpperCase()); // "HELLO WORLD"',
     },
     {
@@ -6604,7 +6604,7 @@ export const ECMASCRIPT_BUILTINS = [
         description: 'Returns the number of characters in the string.',
         params: [],
         returnType: 'number',
-        syntax: 'str.length',
+        syntax: 'String.length',
         example: 'var str = "Hello";\nWrite(str.length); // 5',
     },
     // ── Math ─────────────────────────────────────────────────────────────────
