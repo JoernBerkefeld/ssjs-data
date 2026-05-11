@@ -6189,7 +6189,7 @@ export const SCRIPT_UTIL_CONSTRUCTORS = [
         params: [
             { name: 'url', description: 'The destination URL for the request', type: 'string' },
         ],
-        returnType: 'object',
+        returnType: 'HttpRequestInstance',
         syntax: 'new Script.Util.HttpRequest(url)',
         example:
             'var url = "https://api.example.com/items/123";\n' +
@@ -6213,7 +6213,7 @@ export const SCRIPT_UTIL_CONSTRUCTORS = [
             'Only works with HTTP on port 80 and HTTPS on port 443. ' +
             'Call send() to execute the request and receive a Script.Util.HttpResponse object.',
         params: [{ name: 'url', description: 'The URL to retrieve content from', type: 'string' }],
-        returnType: 'object',
+        returnType: 'HttpRequestInstance',
         syntax: 'new Script.Util.HttpGet(url)',
         example:
             'var req = new Script.Util.HttpGet("https://api.example.com/data");\n' +
@@ -6244,7 +6244,7 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
             'Use String(resp.content) to convert the CLR content to a JavaScript string before parsing with Platform.Function.ParseJSON().',
         params: [],
         returnType: 'object',
-        syntax: 'req.send()',
+        syntax: '<HttpRequestInstance>.send()',
         example:
             'var req = new Script.Util.HttpRequest("https://api.example.com/data");\n' +
             'req.method = "GET";\n' +
@@ -6270,7 +6270,7 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
             { name: 'value', description: 'Header value', type: 'string' },
         ],
         returnType: 'void',
-        syntax: 'req.setHeader(name, value)',
+        syntax: '<HttpRequestInstance>.setHeader(name, value)',
         example:
             'var req = new Script.Util.HttpRequest("https://api.example.com/data");\n' +
             'req.setHeader("Authorization", "Bearer " + accessToken);\n' +
@@ -6284,7 +6284,7 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
         description: 'Removes all custom headers previously set on the request.',
         params: [],
         returnType: 'void',
-        syntax: 'req.clearHeaders()',
+        syntax: '<HttpRequestInstance>.clearHeaders()',
         example:
             'var req = new Script.Util.HttpRequest("https://api.example.com/data");\n' +
             'req.setHeader("Authorization", "Bearer " + accessToken);\n' +
@@ -6298,7 +6298,7 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
         description: 'Removes a specific header from the request by name.',
         params: [{ name: 'name', description: 'Name of the header to remove', type: 'string' }],
         returnType: 'void',
-        syntax: 'req.removeHeader(name)',
+        syntax: '<HttpRequestInstance>.removeHeader(name)',
         example:
             'var req = new Script.Util.HttpRequest("https://api.example.com/data");\n' +
             'req.setHeader("Authorization", "Bearer " + accessToken);\n' +
