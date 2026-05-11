@@ -7221,3 +7221,79 @@ for (const entry of POLYFILLABLE_METHODS) {
         polyfillByPrototypeName.set(entry.method, entry);
     }
 }
+
+// ── Per-namespace method lookup Maps ─────────────────────────────────────────
+// Each Map is keyed by method name (lowercase) and contains the full method
+// entry (minArgs, maxArgs, params, etc.) for use by ESLint arity/type rules.
+
+export const platformResponseLookup = new Map(
+    PLATFORM_RESPONSE_METHODS.map((m) => [m.name.toLowerCase(), m]),
+);
+export const platformVariableLookup = new Map(
+    PLATFORM_VARIABLE_METHODS.map((m) => [m.name.toLowerCase(), m]),
+);
+export const platformRequestLookup = new Map(
+    PLATFORM_REQUEST_METHODS.map((m) => [m.name.toLowerCase(), m]),
+);
+export const platformRecipientLookup = new Map(
+    PLATFORM_RECIPIENT_METHODS.map((m) => [m.name.toLowerCase(), m]),
+);
+export const httpMethodLookup = new Map(HTTP_METHODS.map((m) => [m.name.toLowerCase(), m]));
+export const httpHeaderMethodLookup = new Map(
+    HTTPHEADER_METHODS.map((m) => [m.name.toLowerCase(), m]),
+);
+export const wsproxyMethodLookup = new Map(WSPROXY_METHODS.map((m) => [m.name.toLowerCase(), m]));
+export const attributeMethodLookup = new Map(
+    ATTRIBUTE_METHODS.map((m) => [m.name.toLowerCase(), m]),
+);
+export const ssjsGlobalsLookup = new Map(
+    SSJS_GLOBALS.filter((g) => g.type === 'function').map((g) => [g.name.toLowerCase(), g]),
+);
+
+// ── Core Library rich-method arity lookup ─────────────────────────────────────
+// Maps class name (lowercase) → Map<method name (lowercase), entry>.
+// Covers all CORE_LIBRARY_OBJECTS namespaces plus their rich *_METHODS arrays.
+export const coreMethodArityLookup = new Map();
+for (const [className, methods] of [
+    ['Account', ACCOUNT_METHODS],
+    ['Account.Tracking', ACCOUNT_TRACKING_METHODS],
+    ['AccountUser', ACCOUNT_USER_METHODS],
+    ['Portfolio', PORTFOLIO_METHODS],
+    ['ContentAreaObj', CONTENT_AREA_OBJ_METHODS],
+    ['Folder', FOLDER_METHODS],
+    ['Template', TEMPLATE_METHODS],
+    ['DeliveryProfile', DELIVERY_PROFILE_METHODS],
+    ['SenderProfile', SENDER_PROFILE_METHODS],
+    ['SendClassification', SEND_CLASSIFICATION_METHODS],
+    ['FilterDefinition', FILTER_DEFINITION_METHODS],
+    ['QueryDefinition', QUERY_DEFINITION_METHODS],
+    ['List', LIST_METHODS],
+    ['List.Subscribers', LIST_SUBSCRIBERS_METHODS],
+    ['List.Subscribers.Tracking', LIST_SUBSCRIBERS_TRACKING_METHODS],
+    ['Subscriber', SUBSCRIBER_METHODS],
+    ['Subscriber.Attributes', SUBSCRIBER_ATTRIBUTES_METHODS],
+    ['Subscriber.Lists', SUBSCRIBER_LISTS_METHODS],
+    ['Email', EMAIL_METHODS],
+    ['Send', SEND_METHODS],
+    ['Send.Tracking', SEND_TRACKING_METHODS],
+    ['Send.Definition', SEND_DEFINITION_METHODS],
+    ['TriggeredSend', TRIGGERED_SEND_METHODS],
+    ['TriggeredSend.Tracking', TRIGGERED_SEND_TRACKING_METHODS],
+    ['TriggeredSend.Tracking.Clicks', TRIGGERED_SEND_TRACKING_CLICKS_METHODS],
+    ['TriggeredSend.Tracking.TotalByInterval', TRIGGERED_SEND_TRACKING_TOTAL_BY_INTERVAL_METHODS],
+    ['DataExtension', DATA_EXTENSION_METHODS],
+    ['DataExtension.Fields', DATA_EXTENSION_FIELDS_METHODS],
+    ['DataExtension.Rows', DATA_EXTENSION_ROWS_METHODS],
+    ['DateTime.TimeZone', DATE_TIME_TIMEZONE_METHODS],
+]) {
+    coreMethodArityLookup.set(
+        className.toLowerCase(),
+        new Map(methods.map((m) => [m.name.toLowerCase(), m])),
+    );
+}
+// Event objects share the EVENT_METHODS array — group by owner
+for (const m of EVENT_METHODS) {
+    const key = m.owner.toLowerCase();
+    if (!coreMethodArityLookup.has(key)) coreMethodArityLookup.set(key, new Map());
+    coreMethodArityLookup.get(key).set(m.name.toLowerCase(), m);
+}
