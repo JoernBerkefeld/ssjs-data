@@ -6436,6 +6436,34 @@ export const ECMASCRIPT_BUILTINS = [
         example: 'var arr = [1, 2, 3];\narr.reverse(); // [3, 2, 1]',
     },
     {
+        name: 'splice',
+        owner: 'Array.prototype',
+        description:
+            'Removes or replaces elements and optionally inserts new ones in place. ' +
+            'Returns an array of the removed elements.',
+        params: [
+            { name: 'start', description: 'Index at which to start changing the array', type: 'number' },
+            {
+                name: 'deleteCount',
+                description: 'Number of elements to remove (omit to remove all from start)',
+                type: 'number',
+                optional: true,
+            },
+            {
+                name: 'item',
+                description: 'Elements to insert at start (repeat for multiple)',
+                type: 'any',
+                optional: true,
+            },
+        ],
+        returnType: 'array',
+        syntax: 'Array.splice(start[, deleteCount[, item1[, ...]]])',
+        example:
+            'var arr = [1, 2, 3, 4];\n' +
+            'var removed = arr.splice(1, 2); // removed: [2, 3], arr: [1, 4]\n' +
+            'arr.splice(1, 0, 9, 8); // arr: [1, 9, 8, 4]',
+    },
+    {
         name: 'length',
         owner: 'Array.prototype',
         description: 'Returns the number of elements in the array.',
@@ -6599,6 +6627,46 @@ export const ECMASCRIPT_BUILTINS = [
         example: 'var str = "Hello World";\nWrite(str.toUpperCase()); // "HELLO WORLD"',
     },
     {
+        name: 'concat',
+        owner: 'String.prototype',
+        description:
+            'Returns a new string formed by concatenating this string with one or more additional strings.',
+        params: [
+            {
+                name: 'string',
+                description: 'String to append (repeat for multiple)',
+                type: 'string',
+            },
+        ],
+        returnType: 'string',
+        syntax: 'String.concat(string[, ...])',
+        example: 'var str = "Hello";\nWrite(str.concat(", ", "world!")); // "Hello, world!"',
+    },
+    {
+        name: 'substr',
+        owner: 'String.prototype',
+        description:
+            'Returns a substring starting at start and running for length characters. ' +
+            'If start is negative it is treated as (stringLength + start). ' +
+            'Note: prefer substring() for portability; substr is defined in ES3 Annex B.',
+        params: [
+            {
+                name: 'start',
+                description: 'Start index (negative counts from end of string)',
+                type: 'number',
+            },
+            {
+                name: 'length',
+                description: 'Number of characters to extract (omit to extract to end)',
+                type: 'number',
+                optional: true,
+            },
+        ],
+        returnType: 'string',
+        syntax: 'String.substr(start[, length])',
+        example: 'var str = "Hello, world!";\nWrite(str.substr(7, 5)); // "world"',
+    },
+    {
         name: 'length',
         owner: 'String.prototype',
         description: 'Returns the number of characters in the string.',
@@ -6691,6 +6759,304 @@ export const ECMASCRIPT_BUILTINS = [
         returnType: 'number',
         syntax: 'Math.sqrt(x)',
         example: 'Write(Math.sqrt(16)); // 4',
+    },
+    {
+        name: 'sin',
+        owner: 'Math',
+        description: 'Returns the sine of an angle given in radians.',
+        params: [{ name: 'x', description: 'Angle in radians', type: 'number' }],
+        returnType: 'number',
+        syntax: 'Math.sin(x)',
+        example: 'Write(Math.sin(Math.PI / 2)); // 1',
+    },
+    {
+        name: 'cos',
+        owner: 'Math',
+        description: 'Returns the cosine of an angle given in radians.',
+        params: [{ name: 'x', description: 'Angle in radians', type: 'number' }],
+        returnType: 'number',
+        syntax: 'Math.cos(x)',
+        example: 'Write(Math.cos(0)); // 1',
+    },
+    {
+        name: 'tan',
+        owner: 'Math',
+        description: 'Returns the tangent of an angle given in radians.',
+        params: [{ name: 'x', description: 'Angle in radians', type: 'number' }],
+        returnType: 'number',
+        syntax: 'Math.tan(x)',
+        example: 'Write(Math.tan(Math.PI / 4)); // ~1',
+    },
+    {
+        name: 'asin',
+        owner: 'Math',
+        description: 'Returns the arc sine (in radians) of a number in the range [-1, 1].',
+        params: [{ name: 'x', description: 'A number between -1 and 1', type: 'number' }],
+        returnType: 'number',
+        syntax: 'Math.asin(x)',
+        example: 'Write(Math.asin(1)); // ~1.5708 (π/2)',
+    },
+    {
+        name: 'acos',
+        owner: 'Math',
+        description: 'Returns the arc cosine (in radians) of a number in the range [-1, 1].',
+        params: [{ name: 'x', description: 'A number between -1 and 1', type: 'number' }],
+        returnType: 'number',
+        syntax: 'Math.acos(x)',
+        example: 'Write(Math.acos(1)); // 0',
+    },
+    {
+        name: 'atan',
+        owner: 'Math',
+        description: 'Returns the arc tangent (in radians) of a number.',
+        params: [{ name: 'x', description: 'A number', type: 'number' }],
+        returnType: 'number',
+        syntax: 'Math.atan(x)',
+        example: 'Write(Math.atan(1)); // ~0.7854 (π/4)',
+    },
+    {
+        name: 'atan2',
+        owner: 'Math',
+        description:
+            'Returns the angle (in radians) from the positive x-axis to the point (x, y). ' +
+            'Unlike atan, atan2 correctly handles all quadrants.',
+        params: [
+            { name: 'y', description: 'Y coordinate', type: 'number' },
+            { name: 'x', description: 'X coordinate', type: 'number' },
+        ],
+        returnType: 'number',
+        syntax: 'Math.atan2(y, x)',
+        example: 'Write(Math.atan2(1, 1)); // ~0.7854 (π/4)',
+    },
+    {
+        name: 'exp',
+        owner: 'Math',
+        description: 'Returns e raised to the power of x (e^x).',
+        params: [{ name: 'x', description: 'The exponent', type: 'number' }],
+        returnType: 'number',
+        syntax: 'Math.exp(x)',
+        example: 'Write(Math.exp(1)); // ~2.71828 (e)',
+    },
+    {
+        name: 'log',
+        owner: 'Math',
+        description: 'Returns the natural logarithm (base e) of a number.',
+        params: [{ name: 'x', description: 'A positive number', type: 'number' }],
+        returnType: 'number',
+        syntax: 'Math.log(x)',
+        example: 'Write(Math.log(Math.E)); // 1',
+    },
+    // ── Math constants ───────────────────────────────────────────────────────
+    {
+        name: 'PI',
+        owner: 'Math',
+        description: 'The ratio of a circle\'s circumference to its diameter (~3.14159).',
+        params: [],
+        returnType: 'number',
+        syntax: 'Math.PI',
+        example: 'var area = Math.PI * r * r;',
+    },
+    {
+        name: 'E',
+        owner: 'Math',
+        description: 'Euler\'s number, the base of the natural logarithm (~2.71828).',
+        params: [],
+        returnType: 'number',
+        syntax: 'Math.E',
+        example: 'Write(Math.E); // ~2.71828',
+    },
+    {
+        name: 'LN2',
+        owner: 'Math',
+        description: 'The natural logarithm of 2 (~0.69315).',
+        params: [],
+        returnType: 'number',
+        syntax: 'Math.LN2',
+        example: 'Write(Math.LN2); // ~0.693',
+    },
+    {
+        name: 'LN10',
+        owner: 'Math',
+        description: 'The natural logarithm of 10 (~2.30259).',
+        params: [],
+        returnType: 'number',
+        syntax: 'Math.LN10',
+        example: 'Write(Math.LN10); // ~2.303',
+    },
+    {
+        name: 'LOG2E',
+        owner: 'Math',
+        description: 'The base-2 logarithm of e (~1.44270).',
+        params: [],
+        returnType: 'number',
+        syntax: 'Math.LOG2E',
+        example: 'Write(Math.LOG2E); // ~1.443',
+    },
+    {
+        name: 'LOG10E',
+        owner: 'Math',
+        description: 'The base-10 logarithm of e (~0.43429).',
+        params: [],
+        returnType: 'number',
+        syntax: 'Math.LOG10E',
+        example: 'Write(Math.LOG10E); // ~0.434',
+    },
+    {
+        name: 'SQRT2',
+        owner: 'Math',
+        description: 'The square root of 2 (~1.41421).',
+        params: [],
+        returnType: 'number',
+        syntax: 'Math.SQRT2',
+        example: 'Write(Math.SQRT2); // ~1.414',
+    },
+    {
+        name: 'SQRT1_2',
+        owner: 'Math',
+        description: 'The square root of 1/2 (~0.70711); equivalent to 1/Math.SQRT2.',
+        params: [],
+        returnType: 'number',
+        syntax: 'Math.SQRT1_2',
+        example: 'Write(Math.SQRT1_2); // ~0.707',
+    },
+    // ── Number.prototype ─────────────────────────────────────────────────────
+    {
+        name: 'toFixed',
+        owner: 'Number.prototype',
+        description:
+            'Returns a string representing the number in fixed-point notation with the given number of decimal places.',
+        params: [
+            {
+                name: 'fractionDigits',
+                description: 'Number of digits after the decimal point (0–20, default 0)',
+                type: 'number',
+                optional: true,
+            },
+        ],
+        returnType: 'string',
+        syntax: 'Number.toFixed([fractionDigits])',
+        example:
+            'var price = 9.99;\nWrite(price.toFixed(2)); // "9.99"\nWrite((1.5).toFixed(0)); // "2"',
+    },
+    {
+        name: 'toExponential',
+        owner: 'Number.prototype',
+        description:
+            'Returns a string representing the number in exponential notation. ' +
+            'If fractionDigits is omitted, enough digits are included to uniquely identify the value.',
+        params: [
+            {
+                name: 'fractionDigits',
+                description: 'Digits after the decimal point in the significand (0–20)',
+                type: 'number',
+                optional: true,
+            },
+        ],
+        returnType: 'string',
+        syntax: 'Number.toExponential([fractionDigits])',
+        example: 'Write((123456).toExponential(2)); // "1.23e+5"',
+    },
+    {
+        name: 'toPrecision',
+        owner: 'Number.prototype',
+        description:
+            'Returns a string representing the number to the specified number of significant digits.',
+        params: [
+            {
+                name: 'precision',
+                description: 'Number of significant digits (1–21)',
+                type: 'number',
+                optional: true,
+            },
+        ],
+        returnType: 'string',
+        syntax: 'Number.toPrecision([precision])',
+        example: 'Write((123.456).toPrecision(5)); // "123.46"',
+    },
+    // ── Object.prototype ─────────────────────────────────────────────────────
+    {
+        name: 'hasOwnProperty',
+        owner: 'Object.prototype',
+        description:
+            'Returns true if the object has the specified property as its own (not inherited) property. ' +
+            'Commonly used to safely iterate for...in loops.',
+        params: [
+            { name: 'v', description: 'Property name to test', type: 'string' },
+        ],
+        returnType: 'boolean',
+        syntax: 'Object.hasOwnProperty(v)',
+        example:
+            'var obj = {a: 1};\n' +
+            'for (var key in obj) {\n' +
+            '    if (obj.hasOwnProperty(key)) { Write(key); }\n' +
+            '}',
+    },
+    // ── Global functions ─────────────────────────────────────────────────────
+    {
+        name: 'parseInt',
+        owner: 'Global',
+        description:
+            'Parses a string and returns an integer in the specified radix (base). ' +
+            'Leading whitespace is ignored. Returns NaN if no valid integer is found. ' +
+            'Always specify a radix to avoid octal/hex ambiguity.',
+        params: [
+            { name: 'string', description: 'The string to parse', type: 'string' },
+            {
+                name: 'radix',
+                description: 'Base of the numeral system (2–36); use 10 for decimal',
+                type: 'number',
+                optional: true,
+            },
+        ],
+        returnType: 'number',
+        syntax: 'parseInt(string[, radix])',
+        example:
+            'Write(parseInt("42", 10)); // 42\n' +
+            'Write(parseInt("0xFF", 16)); // 255\n' +
+            'Write(parseInt("abc", 10)); // NaN',
+    },
+    {
+        name: 'parseFloat',
+        owner: 'Global',
+        description:
+            'Parses a string and returns a floating-point number. ' +
+            'Stops parsing at the first character that is not part of a valid number. ' +
+            'Returns NaN if no valid number is found.',
+        params: [{ name: 'string', description: 'The string to parse', type: 'string' }],
+        returnType: 'number',
+        syntax: 'parseFloat(string)',
+        example:
+            'Write(parseFloat("3.14")); // 3.14\n' +
+            'Write(parseFloat("3.14abc")); // 3.14\n' +
+            'Write(parseFloat("abc")); // NaN',
+    },
+    {
+        name: 'isNaN',
+        owner: 'Global',
+        description:
+            'Returns true if the value is NaN (Not-a-Number) after applying ToNumber conversion. ' +
+            'Use this to guard against failed parseInt/parseFloat calls.',
+        params: [{ name: 'value', description: 'Value to test', type: 'any' }],
+        returnType: 'boolean',
+        syntax: 'isNaN(value)',
+        example:
+            'Write(isNaN(NaN)); // true\n' +
+            'Write(isNaN(parseInt("abc", 10))); // true\n' +
+            'Write(isNaN(42)); // false',
+    },
+    {
+        name: 'isFinite',
+        owner: 'Global',
+        description:
+            'Returns true if the value is a finite number (not NaN, +Infinity, or -Infinity) ' +
+            'after applying ToNumber conversion.',
+        params: [{ name: 'value', description: 'Value to test', type: 'any' }],
+        returnType: 'boolean',
+        syntax: 'isFinite(value)',
+        example:
+            'Write(isFinite(42)); // true\n' +
+            'Write(isFinite(1 / 0)); // false (Infinity)\n' +
+            'Write(isFinite(NaN)); // false',
     },
 ];
 
