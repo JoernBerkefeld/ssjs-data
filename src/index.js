@@ -121,6 +121,46 @@ export const SSJS_GLOBALS = [
             '    Write("Error: " + e.message);\n' +
             '}',
     },
+    {
+        name: 'Base64Encode',
+        type: 'function',
+        minArgs: 1,
+        maxArgs: 1,
+        requiresCoreLoad: true,
+        description:
+            'Encodes plain text to a Base64 encoded string. ' +
+            'Requires `Platform.Load("core", "1.1.5")` before use. ' +
+            'For charset control, use `Platform.Function.Base64Encode(string, charset)` instead.',
+        params: [{ name: 'string', description: 'Text to encode', type: 'string' }],
+        returnType: 'string',
+        syntax: 'Base64Encode(string)',
+        example:
+            "var decoded = 'Convert to Base64';\n" +
+            'var encoded = Base64Encode(decoded); // "Q29udmVydCB0byBCYXNlNjQ="',
+    },
+    {
+        name: 'Base64Decode',
+        type: 'function',
+        minArgs: 1,
+        maxArgs: 1,
+        requiresCoreLoad: true,
+        description:
+            'Decodes a Base64 encoded string to plain text. ' +
+            'Requires `Platform.Load("core", "1.1.5")` before use. ' +
+            'For charset control, use `Platform.Function.Base64Decode(encodedString, charset)` instead.',
+        params: [
+            {
+                name: 'encodedString',
+                description: 'Base64 encoded string to decode',
+                type: 'string',
+            },
+        ],
+        returnType: 'string',
+        syntax: 'Base64Decode(encodedString)',
+        example:
+            "var encoded = 'VGhpcyB3YXMgYSBCYXNlNjQgZW5jb2RlZCBzdHJpbmcu';\n" +
+            'var decoded = Base64Decode(encoded); // "This was a Base64 encoded string."',
+    },
     // ── Bare-name aliases for Platform.Function.* (dual-call rule) ───────────
     // Every Platform.Function.X() is also callable as X(). The canonical
     // definition lives in PLATFORM_FUNCTIONS. A subset requires a preceding
@@ -1453,6 +1493,76 @@ export const PLATFORM_FUNCTIONS = [
             'Write(encoded); // "http://www.example.com?value=12+3%2012;3"\n' +
             'var encodedFull = Platform.Function.UrlEncode(baseURL, true);\n' +
             'Write(encodedFull); // "http://www.example.com?value%3d12%2b3+12%3b3"',
+    },
+    {
+        name: 'Base64Encode',
+        minArgs: 1,
+        maxArgs: 2,
+        description:
+            'Encodes any string value to Base64. ' +
+            'Note: values encoded with this function can only be decoded using `Platform.Function.Base64Decode()` or `Base64Decode()` — not other Base64 decoders. ' +
+            'For a simpler single-parameter form without charset control, see `Base64Encode()`.',
+        params: [
+            { name: 'string', description: 'String to encode', type: 'string' },
+            {
+                name: 'charset',
+                description: 'Character set to use when encoding, such as ASCII or UTF-8',
+                type: 'string',
+                optional: true,
+            },
+        ],
+        returnType: 'string',
+        syntax: 'Platform.Function.Base64Encode(string[, charset])',
+        example:
+            'var normalStr = Platform.Function.Lookup("ForBase64Info","ReceiptData","ReceiptKey","stringValue");\n' +
+            'var encodedStr = Platform.Function.Base64Encode(normalStr);',
+    },
+    {
+        name: 'Base64Decode',
+        minArgs: 1,
+        maxArgs: 2,
+        description:
+            'Decodes a Base64-encoded string. ' +
+            'Only works with values encoded using `Platform.Function.Base64Encode()` or `Base64Encode()` — not arbitrary Base64 strings. ' +
+            'For a simpler single-parameter form without charset control, see `Base64Decode()`.',
+        params: [
+            {
+                name: 'encodedString',
+                description: 'Base64 encoded string to decode',
+                type: 'string',
+            },
+            {
+                name: 'charset',
+                description: 'Character set to use when decoding, such as ASCII or UTF-8',
+                type: 'string',
+                optional: true,
+            },
+        ],
+        returnType: 'string',
+        syntax: 'Platform.Function.Base64Decode(encodedString[, charset])',
+        example:
+            'var encodedStr = Platform.Function.Lookup("forBase64Info","ReceiptData","ReceiptKey","stringValue");\n' +
+            'var decodedStr = Platform.Function.Base64Decode(encodedStr);',
+    },
+    {
+        name: 'MD5',
+        minArgs: 1,
+        maxArgs: 2,
+        description: 'Returns an MD5 hash for a given string value.',
+        params: [
+            { name: 'string', description: 'String to evaluate', type: 'string' },
+            {
+                name: 'charset',
+                description: 'Character set to use when evaluating, such as ASCII or UTF-8',
+                type: 'string',
+                optional: true,
+            },
+        ],
+        returnType: 'string',
+        syntax: 'Platform.Function.MD5(string[, charset])',
+        example:
+            'var normalStr = Platform.Function.Lookup("ForMD5Info","HashData","HashKey","stringValue");\n' +
+            'var hashedStr = Platform.Function.MD5(normalStr);',
     },
     {
         name: 'Write',
