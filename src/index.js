@@ -6442,7 +6442,11 @@ export const ECMASCRIPT_BUILTINS = [
             'Removes or replaces elements and optionally inserts new ones in place. ' +
             'Returns an array of the removed elements.',
         params: [
-            { name: 'start', description: 'Index at which to start changing the array', type: 'number' },
+            {
+                name: 'start',
+                description: 'Index at which to start changing the array',
+                type: 'number',
+            },
             {
                 name: 'deleteCount',
                 description: 'Number of elements to remove (omit to remove all from start)',
@@ -6850,7 +6854,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'PI',
         owner: 'Math',
-        description: 'The ratio of a circle\'s circumference to its diameter (~3.14159).',
+        description: "The ratio of a circle's circumference to its diameter (~3.14159).",
         params: [],
         returnType: 'number',
         syntax: 'Math.PI',
@@ -6859,7 +6863,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'E',
         owner: 'Math',
-        description: 'Euler\'s number, the base of the natural logarithm (~2.71828).',
+        description: "Euler's number, the base of the natural logarithm (~2.71828).",
         params: [],
         returnType: 'number',
         syntax: 'Math.E',
@@ -6980,9 +6984,7 @@ export const ECMASCRIPT_BUILTINS = [
         description:
             'Returns true if the object has the specified property as its own (not inherited) property. ' +
             'Commonly used to safely iterate for...in loops.',
-        params: [
-            { name: 'v', description: 'Property name to test', type: 'string' },
-        ],
+        params: [{ name: 'v', description: 'Property name to test', type: 'string' }],
         returnType: 'boolean',
         syntax: 'Object.hasOwnProperty(v)',
         example:
