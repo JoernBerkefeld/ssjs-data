@@ -53,6 +53,13 @@ export const SSJS_GLOBALS = [
             'Root namespace for SFMC platform APIs including Function, Variable, Response, and Request.',
     },
     {
+        name: 'Script',
+        type: 'object',
+        description:
+            'Root namespace for SFMC script utilities. ' +
+            'Access sub-namespaces such as `Script.Util` for HTTP request helpers.',
+    },
+    {
         name: 'String',
         type: 'function',
         minArgs: 1,
