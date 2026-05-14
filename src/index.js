@@ -200,7 +200,7 @@ export const SSJS_GLOBALS = [
         aliasOf: 'Platform.Function.IsPhoneNumber',
         requiresCoreLoad: true,
     },
-    { name: 'Write', aliasOf: 'Platform.Function.Write', requiresCoreLoad: true },
+    { name: 'Write', aliasOf: 'Platform.Response.Write', requiresCoreLoad: true },
     { name: 'Stringify', aliasOf: 'Platform.Function.Stringify', requiresCoreLoad: true },
     // ── Core-library namespace markers ───────────────────────────────────────
     {
@@ -1563,24 +1563,6 @@ export const PLATFORM_FUNCTIONS = [
         example:
             'var normalStr = Platform.Function.Lookup("ForMD5Info","HashData","HashKey","stringValue");\n' +
             'var hashedStr = Platform.Function.MD5(normalStr);',
-    },
-    {
-        name: 'Write',
-        minArgs: 1,
-        maxArgs: 1,
-        description:
-            'Outputs the specified string value to the rendered page. ' +
-            'Distinct from `Platform.Response.Write()`, which writes to the HTTP response output.',
-        params: [
-            {
-                name: 'content',
-                description: 'The string content to write to the page output.',
-                type: 'string',
-            },
-        ],
-        returnType: 'void',
-        syntax: 'Platform.Function.Write(content)',
-        example: 'Platform.Function.Write("Hello, world!");',
     },
     {
         name: 'Stringify',
@@ -5861,7 +5843,7 @@ export const PLATFORM_RESPONSE_METHODS = [
         maxArgs: 1,
         description:
             'Writes content to the HTTP response output. ' +
-            'Distinct from the bare-name `Write()` / `Platform.Function.Write()`, which write to the rendered page output.',
+            'Distinct from the bare-name `Write()``, which write to the rendered page output.',
         params: [
             {
                 name: 'content',
