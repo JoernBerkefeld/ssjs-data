@@ -54,7 +54,13 @@ declare namespace Platform {
         function Base64Decode(encodedString: string, charset?: string): string;
         function MD5(string: string, charset?: string): string;
         function Stringify(object: object): string;
+        /**
+         * @deprecated
+         */
         function ContentArea(id: number, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
+        /**
+         * @deprecated
+         */
         function ContentAreaByName(name: string, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
         function IsCHTMLBrowser(userAgentString: string): boolean;
     }
@@ -95,31 +101,94 @@ declare namespace Platform {
 }
 
 // ── Bare-name globals (aliasOf Platform.*) ──────────────────────────────────
+/**
+ * @deprecated
+ */
 declare function ContentArea(id: number, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
+/**
+ * @deprecated
+ */
 declare function ContentAreaByName(name: string, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
+/**
+ * @remarks Requires `Platform.Load("Core", "1")` before use.
+ */
 declare function BeginImpressionRegion(name: string): void;
+/**
+ * @remarks Requires `Platform.Load("Core", "1")` before use.
+ */
 declare function EndImpressionRegion(closeAll?: boolean): void;
+/**
+ * @remarks Requires `Platform.Load("Core", "1")` before use.
+ */
 declare function Now(useContextTime?: boolean): string;
+/**
+ * @remarks Requires `Platform.Load("Core", "1")` before use.
+ */
 declare function SystemDateToLocalDate(dateValue: string): string;
+/**
+ * @remarks Requires `Platform.Load("Core", "1")` before use.
+ */
 declare function LocalDateToSystemDate(dateValue: string): string;
+/**
+ * @remarks Requires `Platform.Load("Core", "1")` before use.
+ */
 declare function Redirect(url: string, movedPermanently: boolean): void;
+/**
+ * @remarks Requires `Platform.Load("Core", "1")` before use.
+ */
 declare function GUID(): string;
+/**
+ * @remarks Requires `Platform.Load("Core", "1")` before use.
+ */
 declare function IsEmailAddress(value: string): boolean;
+/**
+ * @remarks Requires `Platform.Load("Core", "1")` before use.
+ */
 declare function IsPhoneNumber(value: string): boolean;
+/**
+ * @remarks Requires `Platform.Load("Core", "1")` before use.
+ */
 declare function Write(content: string): void;
+/**
+ * @remarks Requires `Platform.Load("Core", "1")` before use.
+ */
 declare function Stringify(object: object): string;
 
 // ── DataExtension instance interfaces ───────────────────────────────────────
 interface DataExtensionFieldsAccessor {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     Add(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     Retrieve(): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     UpdateSendableField(deFieldName: string, subscriberField: string): string;
 }
 interface DataExtensionRowsAccessor {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     Add(rowData: any[]): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     Lookup(searchFieldNames: any[], searchValues: any[], limit?: number, orderByFieldName?: string): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     Remove(columnNames: any[], columnValues: any[]): number;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     Retrieve(filter?: object): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     Update(rowData: object, whereFieldNames: any[], whereValues: any[]): string;
 }
 interface DataExtensionInstance {
@@ -129,234 +198,650 @@ interface DataExtensionInstance {
 
 // ── Core Library namespaces ──────────────────────────────────────────────────
 declare namespace Account {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Init(key: string): any;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Update(properties: object): string;
 }
 declare namespace Account.Tracking {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
 }
 declare namespace AccountUser {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Init(targetUserKey: string, myClientID: number): any;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Add(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Update(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Activate(): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Deactivate(): string;
 }
 declare namespace Portfolio {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Init(key: string): any;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Add(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Update(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Remove(): string;
 }
 declare namespace ContentAreaObj {
+    /**
+     * @deprecated
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Init(key: string): any;
+    /**
+     * @deprecated
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Add(properties: object): string;
+    /**
+     * @deprecated
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
+    /**
+     * @deprecated
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Update(properties: object): string;
+    /**
+     * @deprecated
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Remove(): string;
 }
 declare namespace Folder {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Init(key?: string): any;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Add(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Update(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Remove(): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function SetID(id: number): void;
 }
 declare namespace Template {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Init(key: string): any;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Add(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Update(properties: object): string;
 }
 declare namespace DeliveryProfile {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Init(key: string): any;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Add(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Update(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Remove(): string;
 }
 declare namespace SenderProfile {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Init(key: string): any;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Add(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Update(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Remove(): string;
 }
 declare namespace SendClassification {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Init(key: string): any;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Add(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Update(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Remove(): string;
 }
 declare namespace FilterDefinition {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Init(key: string): any;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Add(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Update(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Remove(): string;
 }
 declare namespace QueryDefinition {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Init(key: string): any;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Add(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Update(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Remove(): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Perform(action: string): string;
 }
 declare namespace List {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Init(key: string): any;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Add(properties: object): any;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Remove(): string;
 }
 declare namespace List.Subscribers {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Add(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter?: object): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Unsubscribe(emailAddress: string): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Update(emailAddress: string, status: string): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Upsert(emailAddress: string, attributes: object): string;
 }
 declare namespace List.Subscribers.Tracking {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
 }
 declare namespace Subscriber {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Init(key: string): any;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Add(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Upsert(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Statistics(subscriberKey: string): object;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Update(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Remove(): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Unsubscribe(): string;
 }
 declare namespace Subscriber.Attributes {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(): object[];
 }
 declare namespace Subscriber.Lists {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(): object[];
 }
 declare namespace Email {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Init(key: string): any;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Add(properties: object): any;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Update(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Remove(): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Validate(): object;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function CheckContent(): object;
 }
 declare namespace Send {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Init(id: number): any;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Add(emailKey: string, listIds: any[], options?: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function RetrieveLists(filter: object): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Remove(): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function CancelSend(): string;
 }
 declare namespace Send.Tracking {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function ClickRetrieve(filter: object): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function TotalByIntervalRetrieve(type: string, startDate: string, endDate: string, groupBy: string): object[];
 }
 declare namespace Send.Definition {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Init(key: string): any;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Add(esdParams: object, sendClassificationKey: string, emailKey: string, listIds: any[]): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function AddWithDE(esdParams: object, sendClassificationKey: string, emailKey: string, sendableDataExtensionKey: string, publicationListKey: string): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function AddWithFilterDefinition(esdParams: object, sendClassificationKey: string, emailKey: string, filterDefinitionKey: string, listId: number): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter?: object): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Update(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Remove(): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Send(): string;
 }
 declare namespace TriggeredSend {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Init(key: string): any;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Add(properties: object): any;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Update(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Start(): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Pause(): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Publish(): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Send(emailAddress: string, sendTimeAttributes?: object): string;
 }
 declare namespace TriggeredSend.Tracking {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter?: object): object[];
 }
 declare namespace TriggeredSend.Tracking.Clicks {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
 }
 declare namespace TriggeredSend.Tracking.TotalByInterval {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(type: string, startDate: string, endDate: string, groupBy: string): object[];
 }
 declare namespace DataExtension {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Init(key: string): DataExtensionInstance;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Add(properties: object): DataExtensionInstance;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object, queryAllAccounts?: boolean): object[];
 }
 declare namespace DataExtension.Fields {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Add(properties: object): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function UpdateSendableField(deFieldName: string, subscriberField: string): string;
 }
 declare namespace DataExtension.Rows {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Add(rowData: any[]): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Lookup(searchFieldNames: any[], searchValues: any[], limit?: number, orderByFieldName?: string): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Remove(columnNames: any[], columnValues: any[]): number;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter?: object): object[];
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Update(rowData: object, whereFieldNames: any[], whereValues: any[]): string;
 }
 declare namespace DateTime.TimeZone {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
 }
 
 // ── Standalone Core Library globals ──────────────────────────────────────────
 declare namespace Attribute {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function GetValue(name: string): string;
 }
 
 declare namespace ErrorUtil {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function ThrowWSProxyError(result: object): void;
 }
 
 // ── Event namespaces ─────────────────────────────────────────────────────────
 declare namespace BounceEvent {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
 }
 declare namespace ClickEvent {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
 }
 declare namespace ForwardedEmailEvent {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
 }
 declare namespace ForwardedEmailOptInEvent {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
 }
 declare namespace NotSentEvent {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
 }
 declare namespace OpenEvent {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
 }
 declare namespace SentEvent {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
 }
 declare namespace SurveyEvent {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
 }
 declare namespace UnsubEvent {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Retrieve(filter: object): object[];
 }
 
 // ── HTTP / HTTPHeader ────────────────────────────────────────────────────────
 declare namespace HTTP {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Get(url: string, headerNames?: any[], headerValues?: any[]): object;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Post(url: string, contentType: string, payload: string, headerNames: string[], headerValues: any[]): object;
 }
 
 declare namespace HTTPHeader {
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function GetValue(name: string): string;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function SetValue(name: string, value: string): void;
+    /**
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     */
     function Remove(headerName: string): string;
 }
 

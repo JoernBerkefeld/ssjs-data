@@ -186,19 +186,42 @@ function buildParamStr(params, minArgs, restParamType = null) {
 // ── Emission helpers ──────────────────────────────────────────────────────────
 
 /**
+ * Build a JSDoc block comment for a method entry when it has notable metadata.
+ * Returns an empty string when no comment is needed.
+ *
+ * @param {object} m - ssjs-data method entry
+ * @param {string} indent - indentation string to prepend
+ * @returns {string} JSDoc comment string (including trailing newline) or empty string
+ */
+function buildJsDocComment(m, indent = '    ') {
+    const lines = [];
+    if (m.deprecated) {
+        lines.push(`${indent} * @deprecated`);
+    }
+    if (m.requiresCoreLoad) {
+        lines.push(`${indent} * @remarks Requires \`Platform.Load("Core", "1")\` before use.`);
+    }
+    if (lines.length === 0) {
+        return '';
+    }
+    return [`${indent}/**`, ...lines, `${indent} */`].join('\n') + '\n';
+}
+
+/**
  * Emit a single method/property inside a `declare namespace` block.
  * Uses `function` keyword for callables, `var`/`const` for properties.
  *
  * @param {object} m - ssjs-data method entry
  * @param {string} indent - indentation string to prepend
- * @returns {string} TypeScript declaration line
+ * @returns {string} TypeScript declaration line(s)
  */
 function emitNsMember(m, indent = '    ') {
+    const comment = buildJsDocComment(m, indent);
     const retType = toTsType(m.returnType);
     if (isPropertyEntry(m)) {
         // Response properties are writable (var); Request properties are readonly (const).
         // We use var universally here — callers that need const can override.
-        return `${indent}var ${m.name}: ${retType};`;
+        return `${comment}${indent}var ${m.name}: ${retType};`;
     }
     let paramStr;
     if (isVariadicMethod(m) && m.params && m.params.length > 0) {
@@ -211,7 +234,7 @@ function emitNsMember(m, indent = '    ') {
     } else {
         paramStr = buildParamStr(m.params, m.minArgs ?? 0);
     }
-    return `${indent}function ${m.name}(${paramStr}): ${retType};`;
+    return `${comment}${indent}function ${m.name}(${paramStr}): ${retType};`;
 }
 
 /**
@@ -220,12 +243,13 @@ function emitNsMember(m, indent = '    ') {
  *
  * @param {object} m - ssjs-data method entry
  * @param {string} indent - indentation string to prepend
- * @returns {string} TypeScript declaration line
+ * @returns {string} TypeScript declaration line(s)
  */
 function emitIfaceMember(m, indent = '    ') {
+    const comment = buildJsDocComment(m, indent);
     const retType = toTsType(m.returnType);
     if (isPropertyEntry(m)) {
-        return `${indent}readonly ${m.name}: ${retType};`;
+        return `${comment}${indent}readonly ${m.name}: ${retType};`;
     }
     let paramStr;
     if (isVariadicMethod(m) && m.params && m.params.length > 0) {
@@ -238,7 +262,7 @@ function emitIfaceMember(m, indent = '    ') {
     } else {
         paramStr = buildParamStr(m.params, m.minArgs ?? 0);
     }
-    return `${indent}${m.name}(${paramStr}): ${retType};`;
+    return `${comment}${indent}${m.name}(${paramStr}): ${retType};`;
 }
 
 /**
@@ -418,6 +442,9 @@ for (const g of SSJS_GLOBALS) {
         line(`declare function ${g.name}(...args: any[]): any;`);
         continue;
     }
+    // Inherit deprecated/requiresCoreLoad from the source function if not overridden on the alias
+    const effective = { ...src, ...g, aliasOf: g.aliasOf };
+    const comment = buildJsDocComment(effective, '');
     const retType = toTsType(src.returnType);
     let paramStr;
     if (isVariadicMethod(src) && src.params && src.params.length > 0) {
@@ -429,6 +456,9 @@ for (const g of SSJS_GLOBALS) {
         );
     } else {
         paramStr = buildParamStr(src.params, src.minArgs ?? 0);
+    }
+    if (comment) {
+        line(comment.trimEnd());
     }
     line(`declare function ${g.name}(${paramStr}): ${retType};`);
 }
