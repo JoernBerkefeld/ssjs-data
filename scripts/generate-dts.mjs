@@ -9,7 +9,8 @@
 
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, resolve } from 'node:path';
+import path from 'node:path';
+const { dirname, join, resolve } = path;
 
 import {
     SSJS_GLOBALS,
@@ -74,19 +75,46 @@ const INSTANCE_TYPE_MAP = {
     HttpRequestInstance: 'Script.Util.HttpRequest',
 };
 
-/** Convert an ssjs-data type string to a TypeScript type string. */
+/**
+ * Convert an ssjs-data type string to a TypeScript type string.
+ *
+ * @param {string} s - ssjs-data type string
+ * @returns {string} Equivalent TypeScript type string
+ */
 function toTsType(s) {
-    if (!s || s === 'any') return 'any';
-    if (INSTANCE_TYPE_MAP[s]) return INSTANCE_TYPE_MAP[s];
-    if (s === 'void') return 'void';
-    if (s === 'boolean') return 'boolean';
-    if (s === 'number') return 'number';
-    if (s === 'string') return 'string';
-    if (s === 'object') return 'object';
-    if (s === 'array') return 'any[]';
-    if (s === 'string[]') return 'string[]';
-    if (s === 'object[]') return 'object[]';
-    if (s === 'RegExp') return 'RegExp';
+    if (!s || s === 'any') {
+        return 'any';
+    }
+    if (INSTANCE_TYPE_MAP[s]) {
+        return INSTANCE_TYPE_MAP[s];
+    }
+    if (s === 'void') {
+        return 'void';
+    }
+    if (s === 'boolean') {
+        return 'boolean';
+    }
+    if (s === 'number') {
+        return 'number';
+    }
+    if (s === 'string') {
+        return 'string';
+    }
+    if (s === 'object') {
+        return 'object';
+    }
+    if (s === 'array') {
+        return 'any[]';
+    }
+    if (s === 'string[]') {
+        return 'string[]';
+    }
+    if (s === 'object[]') {
+        return 'object[]';
+    }
+    if (s === 'RegExp') {
+        return 'RegExp';
+    }
     // Union types like "string|number"
     if (s.includes('|')) {
         return s
@@ -95,13 +123,18 @@ function toTsType(s) {
             .join(' | ');
     }
     // Generic array suffix like "foo[]"
-    if (s.endsWith('[]')) return toTsType(s.slice(0, -2)) + '[]';
+    if (s.endsWith('[]')) {
+        return toTsType(s.slice(0, -2)) + '[]';
+    }
     return 'any';
 }
 
 /**
  * True when a method entry represents a property rather than a callable.
  * Detected by explicit isProperty:true OR by having no params and no `(` in syntax.
+ *
+ * @param {object} m - ssjs-data method entry
+ * @returns {boolean} True if the entry is a property, false if callable
  */
 function isPropertyEntry(m) {
     return (
@@ -113,8 +146,12 @@ function isPropertyEntry(m) {
     );
 }
 
-/** True when the last parameter is variadic.
+/**
+ * True when the last parameter is variadic.
  * Matches patterns like `element[, ...]` and `value1[, value2, ...]`.
+ *
+ * @param {object} m - ssjs-data method entry
+ * @returns {boolean} True if the last parameter is variadic
  */
 function isVariadicMethod(m) {
     return typeof m.syntax === 'string' && m.syntax.includes('...]');
@@ -122,18 +159,19 @@ function isVariadicMethod(m) {
 
 /**
  * Build a TypeScript parameter list string.
- * @param {Array} params
- * @param {number} minArgs
- * @param {string|null} restParamType  When set, the last param is emitted as a rest: `...paramName: type[]`
+ *
+ * @param {Array} params - parameter entries from ssjs-data
+ * @param {number} minArgs - minimum required argument count
+ * @param {string|null} restParamType When set, the last param is emitted as a rest: `...paramName: type[]`
+ * @returns {string} Comma-separated TypeScript parameter declarations
  */
 function buildParamStr(params, minArgs, restParamType = null) {
     if (!params || params.length === 0) {
         return '';
     }
     const parts = [];
-    const restIdx = restParamType != null ? params.length - 1 : -1;
-    for (let i = 0; i < params.length; i++) {
-        const p = params[i];
+    const restIdx = restParamType == null ? -1 : params.length - 1;
+    for (const [i, p] of params.entries()) {
         const optional = p.optional === true || (p.optional === undefined && i >= minArgs);
         if (i === restIdx) {
             parts.push(`...${p.name}: ${restParamType}[]`);
@@ -150,6 +188,10 @@ function buildParamStr(params, minArgs, restParamType = null) {
 /**
  * Emit a single method/property inside a `declare namespace` block.
  * Uses `function` keyword for callables, `var`/`const` for properties.
+ *
+ * @param {object} m - ssjs-data method entry
+ * @param {string} indent - indentation string to prepend
+ * @returns {string} TypeScript declaration line
  */
 function emitNsMember(m, indent = '    ') {
     const retType = toTsType(m.returnType);
@@ -160,7 +202,7 @@ function emitNsMember(m, indent = '    ') {
     }
     let paramStr;
     if (isVariadicMethod(m) && m.params && m.params.length > 0) {
-        const last = m.params[m.params.length - 1];
+        const last = m.params.at(-1);
         const restType = toTsType(last.type);
         const restName = last.name.endsWith('s') ? last.name : `${last.name}s`;
         const overrideLast = { ...last, name: restName };
@@ -175,6 +217,10 @@ function emitNsMember(m, indent = '    ') {
 /**
  * Emit a single method/property inside an `interface` or `class` block.
  * Does NOT use the `function` keyword.
+ *
+ * @param {object} m - ssjs-data method entry
+ * @param {string} indent - indentation string to prepend
+ * @returns {string} TypeScript declaration line
  */
 function emitIfaceMember(m, indent = '    ') {
     const retType = toTsType(m.returnType);
@@ -183,7 +229,7 @@ function emitIfaceMember(m, indent = '    ') {
     }
     let paramStr;
     if (isVariadicMethod(m) && m.params && m.params.length > 0) {
-        const last = m.params[m.params.length - 1];
+        const last = m.params.at(-1);
         const restType = toTsType(last.type);
         const restName = last.name.endsWith('s') ? last.name : `${last.name}s`;
         const overrideLast = { ...last, name: restName };
@@ -195,12 +241,13 @@ function emitIfaceMember(m, indent = '    ') {
     return `${indent}${m.name}(${paramStr}): ${retType};`;
 }
 
-/** Emit a block of namespace members. */
-function emitNsBlock(methods, indent = '    ') {
-    return methods.map((m) => emitNsMember(m, indent)).join('\n');
-}
-
-/** Emit a block of interface/class members. */
+/**
+ * Emit a block of interface/class members.
+ *
+ * @param {Array} methods - array of ssjs-data method entries
+ * @param {string} indent - indentation string to prepend to each member
+ * @returns {string} Newline-joined TypeScript declaration lines
+ */
 function emitIfaceBlock(methods, indent = '    ') {
     return methods.map((m) => emitIfaceMember(m, indent)).join('\n');
 }
@@ -208,17 +255,30 @@ function emitIfaceBlock(methods, indent = '    ') {
 /**
  * Resolve an aliasOf string like 'Platform.Function.Lookup' to the source method entry.
  * Returns null if not found.
+ *
+ * @param {string} aliasOf - dotted path string, e.g. 'Platform.Function.Lookup'
+ * @returns {object|null} The source method entry, or null if not found
  */
 function resolveAlias(aliasOf) {
     const parts = aliasOf.split('.');
     if (parts.length === 3 && parts[0] === 'Platform') {
         const ns = parts[1];
         const key = parts[2].toLowerCase();
-        if (ns === 'Function') return platformFunctionLookup.get(key) ?? null;
-        if (ns === 'Response') return platformResponseLookup.get(key) ?? null;
-        if (ns === 'Variable') return platformVariableLookup.get(key) ?? null;
-        if (ns === 'Request') return platformRequestLookup.get(key) ?? null;
-        if (ns === 'Recipient') return platformRecipientLookup.get(key) ?? null;
+        if (ns === 'Function') {
+            return platformFunctionLookup.get(key) ?? null;
+        }
+        if (ns === 'Response') {
+            return platformResponseLookup.get(key) ?? null;
+        }
+        if (ns === 'Variable') {
+            return platformVariableLookup.get(key) ?? null;
+        }
+        if (ns === 'Request') {
+            return platformRequestLookup.get(key) ?? null;
+        }
+        if (ns === 'Recipient') {
+            return platformRecipientLookup.get(key) ?? null;
+        }
     }
     return null;
 }
@@ -239,7 +299,13 @@ const ARRAY_T_RETURNS = {
 /** For these array methods the variadic/element parameter should be typed as T. */
 const ARRAY_T_ELEMENT_METHODS = new Set(['push', 'unshift', 'concat', 'splice']);
 
-/** Emit a single Array<T> interface member with generic overrides. */
+/**
+ * Emit a single Array<T> interface member with generic overrides.
+ *
+ * @param {object} m - ssjs-data method entry for an Array method
+ * @param {string} indent - indentation string to prepend
+ * @returns {string} TypeScript declaration line with generic T substitutions
+ */
 function emitArrayMember(m, indent = '    ') {
     if (isPropertyEntry(m)) {
         return `${indent}readonly ${m.name}: number;`;
@@ -253,7 +319,7 @@ function emitArrayMember(m, indent = '    ') {
     if (isVariadicMethod(m)) {
         // Last param becomes rest
         const lead = buildParamStr(m.params.slice(0, -1), m.minArgs ?? 0);
-        const last = m.params[m.params.length - 1];
+        const last = m.params.at(-1);
         const restElem = useT ? 'T' : toTsType(last.type);
         const rest = `...${last.name}s: ${restElem}[]`;
         paramStr = lead ? `${lead}, ${rest}` : rest;
@@ -264,7 +330,7 @@ function emitArrayMember(m, indent = '    ') {
             }
             return p;
         });
-        paramStr = buildParamStr(adjusted, m.minArgs ?? 0).replace(/T_PLACEHOLDER/g, 'T');
+        paramStr = buildParamStr(adjusted, m.minArgs ?? 0).replaceAll('T_PLACEHOLDER', 'T');
     }
     // splice has 3 declared params but item should be rest
     if (m.name === 'splice') {
@@ -287,7 +353,7 @@ function line(s = '') {
 line('// sfmc-globals.d.ts — GENERATED by ssjs-data/scripts/generate-dts.mjs');
 line('// DO NOT EDIT — run `npm run generate:dts` in ssjs-data to regenerate.');
 line('// Ambient declarations for the complete SFMC SSJS global API surface.');
-line('// Designed for use with TypeScript\'s noLib:true (no lib.es5.d.ts).');
+line("// Designed for use with TypeScript's noLib:true (no lib.es5.d.ts).");
 line('');
 
 // ── Platform namespace ────────────────────────────────────────────────────────
@@ -343,7 +409,9 @@ line('');
 // ── Bare-name globals (aliasOf Platform.*) ────────────────────────────────────
 line('// ── Bare-name globals (aliasOf Platform.*) ──────────────────────────────────');
 for (const g of SSJS_GLOBALS) {
-    if (!g.aliasOf) continue;
+    if (!g.aliasOf) {
+        continue;
+    }
     const src = resolveAlias(g.aliasOf);
     if (!src) {
         // Fallback: emit as any
@@ -353,8 +421,12 @@ for (const g of SSJS_GLOBALS) {
     const retType = toTsType(src.returnType);
     let paramStr;
     if (isVariadicMethod(src) && src.params && src.params.length > 0) {
-        const restType = toTsType(src.params[src.params.length - 1].type);
-        paramStr = buildParamStr(src.params, src.minArgs ?? 0, restType === 'any' ? 'any' : restType);
+        const restType = toTsType(src.params.at(-1).type);
+        paramStr = buildParamStr(
+            src.params,
+            src.minArgs ?? 0,
+            restType === 'any' ? 'any' : restType,
+        );
     } else {
         paramStr = buildParamStr(src.params, src.minArgs ?? 0);
     }
@@ -404,10 +476,7 @@ const CORE_CLASS_MAP = [
     ['TriggeredSend', TRIGGERED_SEND_METHODS],
     ['TriggeredSend.Tracking', TRIGGERED_SEND_TRACKING_METHODS],
     ['TriggeredSend.Tracking.Clicks', TRIGGERED_SEND_TRACKING_CLICKS_METHODS],
-    [
-        'TriggeredSend.Tracking.TotalByInterval',
-        TRIGGERED_SEND_TRACKING_TOTAL_BY_INTERVAL_METHODS,
-    ],
+    ['TriggeredSend.Tracking.TotalByInterval', TRIGGERED_SEND_TRACKING_TOTAL_BY_INTERVAL_METHODS],
     ['DataExtension', DATA_EXTENSION_METHODS],
     ['DataExtension.Fields', DATA_EXTENSION_FIELDS_METHODS],
     ['DataExtension.Rows', DATA_EXTENSION_ROWS_METHODS],
@@ -416,7 +485,9 @@ const CORE_CLASS_MAP = [
 
 line('// ── Core Library namespaces ──────────────────────────────────────────────────');
 for (const [nsName, methods] of CORE_CLASS_MAP) {
-    if (!methods || methods.length === 0) continue;
+    if (!methods || methods.length === 0) {
+        continue;
+    }
     line(`declare namespace ${nsName} {`);
     for (const m of methods) {
         line(emitNsMember(m));
@@ -447,7 +518,9 @@ line('// ── Event namespaces ───────────────�
 {
     const byOwner = new Map();
     for (const m of EVENT_METHODS) {
-        if (!byOwner.has(m.owner)) byOwner.set(m.owner, []);
+        if (!byOwner.has(m.owner)) {
+            byOwner.set(m.owner, []);
+        }
         byOwner.get(m.owner).push(m);
     }
     for (const [owner, methods] of byOwner) {
@@ -507,7 +580,9 @@ line('// ── ECMAScript built-ins (SFMC-supported subset only) ────�
     // Group ECMASCRIPT_BUILTINS entries by their `owner` field
     const byOwner = new Map();
     for (const m of ECMASCRIPT_BUILTINS) {
-        if (!byOwner.has(m.owner)) byOwner.set(m.owner, []);
+        if (!byOwner.has(m.owner)) {
+            byOwner.set(m.owner, []);
+        }
         byOwner.get(m.owner).push(m);
     }
 
@@ -530,7 +605,7 @@ line('// ── ECMAScript built-ins (SFMC-supported subset only) ────�
             const retType = toTsType(m.returnType);
             let paramStr;
             if (isVariadicMethod(m) && m.params && m.params.length > 0) {
-                const last = m.params[m.params.length - 1];
+                const last = m.params.at(-1);
                 const restName = last.name.endsWith('s') ? last.name : `${last.name}s`;
                 paramStr = buildParamStr(
                     [...m.params.slice(0, -1), { ...last, name: restName }],
@@ -579,7 +654,7 @@ line('// ── ECMAScript built-ins (SFMC-supported subset only) ────�
                 const retType = toTsType(m.returnType);
                 let paramStr;
                 if (isVariadicMethod(m) && m.params && m.params.length > 0) {
-                    const last = m.params[m.params.length - 1];
+                    const last = m.params.at(-1);
                     const restName = last.name.endsWith('s') ? last.name : `${last.name}s`;
                     paramStr = buildParamStr(
                         [...m.params.slice(0, -1), { ...last, name: restName }],
@@ -630,7 +705,9 @@ line('// ── ECMAScript built-ins (SFMC-supported subset only) ────�
         'Global',
     ]);
     for (const [owner, members] of byOwner) {
-        if (HANDLED_OWNERS.has(owner)) continue;
+        if (HANDLED_OWNERS.has(owner)) {
+            continue;
+        }
         // Unknown owner — emit as a declare namespace
         line(`declare namespace ${owner} {`);
         for (const m of members) {
@@ -648,9 +725,11 @@ const outDir = resolve(__dir, '../dist');
 const outFile = join(outDir, 'sfmc-globals.d.ts');
 
 mkdirSync(outDir, { recursive: true });
-writeFileSync(outFile, out.join('\n'), 'utf-8');
+writeFileSync(outFile, out.join('\n'), 'utf8');
 
 const lineCount = out.length;
-const byteCount = Buffer.byteLength(out.join('\n'), 'utf-8');
+const byteCount = Buffer.byteLength(out.join('\n'), 'utf8');
+// eslint-disable-next-line no-console
 console.log(`Generated: ${outFile}`);
+// eslint-disable-next-line no-console
 console.log(`  ${lineCount} lines, ${(byteCount / 1024).toFixed(1)} KB`);
