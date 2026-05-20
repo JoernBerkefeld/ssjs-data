@@ -53,7 +53,6 @@ declare namespace Platform {
         function Base64Encode(string: string, charset?: string): string;
         function Base64Decode(encodedString: string, charset?: string): string;
         function MD5(string: string, charset?: string): string;
-        function Write(content: string): void;
         function Stringify(object: object): string;
         function ContentArea(id: number, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
         function ContentAreaByName(name: string, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
