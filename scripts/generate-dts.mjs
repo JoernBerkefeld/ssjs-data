@@ -185,22 +185,73 @@ function buildParamStr(params, minArgs, restParamType = null) {
 
 // ── Emission helpers ──────────────────────────────────────────────────────────
 
+/** Base URL for ssjs.guide reference links. */
+const BASE_URL = 'https://ssjs.guide';
+
+/** Global-function guide pages that exist on ssjs.guide. */
+const GLOBAL_FUNCTION_PAGES = new Set([
+    'write',
+    'stringify',
+    'base64encode',
+    'base64decode',
+    'format',
+    'string',
+    'error',
+    'variable',
+    'attribute',
+]);
+
 /**
- * Build a JSDoc block comment for a method entry when it has notable metadata.
- * Returns an empty string when no comment is needed.
+ * Build a JSDoc block comment for a method entry.
+ * Emits: description, ssjs.guide link, @deprecated, @remarks, @param, @returns, @example.
+ * Returns an empty string when there is nothing to say.
  *
  * @param {object} m - ssjs-data method entry
  * @param {string} indent - indentation string to prepend
+ * @param {string|null} guideUrl - optional ssjs.guide reference URL
  * @returns {string} JSDoc comment string (including trailing newline) or empty string
  */
-function buildJsDocComment(m, indent = '    ') {
+function buildJsDocComment(m, indent = '    ', guideUrl = null) {
     const lines = [];
+
+    // ── Description + guide link ──────────────────────────────────────────────
+    if (m.description) {
+        lines.push(`${indent} * ${m.description}`);
+    }
+    if (guideUrl) {
+        lines.push(`${indent} * [ssjs.guide reference](${guideUrl})`);
+    }
+    if (m.description || guideUrl) {
+        lines.push(`${indent} *`);
+    }
+
+    // ── Lifecycle / Core flags ────────────────────────────────────────────────
     if (m.deprecated) {
         lines.push(`${indent} * @deprecated`);
     }
     if (m.requiresCoreLoad) {
         lines.push(`${indent} * @remarks Requires \`Platform.Load("Core", "1")\` before use.`);
     }
+
+    // ── @param ────────────────────────────────────────────────────────────────
+    for (const p of m.params ?? []) {
+        const descPart = p.description ? ` - ${p.description}` : '';
+        lines.push(`${indent} * @param ${p.name}${descPart}`);
+    }
+
+    // ── @returns ──────────────────────────────────────────────────────────────
+    if (m.returnDescription) {
+        lines.push(`${indent} * @returns ${m.returnDescription}`);
+    }
+
+    // ── @example ─────────────────────────────────────────────────────────────
+    if (m.example) {
+        lines.push(`${indent} * @example`);
+        for (const exLine of m.example.split('\n')) {
+            lines.push(exLine ? `${indent} * ${exLine}` : `${indent} *`);
+        }
+    }
+
     if (lines.length === 0) {
         return '';
     }
@@ -213,10 +264,11 @@ function buildJsDocComment(m, indent = '    ') {
  *
  * @param {object} m - ssjs-data method entry
  * @param {string} indent - indentation string to prepend
+ * @param {string|null} guideUrl - optional ssjs.guide reference URL
  * @returns {string} TypeScript declaration line(s)
  */
-function emitNsMember(m, indent = '    ') {
-    const comment = buildJsDocComment(m, indent);
+function emitNsMember(m, indent = '    ', guideUrl = null) {
+    const comment = buildJsDocComment(m, indent, guideUrl);
     const retType = toTsType(m.returnType);
     if (isPropertyEntry(m)) {
         // Response properties are writable (var); Request properties are readonly (const).
@@ -243,10 +295,11 @@ function emitNsMember(m, indent = '    ') {
  *
  * @param {object} m - ssjs-data method entry
  * @param {string} indent - indentation string to prepend
+ * @param {string|null} guideUrl - optional ssjs.guide reference URL
  * @returns {string} TypeScript declaration line(s)
  */
-function emitIfaceMember(m, indent = '    ') {
-    const comment = buildJsDocComment(m, indent);
+function emitIfaceMember(m, indent = '    ', guideUrl = null) {
+    const comment = buildJsDocComment(m, indent, guideUrl);
     const retType = toTsType(m.returnType);
     if (isPropertyEntry(m)) {
         return `${comment}${indent}readonly ${m.name}: ${retType};`;
@@ -385,28 +438,28 @@ line('// ── Platform ──────────────────�
 line('declare namespace Platform {');
 // Platform.Load (and any other PLATFORM_METHODS)
 for (const m of PLATFORM_METHODS) {
-    line(emitNsMember(m, '    '));
+    line(emitNsMember(m, '    ', `${BASE_URL}/platform-objects/platform-load/`));
 }
 // Platform.Function
 line('    namespace Function {');
 for (const m of PLATFORM_FUNCTIONS) {
-    line(emitNsMember(m, '        '));
+    line(emitNsMember(m, '        ', `${BASE_URL}/platform-functions/${m.name.toLowerCase()}/`));
 }
 line('    }');
 // Platform.Variable
 line('    namespace Variable {');
 for (const m of PLATFORM_VARIABLE_METHODS) {
-    line(emitNsMember(m, '        '));
+    line(emitNsMember(m, '        ', `${BASE_URL}/platform-objects/platform-variable/`));
 }
 line('    }');
 // Platform.Response
 line('    namespace Response {');
 for (const m of PLATFORM_RESPONSE_METHODS) {
     if (isPropertyEntry(m)) {
-        // Response properties are mutable (get/set)
+        // Response properties are mutable (get/set) — no JSDoc here; just the TS declaration
         line(`        var ${m.name}: ${toTsType(m.returnType)};`);
     } else {
-        line(emitNsMember(m, '        '));
+        line(emitNsMember(m, '        ', `${BASE_URL}/platform-objects/platform-response/`));
     }
 }
 line('    }');
@@ -414,17 +467,17 @@ line('    }');
 line('    namespace Request {');
 for (const m of PLATFORM_REQUEST_METHODS) {
     if (isPropertyEntry(m)) {
-        // Request properties are read-only
+        // Request properties are read-only — no JSDoc here; just the TS declaration
         line(`        const ${m.name}: ${toTsType(m.returnType)};`);
     } else {
-        line(emitNsMember(m, '        '));
+        line(emitNsMember(m, '        ', `${BASE_URL}/platform-objects/platform-request/`));
     }
 }
 line('    }');
 // Platform.Recipient
 line('    namespace Recipient {');
 for (const m of PLATFORM_RECIPIENT_METHODS) {
-    line(emitNsMember(m, '        '));
+    line(emitNsMember(m, '        ', `${BASE_URL}/platform-objects/platform-recipient/`));
 }
 line('    }');
 line('}');
@@ -444,7 +497,11 @@ for (const g of SSJS_GLOBALS) {
     }
     // Inherit deprecated/requiresCoreLoad from the source function if not overridden on the alias
     const effective = { ...src, ...g, aliasOf: g.aliasOf };
-    const comment = buildJsDocComment(effective, '');
+    const gn = g.name.toLowerCase();
+    const globalGuideUrl = GLOBAL_FUNCTION_PAGES.has(gn)
+        ? `${BASE_URL}/global-functions/${gn}/`
+        : null;
+    const comment = buildJsDocComment(effective, '', globalGuideUrl);
     const retType = toTsType(src.returnType);
     let paramStr;
     if (isVariadicMethod(src) && src.params && src.params.length > 0) {
@@ -466,61 +523,67 @@ line('');
 
 // ── DataExtension instance interfaces ─────────────────────────────────────────
 line('// ── DataExtension instance interfaces ───────────────────────────────────────');
-line('interface DataExtensionFieldsAccessor {');
+line('interface DataExtensionFields {');
 line(emitIfaceBlock(DATA_EXTENSION_FIELDS_METHODS));
 line('}');
-line('interface DataExtensionRowsAccessor {');
+line('interface DataExtensionRows {');
 line(emitIfaceBlock(DATA_EXTENSION_ROWS_METHODS));
 line('}');
 line('interface DataExtensionInstance {');
-line('    Fields: DataExtensionFieldsAccessor;');
-line('    Rows: DataExtensionRowsAccessor;');
+line('    Fields: DataExtensionFields;');
+line('    Rows: DataExtensionRows;');
 line('}');
 line('');
 
 // ── Core Library namespaces ───────────────────────────────────────────────────
-// Each entry: [TypeScript namespace name, ssjs-data methods array]
+// Each entry: [TypeScript namespace name, ssjs-data methods array, ssjs.guide URL]
+const cl = (slug) => `${BASE_URL}/core-library/${slug}/`;
+const po = (slug) => `${BASE_URL}/platform-objects/${slug}/`;
 const CORE_CLASS_MAP = [
-    ['Account', ACCOUNT_METHODS],
-    ['Account.Tracking', ACCOUNT_TRACKING_METHODS],
-    ['AccountUser', ACCOUNT_USER_METHODS],
-    ['Portfolio', PORTFOLIO_METHODS],
-    ['ContentAreaObj', CONTENT_AREA_OBJ_METHODS],
-    ['Folder', FOLDER_METHODS],
-    ['Template', TEMPLATE_METHODS],
-    ['DeliveryProfile', DELIVERY_PROFILE_METHODS],
-    ['SenderProfile', SENDER_PROFILE_METHODS],
-    ['SendClassification', SEND_CLASSIFICATION_METHODS],
-    ['FilterDefinition', FILTER_DEFINITION_METHODS],
-    ['QueryDefinition', QUERY_DEFINITION_METHODS],
-    ['List', LIST_METHODS],
-    ['List.Subscribers', LIST_SUBSCRIBERS_METHODS],
-    ['List.Subscribers.Tracking', LIST_SUBSCRIBERS_TRACKING_METHODS],
-    ['Subscriber', SUBSCRIBER_METHODS],
-    ['Subscriber.Attributes', SUBSCRIBER_ATTRIBUTES_METHODS],
-    ['Subscriber.Lists', SUBSCRIBER_LISTS_METHODS],
-    ['Email', EMAIL_METHODS],
-    ['Send', SEND_METHODS],
-    ['Send.Tracking', SEND_TRACKING_METHODS],
-    ['Send.Definition', SEND_DEFINITION_METHODS],
-    ['TriggeredSend', TRIGGERED_SEND_METHODS],
-    ['TriggeredSend.Tracking', TRIGGERED_SEND_TRACKING_METHODS],
-    ['TriggeredSend.Tracking.Clicks', TRIGGERED_SEND_TRACKING_CLICKS_METHODS],
-    ['TriggeredSend.Tracking.TotalByInterval', TRIGGERED_SEND_TRACKING_TOTAL_BY_INTERVAL_METHODS],
-    ['DataExtension', DATA_EXTENSION_METHODS],
-    ['DataExtension.Fields', DATA_EXTENSION_FIELDS_METHODS],
-    ['DataExtension.Rows', DATA_EXTENSION_ROWS_METHODS],
-    ['DateTime.TimeZone', DATE_TIME_TIMEZONE_METHODS],
+    ['Account', ACCOUNT_METHODS, cl('account')],
+    ['Account.Tracking', ACCOUNT_TRACKING_METHODS, cl('account')],
+    ['AccountUser', ACCOUNT_USER_METHODS, cl('accountuser')],
+    ['Portfolio', PORTFOLIO_METHODS, cl('portfolio')],
+    ['ContentAreaObj', CONTENT_AREA_OBJ_METHODS, cl('contentareaobj')],
+    ['Folder', FOLDER_METHODS, cl('folder')],
+    ['Template', TEMPLATE_METHODS, cl('template')],
+    ['DeliveryProfile', DELIVERY_PROFILE_METHODS, cl('deliveryprofile')],
+    ['SenderProfile', SENDER_PROFILE_METHODS, cl('senderprofile')],
+    ['SendClassification', SEND_CLASSIFICATION_METHODS, cl('sendclassification')],
+    ['FilterDefinition', FILTER_DEFINITION_METHODS, cl('filterdefinition')],
+    ['QueryDefinition', QUERY_DEFINITION_METHODS, cl('querydefinition')],
+    ['List', LIST_METHODS, cl('list')],
+    ['List.Subscribers', LIST_SUBSCRIBERS_METHODS, cl('list-subscribers')],
+    ['List.Subscribers.Tracking', LIST_SUBSCRIBERS_TRACKING_METHODS, cl('list-subscribers')],
+    ['Subscriber', SUBSCRIBER_METHODS, cl('subscriber')],
+    ['Subscriber.Attributes', SUBSCRIBER_ATTRIBUTES_METHODS, cl('subscriber')],
+    ['Subscriber.Lists', SUBSCRIBER_LISTS_METHODS, cl('subscriber')],
+    ['Email', EMAIL_METHODS, cl('email')],
+    ['Send', SEND_METHODS, cl('send')],
+    ['Send.Tracking', SEND_TRACKING_METHODS, cl('send')],
+    ['Send.Definition', SEND_DEFINITION_METHODS, cl('senddefinition')],
+    ['TriggeredSend', TRIGGERED_SEND_METHODS, cl('triggeredsend')],
+    ['TriggeredSend.Tracking', TRIGGERED_SEND_TRACKING_METHODS, cl('triggeredsend')],
+    ['TriggeredSend.Tracking.Clicks', TRIGGERED_SEND_TRACKING_CLICKS_METHODS, cl('triggeredsend')],
+    [
+        'TriggeredSend.Tracking.TotalByInterval',
+        TRIGGERED_SEND_TRACKING_TOTAL_BY_INTERVAL_METHODS,
+        cl('triggeredsend'),
+    ],
+    ['DataExtension', DATA_EXTENSION_METHODS, cl('dataextension')],
+    ['DataExtension.Fields', DATA_EXTENSION_FIELDS_METHODS, cl('dataextension-fields')],
+    ['DataExtension.Rows', DATA_EXTENSION_ROWS_METHODS, cl('dataextension-rows')],
+    ['DateTime.TimeZone', DATE_TIME_TIMEZONE_METHODS, po('datetime-timezone')],
 ];
 
 line('// ── Core Library namespaces ──────────────────────────────────────────────────');
-for (const [nsName, methods] of CORE_CLASS_MAP) {
+for (const [nsName, methods, guideUrl] of CORE_CLASS_MAP) {
     if (!methods || methods.length === 0) {
         continue;
     }
     line(`declare namespace ${nsName} {`);
     for (const m of methods) {
-        line(emitNsMember(m));
+        line(emitNsMember(m, '    ', guideUrl));
     }
     line('}');
 }
@@ -530,14 +593,14 @@ line('');
 line('// ── Standalone Core Library globals ──────────────────────────────────────────');
 line('declare namespace Attribute {');
 for (const m of ATTRIBUTE_METHODS) {
-    line(emitNsMember(m));
+    line(emitNsMember(m, '    ', `${BASE_URL}/global-functions/attribute/`));
 }
 line('}');
 line('');
 
 line('declare namespace ErrorUtil {');
 for (const m of ERROR_UTIL_METHODS) {
-    line(emitNsMember(m));
+    line(emitNsMember(m, '    ', po('errorutil')));
 }
 line('}');
 line('');
@@ -564,17 +627,21 @@ line('// ── Event namespaces ───────────────�
 line('');
 
 // ── HTTP / HTTPHeader ─────────────────────────────────────────────────────────
+/** URL slug map for HTTP methods whose guide page slug differs from the method name. */
+const HTTP_URL_SLUGS = { get: 'http-get', post: 'http-post' };
+
 line('// ── HTTP / HTTPHeader ────────────────────────────────────────────────────────');
 line('declare namespace HTTP {');
 for (const m of HTTP_METHODS) {
-    line(emitNsMember(m));
+    const slug = HTTP_URL_SLUGS[m.name.toLowerCase()] ?? m.name.toLowerCase();
+    line(emitNsMember(m, '    ', `${BASE_URL}/http/${slug}/`));
 }
 line('}');
 line('');
 
 line('declare namespace HTTPHeader {');
 for (const m of HTTPHEADER_METHODS) {
-    line(emitNsMember(m));
+    line(emitNsMember(m, '    ', `${BASE_URL}/platform-objects/httpheader/`));
 }
 line('}');
 line('');
@@ -590,12 +657,14 @@ for (const ctor of SCRIPT_UTIL_CONSTRUCTORS) {
     // Instance methods: WSProxy gets WSPROXY_METHODS; Http* gets SCRIPT_UTIL_REQUEST_METHODS
     if (ctor.name === 'WSProxy') {
         for (const m of WSPROXY_METHODS) {
-            line(emitIfaceMember(m, '            '));
+            line(
+                emitIfaceMember(m, '            ', `${BASE_URL}/wsproxy/${m.name.toLowerCase()}/`),
+            );
         }
     } else {
         // HttpRequest and HttpGet share the same request instance methods
         for (const m of SCRIPT_UTIL_REQUEST_METHODS) {
-            line(emitIfaceMember(m, '            '));
+            line(emitIfaceMember(m, '            ', `${BASE_URL}/http/request-methods/`));
         }
     }
     line('        }');

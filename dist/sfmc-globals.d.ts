@@ -5,85 +5,847 @@
 
 // ── Platform ────────────────────────────────────────────────────────────────
 declare namespace Platform {
+    /**
+     * Loads a platform library. Must be called before using Core library objects.
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-load/)
+     *
+     * @param libraryName - Library to load (e.g. "core")
+     * @param version - Library version (e.g. "1.1.5")
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var de = DataExtension.Init("MyDE");
+     * var rows = de.Rows.Retrieve();
+     */
     function Load(libraryName: string, version: string): void;
     namespace Function {
+        /**
+         * Retrieves a single field value from a Data Extension row matching filter criteria. To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/lookup/)
+         *
+         * @param deName - Data Extension name or external key
+         * @param returnField - Name of the field to return
+         * @param whereFieldNames - Filter field name, or an array of field names connected with AND logic
+         * @param whereFieldValues - Filter field value matching whereFieldNames; must be an array of equal length when whereFieldNames is an array
+         * @example
+         * // Single filter:
+         * var email = Platform.Function.Lookup("Subscribers", "EmailAddress", "SubscriberKey", "abc123");
+         *
+         * // Multiple filters (AND logic):
+         * var phone = Platform.Function.Lookup("CustomerData", "Phone", ["FirstName", "LastName"], ["Carolyn", "Baumgartner"]);
+         */
         function Lookup(deName: string, returnField: string, whereFieldNames: string | string[], whereFieldValues: string | any[]): string;
+        /**
+         * Returns a result set of rows from a Data Extension matching filter criteria. Returns up to 2,000 rows. To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/lookuprows/)
+         *
+         * @param deName - Data Extension name or external key
+         * @param whereFieldNames - Filter field name, or an array of field names connected with AND logic
+         * @param whereFieldValues - Filter field value matching whereFieldNames; must be an array of equal length when whereFieldNames is an array
+         * @example
+         * // Single filter:
+         * var rows = Platform.Function.LookupRows("MyDE", "Status", "active");
+         * for (var i = 0; i < rows.length; i++) {
+         *     Write(rows[i]["Name"] + "<br>");
+         * }
+         *
+         * // Multiple filters (AND logic):
+         * var rows2 = Platform.Function.LookupRows("CustomerData", ["PreferredLanguage", "RewardsTier"], ["English", "Gold"]);
+         */
         function LookupRows(deName: string, whereFieldNames: string | string[], whereFieldValues: string | any[]): object;
+        /**
+         * Returns an ordered result set from a Data Extension. The sort expression is a single string in the format "ColumnName ASC" or "ColumnName DESC". Multiple columns can be separated by commas. Returns up to 2,000 rows; values below 1 for count default to 2,000. To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/lookuporderedrows/)
+         *
+         * @param deName - Data Extension name or external key
+         * @param count - Maximum number of rows to return; values below 1 return up to 2,000
+         * @param orderBy - Sort expression using "ColumnName ASC/DESC" syntax (e.g. "LastName ASC, FirstName ASC")
+         * @param whereFieldNames - Filter field name, or an array of field names connected with AND logic
+         * @param whereFieldValues - Filter field value matching whereFieldNames; must be an array of equal length when whereFieldNames is an array
+         * @example
+         * // Single filter, sorted by LastName ASC:
+         * var rows = Platform.Function.LookupOrderedRows("MyDE", 10, "LastName ASC", "RewardsTier", "Silver");
+         * for (var i = 0; i < rows.length; i++) {
+         *     Write(rows[i]["Email"] + "<br>");
+         * }
+         *
+         * // Multiple filters (AND logic):
+         * var rows2 = Platform.Function.LookupOrderedRows("CustomerData", 0, "LastName ASC", ["PreferredLanguage", "RewardsTier"], ["English", "Silver"]);
+         */
         function LookupOrderedRows(deName: string, count: number, orderBy: string, whereFieldNames: string | string[], whereFieldValues: string | any[]): object;
+        /**
+         * Adds a new row to a Data Extension. Use this function in CloudPages, landing pages, microsites, and SMS messages. Use InsertDE() for email contexts.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/insertdata/)
+         *
+         * @param deName - Data Extension name or external key
+         * @param fieldNames - Array of column names to populate
+         * @param fieldValues - Array of values aligned to fieldNames
+         * @example
+         * var rowsAffected = Platform.Function.InsertData("MyDE", ["Email", "Name"], ["jane@example.com", "Jane"]);
+         */
         function InsertData(deName: string, fieldNames: string[], fieldValues: any[]): number;
+        /**
+         * Adds a new row to a Data Extension. Use this function in email contexts. Use InsertData() for CloudPages, landing pages, microsites, and SMS messages.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/insertde/)
+         *
+         * @param deName - Data Extension name or external key
+         * @param fieldNames - Array of column names to populate
+         * @param fieldValues - Array of values aligned to fieldNames
+         * @example
+         * Platform.Function.InsertDE("MyDE", ["Email", "Name"], ["jane@example.com", "Jane"]);
+         */
         function InsertDE(deName: string, fieldNames: string[], fieldValues: any[]): void;
+        /**
+         * Modifies existing rows in a Data Extension matching filter criteria. Use this function in CloudPages, landing pages, microsites, and SMS messages. Use UpdateDE() for email contexts.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/updatedata/)
+         *
+         * @param deName - Data Extension name or external key
+         * @param whereFieldNames - Column name(s) to identify the rows to update; use an array for multiple columns (AND logic)
+         * @param whereFieldValues - Value(s) to match in whereFieldNames; must be an array of equal length when whereFieldNames is an array
+         * @param fieldNames - Array of column names to update
+         * @param fieldValues - Array of new values aligned to fieldNames
+         * @example
+         * var count = Platform.Function.UpdateData("MyDE", ["Email"], ["jane@example.com"], ["Status"], ["inactive"]);
+         */
         function UpdateData(deName: string, whereFieldNames: string | string[], whereFieldValues: string | any[], fieldNames: string[], fieldValues: any[]): number;
+        /**
+         * Modifies existing rows in a Data Extension matching filter criteria. Use this function in email contexts. Use UpdateData() for CloudPages, landing pages, microsites, and SMS messages.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/updatede/)
+         *
+         * @param deName - Data Extension name or external key
+         * @param whereFieldNames - Column name(s) to identify the rows to update; use an array for multiple columns (AND logic)
+         * @param whereFieldValues - Value(s) to match in whereFieldNames; must be an array of equal length when whereFieldNames is an array
+         * @param fieldNames - Array of column names to update
+         * @param fieldValues - Array of new values aligned to fieldNames
+         * @example
+         * var count = Platform.Function.UpdateDE("MyDE", ["Email"], ["jane@example.com"], ["Status"], ["inactive"]);
+         */
         function UpdateDE(deName: string, whereFieldNames: string | string[], whereFieldValues: string | any[], fieldNames: string[], fieldValues: any[]): number;
+        /**
+         * Inserts a new row or updates an existing one in a Data Extension. Use this function in non-sendable contexts such as CloudPages and landing pages.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/upsertdata/)
+         *
+         * @param deName - Data Extension name or external key
+         * @param whereFieldNames - Column name(s) to identify an existing row; use an array for multiple columns (AND logic)
+         * @param whereFieldValues - Value(s) to match in whereFieldNames; must be an array of equal length when whereFieldNames is an array
+         * @param fieldNames - Array of column names to insert or update
+         * @param fieldValues - Array of values aligned to fieldNames
+         * @example
+         * var count = Platform.Function.UpsertData("CustomerData", ["ID"], ["12345"], ["Company", "Country"], ["exampleCompany", "USA"]);
+         */
         function UpsertData(deName: string, whereFieldNames: string | string[], whereFieldValues: string | any[], fieldNames: string[], fieldValues: any[]): number;
+        /**
+         * Inserts a new row or updates an existing one in a Data Extension. Use this function in sendable contexts such as email messages.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/upsertde/)
+         *
+         * @param deName - Data Extension name or external key
+         * @param whereFieldNames - Column name(s) to identify an existing row; use an array for multiple columns (AND logic)
+         * @param whereFieldValues - Value(s) to match in whereFieldNames; must be an array of equal length when whereFieldNames is an array
+         * @param fieldNames - Array of column names to insert or update
+         * @param fieldValues - Array of values aligned to fieldNames
+         * @example
+         * var count = Platform.Function.UpsertDE("CustomerData", ["ID"], ["12345"], ["Company", "Country"], ["exampleCompany", "USA"]);
+         */
         function UpsertDE(deName: string, whereFieldNames: string | string[], whereFieldValues: string | any[], fieldNames: string[], fieldValues: any[]): number;
+        /**
+         * Removes rows from a Data Extension matching filter criteria. Use this function in non-sendable contexts such as CloudPages and landing pages. Use DeleteDE() for email contexts.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/deletedata/)
+         *
+         * @param deName - Data Extension name or external key
+         * @param whereFieldNames - Array of column names to match for deletion
+         * @param whereFieldValues - Array of values aligned to whereFieldNames that identify rows to delete
+         * @example
+         * var count = Platform.Function.DeleteData("MyDE", ["Email"], ["jane@example.com"]);
+         */
         function DeleteData(deName: string, whereFieldNames: string[], whereFieldValues: any[]): number;
+        /**
+         * Removes rows from a Data Extension matching filter criteria. Use this function in email contexts. Use DeleteData() for CloudPages, landing pages, microsites, and SMS messages.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/deletede/)
+         *
+         * @param deName - Data Extension name or external key
+         * @param whereFieldNames - Array of column names to match for deletion
+         * @param whereFieldValues - Array of values aligned to whereFieldNames that identify rows to delete
+         * @example
+         * var count = Platform.Function.DeleteDE("MyDE", ["Email"], ["jane@example.com"]);
+         */
         function DeleteDE(deName: string, whereFieldNames: string[], whereFieldValues: any[]): number;
+        /**
+         * Renders a Content Builder asset referenced by customer key.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentblockbykey/)
+         *
+         * @param customerKey - Customer key of the Content Builder asset
+         * @param regionName - Impression region name for tracking
+         * @param stopOnError - When true, returns an exception and terminates if content cannot be retrieved. When false, the call proceeds.
+         * @param fallbackContent - Default content to display if the call does not return content
+         * @example
+         * var html = Platform.Function.ContentBlockByKey("my-header-block");
+         * Write(html);
+         *
+         * // With optional params:
+         * var html2 = Platform.Function.ContentBlockByKey("my-header-block", "impressionRegion", false, "defaultContent");
+         */
         function ContentBlockByKey(customerKey: string, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
+        /**
+         * Renders a Content Builder asset referenced by folder path and name. If the same name is used across multiple folders, supply the full path.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentblockbyname/)
+         *
+         * @param name - Folder path and name of the Content Builder asset
+         * @param regionName - Impression region name for tracking
+         * @param stopOnError - When true, returns an error if the content area cannot be found or is invalid. When false, no error is returned.
+         * @param fallbackContent - Default content to return if an error occurs. Defaults to empty string.
+         * @param statusVariable - Receives the status of the call: 0 = success, -1 = no content or invalid content area
+         * @example
+         * var html = Platform.Function.ContentBlockByName("Shared Content/Footer");
+         * Write(html);
+         */
         function ContentBlockByName(name: string, regionName?: string, stopOnError?: boolean, fallbackContent?: string, statusVariable?: number): string;
+        /**
+         * Renders a Content Builder asset by its numeric identifier.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentblockbyid/)
+         *
+         * @param id - Numeric ID of the Content Builder asset
+         * @param regionName - Impression region name for tracking
+         * @param stopOnError - When true, returns an exception and terminates if content cannot be retrieved. When false, the call proceeds.
+         * @param fallbackContent - Default content to display if the call does not return content
+         * @example
+         * var html = Platform.Function.ContentBlockByID(12345);
+         * Write(html);
+         *
+         * // With optional params:
+         * var html2 = Platform.Function.ContentBlockByID(12345, "impressionRegion", false, "defaultContent");
+         */
         function ContentBlockByID(id: number, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
+        /**
+         * Returns an HTML img tag for a Content Builder image identified by its external key. An optional fallback image ID can be supplied if the primary image is not found.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentimagebykey/)
+         *
+         * @param key - External key of the Content Builder image
+         * @param fallbackId - Numeric ID of a fallback image when the primary cannot be found
+         * @example
+         * var imgTag = Platform.Function.ContentImageByKey("hero-banner-key");
+         * Write(imgTag);
+         */
         function ContentImageByKey(key: string, fallbackId?: number): string;
+        /**
+         * Returns an HTML img tag for a Content Builder image identified by its numeric ID. An optional fallback ID can be supplied if the primary image is not found.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentimagebyid/)
+         *
+         * @param id - Numeric ID of the Content Builder image
+         * @param fallbackId - Numeric ID of a fallback image when the primary cannot be found
+         * @example
+         * var imgTag = Platform.Function.ContentImageByID(98765);
+         * Write(imgTag);
+         */
         function ContentImageByID(id: number, fallbackId?: number): string;
+        /**
+         * Processes a string as AMPscript/HTML and returns rendered output.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/treatascontent/)
+         *
+         * @param content - String containing AMPscript or HTML to evaluate
+         * @example
+         * var result = Platform.Function.TreatAsContent("%%[Set @x = 1]%%%%=v(@x)=%%");
+         * Write(result); // "1"
+         */
         function TreatAsContent(content: string): string;
+        /**
+         * Marks the start of a named impression tracking region within content.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/beginimpressionregion/)
+         *
+         * @param name - Name identifying the impression region
+         * @example
+         * Platform.Function.BeginImpressionRegion("hero-banner");
+         * Write(heroContent);
+         * Platform.Function.EndImpressionRegion();
+         */
         function BeginImpressionRegion(name: string): void;
+        /**
+         * Marks the end of an impression tracking region within content.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/endimpressionregion/)
+         *
+         * @param closeAll - When true, closes all nested impression regions
+         * @example
+         * Platform.Function.BeginImpressionRegion("footer");
+         * Write(footerContent);
+         * Platform.Function.EndImpressionRegion();
+         */
         function EndImpressionRegion(closeAll?: boolean): void;
+        /**
+         * Returns the current system timestamp, or the timestamp of the triggering send when called with true.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/now/)
+         *
+         * @param useContextTime - When true, returns the time the triggering send or activity was initiated. When false or omitted, returns the current system clock time.
+         * @example
+         * var current = Platform.Function.Now();
+         * Write(current); // e.g. "8/5/2025 12:00:00 PM"
+         *
+         * // Use context time during triggered sends:
+         * var sendTime = Platform.Function.Now(true);
+         */
         function Now(useContextTime?: boolean): string;
+        /**
+         * Converts a date-time value from Marketing Cloud system time (CST) to the local time of the account or user.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/systemdatetolocaldate/)
+         *
+         * @param dateValue - Date-time string in system time (CST)
+         * @example
+         * var systemDate = Platform.Function.Now();
+         * var localDate = Platform.Function.SystemDateToLocalDate(systemDate);
+         * Write(localDate);
+         */
         function SystemDateToLocalDate(dateValue: string): string;
+        /**
+         * Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST).
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/localdatetosystemdate/)
+         *
+         * @param dateValue - Date-time string in local account/user time
+         * @example
+         * var localDate = "8/5/2025 12:00:00 PM";
+         * var systemDate = Platform.Function.LocalDateToSystemDate(localDate);
+         * Write(systemDate);
+         */
         function LocalDateToSystemDate(dateValue: string): string;
+        /**
+         * Raises an error with an optional scope flag. When the second parameter is true, the error stops only the current recipient's send. When false, the error halts the entire send job.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/raiseerror/)
+         *
+         * @param message - Error message describing what went wrong
+         * @param currentRecipientOnly - When true, the error applies only to the current recipient. When false, the entire send job stops.
+         * @param errorCode - Short user-defined code identifying the error type
+         * @param errorNumber - User-defined numeric error code for reference
+         * @example
+         * var status = Platform.Function.Lookup("MyDE", "Status", "Email", emailAddress);
+         * if (!status) {
+         *     Platform.Function.RaiseError("Subscriber not found", true, "NOT_FOUND", 404);
+         * }
+         */
         function RaiseError(message: string, currentRecipientOnly?: boolean, errorCode?: string, errorNumber?: number): void;
+        /**
+         * Generates a new globally unique identifier string.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/guid/)
+         *
+         * @example
+         * var id = Platform.Function.GUID();
+         * Write(id); // e.g. "550e8400-e29b-41d4-a716-446655440000"
+         */
         function GUID(): string;
+        /**
+         * Checks whether a string is a valid email address format.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/isemailaddress/)
+         *
+         * @param value - String to validate
+         * @example
+         * if (Platform.Function.IsEmailAddress(emailInput)) {
+         *     Write("Valid email");
+         * } else {
+         *     Write("Invalid email format");
+         * }
+         */
         function IsEmailAddress(value: string): boolean;
+        /**
+         * Evaluates whether a string contains a valid phone number.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/isphonenumber/)
+         *
+         * @param value - String to evaluate
+         * @example
+         * if (Platform.Function.IsPhoneNumber(phoneInput)) {
+         *     Write("Valid phone");
+         * } else {
+         *     Write("Invalid phone number");
+         * }
+         */
         function IsPhoneNumber(value: string): boolean;
+        /**
+         * Instantiates a Marketing Cloud SOAP API object.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/createobject/)
+         *
+         * @param objectType - SOAP API object type name
+         * @example
+         * var sub = Platform.Function.CreateObject("Subscriber");
+         * Platform.Function.SetObjectProperty(sub, "EmailAddress", "jane@example.com");
+         * Platform.Function.SetObjectProperty(sub, "SubscriberKey", "sk-123");
+         */
         function CreateObject(objectType: string): object;
+        /**
+         * Assigns a property value on a SOAP API object.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/setobjectproperty/)
+         *
+         * @param apiObject - SOAP API object instance
+         * @param propertyName - Property name to set
+         * @param value - Value to assign
+         * @example
+         * var sub = Platform.Function.CreateObject("Subscriber");
+         * Platform.Function.SetObjectProperty(sub, "EmailAddress", "jane@example.com");
+         */
         function SetObjectProperty(apiObject: object, propertyName: string, value: any): void;
+        /**
+         * Appends an item to a SOAP API object's array property.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/addobjectarrayitem/)
+         *
+         * @param apiObject - SOAP API object instance
+         * @param propertyName - Array property name
+         * @param value - Item to append
+         * @example
+         * var ts = Platform.Function.CreateObject("TriggeredSend");
+         * Platform.Function.AddObjectArrayItem(ts, "Subscribers", sub);
+         */
         function AddObjectArrayItem(apiObject: object, propertyName: string, value: any): void;
+        /**
+         * Executes a SOAP API Create call on an API object.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokecreate/)
+         *
+         * @param apiObject - SOAP API object instance
+         * @param status - Array that receives the status and request ID of the API call (e.g. [0, 0])
+         * @param options - API configure options to include in the call. Can contain a null value.
+         * @example
+         * var StatusAndRequestID = [0, 0];
+         * var result = Platform.Function.InvokeCreate(CreateRequest, StatusAndRequestID, null);
+         * var status = StatusAndRequestID[0];
+         * var requestID = StatusAndRequestID[1];
+         */
         function InvokeCreate(apiObject: object, status: any[], options: object): object;
+        /**
+         * Executes a SOAP API Update call on an API object.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeupdate/)
+         *
+         * @param apiObject - SOAP API object instance
+         * @param status - Array that receives the status and request ID of the API call (e.g. [0, 0])
+         * @param options - API configure options to include in the call. Can contain a null value.
+         * @example
+         * var StatusAndRequestID = [0, 0];
+         * var result = Platform.Function.InvokeUpdate(UpdateRequest, StatusAndRequestID, null);
+         * var status = StatusAndRequestID[0];
+         * var requestID = StatusAndRequestID[1];
+         */
         function InvokeUpdate(apiObject: object, status: any[], options: object): object;
+        /**
+         * Executes a SOAP API Delete call on an API object.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokedelete/)
+         *
+         * @param apiObject - SOAP API object instance
+         * @param status - Array that receives the status and request ID of the API call (e.g. [0, 0])
+         * @param options - API configure options to include in the call. Can contain a null value.
+         * @example
+         * var StatusAndRequestID = [0, 0];
+         * var result = Platform.Function.InvokeDelete(DeleteRequest, StatusAndRequestID, null);
+         * var status = StatusAndRequestID[0];
+         * var requestID = StatusAndRequestID[1];
+         */
         function InvokeDelete(apiObject: object, status: any[], options: object): object;
+        /**
+         * Executes a SOAP API Retrieve call.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeretrieve/)
+         *
+         * @param apiObject - SOAP API RetrieveRequest object instance
+         * @param status - Array that receives the status and request ID of the API call (e.g. [0, 0])
+         * @example
+         * var RetrieveRequest = Platform.Function.CreateObject("RetrieveRequest");
+         * Platform.Function.SetObjectProperty(RetrieveRequest, "ObjectType", "Email");
+         * Platform.Function.AddObjectArrayItem(RetrieveRequest, "Properties", "Email.Name");
+         * var StatusAndRequestID = [0, 0];
+         * var Emails = Platform.Function.InvokeRetrieve(RetrieveRequest, StatusAndRequestID);
+         */
         function InvokeRetrieve(apiObject: object, status: any[]): object;
+        /**
+         * Executes a SOAP API Perform action on an API object.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeperform/)
+         *
+         * @param apiObject - SOAP API object instance
+         * @param method - Method to perform on the object
+         * @param status - Array that receives the status, error code, and perform response of the API call (e.g. [0, 0, 0])
+         * @param options - API configure options to include in the call. Can contain a null value.
+         * @example
+         * var StatusAndRequestID = [0, 0, 0];
+         * var result = Platform.Function.InvokePerform(APIObject, "Validate", StatusAndRequestID, null);
+         * var statusMessage = StatusAndRequestID[0];
+         * var errorCode = StatusAndRequestID[1];
+         * var performResponse = StatusAndRequestID[2];
+         */
         function InvokePerform(apiObject: object, method: string, status: any[], options: object): object;
+        /**
+         * Executes a SOAP API Configure call on an API object.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeconfigure/)
+         *
+         * @param apiObject - SOAP API object instance
+         * @param method - Method to perform on the object
+         * @param status - Array that receives the status and request ID of the API call (e.g. [0, 0])
+         * @param options - API configure options to include in the call. Can contain a null value.
+         * @example
+         * var StatusAndRequestID = [0, 0];
+         * var result = Platform.Function.InvokeConfigure(ConfigureObject, "create", StatusAndRequestID, null);
+         */
         function InvokeConfigure(apiObject: object, method: string, status: any[], options: object): object;
+        /**
+         * Executes a SOAP API Execute call on an API object.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeexecute/)
+         *
+         * @param apiObject - SOAP API object instance
+         * @param status - Array that receives the status and request ID of the API call (e.g. [0, 0])
+         * @param options - API configure options to include in the call. Can contain a null value.
+         * @example
+         * var StatusAndRequestID = [0, 0];
+         * var result = Platform.Function.InvokeExecute(ExecuteRequest, StatusAndRequestID, null);
+         * var status = StatusAndRequestID[0];
+         * var requestID = StatusAndRequestID[1];
+         */
         function InvokeExecute(apiObject: object, status: any[], options: object): object;
+        /**
+         * Invokes the Extract SOAP API method on the specified object.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeextract/)
+         *
+         * @param apiObject - SOAP API object on which to invoke Extract
+         * @param statusArray - Array that receives the status and RequestID of the API call
+         * @param options - Additional API options; may be null
+         * @example
+         * var statusArr = [];
+         * var result = Platform.Function.InvokeExtract(extractObj, statusArr);
+         * Write(result);
+         */
         function InvokeExtract(apiObject: object, statusArray: any[], options?: object): string;
+        /**
+         * Invokes the Schedule SOAP API method on the specified object.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeschedule/)
+         *
+         * @param apiObject - SOAP API object on which to invoke Schedule
+         * @param action - Action to perform on the object
+         * @param schedule - Schedule definition object
+         * @param statusArray - Array that receives the status and RequestID of the API call
+         * @param options - Additional API options; may be null
+         * @example
+         * var statusArr = [];
+         * var result = Platform.Function.InvokeSchedule(sendDef, "start", scheduleDef, statusArr);
+         * Write(result);
+         */
         function InvokeSchedule(apiObject: object, action: string, schedule: object, statusArray?: any[], options?: object): string;
+        /**
+         * Performs an HTTP GET request and returns the response body. Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/httpget/)
+         *
+         * @param url - URL to request
+         * @param continueOnError - When true, the request terminates if an error occurs. When false, the request continues on error.
+         * @param emptyContentHandling - How to handle a URL that returns empty content: 0 = allow empty, 1 = return error, 2 = skip subscriber
+         * @param headerNames - Array of header names to include in the GET request
+         * @param headerValues - Array of header values corresponding to headerNames
+         * @param statusVariable - Array that receives the status code: 0 = success, -1 = URL not found, -2 = HTTP error, -3 = success but no content
+         * @example
+         * var status = [0];
+         * var content = Platform.Function.HTTPGet(
+         *     "https://api.example.com/data",
+         *     false,
+         *     0,
+         *     ["x-request-id"],
+         *     ["sampleValue"],
+         *     status
+         * );
+         * if (status[0] === 0) {
+         *     var obj = Platform.Function.ParseJSON(content);
+         * }
+         */
         function HTTPGet(url: string, continueOnError: boolean, emptyContentHandling?: number, headerNames?: string[], headerValues?: string[], statusVariable?: number[]): string;
+        /**
+         * Performs an HTTP POST request with a content type and payload. Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. Returns the HTTP status code (e.g. 200 for success).
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/httppost/)
+         *
+         * @param url - URL to post to
+         * @param contentType - MIME type of the request body
+         * @param payload - Request body content
+         * @param headerNames - Array of header names
+         * @param headerValues - Array of header values corresponding to headerNames
+         * @param response - Array that receives the response body from the POST request
+         * @example
+         * var headerNames = ["Authorization"];
+         * var headerValues = ["Bearer " + accessToken];
+         * var response;
+         * var statusCode = Platform.Function.HTTPPost(
+         *     "https://api.example.com/items",
+         *     "application/json",
+         *     Stringify({ name: "Jane", status: "active" }),
+         *     headerNames,
+         *     headerValues,
+         *     response
+         * );
+         * if (statusCode == 200) { Write(response[0]); }
+         */
         function HTTPPost(url: string, contentType: string, payload: string, headerNames?: string[], headerValues?: string[], response?: any[]): number;
+        /**
+         * Parses a JSON-formatted string (or array of strings) and returns the resulting JavaScript object (or array of objects). SFMC-native equivalent of JSON.parse(), which is not available in the legacy SSJS engine.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/parsejson/)
+         *
+         * @param jsonString - A valid JSON-formatted string or array of JSON strings to parse
+         * @example
+         * var jsonString = '{"name":"Jane","age":30}';
+         * var obj = Platform.Function.ParseJSON(jsonString);
+         * Write(obj.name); // outputs: Jane
+         *
+         * // Use String() to convert CLR response content before parsing:
+         * var req = new Script.Util.HttpRequest("https://api.example.com/data");
+         * req.method = "GET";
+         * var resp = req.send();
+         * var result = Platform.Function.ParseJSON(String(resp.content));
+         */
         function ParseJSON(jsonString: string | string[]): object | object[];
+        /**
+         * Specifies the target of an email link as a complete URL stored in an attribute, data extension field, or variable. Use only within the href attribute of an anchor tag in HTML emails. In text emails, add the http:// prefix without spaces inside the parentheses. Include anchor tags in the email body (not in retrieved link content) to retain click-tracking.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/redirectto/)
+         *
+         * @param url - The URL to redirect to
+         * @example
+         * var email = "aruiz@example.com";
+         * var firstName = "Angela";
+         * var baseUrl = "https://example.com?email=";
+         * var nameJoin = "&name=";
+         * Platform.Function.RedirectTo(baseUrl.concat(email, nameJoin, firstName));
+         * // Use inside href: <a href="%%=RedirectTo(...)=%%">link</a>
+         */
         function RedirectTo(url: string): void;
+        /**
+         * Percent-encodes a complete URL. When encodeReservedKeywords is false (default), only space characters are encoded as %20. When true, all URL-reserved characters are also encoded (spaces become +).
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/urlencode/)
+         *
+         * @param url - The complete URL to encode
+         * @param encodeReservedKeywords - When true, encodes all reserved characters; spaces become +. When false (default), only spaces are encoded as %20.
+         * @example
+         * var baseURL = "http://www.example.com?value=12+3 12;3";
+         * var encoded = Platform.Function.UrlEncode(baseURL);
+         * Write(encoded); // "http://www.example.com?value=12+3%2012;3"
+         * var encodedFull = Platform.Function.UrlEncode(baseURL, true);
+         * Write(encodedFull); // "http://www.example.com?value%3d12%2b3+12%3b3"
+         */
         function UrlEncode(url: string, encodeReservedKeywords?: boolean): string;
+        /**
+         * Encodes any string value to Base64. Note: values encoded with this function can only be decoded using `Platform.Function.Base64Decode()` or `Base64Decode()` — not other Base64 decoders. For a simpler single-parameter form without charset control, see `Base64Encode()`.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/base64encode/)
+         *
+         * @param string - String to encode
+         * @param charset - Character set to use when encoding, such as ASCII or UTF-8
+         * @example
+         * var normalStr = Platform.Function.Lookup("ForBase64Info","ReceiptData","ReceiptKey","stringValue");
+         * var encodedStr = Platform.Function.Base64Encode(normalStr);
+         */
         function Base64Encode(string: string, charset?: string): string;
+        /**
+         * Decodes a Base64-encoded string. Only works with values encoded using `Platform.Function.Base64Encode()` or `Base64Encode()` — not arbitrary Base64 strings. For a simpler single-parameter form without charset control, see `Base64Decode()`.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/base64decode/)
+         *
+         * @param encodedString - Base64 encoded string to decode
+         * @param charset - Character set to use when decoding, such as ASCII or UTF-8
+         * @example
+         * var encodedStr = Platform.Function.Lookup("forBase64Info","ReceiptData","ReceiptKey","stringValue");
+         * var decodedStr = Platform.Function.Base64Decode(encodedStr);
+         */
         function Base64Decode(encodedString: string, charset?: string): string;
+        /**
+         * Returns an MD5 hash for a given string value.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/md5/)
+         *
+         * @param string - String to evaluate
+         * @param charset - Character set to use when evaluating, such as ASCII or UTF-8
+         * @example
+         * var normalStr = Platform.Function.Lookup("ForMD5Info","HashData","HashKey","stringValue");
+         * var hashedStr = Platform.Function.MD5(normalStr);
+         */
         function MD5(string: string, charset?: string): string;
+        /**
+         * Converts a JavaScript object into its JSON string representation. Works only with known JSON-serializable types. Not to be confused with `String()`, which converts CLR response objects to plain strings.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/stringify/)
+         *
+         * @param object - JavaScript object to serialize to JSON.
+         * @returns JSON string representation of the object.
+         * @example
+         * var json = Platform.Function.Stringify({ name: "Jane", age: 30 });
+         * Platform.Function.Write(json);
+         */
         function Stringify(object: object): string;
         /**
+         * Retrieves content from a specified classic Content Area by numeric ID. Deprecated — Content Areas are no longer supported on current SFMC infrastructure.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentarea/)
+         *
          * @deprecated
+         * @param id - Numeric ID of the Content Area.
+         * @param regionName - Impression region for content.
+         * @param stopOnError - When true, throws on failure; when false the call proceeds.
+         * @param fallbackContent - Default content to display when the area cannot be retrieved.
+         * @returns Rendered content from the Content Area.
+         * @example
+         * var content = Platform.Function.ContentArea(123456, "impressionRegion", false, "defaultContentHere");
          */
         function ContentArea(id: number, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
         /**
+         * Retrieves content from a specified classic Content Area by name. Deprecated — Content Areas are no longer supported on current SFMC infrastructure.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentareabyname/)
+         *
          * @deprecated
+         * @param name - Name of the Content Area.
+         * @param regionName - Impression region for content.
+         * @param stopOnError - When true, throws on failure; when false the call proceeds.
+         * @param fallbackContent - Default content to display when the area cannot be retrieved.
+         * @returns Rendered content from the Content Area.
+         * @example
+         * var content = Platform.Function.ContentAreaByName("My Content\\myContentArea", "impressionRegion", false, "defaultContentHere");
          */
         function ContentAreaByName(name: string, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
+        /**
+         * Indicates whether the passed-in user-agent value represents a CHTML browser. CHTML browsers (e.g. feature phones) use a modified version of HTML. Returns true when the user agent is a CHTML browser.
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/ischtmlbrowser/)
+         *
+         * @param userAgentString - User-agent string to evaluate.
+         * @returns True if the user agent represents a CHTML browser.
+         * @example
+         * Platform.Response.Write(Platform.Request.UserAgent);
+         * Platform.Response.Write("<br>Is CHTML: ");
+         * Platform.Response.Write(Platform.Function.IsCHTMLBrowser(Platform.Request.UserAgent));
+         */
         function IsCHTMLBrowser(userAgentString: string): boolean;
     }
     namespace Variable {
+        /**
+         * Retrieves the value of an AMPscript variable from the SSJS context.
+         * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-variable/)
+         *
+         * @param variableName - Name of the AMPscript variable
+         * @example
+         * var sk = Platform.Variable.GetValue("SubscriberKey");
+         * Write(sk);
+         * // Bare-name alias: Variable.GetValue("SubscriberKey")
+         */
         function GetValue(variableName: string): string;
+        /**
+         * Assigns a value to an AMPscript variable from the SSJS context.
+         * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-variable/)
+         *
+         * @param variableName - Name of the AMPscript variable
+         * @param value - Value to assign
+         * @example
+         * Platform.Variable.SetValue("greeting", "Hello from SSJS");
+         * // @greeting is now available in subsequent AMPscript blocks
+         * // Bare-name alias: Variable.SetValue("greeting", "Hello from SSJS")
+         */
         function SetValue(variableName: string, value: string): void;
     }
     namespace Response {
+        /**
+         * Sets a response header on the current page response.
+         * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
+         *
+         * @param headerName - Name of the response header.
+         * @param value - Value for the response header.
+         * @example
+         * Platform.Response.SetResponseHeader("Content-Type", "application/json");
+         * Platform.Response.Write(Stringify({ status: "ok" }));
+         */
         function SetResponseHeader(headerName: string, value: string): void;
+        /**
+         * Removes a previously set HTTP response header from the response.
+         * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
+         *
+         * @param headerName - Name of the HTTP response header to remove.
+         * @example
+         * Platform.Response.RemoveResponseHeader("X-Powered-By");
+         */
         function RemoveResponseHeader(headerName: string): void;
+        /**
+         * Redirects the current page to a new URL. Pass false for a 302 temporary redirect or true for a 301 permanent redirect. Do not use 301 if you want browsers to re-check the original URL later.
+         * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
+         *
+         * @param url - URL to redirect to.
+         * @param movedPermanently - True for 301 permanent redirect, false for 302 temporary.
+         * @example
+         * Platform.Response.Redirect("https://pub.pages.example.com/thank-you", false);
+         */
         function Redirect(url: string, movedPermanently: boolean): void;
+        /**
+         * Sets a cookie on the client browser response.
+         * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
+         *
+         * @param name - Name of the cookie to set.
+         * @param value - Value to store in the cookie.
+         * @param expires - Expiration date/time for the cookie.
+         * @param secure - If true, the cookie is only sent over HTTPS.
+         * @example
+         * Platform.Response.SetCookie("userId", subscriberKey, "12/31/2025", true);
+         */
         function SetCookie(name: string, value: string, expires?: string, secure?: boolean): void;
+        /**
+         * Removes a cookie from the client browser by setting its expiration to a past date.
+         * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
+         *
+         * @param name - Name of the cookie to remove.
+         * @example
+         * Platform.Response.RemoveCookie("userId");
+         */
         function RemoveCookie(name: string): void;
+        /**
+         * Writes content to the HTTP response output. Distinct from the bare-name `Write()``, which write to the rendered page output.
+         * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
+         *
+         * @param content - Content string to write to the response.
+         * @example
+         * var data = { name: "Jane", status: "active" };
+         * Platform.Response.Write(Stringify(data));
+         */
         function Write(content: string): void;
         var ContentType: string;
         var CharacterSet: string;
     }
     namespace Request {
+        /**
+         * Retrieves the value of a URL query string parameter.
+         * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+         *
+         * @param parameterName - Name of the query string parameter.
+         * @example
+         * // Page URL: /mypage?email=jane@example.com
+         * var email = Platform.Request.GetQueryStringParameter("email");
+         * Write(email);
+         */
         function GetQueryStringParameter(parameterName: string): string;
+        /**
+         * Retrieves data from a named form field, including values sent via POST.
+         * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+         *
+         * @param name - Name of the form field to retrieve.
+         * @example
+         * var email = Platform.Request.GetFormField("emailAddress");
+         * Write(email);
+         */
         function GetFormField(name: string): string;
+        /**
+         * Returns the raw body of the HTTP POST request. CAVEAT: Only returns data on the FIRST call per request; subsequent calls return nothing. Store the result in a variable if you need it multiple times.
+         * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+         *
+         * @param encoding - Character encoding for the post data.
+         * @example
+         * // Read raw POST body once and store it:
+         * var rawBody = Platform.Request.GetPostData();
+         * var payload = Platform.Function.ParseJSON(rawBody);
+         */
         function GetPostData(encoding?: string): string;
+        /**
+         * Retrieves the value of a named cookie from the HTTP request sent by the client browser.
+         * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+         *
+         * @param cookieName - Name of the cookie to retrieve.
+         * @example
+         * var sessionId = Platform.Request.GetCookieValue("sessionId");
+         * if (sessionId) { Write("Session: " + sessionId); }
+         */
         function GetCookieValue(cookieName: string): string;
+        /**
+         * Returns the language preferences of the client browser as specified in the HTTP Accept-Language request header.
+         * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+         *
+         * @example
+         * var lang = Platform.Request.GetUserLanguages();
+         * Write(lang); // e.g. "en-US,en;q=0.9"
+         */
         function GetUserLanguages(): string;
+        /**
+         * Returns the value of the named HTTP request header, or null if not present.
+         * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+         *
+         * @param headerName - Name of the HTTP request header to retrieve.
+         * @example
+         * var auth = Platform.Request.GetRequestHeader("Authorization");
+         * if (auth) { Write("Auth: " + auth); }
+         */
         function GetRequestHeader(headerName: string): string;
         const Browser: object;
         const ClientIP: string;
@@ -96,653 +858,2035 @@ declare namespace Platform {
         const UserAgent: string;
     }
     namespace Recipient {
+        /**
+         * Returns the value of a subscriber attribute or sendable data extension field for the current recipient.
+         * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-recipient/)
+         *
+         * @param attributeName - Name of the subscriber attribute or sendable DE field to retrieve
+         * @example
+         * var email = Platform.Recipient.GetAttributeValue("EmailAddress");
+         * Platform.Response.Write(email);
+         */
         function GetAttributeValue(attributeName: string): string;
     }
 }
 
 // ── Bare-name globals (aliasOf Platform.*) ──────────────────────────────────
 /**
+ * Retrieves content from a specified classic Content Area by numeric ID. Deprecated — Content Areas are no longer supported on current SFMC infrastructure.
+ *
  * @deprecated
+ * @param id - Numeric ID of the Content Area.
+ * @param regionName - Impression region for content.
+ * @param stopOnError - When true, throws on failure; when false the call proceeds.
+ * @param fallbackContent - Default content to display when the area cannot be retrieved.
+ * @returns Rendered content from the Content Area.
+ * @example
+ * var content = Platform.Function.ContentArea(123456, "impressionRegion", false, "defaultContentHere");
  */
 declare function ContentArea(id: number, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
 /**
+ * Retrieves content from a specified classic Content Area by name. Deprecated — Content Areas are no longer supported on current SFMC infrastructure.
+ *
  * @deprecated
+ * @param name - Name of the Content Area.
+ * @param regionName - Impression region for content.
+ * @param stopOnError - When true, throws on failure; when false the call proceeds.
+ * @param fallbackContent - Default content to display when the area cannot be retrieved.
+ * @returns Rendered content from the Content Area.
+ * @example
+ * var content = Platform.Function.ContentAreaByName("My Content\\myContentArea", "impressionRegion", false, "defaultContentHere");
  */
 declare function ContentAreaByName(name: string, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
 /**
+ * Marks the start of a named impression tracking region within content.
+ *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @param name - Name identifying the impression region
+ * @example
+ * Platform.Function.BeginImpressionRegion("hero-banner");
+ * Write(heroContent);
+ * Platform.Function.EndImpressionRegion();
  */
 declare function BeginImpressionRegion(name: string): void;
 /**
+ * Marks the end of an impression tracking region within content.
+ *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @param closeAll - When true, closes all nested impression regions
+ * @example
+ * Platform.Function.BeginImpressionRegion("footer");
+ * Write(footerContent);
+ * Platform.Function.EndImpressionRegion();
  */
 declare function EndImpressionRegion(closeAll?: boolean): void;
 /**
+ * Returns the current system timestamp, or the timestamp of the triggering send when called with true.
+ *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @param useContextTime - When true, returns the time the triggering send or activity was initiated. When false or omitted, returns the current system clock time.
+ * @example
+ * var current = Platform.Function.Now();
+ * Write(current); // e.g. "8/5/2025 12:00:00 PM"
+ *
+ * // Use context time during triggered sends:
+ * var sendTime = Platform.Function.Now(true);
  */
 declare function Now(useContextTime?: boolean): string;
 /**
+ * Converts a date-time value from Marketing Cloud system time (CST) to the local time of the account or user.
+ *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @param dateValue - Date-time string in system time (CST)
+ * @example
+ * var systemDate = Platform.Function.Now();
+ * var localDate = Platform.Function.SystemDateToLocalDate(systemDate);
+ * Write(localDate);
  */
 declare function SystemDateToLocalDate(dateValue: string): string;
 /**
+ * Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST).
+ *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @param dateValue - Date-time string in local account/user time
+ * @example
+ * var localDate = "8/5/2025 12:00:00 PM";
+ * var systemDate = Platform.Function.LocalDateToSystemDate(localDate);
+ * Write(systemDate);
  */
 declare function LocalDateToSystemDate(dateValue: string): string;
 /**
+ * Redirects the current page to a new URL. Pass false for a 302 temporary redirect or true for a 301 permanent redirect. Do not use 301 if you want browsers to re-check the original URL later.
+ *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @param url - URL to redirect to.
+ * @param movedPermanently - True for 301 permanent redirect, false for 302 temporary.
+ * @example
+ * Platform.Response.Redirect("https://pub.pages.example.com/thank-you", false);
  */
 declare function Redirect(url: string, movedPermanently: boolean): void;
 /**
+ * Generates a new globally unique identifier string.
+ *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @example
+ * var id = Platform.Function.GUID();
+ * Write(id); // e.g. "550e8400-e29b-41d4-a716-446655440000"
  */
 declare function GUID(): string;
 /**
+ * Checks whether a string is a valid email address format.
+ *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @param value - String to validate
+ * @example
+ * if (Platform.Function.IsEmailAddress(emailInput)) {
+ *     Write("Valid email");
+ * } else {
+ *     Write("Invalid email format");
+ * }
  */
 declare function IsEmailAddress(value: string): boolean;
 /**
+ * Evaluates whether a string contains a valid phone number.
+ *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @param value - String to evaluate
+ * @example
+ * if (Platform.Function.IsPhoneNumber(phoneInput)) {
+ *     Write("Valid phone");
+ * } else {
+ *     Write("Invalid phone number");
+ * }
  */
 declare function IsPhoneNumber(value: string): boolean;
 /**
+ * Writes content to the HTTP response output. Distinct from the bare-name `Write()``, which write to the rendered page output.
+ * [ssjs.guide reference](https://ssjs.guide/global-functions/write/)
+ *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @param content - Content string to write to the response.
+ * @example
+ * var data = { name: "Jane", status: "active" };
+ * Platform.Response.Write(Stringify(data));
  */
 declare function Write(content: string): void;
 /**
+ * Converts a JavaScript object into its JSON string representation. Works only with known JSON-serializable types. Not to be confused with `String()`, which converts CLR response objects to plain strings.
+ * [ssjs.guide reference](https://ssjs.guide/global-functions/stringify/)
+ *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @param object - JavaScript object to serialize to JSON.
+ * @returns JSON string representation of the object.
+ * @example
+ * var json = Platform.Function.Stringify({ name: "Jane", age: 30 });
+ * Platform.Function.Write(json);
  */
 declare function Stringify(object: object): string;
 
 // ── DataExtension instance interfaces ───────────────────────────────────────
-interface DataExtensionFieldsAccessor {
+interface DataExtensionFields {
     /**
+     * Adds a field to the previously initialized data extension. `properties.Name` is required; the rest (`CustomerKey`, `FieldType`, `MaxLength`, `IsRequired`, `IsPrimaryKey`, `Ordinal`, `Scale`, `DefaultValue`) are optional. `FieldType` accepts: 'Boolean', 'Date', 'Decimal', 'EmailAddress', 'Locale', 'Number', 'Phone', 'Text'.
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - Object describing the new field.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var de = DataExtension.Init("SSJSTest");
+     * var newField = { Name: "NewFieldV2", CustomerKey: "CustomerKey", FieldType: "Number", IsRequired: true, DefaultValue: "100" };
+     * var status = de.Fields.Add(newField);
      */
     Add(properties: object): string;
     /**
+     * Returns an array of field definitions for the previously initialized data extension.
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns List of field-definition objects.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var birthdayDE = DataExtension.Init("birthdayDE");
+     * var fields = birthdayDE.Fields.Retrieve();
      */
     Retrieve(): object[];
     /**
+     * Updates which data extension field is used to relate the data extension to the All Subscribers list during sending. Pass the name of the data extension field, and which subscriber attribute it should map to.
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param deFieldName - Name of the data extension field that should make the connection to the subscriber list.
+     * @param subscriberField - Subscriber attribute to map the data extension field to.
+     * @returns Returns "OK" on success or throws on failure (assumed; doc has no `@returns`, treated as `"OK"` for consistency with sibling `Fields.*` methods).
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var updateDE = DataExtension.Init("sendableDataExtension");
+     * var status = updateDE.Fields.UpdateSendableField("DifferentSubKey", "Subscriber Key");
      */
     UpdateSendableField(deFieldName: string, subscriberField: string): string;
 }
-interface DataExtensionRowsAccessor {
+interface DataExtensionRows {
     /**
+     * Adds one or more rows to the previously initialized data extension.
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param rowData - Array of objects, one per row to add. Each object's keys must match data extension field names.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var arrContacts = [
+     *     { Email: "jdoe@example.com", FirstName: "John", LastName: "Doe" },
+     *     { Email: "aruiz@example.com", FirstName: "Angel", LastName: "Ruiz" }
+     * ];
+     * var birthdayDE = DataExtension.Init("birthdayDE");
+     * birthdayDE.Rows.Add(arrContacts);
      */
     Add(rowData: any[]): string;
     /**
+     * Returns rows where the specified columns equal the specified values (AND-joined). Optionally limits results and orders by a field. When initializing a data extension for `Lookup()` from an email message, you must use the data extension Name; on landing pages, either Name or external key works — make them identical to be safe.
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param searchFieldNames - Array of column names to match against.
+     * @param searchValues - Array of values to match (one per column, in order).
+     * @param limit - Maximum number of rows to return.
+     * @param orderByFieldName - Field to order results by.
+     * @returns Rows matching the lookup criteria.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var testDE = DataExtension.Init("testDE");
+     * var data = testDE.Rows.Lookup(["Age"], [25], 2, "LastName");
      */
     Lookup(searchFieldNames: any[], searchValues: any[], limit?: number, orderByFieldName?: string): object[];
     /**
+     * Deletes rows from the previously initialized data extension where the specified columns equal the specified values (AND-joined). For large deletion requests, batch the work — this method times out on long-running deletes.
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param columnNames - Array of column names to match against.
+     * @param columnValues - Array of values to match (one per column, in order).
+     * @returns The number of rows that were modified (deleted).
+     * @example
+     * Platform.Load("Core", "1.1.5");
+     * var memberDE = DataExtension.Init("MembershipRewards");
+     * var result = memberDE.Rows.Remove(["Area"], ["Kensington"]);
      */
     Remove(columnNames: any[], columnValues: any[]): number;
     /**
+     * Retrieves up to 2500 rows from the previously initialized data extension. When called without a filter, returns all rows (subject to the 2500-row cap). Cannot be used in the context of an email message or email preview.
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - WSProxy-style filter object — simple `{Property, SimpleOperator, Value}` or compound with `LeftOperand`/`LogicalOperator`/`RightOperand`. Optional per the example, despite the doc table marking `Required: Yes`.
+     * @returns Rows from the data extension matching the filter (or all rows when no filter is supplied).
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var birthdayDE = DataExtension.Init("birthdayDE");
+     * var data = birthdayDE.Rows.Retrieve();
+     * var filter = { Property: "Age", SimpleOperator: "greaterThan", Value: 20 };
+     * var moredata = birthdayDE.Rows.Retrieve(filter);
      */
     Retrieve(filter?: object): object[];
     /**
+     * Updates the columns of rows where `whereFieldNames` equal `whereValues` (AND-joined). Throws if no row matches.
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param rowData - Object whose keys are columns to update and values are the new values.
+     * @param whereFieldNames - Array of column names to match against.
+     * @param whereValues - Array of values to match (one per column, in order).
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("Core", "1");
+     * var dataExt = DataExtension.Init("NTO Customer List");
+     * var fieldsToUpdate = { StateProvince: "QC", PreferredActivity: "Sailing" };
+     * var result = dataExt.Rows.Update(fieldsToUpdate, ["MemberId", "Country"], [9868600, "CA"]);
      */
     Update(rowData: object, whereFieldNames: any[], whereValues: any[]): string;
 }
 interface DataExtensionInstance {
-    Fields: DataExtensionFieldsAccessor;
-    Rows: DataExtensionRowsAccessor;
+    Fields: DataExtensionFields;
+    Rows: DataExtensionRows;
 }
 
 // ── Core Library namespaces ──────────────────────────────────────────────────
 declare namespace Account {
     /**
+     * Initializes an Account instance bound to the specified external key. Required before invoking any other Account method on the returned instance.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/account/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param key - External key of the account.
+     * @returns An initialized Account bound to the specified external key.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myAccount = Account.Init("MyCustomerKey");
      */
     function Init(key: string): any;
     /**
+     * Retrieves accounts based on the specified filter criteria.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/account/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - Criteria used to search for the account. Use a filter expression or a JSON object containing filter and additional search parameters.
+     * @returns List of results matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var getAcct = Account.Retrieve({Property:"CustomerKey",SimpleOperator:"equals",Value:"MyAccount"});
      */
     function Retrieve(filter: object): object[];
     /**
+     * Updates the account with the supplied attributes. If `properties` includes `TimeZoneID`, the call uses that value to update the account time zone.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/account/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - Account attributes to change.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myAccount = Account.Init("MyCustomerKey");
+     * var status = myAccount.Update({ "FromName" : "Demo From Name" });
      */
     function Update(properties: object): string;
 }
 declare namespace Account.Tracking {
     /**
+     * Returns an array of tracking data related to the accounts specified by the passed filter argument.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/account/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - Criteria used to search for the account.
+     * @returns List of results matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var acctTracking = Account.Tracking.Retrieve({Property:"CustomerKey",SimpleOperator:"equals",Value:"MyAccount"});
      */
     function Retrieve(filter: object): object[];
 }
 declare namespace AccountUser {
     /**
+     * Initializes an AccountUser instance bound to the specified external key and client ID (MID). Required before invoking any other AccountUser method on the returned instance.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/accountuser/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param targetUserKey - External key of the user.
+     * @param myClientID - MID of the business unit.
+     * @returns An initialized AccountUser bound to the specified external key and client ID.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var acctUser = AccountUser.Init("myAccountUser", 123456789);
      */
     function Init(targetUserKey: string, myClientID: number): any;
     /**
+     * Creates a new account user from the supplied properties object.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/accountuser/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - JSON object describing the new account user (Name, UserID, Password, Email, ClientID, DefaultBusinessUnitKey, AssociatedBusinessUnits, ...).
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var newUser = {
+     *     "Name": "Andrea Cruz",
+     *     "UserID": "acruz",
+     *     "Password": "insert new password here",
+     *     "Email": "acruz@example.com",
+     *     "ClientID": 123456789,
+     *     "DefaultBusinessUnitKey": "childBUKey",
+     *     "AssociatedBusinessUnits": ["childBUKey", "grandchildBUKey"]
+     * };
+     * var status = AccountUser.Add(newUser);
      */
     function Add(properties: object): string;
     /**
+     * Retrieves account users based on the specified filter criteria.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/accountuser/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - Criteria used to search for the account user.
+     * @returns List of results matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var accountUser = AccountUser.Retrieve({Property:"CustomerKey",SimpleOperator:"equals",Value:"MyAccount"});
      */
     function Retrieve(filter: object): object[];
     /**
+     * Updates the account user with the supplied attributes.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/accountuser/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - Attributes of the account user to change.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var acctUser = AccountUser.Init("myAccountUser", 123456789);
+     * var status = acctUser.Update({ "Password": "XXXXX" });
      */
     function Update(properties: object): string;
     /**
+     * Activates the account user.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/accountuser/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var acctUser = AccountUser.Init("myAccountUser", 123456789);
+     * var status = acctUser.Activate();
      */
     function Activate(): string;
     /**
+     * Deactivates the account user. Note: account users cannot be deleted via server-side JavaScript — deactivation is the only "removal" path.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/accountuser/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var acctUser = AccountUser.Init("myAccountUser", 123456789);
+     * var status = acctUser.Deactivate();
      */
     function Deactivate(): string;
 }
 declare namespace Portfolio {
     /**
+     * Initializes a Portfolio instance bound to the specified external key. Required before invoking any other Portfolio method on the returned instance.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/portfolio/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param key - External key of the portfolio.
+     * @returns An initialized Portfolio bound to the specified external key.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var portObj = Portfolio.Init("myPortfolioCK");
      */
     function Init(key: string): any;
     /**
+     * Creates a new portfolio (file) object from the supplied properties.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/portfolio/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - JSON object describing the new portfolio item (DisplayName, CustomerKey, CategoryID, FileName, FileLocation).
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var newPortfolio = {
+     *     DisplayName: "SSJS Portfolio Object",
+     *     CustomerKey: "myPortfolioCK",
+     *     CategoryID: 12345,
+     *     FileName: "logo.png",
+     *     FileLocation: "http://www.example.com/Portals/0/images/global/logo_main.png"
+     * };
+     * var status = Portfolio.Add(newPortfolio);
      */
     function Add(properties: object): string;
     /**
+     * Returns an array of portfolio objects matching the specified filter.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/portfolio/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - Criteria used to search for portfolio objects. PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
+     * @returns List of portfolio objects matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var portObjArr = Portfolio.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "PortfolioObjectKey" });
      */
     function Retrieve(filter: object): object[];
     /**
+     * Updates the portfolio object with the supplied attributes.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/portfolio/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - Attributes to change on the portfolio object.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var portObj = Portfolio.Init("myPortfolioCK");
+     * var status = portObj.Update({ DisplayName: "Updated SSJS Image" });
      */
     function Update(properties: object): string;
     /**
+     * Removes the previously initialized portfolio object.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/portfolio/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var portObj = Portfolio.Init("myPortfolioCK");
+     * var status = portObj.Remove();
      */
     function Remove(): string;
 }
 declare namespace ContentAreaObj {
     /**
+     * Initializes a ContentAreaObj instance bound to the specified external key. DEPRECATED — Content Areas have been deprecated; new content areas cannot be created or updated. Existing content areas remain readable on older accounts only.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/contentareaobj/)
+     *
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param key - External key of the content area.
+     * @returns An initialized ContentAreaObj bound to the specified external key.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var area = ContentAreaObj.Init("myCA");
      */
     function Init(key: string): any;
     /**
+     * Creates a new content area from the supplied properties. DEPRECATED — calls fail on accounts where the Content Areas feature has been retired.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/contentareaobj/)
+     *
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - JSON object describing the new content area (CustomerKey, Name, CategoryID, Layout, LayoutSpecified, Content).
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var exampleArea = {
+     *     CustomerKey: "exampleArea",
+     *     Name: "SSJS Content Area Example",
+     *     CategoryID: 123456,
+     *     Layout: "RawText",
+     *     LayoutSpecified: true,
+     *     Content: "<b>This is example content</b>"
+     * };
+     * var status = ContentAreaObj.Add(exampleArea);
      */
     function Add(properties: object): string;
     /**
+     * Returns an array of content areas matching the specified filter. DEPRECATED — read-only access only; the Content Areas feature has been retired for new content.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/contentareaobj/)
+     *
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
+     * @returns List of content areas matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var results = ContentAreaObj.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "myCA" });
      */
     function Retrieve(filter: object): object[];
     /**
+     * Updates the content area with the supplied attributes. DEPRECATED — calls fail on accounts where the Content Areas feature has been retired.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/contentareaobj/)
+     *
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - Attributes to change on the content area.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var obj = ContentAreaObj.Init("myCA");
+     * var status = obj.Update({ Name: "Name Updated By SSJS" });
      */
     function Update(properties: object): string;
     /**
+     * Removes the previously initialized content area. DEPRECATED — calls fail on accounts where the Content Areas feature has been retired.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/contentareaobj/)
+     *
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var obj = ContentAreaObj.Init("myCA");
+     * var status = obj.Remove();
      */
     function Remove(): string;
 }
 declare namespace Folder {
     /**
+     * Initializes a Folder instance, optionally bound to the specified external key. When called without arguments, a subsequent `<FolderInstance>.SetID(id)` call is required to bind the instance to a specific folder.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/folder/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param key - External key of the folder. Optional — pass nothing and use `SetID()` when the folder has no external key.
+     * @returns An initialized Folder; bound to the specified external key when one is supplied.
+     * @example
+     * Platform.Load("core", "1");
+     * var myFolder = Folder.Init("myFolder");
+     * // or, when the folder has no external key:
+     * var myIDFolder = Folder.Init();
+     * myIDFolder.SetID(12345);
      */
     function Init(key?: string): any;
     /**
+     * Creates a new folder as a child of an existing folder.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/folder/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - JSON object describing the new folder (Name, CustomerKey, Description, ContentType, IsActive, IsEditable, AllowChildren, ParentFolderID).
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var newFolder = {
+     *     Name: "Test Add Folder",
+     *     CustomerKey: "test_folder_key",
+     *     Description: "Test added",
+     *     ContentType: "email",
+     *     IsActive: "true",
+     *     IsEditable: "true",
+     *     AllowChildren: "false",
+     *     ParentFolderID: 123456
+     * };
+     * var status = Folder.Add(newFolder);
      */
     function Add(properties: object): string;
     /**
+     * Returns an array of folders matching the specified filter. Supports simple `{Property, SimpleOperator, Value}` filters and complex filters with `LeftOperand`, `LogicalOperator`, `RightOperand`. Use dot notation (e.g. `ParentFolder.Name`) to filter on child fields.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/folder/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - WSProxy-style filter object — simple or compound with `AND`/`OR`.
+     * @returns Array of folder objects (including nested `ParentFolder` info).
+     * @example
+     * Platform.Load("core", "1");
+     * var folders = Folder.Retrieve({
+     *     Property: "ParentFolder.Name",
+     *     SimpleOperator: "equals",
+     *     Value: "RewardsProgram"
+     * });
+     * Write(Stringify(folders));
      */
     function Retrieve(filter: object): object[];
     /**
+     * Updates the folder with the supplied attributes.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/folder/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - Attributes to change on the folder.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myFolder = Folder.Init("myFolder");
+     * var status = myFolder.Update({ Name: "Updated Folder Name" });
      */
     function Update(properties: object): string;
     /**
+     * Removes the previously initialized folder.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/folder/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myFolder = Folder.Init("myFolder");
+     * myFolder.Remove();
      */
     function Remove(): string;
     /**
+     * Binds a previously initialized Folder instance to a specific folder ID. Use this when the folder has no external key, after calling `Folder.Init()` without arguments.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/folder/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param id - The folder ID to bind to this Folder instance.
+     * @returns No return value.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myIDFolder = Folder.Init();
+     * myIDFolder.SetID(12345);
      */
     function SetID(id: number): void;
 }
 declare namespace Template {
     /**
+     * Initializes a Template instance bound to the specified external key. Required before invoking any other Template method on the returned instance.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/template/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param key - External key of the template.
+     * @returns An initialized Template bound to the specified external key.
+     * @example
+     * Platform.Load("core", "1");
+     * var t = Template.Init("myTemplate");
      */
     function Init(key: string): any;
     /**
+     * Creates a new template from the supplied properties.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/template/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - JSON object describing the new template (CustomerKey, TemplateName, LayoutHTML).
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1");
+     * var myTemp = {
+     *     CustomerKey: "test_template",
+     *     TemplateName: "SSJS Test Template",
+     *     LayoutHTML: "this is some HTML"
+     * };
+     * var status = Template.Add(myTemp);
      */
     function Add(properties: object): string;
     /**
+     * Returns an array of templates matching the specified filter. Pass `{ Filter: { Property, SimpleOperator, Value }, QueryAllAccounts: true }` to query across all accessible accounts.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/template/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - PascalCase WSProxy-style filter object, optionally wrapped with `QueryAllAccounts: true`.
+     * @returns List of templates matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var getTemplate = Template.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "MyTemplate" });
      */
     function Retrieve(filter: object): object[];
     /**
+     * Updates the template with the supplied attributes.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/template/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - Attributes to change on the template.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myTemplate = Template.Init("myTemplateCK");
+     * var status = myTemplate.Update({ TemplateName: "Edited Template" });
      */
     function Update(properties: object): string;
 }
 declare namespace DeliveryProfile {
     /**
+     * Initializes a DeliveryProfile instance bound to the specified external key. Required before invoking any other DeliveryProfile method on the returned instance.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/deliveryprofile/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param key - External key of the delivery profile.
+     * @returns An initialized DeliveryProfile bound to the specified external key.
+     * @example
+     * Platform.Load("core", "1");
+     * var myProfile = DeliveryProfile.Init("myDeliveryProfile");
      */
     function Init(key: string): any;
     /**
+     * Creates a new delivery profile from the supplied properties.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/deliveryprofile/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - JSON object describing the new delivery profile (Name, CustomerKey, Description, SourceAddressType, ...).
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var newDP = {
+     *     Name: "SSJS Added Delivery Profile",
+     *     CustomerKey: "test_delivery_profile",
+     *     Description: "An SSJS Added Profile",
+     *     SourceAddressType: "DefaultPrivateIPAddress"
+     * };
+     * var status = DeliveryProfile.Add(newDP);
      */
     function Add(properties: object): string;
     /**
+     * Updates the delivery profile with the supplied attributes.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/deliveryprofile/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - Attributes to change on the delivery profile.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myProfile = DeliveryProfile.Init("myDeliveryProfile");
+     * var status = myProfile.Update({ Name: "SSJS Updated Delivery Profile" });
      */
     function Update(properties: object): string;
     /**
+     * Removes the previously initialized delivery profile.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/deliveryprofile/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myProfile = DeliveryProfile.Init("myDeliveryProfile");
+     * var status = myProfile.Remove();
      */
     function Remove(): string;
 }
 declare namespace SenderProfile {
     /**
+     * Initializes a SenderProfile instance bound to the specified external key. Note: SenderProfile methods only work on landing pages — they cannot run inside email messages at send time.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/senderprofile/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param key - External key of the sender profile.
+     * @returns An initialized SenderProfile bound to the specified external key.
+     * @example
+     * Platform.Load("core", "1");
+     * var myProfile = SenderProfile.Init("mySenderProfile");
      */
     function Init(key: string): any;
     /**
+     * Creates a new sender profile from the supplied properties.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/senderprofile/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - JSON object describing the new sender profile (Name, CustomerKey, Description, FromName, FromAddress, ...).
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var newSP = {
+     *     Name: "SSJS Added Send Profile",
+     *     CustomerKey: "test_send_profile",
+     *     Description: "An SSJS Added Profile",
+     *     FromName: "Andrea Cruz",
+     *     FromAddress: "acruz@example.com"
+     * };
+     * var status = SenderProfile.Add(newSP);
      */
     function Add(properties: object): string;
     /**
+     * Updates the sender profile with the supplied attributes.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/senderprofile/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - Attributes to change on the sender profile.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myProfile = SenderProfile.Init("mySenderProfile");
+     * var status = myProfile.Update({ Name: "SSJS Updated Sender Profile" });
      */
     function Update(properties: object): string;
     /**
+     * Removes the previously initialized sender profile.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/senderprofile/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myProfile = SenderProfile.Init("mySenderProfile");
+     * var status = myProfile.Remove();
      */
     function Remove(): string;
 }
 declare namespace SendClassification {
     /**
+     * Initializes a SendClassification instance bound to the specified external key. Required before invoking any other SendClassification method on the returned instance.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/sendclassification/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param key - External key of the send classification.
+     * @returns An initialized SendClassification bound to the specified external key.
+     * @example
+     * Platform.Load("core", "1");
+     * var sc = SendClassification.Init("mySendClassification");
      */
     function Init(key: string): any;
     /**
+     * Creates a new send classification from the supplied properties.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/sendclassification/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - JSON object describing the new send classification (CustomerKey, Name, Description, SenderProfileKey, DeliveryProfileKey).
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var newSC = {
+     *     CustomerKey: "mySCKey",
+     *     Name: "SSJS Test SC",
+     *     Description: "Test SSJS description",
+     *     SenderProfileKey: "mySPKey",
+     *     DeliveryProfileKey: "myDPKey"
+     * };
+     * SendClassification.Add(newSC);
      */
     function Add(properties: object): string;
     /**
+     * Returns an array of send classifications matching the specified filter.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/sendclassification/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
+     * @returns List of send classifications matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var results = SendClassification.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "mySendClassification" });
      */
     function Retrieve(filter: object): object[];
     /**
+     * Updates the send classification with the supplied attributes. You must include both `SenderProfileKey` and `DeliveryProfileKey` in `properties` for the update to succeed.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/sendclassification/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - Attributes to change. Must include `SenderProfileKey` and `DeliveryProfileKey`.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var sc = SendClassification.Init("mySendClassification");
+     * var updatedSC = {
+     *     Name: "Updated Send Classification",
+     *     SenderProfileKey: "mySPKey",
+     *     DeliveryProfileKey: "myDPKey"
+     * };
+     * var status = sc.Update(updatedSC);
      */
     function Update(properties: object): string;
     /**
+     * Removes the previously initialized send classification.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/sendclassification/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var sc = SendClassification.Init("mySendClassification");
+     * var status = sc.Remove();
      */
     function Remove(): string;
 }
 declare namespace FilterDefinition {
     /**
+     * Initializes a FilterDefinition instance bound to the specified external key. Required before invoking any other FilterDefinition method on the returned instance.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/filterdefinition/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param key - External key of the filter definition.
+     * @returns An initialized FilterDefinition bound to the specified external key.
+     * @example
+     * Platform.Load("core", "1");
+     * var fd = FilterDefinition.Init("myFilterDef");
      */
     function Init(key: string): any;
     /**
+     * Creates a new filter definition from the supplied properties. The `Filter` field accepts either a simple `{Property, SimpleOperator, Value}` filter or a complex filter with `LeftOperand`, `LogicalOperator`, `RightOperand`. `DataSource.Type` must be `"SubscriberList"` or `"DataExtension"`.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/filterdefinition/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - JSON object describing the new filter definition (Name, CustomerKey, Filter, DataSource).
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var filterObj = { Property: "LuckyNumber", SimpleOperator: "equals", Value: 77 };
+     * var newFD = {
+     *     Name: "SSJS Filter Definition",
+     *     CustomerKey: "myFilterDef",
+     *     Filter: filterObj,
+     *     DataSource: { Type: "SubscriberList", CustomerKey: "example_list_key" }
+     * };
+     * var status = FilterDefinition.Add(newFD);
      */
     function Add(properties: object): string;
     /**
+     * Returns an array of filter definitions matching the specified filter.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/filterdefinition/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
+     * @returns List of filter definitions matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var results = FilterDefinition.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "myFilterDef" });
      */
     function Retrieve(filter: object): object[];
     /**
+     * Updates the filter definition with the supplied attributes.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/filterdefinition/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - Attributes to change on the filter definition.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var fd = FilterDefinition.Init("myFilterDef");
+     * var status = fd.Update({ Name: "Updated Name" });
      */
     function Update(properties: object): string;
     /**
+     * Deletes the previously initialized filter definition.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/filterdefinition/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myFD = FilterDefinition.Init("myFilterDef");
+     * myFD.Remove();
      */
     function Remove(): string;
 }
 declare namespace QueryDefinition {
     /**
+     * Initializes a QueryDefinition instance bound to the specified external key. Required before invoking any other QueryDefinition method on the returned instance.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/querydefinition/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param key - External key of the query definition.
+     * @returns An initialized QueryDefinition bound to the specified external key.
+     * @example
+     * Platform.Load("core", "1");
+     * var qd = QueryDefinition.Init("myQueryDef");
      */
     function Init(key: string): any;
     /**
+     * Creates a new query definition from the supplied properties. Pass an optional `CategoryID` to place the query inside a specific folder.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/querydefinition/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - JSON object describing the new query definition (Name, CustomerKey, optional CategoryID, TargetUpdateType, TargetType, Target, QueryText).
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var queryDef = {
+     *     Name: "Example Query Definition",
+     *     CustomerKey: "myQueryDef",
+     *     TargetUpdateType: "Overwrite",
+     *     TargetType: "DE",
+     *     Target: { Name: "Example Target DE", CustomerKey: "example_target_de" },
+     *     QueryText: "SELECT SubKey, Email, Name FROM [Example Target DE] where FavoriteItemID=77"
+     * };
+     * var status = QueryDefinition.Add(queryDef);
      */
     function Add(properties: object): string;
     /**
+     * Returns an array of query definitions matching the specified filter. Supports simple `{Property, SimpleOperator, Value}` filters and complex filters with `LeftOperand`, `LogicalOperator`, `RightOperand`.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/querydefinition/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - WSProxy-style filter object — simple or compound with `AND`/`OR`.
+     * @returns Array of query definition objects (with nested `DataExtensionTarget` info when applicable).
+     * @example
+     * Platform.Load("Core", "1");
+     * var result = QueryDefinition.Retrieve({
+     *     Property: "Status",
+     *     SimpleOperator: "equals",
+     *     Value: "Active"
+     * });
+     * Write(Stringify(result));
      */
     function Retrieve(filter: object): object[];
     /**
+     * Updates the query definition with the supplied attributes.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/querydefinition/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - Attributes to change on the query definition.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var qd = QueryDefinition.Init("myQueryDef");
+     * var status = qd.Update({
+     *     Name: "Updated Query Definition Name",
+     *     QueryText: "SELECT SubKey, Email, Name FROM [Example Target DE] where FavoriteItemID=12"
+     * });
      */
     function Update(properties: object): string;
     /**
+     * Removes the previously initialized query definition.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/querydefinition/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var qd = QueryDefinition.Init("myQueryDef");
+     * var status = qd.Remove();
      */
     function Remove(): string;
     /**
+     * Executes the query definition. Runs the SQL and writes results into the configured target Data Extension.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/querydefinition/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param action - The action to perform. Use `"start"` to execute the query.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1");
+     * var qd = QueryDefinition.Init("MY_QUERY_KEY");
+     * var result = qd.Perform("start");
+     * Write(Stringify(result));
      */
     function Perform(action: string): string;
 }
 declare namespace List {
     /**
+     * Initializes a List instance bound to the specified external key. Required before invoking any other List method on the returned instance.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/list/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param key - External key of the list.
+     * @returns An initialized List bound to the specified external key.
+     * @example
+     * Platform.Load("core", "1");
+     * var myList = List.Init("myList");
      */
     function Init(key: string): any;
     /**
+     * Creates a new list from the supplied properties and returns an initialized list instance. Note: unlike most static `Add` methods, this returns a `ListInstance`, not `"OK"`.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/list/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - JSON object describing the new list (CustomerKey, Name, Description, ...).
+     * @returns An initialized List bound to the newly-created list.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myNewList = List.Add({ CustomerKey: "libList", Name: "testLib", Description: "desc" });
      */
     function Add(properties: object): any;
     /**
+     * Returns an array of lists matching the specified filter.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/list/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
+     * @returns List of list objects matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var lists = List.Retrieve({ Property: "ListName", SimpleOperator: "equals", Value: "BirthdayList" });
      */
     function Retrieve(filter: object): object[];
     /**
+     * Removes the previously initialized list.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/list/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myList = List.Init("myList");
+     * var status = myList.Remove();
      */
     function Remove(): string;
 }
 declare namespace List.Subscribers {
     /**
+     * Adds a subscriber to the previously initialized list.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - Object containing subscriber properties (EmailAddress, SubscriberKey, optionally list status).
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1");
+     * var list = List.Init("MY_LIST_KEY");
+     * var result = list.Subscribers.Add({
+     *     EmailAddress: "test@example.com",
+     *     SubscriberKey: "test@example.com"
+     * });
+     * Write(Stringify(result));
      */
     function Add(properties: object): string;
     /**
+     * Returns the subscribers belonging to the previously initialized list. Pass an optional filter to narrow the results; omit it to return all subscribers on the list.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - Optional WSProxy-style filter object to narrow the results.
+     * @returns List of subscriber objects on the list (filtered when a filter is supplied).
+     * @example
+     * Platform.Load("core", "1");
+     * var list = List.Init("MY_LIST_KEY");
+     * var subscribers = list.Subscribers.Retrieve();
      */
     function Retrieve(filter?: object): object[];
     /**
+     * Removes the specified subscriber from the previously initialized list.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param emailAddress - Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myList = List.Init("myList");
+     * var status = myList.Subscribers.Unsubscribe("aruiz@example.com");
      */
     function Unsubscribe(emailAddress: string): string;
     /**
+     * Updates the status of the specified subscriber on the previously initialized list.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param emailAddress - Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.
+     * @param status - New status of the subscriber on the list.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myList = List.Init("myList");
+     * var status = myList.Subscribers.Update("aruiz@example.com", "Active");
      */
     function Update(emailAddress: string, status: string): string;
     /**
+     * Adds the subscriber if not on the list, otherwise updates the supplied attributes. If `attributes.Status` is supplied, the subscriber's list status is updated.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param emailAddress - Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.
+     * @param attributes - Additional subscriber attributes to set or update.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myList = List.Init("myList");
+     * var status = myList.Subscribers.Upsert("aruiz@example.com", { ZipCode: "46202" });
      */
     function Upsert(emailAddress: string, attributes: object): string;
 }
 declare namespace List.Subscribers.Tracking {
     /**
+     * Returns an array of tracking data for subscribers matching the filter.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - PascalCase WSProxy-style filter object identifying the subscribers.
+     * @returns List of tracking records matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myList = List.Init("MyList");
+     * var results = myList.Subscribers.Tracking.Retrieve({ Property: "SubscriberKey", SimpleOperator: "equals", Value: "MyKey" });
      */
     function Retrieve(filter: object): object[];
 }
 declare namespace Subscriber {
     /**
+     * Initializes a Subscriber instance bound to the specified subscriber key. Required before invoking any instance method on the returned object.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param key - Subscriber key.
+     * @returns An initialized Subscriber bound to the specified key.
+     * @example
+     * Platform.Load("core", "1");
+     * var sub = Subscriber.Init("mySubscriber");
      */
     function Init(key: string): any;
     /**
+     * Creates a new subscriber from the supplied properties.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - JSON object describing the new subscriber (EmailAddress, SubscriberKey, EmailTypePreference, Attributes, Lists, ...).
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var newSubscriber = {
+     *     EmailAddress: "test.008@example.com",
+     *     SubscriberKey: "20100730001",
+     *     EmailTypePreference: "Text",
+     *     Attributes: { "First Name": "test.008", "Last Name": "test.008" },
+     *     Lists: { Status: "Active", ID: 12345, Action: "Create" }
+     * };
+     * var status = Subscriber.Add(newSubscriber);
      */
     function Add(properties: object): string;
     /**
+     * Returns an array of subscribers matching the specified filter.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
+     * @returns List of subscribers matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var results = Subscriber.Retrieve({ Property: "SubscriberKey", SimpleOperator: "equals", Value: "MySubscriberKey" });
      */
     function Retrieve(filter: object): object[];
     /**
+     * Creates a new subscriber, or updates an existing one matched by EmailAddress / SubscriberKey.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - JSON object describing the subscriber (EmailAddress, SubscriberKey, Attributes, ...).
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1");
+     * var sub = {
+     *     EmailAddress: "test@example.com",
+     *     SubscriberKey: "test@example.com",
+     *     Attributes: [ { Name: "FirstName", Value: "Jane" } ]
+     * };
+     * var result = Subscriber.Upsert(sub);
+     * Write(Stringify(result));
      */
     function Upsert(properties: object): string;
     /**
+     * Retrieves statistical data for the specified subscriber (sends, opens, clicks, bounces, unsubscribes).
+     * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param subscriberKey - The subscriber key identifying the subscriber.
+     * @returns A single object with subscriber statistics (not an array).
+     * @example
+     * Platform.Load("core", "1");
+     * var stats = Subscriber.Statistics("test@example.com");
+     * Write(Stringify(stats));
      */
     function Statistics(subscriberKey: string): object;
     /**
+     * Updates the previously initialized subscriber with the supplied attributes.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - Subscriber properties to change.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var subObj = Subscriber.Init("SubKey");
+     * var status = subObj.Update({ EmailTypePreference: "HTML", Attributes: { "First Name": "Test", "Last Name": "User" } });
      */
     function Update(properties: object): string;
     /**
+     * Deletes the previously initialized subscriber.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var subObj = Subscriber.Init("SubKey");
+     * var status = subObj.Remove();
      */
     function Remove(): string;
     /**
+     * Sets the previously initialized subscriber's status to `"Unsubscribed"`.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var subObj = Subscriber.Init("SubKey");
+     * var status = subObj.Unsubscribe();
      */
     function Unsubscribe(): string;
 }
 declare namespace Subscriber.Attributes {
     /**
+     * Returns an array of attributes associated with the previously initialized subscriber.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns List of attribute objects for the subscriber.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var subObj = Subscriber.Init("SubKey");
+     * var attributes = subObj.Attributes.Retrieve();
      */
     function Retrieve(): object[];
 }
 declare namespace Subscriber.Lists {
     /**
+     * Returns the lists the previously initialized subscriber is a member of.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns List of list objects the subscriber belongs to.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var subObj = Subscriber.Init("SubKey");
+     * var listArray = subObj.Lists.Retrieve();
      */
     function Retrieve(): object[];
 }
 declare namespace Email {
     /**
+     * Initializes an Email instance bound to the specified external key. Required before invoking any other Email method on the returned instance. External keys cannot be set in the UI — set one via SOAP API, or look up the value via `Email.Retrieve()`.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param key - External key of the email message.
+     * @returns An initialized Email bound to the specified external key.
+     * @example
+     * Platform.Load("core", "1");
+     * var myEmail = Email.Init("myEmail");
      */
     function Init(key: string): any;
     /**
+     * Creates a new email message from the supplied properties and returns an initialized email instance. Note: unlike most static `Add` methods, this returns an `EmailInstance`, not `"OK"`.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - JSON object describing the new email (CustomerKey, Name, optional CategoryID, HTMLBody, TextBody, Subject, EmailType, ...).
+     * @returns An initialized Email bound to the newly-created email message.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var newMail = {
+     *     CustomerKey: "test_email_key",
+     *     Name: "Test Email",
+     *     HTMLBody: "<b>This is a test email</b>",
+     *     TextBody: "This is a test email",
+     *     Subject: "Test Email Subject",
+     *     EmailType: "HTML",
+     *     CharacterSet: "US-ASCII"
+     * };
+     * var myEmail = Email.Add(newMail);
      */
     function Add(properties: object): any;
     /**
+     * Returns an array of email messages matching the specified filter.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
+     * @returns List of email messages matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var results = Email.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "myEmail" });
      */
     function Retrieve(filter: object): object[];
     /**
+     * Updates the email message with the supplied attributes.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - Attributes to change on the email message.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myEmail = Email.Init("myEmail");
+     * var status = myEmail.Update({ Name: "Updated Name", Subject: "Updated Email Subject" });
      */
     function Update(properties: object): string;
     /**
+     * Removes the previously initialized email message.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myEmail = Email.Init("myEmail");
+     * myEmail.Remove();
      */
     function Remove(): string;
     /**
+     * Runs validation checks on the previously initialized email message. Returns a `{Task: {ValidationStatus: boolean, ValidationMessages: string}}` object.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Validation result with `Task.ValidationStatus` (boolean) and `Task.ValidationMessages` (string).
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myEmail = Email.Init("myEmail");
+     * var results = myEmail.Validate();
+     * Write(results.Task.ValidationStatus);
+     * Write(results.Task.ValidationMessages);
      */
     function Validate(): object;
     /**
+     * Runs content checks on the previously initialized email message. Returns a `{Task: {CheckPassed: boolean, ResultMessage: string}}` object.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Content-check result with `Task.CheckPassed` (boolean) and `Task.ResultMessage` (string).
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myEmail = Email.Init("myEmail");
+     * var results = myEmail.CheckContent();
+     * Write(results.Task.CheckPassed);
+     * Write(results.Task.ResultMessage);
      */
     function CheckContent(): object;
 }
 declare namespace Send {
     /**
+     * Initializes a Send instance bound to the specified send ID. Required before invoking any other Send method on the returned instance.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param id - Numeric ID of the send.
+     * @returns An initialized Send bound to the specified send ID.
+     * @example
+     * Platform.Load("core", "1");
+     * var s = Send.Init(12345);
      */
     function Init(id: number): any;
     /**
+     * Creates a new send to the specified email and list(s). Pass an `options` object to override From name, From address, subject, send time, etc.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param emailKey - CustomerKey of the email message to associate with the send.
+     * @param listIds - Array of list IDs to send to.
+     * @param options - Optional send options (FromName, FromAddress, Subject, send time, ...).
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var status = Send.Add("test_email", [12345, 12346]);
+     * var options = { FromName: "JSON Specified Name", FromAddress: "aruiz@example.com", Subject: "JSON Test Mail" };
+     * var status2 = Send.Add("test_email", [12345, 12346], options);
      */
     function Add(emailKey: string, listIds: any[], options?: object): string;
     /**
+     * Returns an array of sends matching the specified filter.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - PascalCase WSProxy-style filter object — simple or compound with `LeftOperand`/`LogicalOperator`/`RightOperand`.
+     * @returns List of sends matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var sends = Send.Retrieve({ Property: "ID", SimpleOperator: "equals", Value: 12345 });
      */
     function Retrieve(filter: object): object[];
     /**
+     * Returns information about the lists targeted by a send. Filter must restrict results to specific send ID(s).
+     * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - WSProxy-style filter restricting results to specific send ID(s).
+     * @returns List of list objects associated with matching sends; throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var listsSentTo = Send.RetrieveLists({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });
      */
     function RetrieveLists(filter: object): object[];
     /**
+     * Removes the previously initialized send.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var s = Send.Init(12345);
+     * s.Remove();
      */
     function Remove(): string;
     /**
+     * Attempts to cancel the previously initialized send.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var mySend = Send.Init(12345);
+     * var status = mySend.CancelSend();
      */
     function CancelSend(): string;
 }
 declare namespace Send.Tracking {
     /**
+     * Returns tracking data for sends matching the filter. This is a static call on `Send.Tracking.*` — no `Send.Init()` is required.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - WSProxy-style filter object.
+     * @returns List of tracking records matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var sendTracking = Send.Tracking.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });
      */
     function Retrieve(filter: object): object[];
     /**
+     * Returns click tracking data for the previously initialized send.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - WSProxy-style filter restricting results.
+     * @returns List of click tracking records matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var singleSend = Send.Init(12345);
+     * var results = singleSend.Tracking.ClickRetrieve({ Property: "ID", SimpleOperator: "equals", Value: 12345 });
      */
     function ClickRetrieve(filter: object): object[];
     /**
+     * Returns aggregated tracking data for the previously initialized send. Aggregates by `type` over the date range, grouped by `groupBy`.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param type - Type of data to aggregate.
+     * @param startDate - Start date of the data period (MM-DD-YYYY).
+     * @param endDate - End date of the data period (MM-DD-YYYY).
+     * @param groupBy - Interval used to aggregate data.
+     * @returns List of aggregated tracking records.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var singleSend = Send.Init(12345);
+     * var results = singleSend.Tracking.TotalByIntervalRetrieve("Click", "07-01-2010", "07-31-2010", "day");
      */
     function TotalByIntervalRetrieve(type: string, startDate: string, endDate: string, groupBy: string): object[];
 }
 declare namespace Send.Definition {
     /**
+     * Initializes a SendDefinition instance bound to the specified external key. Required before invoking any instance method on the returned object.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param key - External key of the send definition.
+     * @returns An initialized SendDefinition bound to the specified external key.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var esd = Send.Definition.Init("myESD");
      */
     function Init(key: string): any;
     /**
+     * Creates a new send definition.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param esdParams - Object with CustomerKey, Name, EmailSubject for the new send definition.
+     * @param sendClassificationKey - CustomerKey of the related send classification.
+     * @param emailKey - CustomerKey of the email message to use.
+     * @param listIds - Array of list IDs targeted by the send definition.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1");
+     * var esdParams = { CustomerKey: "example_esd", Name: "Example Send Definition", EmailSubject: "Sent By Example Send Definition" };
+     * Send.Definition.Add(esdParams, "example_sc_key", "example_email_key", [12345, 12346]);
      */
     function Add(esdParams: object, sendClassificationKey: string, emailKey: string, listIds: any[]): string;
     /**
+     * Creates a new send definition that targets a sendable Data Extension.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param esdParams - Object with CustomerKey, Name, EmailSubject for the new send definition.
+     * @param sendClassificationKey - CustomerKey of the related send classification.
+     * @param emailKey - CustomerKey of the email message to use.
+     * @param sendableDataExtensionKey - CustomerKey of the sendable Data Extension.
+     * @param publicationListKey - CustomerKey of the publication list to associate.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var esdParams = { CustomerKey: "ssjs_de_esd_1c", Name: "SSJS DE Test ESD3", EmailSubject: "Third send By Test DE Send Definition" };
+     * var status = Send.Definition.AddWithDE(esdParams, "scKey", "test_email", "deKey", "myPubList");
      */
     function AddWithDE(esdParams: object, sendClassificationKey: string, emailKey: string, sendableDataExtensionKey: string, publicationListKey: string): string;
     /**
+     * Creates a new send definition that targets the audience defined by a filter definition.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param esdParams - Object with CustomerKey, Name, EmailSubject for the new send definition.
+     * @param sendClassificationKey - CustomerKey of the related send classification.
+     * @param emailKey - CustomerKey of the email message to use.
+     * @param filterDefinitionKey - CustomerKey of the filter definition.
+     * @param listId - ID of the list targeted by the filter.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var esdParams = { CustomerKey: "filterDef_esd", Name: "Example Filtered Send Definition", EmailSubject: "Sent By Filtered Send Definition" };
+     * var status = Send.Definition.AddWithFilterDefinition(esdParams, "scKey", "test_email", "fdKey", 144);
      */
     function AddWithFilterDefinition(esdParams: object, sendClassificationKey: string, emailKey: string, filterDefinitionKey: string, listId: number): string;
     /**
+     * Returns an array of send definitions, optionally filtered. When no filter is supplied, all send definitions are returned.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - Optional WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
+     * @returns List of send definitions matching the filter (or all when no filter is supplied).
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var esd = Send.Definition.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "ssjs_test_esd" });
      */
     function Retrieve(filter?: object): object[];
     /**
+     * Updates the previously initialized send definition.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - Properties to update.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var sendDef = Send.Definition.Init("MY_SEND_DEF_KEY");
+     * var result = sendDef.Update({ Name: "Updated Send Definition Name" });
      */
     function Update(properties: object): string;
     /**
+     * Deletes the previously initialized send definition.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var esd = Send.Definition.Init("myESD");
+     * var status = esd.Remove();
      */
     function Remove(): string;
     /**
+     * Sends email messages to the lists associated with the previously initialized send definition.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var esd = Send.Definition.Init("myESD");
+     * var status = esd.Send();
      */
     function Send(): string;
 }
 declare namespace TriggeredSend {
     /**
+     * Initializes a TriggeredSend instance bound to the specified external key. Required before invoking any instance method on the returned object. Note: TriggeredSend methods cannot be used in the context of an email message or email preview.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param key - External key of the triggered send definition.
+     * @returns An initialized TriggeredSend bound to the specified external key.
+     * @example
+     * Platform.Load("core", "1");
+     * var triggeredSend = TriggeredSend.Init("support");
      */
     function Init(key: string): any;
     /**
+     * Creates a new triggered send definition from the supplied properties and returns an initialized TriggeredSend instance. Note: unlike most static `Add` methods, this returns a `TriggeredSendInstance`, not `"OK"`.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - JSON object describing the new triggered send definition (Name, CustomerKey, FromName, FromAddress, EmailID, SendClassificationID, ...).
+     * @returns An initialized TriggeredSend bound to the newly-created triggered send definition.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var newTSD = {
+     *     Name: "Test TSD",
+     *     CustomerKey: "ssjs_tsd_key",
+     *     FromName: "Test From Name",
+     *     FromAddress: "me@example.com",
+     *     EmailID: 12345,
+     *     SendClassificationID: 54321
+     * };
+     * var tsd = TriggeredSend.Add(newTSD);
      */
     function Add(properties: object): any;
     /**
+     * Returns an array of triggered send definitions matching the specified filter.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
+     * @returns List of triggered send definitions matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var results = TriggeredSend.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "ssjs_tsd_key" });
      */
     function Retrieve(filter: object): object[];
     /**
+     * Updates the previously initialized triggered send definition.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - Attributes to change on the triggered send definition.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var tsd = TriggeredSend.Init("triggeredSend");
+     * var status = tsd.Update({ Name: "Updated TSD Name" });
      */
     function Update(properties: object): string;
     /**
+     * Starts (reactivates) a paused triggered send definition.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var ts = TriggeredSend.Init("MY_TRIGGERED_SEND_KEY");
+     * var result = ts.Start();
      */
     function Start(): string;
     /**
+     * Pauses an active triggered send definition.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var ts = TriggeredSend.Init("MY_TRIGGERED_SEND_KEY");
+     * var status = ts.Pause();
      */
     function Pause(): string;
     /**
+     * Publishes a triggered send definition, making it active and ready to accept sends. Use this to move a definition from Draft / Inactive to Active.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var ts = TriggeredSend.Init("MY_TRIGGERED_SEND_KEY");
+     * var result = ts.Publish();
      */
     function Publish(): string;
     /**
+     * Sends an email using the previously initialized triggered send definition. On failure, inspect `<TriggeredSendInstance>.LastMessage` for error details.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param emailAddress - Email address to send to. SubscriberKey is **not** supported.
+     * @param sendTimeAttributes - Optional object with dynamic attributes to include in the send.
+     * @returns Returns "OK" on success or "Error"; throws on a hard failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var ts = TriggeredSend.Init("triggeredSend");
+     * var status = ts.Send("aruiz@example.com", { FirstName: "Angel", CouponCode: "AA1AF" });
+     * if (status != "OK") { var message = ts.LastMessage; }
      */
     function Send(emailAddress: string, sendTimeAttributes?: object): string;
 }
 declare namespace TriggeredSend.Tracking {
     /**
+     * Returns tracking data for the previously initialized triggered send definition.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - Optional WSProxy-style filter object.
+     * @returns List of tracking records.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var tsd = TriggeredSend.Init("MyTSDKey");
+     * var tsdTracking = tsd.Tracking.Retrieve();
      */
     function Retrieve(filter?: object): object[];
 }
 declare namespace TriggeredSend.Tracking.Clicks {
     /**
+     * Returns click tracking information for the previously initialized triggered send definition.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - WSProxy-style filter restricting click results.
+     * @returns List of click tracking records matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var tsd = TriggeredSend.Init("MyTSDKey");
+     * var results = tsd.Tracking.Clicks.Retrieve({ Property: "SendUrlID", SimpleOperator: "equals", Value: 12345 });
      */
     function Retrieve(filter: object): object[];
 }
 declare namespace TriggeredSend.Tracking.TotalByInterval {
     /**
+     * Returns aggregated tracking data for the previously initialized triggered send. Aggregates by `type` over the date range, grouped by `groupBy`.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param type - Type of data to aggregate.
+     * @param startDate - Start date of the data period (MM-DD-YYYY).
+     * @param endDate - End date of the data period (MM-DD-YYYY).
+     * @param groupBy - Interval used to aggregate data.
+     * @returns List of aggregated tracking records.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var tsd = TriggeredSend.Init("MyTSDKey");
+     * var results = tsd.Tracking.TotalByInterval.Retrieve("Click", "07-01-2010", "07-31-2010", "day");
      */
     function Retrieve(type: string, startDate: string, endDate: string, groupBy: string): object[];
 }
 declare namespace DataExtension {
     /**
+     * Initializes a DataExtension instance bound to the specified external key. Required before invoking any `Fields` or `Rows` sub-namespace method on the returned instance. Note: Core Library DataExtension methods do not support enterprise-level data extensions.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param key - External key of the data extension.
+     * @returns An initialized DataExtension bound to the specified external key.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var birthdayDE = DataExtension.Init("birthdayDE");
      */
     function Init(key: string): DataExtensionInstance;
     /**
+     * Creates a new data extension from the supplied properties and returns an initialized DataExtension instance. Note: unlike most static `Add` methods, this returns a `DataExtensionInstance`, not `"OK"`.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - JSON object describing the new data extension (CustomerKey, Name, Fields[], optional SendableInfo).
+     * @returns An initialized DataExtension bound to the newly-created data extension.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var deObj = {
+     *     CustomerKey: "SendableDE",
+     *     Name: "Sendable Data Extension",
+     *     Fields: [
+     *         { Name: "SubKey", FieldType: "Text", IsPrimaryKey: true, MaxLength: 50, IsRequired: true },
+     *         { Name: "SecondField", FieldType: "Text", MaxLength: 50 }
+     *     ],
+     *     SendableInfo: {
+     *         Field: { Name: "SubKey", FieldType: "Text" },
+     *         RelatesOn: "Subscriber Key"
+     *     }
+     * };
+     * var de = DataExtension.Add(deObj);
      */
     function Add(properties: object): DataExtensionInstance;
     /**
+     * Returns an array of data extensions matching the specified filter. Pass `queryAllAccounts: true` to search all accounts accessible to the authenticated user.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
+     * @param queryAllAccounts - When `true`, search across all accounts accessible to the authenticated user. Defaults to `false`.
+     * @returns List of data extensions matching the filter. Limit data extension external keys to 36 characters for downstream compatibility.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var results = DataExtension.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "myDEKey" });
      */
     function Retrieve(filter: object, queryAllAccounts?: boolean): object[];
 }
 declare namespace DataExtension.Fields {
     /**
+     * Adds a field to the previously initialized data extension. `properties.Name` is required; the rest (`CustomerKey`, `FieldType`, `MaxLength`, `IsRequired`, `IsPrimaryKey`, `Ordinal`, `Scale`, `DefaultValue`) are optional. `FieldType` accepts: 'Boolean', 'Date', 'Decimal', 'EmailAddress', 'Locale', 'Number', 'Phone', 'Text'.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-fields/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - Object describing the new field.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var de = DataExtension.Init("SSJSTest");
+     * var newField = { Name: "NewFieldV2", CustomerKey: "CustomerKey", FieldType: "Number", IsRequired: true, DefaultValue: "100" };
+     * var status = de.Fields.Add(newField);
      */
     function Add(properties: object): string;
     /**
+     * Returns an array of field definitions for the previously initialized data extension.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-fields/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns List of field-definition objects.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var birthdayDE = DataExtension.Init("birthdayDE");
+     * var fields = birthdayDE.Fields.Retrieve();
      */
     function Retrieve(): object[];
     /**
+     * Updates which data extension field is used to relate the data extension to the All Subscribers list during sending. Pass the name of the data extension field, and which subscriber attribute it should map to.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-fields/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param deFieldName - Name of the data extension field that should make the connection to the subscriber list.
+     * @param subscriberField - Subscriber attribute to map the data extension field to.
+     * @returns Returns "OK" on success or throws on failure (assumed; doc has no `@returns`, treated as `"OK"` for consistency with sibling `Fields.*` methods).
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var updateDE = DataExtension.Init("sendableDataExtension");
+     * var status = updateDE.Fields.UpdateSendableField("DifferentSubKey", "Subscriber Key");
      */
     function UpdateSendableField(deFieldName: string, subscriberField: string): string;
 }
 declare namespace DataExtension.Rows {
     /**
+     * Adds one or more rows to the previously initialized data extension.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param rowData - Array of objects, one per row to add. Each object's keys must match data extension field names.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var arrContacts = [
+     *     { Email: "jdoe@example.com", FirstName: "John", LastName: "Doe" },
+     *     { Email: "aruiz@example.com", FirstName: "Angel", LastName: "Ruiz" }
+     * ];
+     * var birthdayDE = DataExtension.Init("birthdayDE");
+     * birthdayDE.Rows.Add(arrContacts);
      */
     function Add(rowData: any[]): string;
     /**
+     * Returns rows where the specified columns equal the specified values (AND-joined). Optionally limits results and orders by a field. When initializing a data extension for `Lookup()` from an email message, you must use the data extension Name; on landing pages, either Name or external key works — make them identical to be safe.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param searchFieldNames - Array of column names to match against.
+     * @param searchValues - Array of values to match (one per column, in order).
+     * @param limit - Maximum number of rows to return.
+     * @param orderByFieldName - Field to order results by.
+     * @returns Rows matching the lookup criteria.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var testDE = DataExtension.Init("testDE");
+     * var data = testDE.Rows.Lookup(["Age"], [25], 2, "LastName");
      */
     function Lookup(searchFieldNames: any[], searchValues: any[], limit?: number, orderByFieldName?: string): object[];
     /**
+     * Deletes rows from the previously initialized data extension where the specified columns equal the specified values (AND-joined). For large deletion requests, batch the work — this method times out on long-running deletes.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param columnNames - Array of column names to match against.
+     * @param columnValues - Array of values to match (one per column, in order).
+     * @returns The number of rows that were modified (deleted).
+     * @example
+     * Platform.Load("Core", "1.1.5");
+     * var memberDE = DataExtension.Init("MembershipRewards");
+     * var result = memberDE.Rows.Remove(["Area"], ["Kensington"]);
      */
     function Remove(columnNames: any[], columnValues: any[]): number;
     /**
+     * Retrieves up to 2500 rows from the previously initialized data extension. When called without a filter, returns all rows (subject to the 2500-row cap). Cannot be used in the context of an email message or email preview.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - WSProxy-style filter object — simple `{Property, SimpleOperator, Value}` or compound with `LeftOperand`/`LogicalOperator`/`RightOperand`. Optional per the example, despite the doc table marking `Required: Yes`.
+     * @returns Rows from the data extension matching the filter (or all rows when no filter is supplied).
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var birthdayDE = DataExtension.Init("birthdayDE");
+     * var data = birthdayDE.Rows.Retrieve();
+     * var filter = { Property: "Age", SimpleOperator: "greaterThan", Value: 20 };
+     * var moredata = birthdayDE.Rows.Retrieve(filter);
      */
     function Retrieve(filter?: object): object[];
     /**
+     * Updates the columns of rows where `whereFieldNames` equal `whereValues` (AND-joined). Throws if no row matches.
+     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param rowData - Object whose keys are columns to update and values are the new values.
+     * @param whereFieldNames - Array of column names to match against.
+     * @param whereValues - Array of values to match (one per column, in order).
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("Core", "1");
+     * var dataExt = DataExtension.Init("NTO Customer List");
+     * var fieldsToUpdate = { StateProvince: "QC", PreferredActivity: "Sailing" };
+     * var result = dataExt.Rows.Update(fieldsToUpdate, ["MemberId", "Country"], [9868600, "CA"]);
      */
     function Update(rowData: object, whereFieldNames: any[], whereValues: any[]): string;
 }
 declare namespace DateTime.TimeZone {
     /**
+     * Retrieves an array of time zones matching the specified filter criteria. If no filter is supplied the function returns all available time zones.
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/datetime-timezone/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var timezones = DateTime.TimeZone.Retrieve({ Property: "ID", SimpleOperator: "equals", Value: 1 });
+     * Write(Stringify(timezones));
      */
     function Retrieve(filter: object): object[];
 }
@@ -750,14 +2894,40 @@ declare namespace DateTime.TimeZone {
 // ── Standalone Core Library globals ──────────────────────────────────────────
 declare namespace Attribute {
     /**
+     * Returns the value of the specified subscriber attribute or sendable data extension field for the current recipient. Preferred over Platform.Recipient.GetAttributeValue() — both methods are equivalent.
+     * [ssjs.guide reference](https://ssjs.guide/global-functions/attribute/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param name - Name of the subscriber attribute or sendable DE field to retrieve.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var email = Attribute.GetValue("EmailAddress");
+     * Write(email);
      */
     function GetValue(name: string): string;
 }
 
 declare namespace ErrorUtil {
     /**
+     * Inspects a WSProxy result object and throws an exception when its `Status` property starts with `"Error:"`. WSProxy methods never raise exceptions on SOAP-level errors — instead they return a result object whose `Status` field signals the outcome. Wrap WSProxy calls in a `try`/`catch` block and call this function immediately after each call to convert non-OK results into catchable exceptions.
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/errorutil/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param result - Result object returned by any WSProxy method. Minimum shape: `{ Status: string, RequestID: string, Results: object[] }`. Retrieve and perform variants may include additional fields.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var api = new Script.Util.WSProxy();
+     * var customerKey = "0b744ffa-bab5-458d-9e7d-fb05a7873380";
+     * try {
+     *     var result = api.retrieve(
+     *         "DataExtensionObject[" + customerKey + "]",
+     *         ["FirstName", "LastName", "EmailAddress"]
+     *     );
+     *     ErrorUtil.ThrowWSProxyError(result);
+     *     // process successful results
+     * } catch (ex) {
+     *     // custom error-handling logic
+     * }
      */
     function ThrowWSProxyError(result: object): void;
 }
@@ -765,55 +2935,118 @@ declare namespace ErrorUtil {
 // ── Event namespaces ─────────────────────────────────────────────────────────
 declare namespace BounceEvent {
     /**
+     * Retrieves bounce event data for message sends matching the specified filter.
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var bounces = BounceEvent.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });
+     * Write(Stringify(bounces));
      */
     function Retrieve(filter: object): object[];
 }
 declare namespace ClickEvent {
     /**
+     * Retrieves click tracking event data for message sends matching the specified filter.
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var clicks = ClickEvent.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });
+     * Write(Stringify(clicks));
      */
     function Retrieve(filter: object): object[];
 }
 declare namespace ForwardedEmailEvent {
     /**
+     * Retrieves forwarded email event data for message sends matching the specified filter.
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var forwards = ForwardedEmailEvent.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });
+     * Write(Stringify(forwards));
      */
     function Retrieve(filter: object): object[];
 }
 declare namespace ForwardedEmailOptInEvent {
     /**
+     * Retrieves forwarded email opt-in event data for message sends matching the specified filter.
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var optIns = ForwardedEmailOptInEvent.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });
+     * Write(Stringify(optIns));
      */
     function Retrieve(filter: object): object[];
 }
 declare namespace NotSentEvent {
     /**
+     * Retrieves not-sent event data for message sends matching the specified filter.
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var notSent = NotSentEvent.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });
+     * Write(Stringify(notSent));
      */
     function Retrieve(filter: object): object[];
 }
 declare namespace OpenEvent {
     /**
+     * Retrieves open tracking event data for message sends matching the specified filter.
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var opens = OpenEvent.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });
+     * Write(Stringify(opens));
      */
     function Retrieve(filter: object): object[];
 }
 declare namespace SentEvent {
     /**
+     * Retrieves sent event data for message sends matching the specified filter.
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var sent = SentEvent.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });
+     * Write(Stringify(sent));
      */
     function Retrieve(filter: object): object[];
 }
 declare namespace SurveyEvent {
     /**
+     * Retrieves survey response event data for message sends matching the specified filter.
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var surveys = SurveyEvent.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });
+     * Write(Stringify(surveys));
      */
     function Retrieve(filter: object): object[];
 }
 declare namespace UnsubEvent {
     /**
+     * Retrieves unsubscribe event data for message sends matching the specified filter.
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var unsubs = UnsubEvent.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });
+     * Write(Stringify(unsubs));
      */
     function Retrieve(filter: object): object[];
 }
@@ -821,26 +3054,71 @@ declare namespace UnsubEvent {
 // ── HTTP / HTTPHeader ────────────────────────────────────────────────────────
 declare namespace HTTP {
     /**
+     * Performs an HTTP GET request and returns the response body. When supplying `headerNames` and `headerValues`, both arrays must have equal length and parallel ordering.
+     * [ssjs.guide reference](https://ssjs.guide/http/http-get/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param url - URL to request.
+     * @param headerNames - Array of header names (co-required with headerValues).
+     * @param headerValues - Array of header values, one per entry in headerNames (co-required).
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var body = HTTP.Get("https://api.example.com/data");
+     * var obj = Platform.Function.ParseJSON(String(body));
      */
     function Get(url: string, headerNames?: any[], headerValues?: any[]): object;
     /**
+     * Performs an HTTP POST request with a content type and payload. Pass empty arrays for `headerNames` and `headerValues` if no custom headers are needed.
+     * [ssjs.guide reference](https://ssjs.guide/http/http-post/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param url - URL to post to.
+     * @param contentType - MIME type of the request body.
+     * @param payload - Request body content.
+     * @param headerNames - Array of header names to include in the request.
+     * @param headerValues - Array of header values, one per entry in headerNames.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var payload = Stringify({ email: "jane@example.com" });
+     * var response = HTTP.Post("https://api.example.com/items", "application/json", payload);
      */
     function Post(url: string, contentType: string, payload: string, headerNames: string[], headerValues: any[]): object;
 }
 
 declare namespace HTTPHeader {
     /**
+     * Retrieves the value of the specified HTTP request header.
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/httpheader/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param name - Name of the HTTP header to read
+     * @example
+     * Platform.Load("core", "1");
+     * var from = HTTPHeader.GetValue("From");
+     * Write(from);
      */
     function GetValue(name: string): string;
     /**
+     * Sets the value of the specified HTTP header. The host and content-length headers cannot be changed.
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/httpheader/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param name - Name of the header to set
+     * @param value - Value to assign to the header
+     * @example
+     * Platform.Load("core", "1");
+     * HTTPHeader.SetValue("From", "aruiz@example.com");
      */
     function SetValue(name: string, value: string): void;
     /**
+     * Removes the specified entry from the HTTP header.
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/httpheader/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param headerName - Name of the header to remove
+     * @example
+     * Platform.Load("core", "1");
+     * var result = HTTPHeader.Remove("From"); // returns "OK"
      */
     function Remove(headerName: string): string;
 }
@@ -850,34 +3128,345 @@ declare namespace Script {
     namespace Util {
         class WSProxy {
             constructor();
+            /**
+             * Creates a new Marketing Cloud object via the SOAP API.
+             * [ssjs.guide reference](https://ssjs.guide/wsproxy/createitem/)
+             *
+             * @param objectType - SOAP API object type name
+             * @param properties - Object properties to set
+             * @returns Object with Status, StatusMessage, RequestID, and Results array.
+             * @example
+             * var api = new Script.Util.WSProxy();
+             * var result = api.createItem("DataExtensionObject", {
+             *     CustomerKey: "MyDE",
+             *     Properties: { Property: [{ Name: "Email", Value: "jane@example.com" }] }
+             * });
+             * if (result.Status === "OK") { Write("Created"); }
+             */
             createItem(objectType: string, properties: object): object;
+            /**
+             * Updates an existing Marketing Cloud object via the SOAP API.
+             * [ssjs.guide reference](https://ssjs.guide/wsproxy/updateitem/)
+             *
+             * @param objectType - SOAP API object type name
+             * @param properties - Object properties to update
+             * @returns Object with Status, StatusMessage, RequestID, and Results array.
+             * @example
+             * var api = new Script.Util.WSProxy();
+             * var result = api.updateItem("DataExtensionObject", {
+             *     CustomerKey: "MyDE",
+             *     Properties: { Property: [{ Name: "Status", Value: "inactive" }] }
+             * });
+             * if (result.Status === "OK") { Write("Updated"); }
+             */
             updateItem(objectType: string, properties: object): object;
+            /**
+             * Deletes a Marketing Cloud object via the SOAP API.
+             * [ssjs.guide reference](https://ssjs.guide/wsproxy/deleteitem/)
+             *
+             * @param objectType - SOAP API object type name
+             * @param properties - Object properties identifying the item to delete
+             * @returns Object with Status, StatusMessage, RequestID, and Results array.
+             * @example
+             * var api = new Script.Util.WSProxy();
+             * var result = api.deleteItem("DataExtensionObject", {
+             *     CustomerKey: "MyDE",
+             *     Keys: { Key: [{ Name: "Email", Value: "jane@example.com" }] }
+             * });
+             * if (result.Status === "OK") { Write("Deleted"); }
+             */
             deleteItem(objectType: string, properties: object): object;
+            /**
+             * Retrieves Marketing Cloud objects matching an optional filter via the SOAP API. The third parameter is a simple or complex filter; the fourth sets RetrieveOptions; the fifth sets additional request properties such as QueryAllAccounts.
+             * [ssjs.guide reference](https://ssjs.guide/wsproxy/retrieve/)
+             *
+             * @param objectType - SOAP API object type name
+             * @param columns - Array of property names to retrieve
+             * @param filter - Simple or complex filter object
+             * @param retrieveOptions - Properties to set on the SOAP RetrieveOptions object
+             * @param requestProps - Additional request properties (e.g. QueryAllAccounts)
+             * @returns Object with Status, HasMoreRows, RequestID, and Results array.
+             * @example
+             * var api = new Script.Util.WSProxy();
+             * var cols = ["Name", "CustomerKey", "Status"];
+             * var filter = {
+             *     Property: "Status",
+             *     SimpleOperator: "equals",
+             *     Value: "Active"
+             * };
+             * var result = api.retrieve("DataExtension", cols, filter);
+             * if (result.Status === "OK") {
+             *     var rows = result.Results;
+             *     for (var i = 0; i < rows.length; i++) {
+             *         Write(rows[i].Name + "<br>");
+             *     }
+             * }
+             */
             retrieve(objectType: string, columns: any[], filter?: object, retrieveOptions?: object, requestProps?: object): object;
+            /**
+             * Retrieves the next page of results from a previous retrieve call that returned HasMoreRows = true.
+             * [ssjs.guide reference](https://ssjs.guide/wsproxy/getnextbatch/)
+             *
+             * @param objectType - SOAP API object type name used in the original retrieve call
+             * @param requestId - RequestID returned by the previous retrieve response
+             * @returns Object with Status, HasMoreRows, RequestID, and Results array.
+             * @example
+             * var api = new Script.Util.WSProxy();
+             * var result = api.retrieve("DataExtension", ["Name"], {});
+             * while (result.HasMoreRows) {
+             *     result = api.getNextBatch("DataExtension", result.RequestID);
+             *     for (var i = 0; i < result.Results.length; i++) {
+             *         Write(result.Results[i].Name + "<br>");
+             *     }
+             * }
+             */
             getNextBatch(objectType: string, requestId: string): object;
+            /**
+             * Executes a perform action on a single Marketing Cloud object.
+             * [ssjs.guide reference](https://ssjs.guide/wsproxy/performitem/)
+             *
+             * @param objectType - SOAP API object type name.
+             * @param properties - Object properties identifying the target item (e.g. { ObjectID: "..." }).
+             * @param action - Action to perform. Only "Start" is valid (lowercase "start" fails).
+             * @param performOptions - Properties of the SOAP PerformOptions object.
+             * @returns Object with Status, StatusMessage, RequestID, and Results array.
+             * @example
+             * var api = new Script.Util.WSProxy();
+             * var result = api.performItem("QueryDefinition", { ObjectID: queryObjectId }, "Start");
+             * Write(result.Status);
+             */
             performItem(objectType: string, properties: object, action: string, performOptions?: object): object;
+            /**
+             * Executes a perform action on multiple Marketing Cloud objects in a single SOAP API call.
+             * [ssjs.guide reference](https://ssjs.guide/wsproxy/performbatch/)
+             *
+             * @param objectType - SOAP API object type name
+             * @param propertiesArray - Array of property objects identifying the target items
+             * @param action - Action to perform. Only "Start" is valid (lowercase "start" fails).
+             * @param performOptions - Properties of the SOAP PerformOptions object
+             * @returns Object with Status, StatusMessage, RequestID, and Results array.
+             * @example
+             * var api = new Script.Util.WSProxy();
+             * var items = [{ ObjectID: id1 }, { ObjectID: id2 }];
+             * var result = api.performBatch("QueryDefinition", items, "Start");
+             * Write(result.Status);
+             */
             performBatch(objectType: string, propertiesArray: any[], action: string, performOptions?: object): object;
+            /**
+             * Returns structural metadata (ObjectDefinition) for one or more SOAP API object types.
+             * [ssjs.guide reference](https://ssjs.guide/wsproxy/describe/)
+             *
+             * @param objectType - Object type name or array of type names to describe
+             * @returns Object with Status and Results array containing ObjectDefinition entries.
+             * @example
+             * var api = new Script.Util.WSProxy();
+             * var result = api.describe("DataExtension");
+             * Write(Stringify(result.Results));
+             */
             describe(objectType: string): object;
+            /**
+             * Executes a named method on a Marketing Cloud object.
+             * [ssjs.guide reference](https://ssjs.guide/wsproxy/execute/)
+             *
+             * @param objectType - SOAP API object type name.
+             * @param requestName - Name of the request to execute.
+             * @returns Object with Status, StatusMessage, RequestID, and Results array.
+             * @example
+             * var api = new Script.Util.WSProxy();
+             * var result = api.execute("DataExtensionObject", "LogUnsubEvent");
+             * Write(result.Status);
+             */
             execute(objectType: string, requestName: string): object;
+            /**
+             * Sets the maximum number of objects returned per SOAP API page (default is 2500).
+             * [ssjs.guide reference](https://ssjs.guide/wsproxy/setbatchsize/)
+             *
+             * @param batchSize - Maximum number of objects per batch
+             * @example
+             * var api = new Script.Util.WSProxy();
+             * api.setBatchSize(200);
+             * var result = api.retrieve("DataExtension", ["Name"], {});
+             */
             setBatchSize(batchSize: number): void;
+            /**
+             * Sets the business unit MID for cross-account operations.
+             * [ssjs.guide reference](https://ssjs.guide/wsproxy/setclientid/)
+             *
+             * @param clientId - Object containing the MID of the target business unit
+             * @example
+             * var api = new Script.Util.WSProxy();
+             * api.setClientId({ ID: 12345 }); // target child BU by MID
+             * var result = api.retrieve("DataExtension", ["Name"], {});
+             */
             setClientId(clientId: object): void;
+            /**
+             * Clears all client IDs set on the WSProxy instance, reverting to the default execution context credentials.
+             * [ssjs.guide reference](https://ssjs.guide/wsproxy/resetclientids/)
+             *
+             * @example
+             * var api = new Script.Util.WSProxy();
+             * api.setClientId({ ID: 12345 });
+             * // ... perform cross-BU operations ...
+             * api.resetClientIds(); // revert to default context
+             * var result = api.retrieve("DataExtension", ["Name"], {});
+             */
             resetClientIds(): void;
+            /**
+             * Creates multiple Marketing Cloud objects in a single SOAP API call.
+             * [ssjs.guide reference](https://ssjs.guide/wsproxy/createbatch/)
+             *
+             * @param objectType - SOAP API object type name
+             * @param propertiesArray - Array of property objects to create
+             * @returns Object with Status, StatusMessage, RequestID, and Results array.
+             * @example
+             * var api = new Script.Util.WSProxy();
+             * var items = [
+             *     { CustomerKey: "MyDE", Properties: { Property: [{ Name: "Email", Value: "a@example.com" }] } },
+             *     { CustomerKey: "MyDE", Properties: { Property: [{ Name: "Email", Value: "b@example.com" }] } }
+             * ];
+             * var result = api.createBatch("DataExtensionObject", items);
+             * Write(result.Status);
+             */
             createBatch(objectType: string, propertiesArray: any[]): object;
+            /**
+             * Updates multiple Marketing Cloud objects in a single SOAP API call.
+             * [ssjs.guide reference](https://ssjs.guide/wsproxy/updatebatch/)
+             *
+             * @param objectType - SOAP API object type name
+             * @param propertiesArray - Array of property objects to update
+             * @returns Object with Status, StatusMessage, RequestID, and Results array.
+             * @example
+             * var api = new Script.Util.WSProxy();
+             * var items = [
+             *     { CustomerKey: "MyDE", Keys: { Key: [{ Name: "Email", Value: "a@example.com" }] }, Properties: { Property: [{ Name: "Status", Value: "active" }] } }
+             * ];
+             * var result = api.updateBatch("DataExtensionObject", items);
+             * Write(result.Status);
+             */
             updateBatch(objectType: string, propertiesArray: any[]): object;
+            /**
+             * Deletes multiple Marketing Cloud objects in a single SOAP API call.
+             * [ssjs.guide reference](https://ssjs.guide/wsproxy/deletebatch/)
+             *
+             * @param objectType - SOAP API object type name
+             * @param propertiesArray - Array of property objects to delete
+             * @returns Object with Status, StatusMessage, RequestID, and Results array.
+             * @example
+             * var api = new Script.Util.WSProxy();
+             * var items = [
+             *     { CustomerKey: "MyDE", Keys: { Key: [{ Name: "Email", Value: "old@example.com" }] } }
+             * ];
+             * var result = api.deleteBatch("DataExtensionObject", items);
+             * Write(result.Status);
+             */
             deleteBatch(objectType: string, propertiesArray: any[]): object;
         }
         class HttpRequest {
             constructor(url: string);
+            /**
+             * Executes the HTTP request and returns a Script.Util.HttpResponse object. The response object has a `statusCode` property and a `content` property. Use String(resp.content) to convert the CLR content to a JavaScript string before parsing with Platform.Function.ParseJSON().
+             * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
+             *
+             * @example
+             * var req = new Script.Util.HttpRequest("https://api.example.com/data");
+             * req.method = "GET";
+             * req.setHeader("Authorization", "Bearer " + accessToken);
+             * var resp = req.send();
+             * if (resp.statusCode == 200) {
+             *     var result = Platform.Function.ParseJSON(String(resp.content));
+             * }
+             */
             send(): object;
+            /**
+             * Sets a request header on the Script.Util HTTP request. Note: setting a custom header disables content caching for Script.Util.HttpGet.
+             * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
+             *
+             * @param name - Header name (e.g. "Authorization", "Content-Type")
+             * @param value - Header value
+             * @example
+             * var req = new Script.Util.HttpRequest("https://api.example.com/data");
+             * req.setHeader("Authorization", "Bearer " + accessToken);
+             * req.setHeader("Content-Type", "application/json");
+             * var resp = req.send();
+             */
             setHeader(name: string, value: string): void;
+            /**
+             * Removes all custom headers previously set on the request.
+             * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
+             *
+             * @example
+             * var req = new Script.Util.HttpRequest("https://api.example.com/data");
+             * req.setHeader("Authorization", "Bearer " + accessToken);
+             * req.clearHeaders(); // removes Authorization and all other custom headers
+             * var resp = req.send();
+             */
             clearHeaders(): void;
+            /**
+             * Removes a specific header from the request by name.
+             * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
+             *
+             * @param name - Name of the header to remove
+             * @example
+             * var req = new Script.Util.HttpRequest("https://api.example.com/data");
+             * req.setHeader("Authorization", "Bearer " + accessToken);
+             * req.setHeader("X-Custom", "value");
+             * req.removeHeader("X-Custom");
+             * var resp = req.send();
+             */
             removeHeader(name: string): void;
         }
         class HttpGet {
             constructor(url: string);
+            /**
+             * Executes the HTTP request and returns a Script.Util.HttpResponse object. The response object has a `statusCode` property and a `content` property. Use String(resp.content) to convert the CLR content to a JavaScript string before parsing with Platform.Function.ParseJSON().
+             * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
+             *
+             * @example
+             * var req = new Script.Util.HttpRequest("https://api.example.com/data");
+             * req.method = "GET";
+             * req.setHeader("Authorization", "Bearer " + accessToken);
+             * var resp = req.send();
+             * if (resp.statusCode == 200) {
+             *     var result = Platform.Function.ParseJSON(String(resp.content));
+             * }
+             */
             send(): object;
+            /**
+             * Sets a request header on the Script.Util HTTP request. Note: setting a custom header disables content caching for Script.Util.HttpGet.
+             * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
+             *
+             * @param name - Header name (e.g. "Authorization", "Content-Type")
+             * @param value - Header value
+             * @example
+             * var req = new Script.Util.HttpRequest("https://api.example.com/data");
+             * req.setHeader("Authorization", "Bearer " + accessToken);
+             * req.setHeader("Content-Type", "application/json");
+             * var resp = req.send();
+             */
             setHeader(name: string, value: string): void;
+            /**
+             * Removes all custom headers previously set on the request.
+             * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
+             *
+             * @example
+             * var req = new Script.Util.HttpRequest("https://api.example.com/data");
+             * req.setHeader("Authorization", "Bearer " + accessToken);
+             * req.clearHeaders(); // removes Authorization and all other custom headers
+             * var resp = req.send();
+             */
             clearHeaders(): void;
+            /**
+             * Removes a specific header from the request by name.
+             * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
+             *
+             * @param name - Name of the header to remove
+             * @example
+             * var req = new Script.Util.HttpRequest("https://api.example.com/data");
+             * req.setHeader("Authorization", "Bearer " + accessToken);
+             * req.setHeader("X-Custom", "value");
+             * req.removeHeader("X-Custom");
+             * var resp = req.send();
+             */
             removeHeader(name: string): void;
         }
     }
@@ -917,12 +3506,45 @@ interface String {
 }
 
 interface Number {
+    /**
+     * Returns a string representing the number in fixed-point notation with the given number of decimal places.
+     *
+     * @param fractionDigits - Number of digits after the decimal point (0–20, default 0)
+     * @example
+     * var price = 9.99;
+     * Write(price.toFixed(2)); // "9.99"
+     * Write((1.5).toFixed(0)); // "2"
+     */
     toFixed(fractionDigits?: number): string;
+    /**
+     * Returns a string representing the number in exponential notation. If fractionDigits is omitted, enough digits are included to uniquely identify the value.
+     *
+     * @param fractionDigits - Digits after the decimal point in the significand (0–20)
+     * @example
+     * Write((123456).toExponential(2)); // "1.23e+5"
+     */
     toExponential(fractionDigits?: number): string;
+    /**
+     * Returns a string representing the number to the specified number of significant digits.
+     *
+     * @param precision - Number of significant digits (1–21)
+     * @example
+     * Write((123.456).toPrecision(5)); // "123.46"
+     */
     toPrecision(precision?: number): string;
 }
 
 interface Object {
+    /**
+     * Returns true if the object has the specified property as its own (not inherited) property. Commonly used to safely iterate for...in loops.
+     *
+     * @param v - Property name to test
+     * @example
+     * var obj = {a: 1};
+     * for (var key in obj) {
+     *     if (obj.hasOwnProperty(key)) { Write(key); }
+     * }
+     */
     hasOwnProperty(v?: string): boolean;
 }
 
