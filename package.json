@@ -6,6 +6,7 @@
     "main": "src/index.js",
     "exports": {
         ".": "./src/index.js",
+        "./urls": "./src/urls.js",
         "./sfmc-globals.d.ts": "./dist/sfmc-globals.d.ts",
         "./site-index.json": "./dist/site-index.json"
     },
@@ -36,6 +37,7 @@
         "test": "echo No tests defined",
         "generate:dts": "node scripts/generate-dts.mjs",
         "generate:index": "node scripts/generate-site-index.mjs",
+        "generate:all": "node scripts/generate-dts.mjs && node scripts/generate-site-index.mjs",
         "lint": "eslint .",
         "lint:fix": "eslint --fix .",
         "prepare": "husky || true",

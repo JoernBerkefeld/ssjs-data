@@ -13,6 +13,19 @@ import path from 'node:path';
 const { dirname, join, resolve } = path;
 
 import {
+    GUIDE_BASE_URL,
+    platformFunctionUrl,
+    httpMethodUrl,
+    wsproxyMethodUrl,
+    globalFunctionUrl,
+    PLATFORM_OBJECT_URLS,
+    CORE_LIBRARY_URLS,
+    GUIDE_URLS,
+    GLOBAL_FUNCTION_PAGES,
+    PLATFORM_FUNCTION_GLOBAL_ALIAS,
+} from '../src/urls.js';
+
+import {
     SSJS_GLOBALS,
     PLATFORM_METHODS,
     PLATFORM_FUNCTIONS,
@@ -185,21 +198,25 @@ function buildParamStr(params, minArgs, restParamType = null) {
 
 // ── Emission helpers ──────────────────────────────────────────────────────────
 
-/** Base URL for ssjs.guide reference links. */
-const BASE_URL = 'https://ssjs.guide';
-
-/** Global-function guide pages that exist on ssjs.guide. */
-const GLOBAL_FUNCTION_PAGES = new Set([
-    'write',
-    'stringify',
-    'base64encode',
-    'base64decode',
-    'format',
-    'string',
-    'error',
-    'variable',
-    'attribute',
-]);
+/**
+ * Maps Platform.X namespace paths to their methods arrays and doc URLs.
+ * Used by the bare-name globals loop to emit top-level `declare namespace`
+ * blocks for SSJS_GLOBALS entries with `type: 'object'` + `aliasOf`.
+ */
+const PLATFORM_NAMESPACE_MAP = {
+    'Platform.Variable': {
+        methods: PLATFORM_VARIABLE_METHODS,
+        url: GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Variable'],
+    },
+    'Platform.Request': {
+        methods: PLATFORM_REQUEST_METHODS,
+        url: GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Request'],
+    },
+    'Platform.Recipient': {
+        methods: PLATFORM_RECIPIENT_METHODS,
+        url: GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Recipient'],
+    },
+};
 
 /**
  * Build a JSDoc block comment for a method entry.
@@ -217,6 +234,9 @@ function buildJsDocComment(m, indent = '    ', guideUrl = null) {
     // ── Description + guide link ──────────────────────────────────────────────
     if (m.description) {
         lines.push(`${indent} * ${m.description}`);
+        if (guideUrl) {
+            lines.push(`${indent} *`);
+        }
     }
     if (guideUrl) {
         lines.push(`${indent} * [ssjs.guide reference](${guideUrl})`);
@@ -438,18 +458,22 @@ line('// ── Platform ──────────────────�
 line('declare namespace Platform {');
 // Platform.Load (and any other PLATFORM_METHODS)
 for (const m of PLATFORM_METHODS) {
-    line(emitNsMember(m, '    ', `${BASE_URL}/platform-objects/platform-load/`));
+    line(emitNsMember(m, '    ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS.Platform));
 }
 // Platform.Function
 line('    namespace Function {');
 for (const m of PLATFORM_FUNCTIONS) {
-    line(emitNsMember(m, '        ', `${BASE_URL}/platform-functions/${m.name.toLowerCase()}/`));
+    const lower = m.name.toLowerCase();
+    const fnUrl = PLATFORM_FUNCTION_GLOBAL_ALIAS.has(lower)
+        ? GUIDE_BASE_URL + globalFunctionUrl(m.name)
+        : GUIDE_BASE_URL + platformFunctionUrl(m.name);
+    line(emitNsMember(m, '        ', fnUrl));
 }
 line('    }');
 // Platform.Variable
 line('    namespace Variable {');
 for (const m of PLATFORM_VARIABLE_METHODS) {
-    line(emitNsMember(m, '        ', `${BASE_URL}/platform-objects/platform-variable/`));
+    line(emitNsMember(m, '        ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Variable']));
 }
 line('    }');
 // Platform.Response
@@ -459,7 +483,9 @@ for (const m of PLATFORM_RESPONSE_METHODS) {
         // Response properties are mutable (get/set) — no JSDoc here; just the TS declaration
         line(`        var ${m.name}: ${toTsType(m.returnType)};`);
     } else {
-        line(emitNsMember(m, '        ', `${BASE_URL}/platform-objects/platform-response/`));
+        line(
+            emitNsMember(m, '        ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Response']),
+        );
     }
 }
 line('    }');
@@ -470,14 +496,16 @@ for (const m of PLATFORM_REQUEST_METHODS) {
         // Request properties are read-only — no JSDoc here; just the TS declaration
         line(`        const ${m.name}: ${toTsType(m.returnType)};`);
     } else {
-        line(emitNsMember(m, '        ', `${BASE_URL}/platform-objects/platform-request/`));
+        line(
+            emitNsMember(m, '        ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Request']),
+        );
     }
 }
 line('    }');
 // Platform.Recipient
 line('    namespace Recipient {');
 for (const m of PLATFORM_RECIPIENT_METHODS) {
-    line(emitNsMember(m, '        ', `${BASE_URL}/platform-objects/platform-recipient/`));
+    line(emitNsMember(m, '        ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Recipient']));
 }
 line('    }');
 line('}');
@@ -489,6 +517,21 @@ for (const g of SSJS_GLOBALS) {
     if (!g.aliasOf) {
         continue;
     }
+
+    // Namespace object alias (e.g. Variable → Platform.Variable) — emit declare namespace
+    if (g.type === 'object') {
+        const ns = PLATFORM_NAMESPACE_MAP[g.aliasOf];
+        if (ns) {
+            line(`declare namespace ${g.name} {`);
+            for (const m of ns.methods) {
+                line(emitNsMember(m, '    ', ns.url));
+            }
+            line('}');
+            line('');
+        }
+        continue;
+    }
+
     const src = resolveAlias(g.aliasOf);
     if (!src) {
         // Fallback: emit as any
@@ -498,9 +541,20 @@ for (const g of SSJS_GLOBALS) {
     // Inherit deprecated/requiresCoreLoad from the source function if not overridden on the alias
     const effective = { ...src, ...g, aliasOf: g.aliasOf };
     const gn = g.name.toLowerCase();
-    const globalGuideUrl = GLOBAL_FUNCTION_PAGES.has(gn)
-        ? `${BASE_URL}/global-functions/${gn}/`
-        : null;
+    let globalGuideUrl;
+    if (GLOBAL_FUNCTION_PAGES.has(gn)) {
+        globalGuideUrl = GUIDE_BASE_URL + globalFunctionUrl(gn);
+    } else {
+        // Fall back to the canonical Platform namespace URL derived from aliasOf
+        const [, ns, fnName] = (g.aliasOf ?? '').split('.');
+        if (ns === 'Function') {
+            globalGuideUrl = GUIDE_BASE_URL + platformFunctionUrl(fnName);
+        } else if (ns === 'Response') {
+            globalGuideUrl = `${GUIDE_BASE_URL}/platform-response/${fnName.toLowerCase()}/`;
+        } else {
+            globalGuideUrl = null;
+        }
+    }
     const comment = buildJsDocComment(effective, '', globalGuideUrl);
     const retType = toTsType(src.returnType);
     let paramStr;
@@ -537,43 +591,62 @@ line('');
 
 // ── Core Library namespaces ───────────────────────────────────────────────────
 // Each entry: [TypeScript namespace name, ssjs-data methods array, ssjs.guide URL]
-const cl = (slug) => `${BASE_URL}/core-library/${slug}/`;
-const po = (slug) => `${BASE_URL}/platform-objects/${slug}/`;
+const g = (map, key) => GUIDE_BASE_URL + map[key];
 const CORE_CLASS_MAP = [
-    ['Account', ACCOUNT_METHODS, cl('account')],
-    ['Account.Tracking', ACCOUNT_TRACKING_METHODS, cl('account')],
-    ['AccountUser', ACCOUNT_USER_METHODS, cl('accountuser')],
-    ['Portfolio', PORTFOLIO_METHODS, cl('portfolio')],
-    ['ContentAreaObj', CONTENT_AREA_OBJ_METHODS, cl('contentareaobj')],
-    ['Folder', FOLDER_METHODS, cl('folder')],
-    ['Template', TEMPLATE_METHODS, cl('template')],
-    ['DeliveryProfile', DELIVERY_PROFILE_METHODS, cl('deliveryprofile')],
-    ['SenderProfile', SENDER_PROFILE_METHODS, cl('senderprofile')],
-    ['SendClassification', SEND_CLASSIFICATION_METHODS, cl('sendclassification')],
-    ['FilterDefinition', FILTER_DEFINITION_METHODS, cl('filterdefinition')],
-    ['QueryDefinition', QUERY_DEFINITION_METHODS, cl('querydefinition')],
-    ['List', LIST_METHODS, cl('list')],
-    ['List.Subscribers', LIST_SUBSCRIBERS_METHODS, cl('list-subscribers')],
-    ['List.Subscribers.Tracking', LIST_SUBSCRIBERS_TRACKING_METHODS, cl('list-subscribers')],
-    ['Subscriber', SUBSCRIBER_METHODS, cl('subscriber')],
-    ['Subscriber.Attributes', SUBSCRIBER_ATTRIBUTES_METHODS, cl('subscriber')],
-    ['Subscriber.Lists', SUBSCRIBER_LISTS_METHODS, cl('subscriber')],
-    ['Email', EMAIL_METHODS, cl('email')],
-    ['Send', SEND_METHODS, cl('send')],
-    ['Send.Tracking', SEND_TRACKING_METHODS, cl('send')],
-    ['Send.Definition', SEND_DEFINITION_METHODS, cl('senddefinition')],
-    ['TriggeredSend', TRIGGERED_SEND_METHODS, cl('triggeredsend')],
-    ['TriggeredSend.Tracking', TRIGGERED_SEND_TRACKING_METHODS, cl('triggeredsend')],
-    ['TriggeredSend.Tracking.Clicks', TRIGGERED_SEND_TRACKING_CLICKS_METHODS, cl('triggeredsend')],
+    ['Account', ACCOUNT_METHODS, g(CORE_LIBRARY_URLS, 'Account')],
+    ['Account.Tracking', ACCOUNT_TRACKING_METHODS, g(CORE_LIBRARY_URLS, 'Account.Tracking')],
+    ['AccountUser', ACCOUNT_USER_METHODS, g(CORE_LIBRARY_URLS, 'AccountUser')],
+    ['Portfolio', PORTFOLIO_METHODS, g(CORE_LIBRARY_URLS, 'Portfolio')],
+    ['ContentAreaObj', CONTENT_AREA_OBJ_METHODS, g(CORE_LIBRARY_URLS, 'ContentAreaObj')],
+    ['Folder', FOLDER_METHODS, g(CORE_LIBRARY_URLS, 'Folder')],
+    ['Template', TEMPLATE_METHODS, g(CORE_LIBRARY_URLS, 'Template')],
+    ['DeliveryProfile', DELIVERY_PROFILE_METHODS, g(CORE_LIBRARY_URLS, 'DeliveryProfile')],
+    ['SenderProfile', SENDER_PROFILE_METHODS, g(CORE_LIBRARY_URLS, 'SenderProfile')],
+    ['SendClassification', SEND_CLASSIFICATION_METHODS, g(CORE_LIBRARY_URLS, 'SendClassification')],
+    ['FilterDefinition', FILTER_DEFINITION_METHODS, g(CORE_LIBRARY_URLS, 'FilterDefinition')],
+    ['QueryDefinition', QUERY_DEFINITION_METHODS, g(CORE_LIBRARY_URLS, 'QueryDefinition')],
+    ['List', LIST_METHODS, g(CORE_LIBRARY_URLS, 'List')],
+    ['List.Subscribers', LIST_SUBSCRIBERS_METHODS, g(CORE_LIBRARY_URLS, 'List.Subscribers')],
+    [
+        'List.Subscribers.Tracking',
+        LIST_SUBSCRIBERS_TRACKING_METHODS,
+        g(CORE_LIBRARY_URLS, 'List.Subscribers.Tracking'),
+    ],
+    ['Subscriber', SUBSCRIBER_METHODS, g(CORE_LIBRARY_URLS, 'Subscriber')],
+    [
+        'Subscriber.Attributes',
+        SUBSCRIBER_ATTRIBUTES_METHODS,
+        g(CORE_LIBRARY_URLS, 'Subscriber.Attributes'),
+    ],
+    ['Subscriber.Lists', SUBSCRIBER_LISTS_METHODS, g(CORE_LIBRARY_URLS, 'Subscriber.Lists')],
+    ['Email', EMAIL_METHODS, g(CORE_LIBRARY_URLS, 'Email')],
+    ['Send', SEND_METHODS, g(CORE_LIBRARY_URLS, 'Send')],
+    ['Send.Tracking', SEND_TRACKING_METHODS, g(CORE_LIBRARY_URLS, 'Send.Tracking')],
+    ['Send.Definition', SEND_DEFINITION_METHODS, g(CORE_LIBRARY_URLS, 'Send.Definition')],
+    ['TriggeredSend', TRIGGERED_SEND_METHODS, g(CORE_LIBRARY_URLS, 'TriggeredSend')],
+    [
+        'TriggeredSend.Tracking',
+        TRIGGERED_SEND_TRACKING_METHODS,
+        g(CORE_LIBRARY_URLS, 'TriggeredSend.Tracking'),
+    ],
+    [
+        'TriggeredSend.Tracking.Clicks',
+        TRIGGERED_SEND_TRACKING_CLICKS_METHODS,
+        g(CORE_LIBRARY_URLS, 'TriggeredSend.Tracking.Clicks'),
+    ],
     [
         'TriggeredSend.Tracking.TotalByInterval',
         TRIGGERED_SEND_TRACKING_TOTAL_BY_INTERVAL_METHODS,
-        cl('triggeredsend'),
+        g(CORE_LIBRARY_URLS, 'TriggeredSend.Tracking.TotalByInterval'),
     ],
-    ['DataExtension', DATA_EXTENSION_METHODS, cl('dataextension')],
-    ['DataExtension.Fields', DATA_EXTENSION_FIELDS_METHODS, cl('dataextension-fields')],
-    ['DataExtension.Rows', DATA_EXTENSION_ROWS_METHODS, cl('dataextension-rows')],
-    ['DateTime.TimeZone', DATE_TIME_TIMEZONE_METHODS, po('datetime-timezone')],
+    ['DataExtension', DATA_EXTENSION_METHODS, g(CORE_LIBRARY_URLS, 'DataExtension')],
+    [
+        'DataExtension.Fields',
+        DATA_EXTENSION_FIELDS_METHODS,
+        g(CORE_LIBRARY_URLS, 'DataExtension.Fields'),
+    ],
+    ['DataExtension.Rows', DATA_EXTENSION_ROWS_METHODS, g(CORE_LIBRARY_URLS, 'DataExtension.Rows')],
+    ['DateTime.TimeZone', DATE_TIME_TIMEZONE_METHODS, g(PLATFORM_OBJECT_URLS, 'DateTime.TimeZone')],
 ];
 
 line('// ── Core Library namespaces ──────────────────────────────────────────────────');
@@ -593,14 +666,14 @@ line('');
 line('// ── Standalone Core Library globals ──────────────────────────────────────────');
 line('declare namespace Attribute {');
 for (const m of ATTRIBUTE_METHODS) {
-    line(emitNsMember(m, '    ', `${BASE_URL}/global-functions/attribute/`));
+    line(emitNsMember(m, '    ', GUIDE_BASE_URL + GUIDE_URLS.attribute));
 }
 line('}');
 line('');
 
 line('declare namespace ErrorUtil {');
 for (const m of ERROR_UTIL_METHODS) {
-    line(emitNsMember(m, '    ', po('errorutil')));
+    line(emitNsMember(m, '    ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS.ErrorUtil));
 }
 line('}');
 line('');
@@ -627,21 +700,17 @@ line('// ── Event namespaces ───────────────�
 line('');
 
 // ── HTTP / HTTPHeader ─────────────────────────────────────────────────────────
-/** URL slug map for HTTP methods whose guide page slug differs from the method name. */
-const HTTP_URL_SLUGS = { get: 'http-get', post: 'http-post' };
-
 line('// ── HTTP / HTTPHeader ────────────────────────────────────────────────────────');
 line('declare namespace HTTP {');
 for (const m of HTTP_METHODS) {
-    const slug = HTTP_URL_SLUGS[m.name.toLowerCase()] ?? m.name.toLowerCase();
-    line(emitNsMember(m, '    ', `${BASE_URL}/http/${slug}/`));
+    line(emitNsMember(m, '    ', GUIDE_BASE_URL + httpMethodUrl(m.name)));
 }
 line('}');
 line('');
 
 line('declare namespace HTTPHeader {');
 for (const m of HTTPHEADER_METHODS) {
-    line(emitNsMember(m, '    ', `${BASE_URL}/platform-objects/httpheader/`));
+    line(emitNsMember(m, '    ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS.HTTPHeader));
 }
 line('}');
 line('');
@@ -657,14 +726,14 @@ for (const ctor of SCRIPT_UTIL_CONSTRUCTORS) {
     // Instance methods: WSProxy gets WSPROXY_METHODS; Http* gets SCRIPT_UTIL_REQUEST_METHODS
     if (ctor.name === 'WSProxy') {
         for (const m of WSPROXY_METHODS) {
-            line(
-                emitIfaceMember(m, '            ', `${BASE_URL}/wsproxy/${m.name.toLowerCase()}/`),
-            );
+            line(emitIfaceMember(m, '            ', GUIDE_BASE_URL + wsproxyMethodUrl(m.name)));
         }
     } else {
         // HttpRequest and HttpGet share the same request instance methods
         for (const m of SCRIPT_UTIL_REQUEST_METHODS) {
-            line(emitIfaceMember(m, '            ', `${BASE_URL}/http/request-methods/`));
+            line(
+                emitIfaceMember(m, '            ', GUIDE_BASE_URL + GUIDE_URLS.httpRequestMethods),
+            );
         }
     }
     line('        }');

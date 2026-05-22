@@ -1,0 +1,28 @@
+if [[ $SKIP_HOOKS -gt 0 ]]; then
+  echo "[PRE-COMMIT] skipping hooks (SKIP_HOOKS=$SKIP_HOOKS)"
+  exit 0
+fi
+
+# ── Regenerate dist files when source data or URL rules change ────────────────
+# Check whether any staged file touches the data or URL source files.
+STAGED=$(git diff --cached --name-only)
+
+NEEDS_REGEN=false
+for f in $STAGED; do
+  case "$f" in
+    ssjs-data/src/index.js|ssjs-data/src/urls.js)
+      NEEDS_REGEN=true
+      break
+      ;;
+  esac
+done
+
+if [ "$NEEDS_REGEN" = true ]; then
+  echo "[PRE-COMMIT] 🔄 ssjs-data source changed — regenerating dist files..."
+  (cd ssjs-data && npm run generate:all) || {
+    echo "[PRE-COMMIT] ❌ generate:all failed. Fix the errors above and try again."
+    exit 1
+  }
+  git add ssjs-data/dist/sfmc-globals.d.ts ssjs-data/dist/site-index.json ssjs.guide/site-index.json
+  echo "[PRE-COMMIT] ✅ dist files regenerated and staged."
+fi

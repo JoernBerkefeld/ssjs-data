@@ -7,6 +7,7 @@
 declare namespace Platform {
     /**
      * Loads a platform library. Must be called before using Core library objects.
+     *
      * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-load/)
      *
      * @param libraryName - Library to load (e.g. "core")
@@ -20,6 +21,7 @@ declare namespace Platform {
     namespace Function {
         /**
          * Retrieves a single field value from a Data Extension row matching filter criteria. To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/lookup/)
          *
          * @param deName - Data Extension name or external key
@@ -36,6 +38,7 @@ declare namespace Platform {
         function Lookup(deName: string, returnField: string, whereFieldNames: string | string[], whereFieldValues: string | any[]): string;
         /**
          * Returns a result set of rows from a Data Extension matching filter criteria. Returns up to 2,000 rows. To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/lookuprows/)
          *
          * @param deName - Data Extension name or external key
@@ -54,6 +57,7 @@ declare namespace Platform {
         function LookupRows(deName: string, whereFieldNames: string | string[], whereFieldValues: string | any[]): object;
         /**
          * Returns an ordered result set from a Data Extension. The sort expression is a single string in the format "ColumnName ASC" or "ColumnName DESC". Multiple columns can be separated by commas. Returns up to 2,000 rows; values below 1 for count default to 2,000. To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/lookuporderedrows/)
          *
          * @param deName - Data Extension name or external key
@@ -74,6 +78,7 @@ declare namespace Platform {
         function LookupOrderedRows(deName: string, count: number, orderBy: string, whereFieldNames: string | string[], whereFieldValues: string | any[]): object;
         /**
          * Adds a new row to a Data Extension. Use this function in CloudPages, landing pages, microsites, and SMS messages. Use InsertDE() for email contexts.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/insertdata/)
          *
          * @param deName - Data Extension name or external key
@@ -85,6 +90,7 @@ declare namespace Platform {
         function InsertData(deName: string, fieldNames: string[], fieldValues: any[]): number;
         /**
          * Adds a new row to a Data Extension. Use this function in email contexts. Use InsertData() for CloudPages, landing pages, microsites, and SMS messages.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/insertde/)
          *
          * @param deName - Data Extension name or external key
@@ -96,6 +102,7 @@ declare namespace Platform {
         function InsertDE(deName: string, fieldNames: string[], fieldValues: any[]): void;
         /**
          * Modifies existing rows in a Data Extension matching filter criteria. Use this function in CloudPages, landing pages, microsites, and SMS messages. Use UpdateDE() for email contexts.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/updatedata/)
          *
          * @param deName - Data Extension name or external key
@@ -109,6 +116,7 @@ declare namespace Platform {
         function UpdateData(deName: string, whereFieldNames: string | string[], whereFieldValues: string | any[], fieldNames: string[], fieldValues: any[]): number;
         /**
          * Modifies existing rows in a Data Extension matching filter criteria. Use this function in email contexts. Use UpdateData() for CloudPages, landing pages, microsites, and SMS messages.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/updatede/)
          *
          * @param deName - Data Extension name or external key
@@ -122,6 +130,7 @@ declare namespace Platform {
         function UpdateDE(deName: string, whereFieldNames: string | string[], whereFieldValues: string | any[], fieldNames: string[], fieldValues: any[]): number;
         /**
          * Inserts a new row or updates an existing one in a Data Extension. Use this function in non-sendable contexts such as CloudPages and landing pages.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/upsertdata/)
          *
          * @param deName - Data Extension name or external key
@@ -135,6 +144,7 @@ declare namespace Platform {
         function UpsertData(deName: string, whereFieldNames: string | string[], whereFieldValues: string | any[], fieldNames: string[], fieldValues: any[]): number;
         /**
          * Inserts a new row or updates an existing one in a Data Extension. Use this function in sendable contexts such as email messages.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/upsertde/)
          *
          * @param deName - Data Extension name or external key
@@ -148,6 +158,7 @@ declare namespace Platform {
         function UpsertDE(deName: string, whereFieldNames: string | string[], whereFieldValues: string | any[], fieldNames: string[], fieldValues: any[]): number;
         /**
          * Removes rows from a Data Extension matching filter criteria. Use this function in non-sendable contexts such as CloudPages and landing pages. Use DeleteDE() for email contexts.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/deletedata/)
          *
          * @param deName - Data Extension name or external key
@@ -159,6 +170,7 @@ declare namespace Platform {
         function DeleteData(deName: string, whereFieldNames: string[], whereFieldValues: any[]): number;
         /**
          * Removes rows from a Data Extension matching filter criteria. Use this function in email contexts. Use DeleteData() for CloudPages, landing pages, microsites, and SMS messages.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/deletede/)
          *
          * @param deName - Data Extension name or external key
@@ -170,6 +182,7 @@ declare namespace Platform {
         function DeleteDE(deName: string, whereFieldNames: string[], whereFieldValues: any[]): number;
         /**
          * Renders a Content Builder asset referenced by customer key.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentblockbykey/)
          *
          * @param customerKey - Customer key of the Content Builder asset
@@ -186,6 +199,7 @@ declare namespace Platform {
         function ContentBlockByKey(customerKey: string, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
         /**
          * Renders a Content Builder asset referenced by folder path and name. If the same name is used across multiple folders, supply the full path.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentblockbyname/)
          *
          * @param name - Folder path and name of the Content Builder asset
@@ -200,6 +214,7 @@ declare namespace Platform {
         function ContentBlockByName(name: string, regionName?: string, stopOnError?: boolean, fallbackContent?: string, statusVariable?: number): string;
         /**
          * Renders a Content Builder asset by its numeric identifier.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentblockbyid/)
          *
          * @param id - Numeric ID of the Content Builder asset
@@ -216,6 +231,7 @@ declare namespace Platform {
         function ContentBlockByID(id: number, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
         /**
          * Returns an HTML img tag for a Content Builder image identified by its external key. An optional fallback image ID can be supplied if the primary image is not found.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentimagebykey/)
          *
          * @param key - External key of the Content Builder image
@@ -227,6 +243,7 @@ declare namespace Platform {
         function ContentImageByKey(key: string, fallbackId?: number): string;
         /**
          * Returns an HTML img tag for a Content Builder image identified by its numeric ID. An optional fallback ID can be supplied if the primary image is not found.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentimagebyid/)
          *
          * @param id - Numeric ID of the Content Builder image
@@ -238,6 +255,7 @@ declare namespace Platform {
         function ContentImageByID(id: number, fallbackId?: number): string;
         /**
          * Processes a string as AMPscript/HTML and returns rendered output.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/treatascontent/)
          *
          * @param content - String containing AMPscript or HTML to evaluate
@@ -248,6 +266,7 @@ declare namespace Platform {
         function TreatAsContent(content: string): string;
         /**
          * Marks the start of a named impression tracking region within content.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/beginimpressionregion/)
          *
          * @param name - Name identifying the impression region
@@ -259,6 +278,7 @@ declare namespace Platform {
         function BeginImpressionRegion(name: string): void;
         /**
          * Marks the end of an impression tracking region within content.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/endimpressionregion/)
          *
          * @param closeAll - When true, closes all nested impression regions
@@ -270,6 +290,7 @@ declare namespace Platform {
         function EndImpressionRegion(closeAll?: boolean): void;
         /**
          * Returns the current system timestamp, or the timestamp of the triggering send when called with true.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/now/)
          *
          * @param useContextTime - When true, returns the time the triggering send or activity was initiated. When false or omitted, returns the current system clock time.
@@ -283,6 +304,7 @@ declare namespace Platform {
         function Now(useContextTime?: boolean): string;
         /**
          * Converts a date-time value from Marketing Cloud system time (CST) to the local time of the account or user.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/systemdatetolocaldate/)
          *
          * @param dateValue - Date-time string in system time (CST)
@@ -294,6 +316,7 @@ declare namespace Platform {
         function SystemDateToLocalDate(dateValue: string): string;
         /**
          * Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST).
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/localdatetosystemdate/)
          *
          * @param dateValue - Date-time string in local account/user time
@@ -305,6 +328,7 @@ declare namespace Platform {
         function LocalDateToSystemDate(dateValue: string): string;
         /**
          * Raises an error with an optional scope flag. When the second parameter is true, the error stops only the current recipient's send. When false, the error halts the entire send job.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/raiseerror/)
          *
          * @param message - Error message describing what went wrong
@@ -320,6 +344,7 @@ declare namespace Platform {
         function RaiseError(message: string, currentRecipientOnly?: boolean, errorCode?: string, errorNumber?: number): void;
         /**
          * Generates a new globally unique identifier string.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/guid/)
          *
          * @example
@@ -329,6 +354,7 @@ declare namespace Platform {
         function GUID(): string;
         /**
          * Checks whether a string is a valid email address format.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/isemailaddress/)
          *
          * @param value - String to validate
@@ -342,6 +368,7 @@ declare namespace Platform {
         function IsEmailAddress(value: string): boolean;
         /**
          * Evaluates whether a string contains a valid phone number.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/isphonenumber/)
          *
          * @param value - String to evaluate
@@ -355,6 +382,7 @@ declare namespace Platform {
         function IsPhoneNumber(value: string): boolean;
         /**
          * Instantiates a Marketing Cloud SOAP API object.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/createobject/)
          *
          * @param objectType - SOAP API object type name
@@ -366,6 +394,7 @@ declare namespace Platform {
         function CreateObject(objectType: string): object;
         /**
          * Assigns a property value on a SOAP API object.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/setobjectproperty/)
          *
          * @param apiObject - SOAP API object instance
@@ -378,6 +407,7 @@ declare namespace Platform {
         function SetObjectProperty(apiObject: object, propertyName: string, value: any): void;
         /**
          * Appends an item to a SOAP API object's array property.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/addobjectarrayitem/)
          *
          * @param apiObject - SOAP API object instance
@@ -390,6 +420,7 @@ declare namespace Platform {
         function AddObjectArrayItem(apiObject: object, propertyName: string, value: any): void;
         /**
          * Executes a SOAP API Create call on an API object.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokecreate/)
          *
          * @param apiObject - SOAP API object instance
@@ -404,6 +435,7 @@ declare namespace Platform {
         function InvokeCreate(apiObject: object, status: any[], options: object): object;
         /**
          * Executes a SOAP API Update call on an API object.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeupdate/)
          *
          * @param apiObject - SOAP API object instance
@@ -418,6 +450,7 @@ declare namespace Platform {
         function InvokeUpdate(apiObject: object, status: any[], options: object): object;
         /**
          * Executes a SOAP API Delete call on an API object.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokedelete/)
          *
          * @param apiObject - SOAP API object instance
@@ -432,6 +465,7 @@ declare namespace Platform {
         function InvokeDelete(apiObject: object, status: any[], options: object): object;
         /**
          * Executes a SOAP API Retrieve call.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeretrieve/)
          *
          * @param apiObject - SOAP API RetrieveRequest object instance
@@ -446,6 +480,7 @@ declare namespace Platform {
         function InvokeRetrieve(apiObject: object, status: any[]): object;
         /**
          * Executes a SOAP API Perform action on an API object.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeperform/)
          *
          * @param apiObject - SOAP API object instance
@@ -462,6 +497,7 @@ declare namespace Platform {
         function InvokePerform(apiObject: object, method: string, status: any[], options: object): object;
         /**
          * Executes a SOAP API Configure call on an API object.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeconfigure/)
          *
          * @param apiObject - SOAP API object instance
@@ -475,6 +511,7 @@ declare namespace Platform {
         function InvokeConfigure(apiObject: object, method: string, status: any[], options: object): object;
         /**
          * Executes a SOAP API Execute call on an API object.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeexecute/)
          *
          * @param apiObject - SOAP API object instance
@@ -489,6 +526,7 @@ declare namespace Platform {
         function InvokeExecute(apiObject: object, status: any[], options: object): object;
         /**
          * Invokes the Extract SOAP API method on the specified object.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeextract/)
          *
          * @param apiObject - SOAP API object on which to invoke Extract
@@ -502,6 +540,7 @@ declare namespace Platform {
         function InvokeExtract(apiObject: object, statusArray: any[], options?: object): string;
         /**
          * Invokes the Schedule SOAP API method on the specified object.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeschedule/)
          *
          * @param apiObject - SOAP API object on which to invoke Schedule
@@ -517,6 +556,7 @@ declare namespace Platform {
         function InvokeSchedule(apiObject: object, action: string, schedule: object, statusArray?: any[], options?: object): string;
         /**
          * Performs an HTTP GET request and returns the response body. Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/httpget/)
          *
          * @param url - URL to request
@@ -542,6 +582,7 @@ declare namespace Platform {
         function HTTPGet(url: string, continueOnError: boolean, emptyContentHandling?: number, headerNames?: string[], headerValues?: string[], statusVariable?: number[]): string;
         /**
          * Performs an HTTP POST request with a content type and payload. Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. Returns the HTTP status code (e.g. 200 for success).
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/httppost/)
          *
          * @param url - URL to post to
@@ -567,6 +608,7 @@ declare namespace Platform {
         function HTTPPost(url: string, contentType: string, payload: string, headerNames?: string[], headerValues?: string[], response?: any[]): number;
         /**
          * Parses a JSON-formatted string (or array of strings) and returns the resulting JavaScript object (or array of objects). SFMC-native equivalent of JSON.parse(), which is not available in the legacy SSJS engine.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/parsejson/)
          *
          * @param jsonString - A valid JSON-formatted string or array of JSON strings to parse
@@ -584,6 +626,7 @@ declare namespace Platform {
         function ParseJSON(jsonString: string | string[]): object | object[];
         /**
          * Specifies the target of an email link as a complete URL stored in an attribute, data extension field, or variable. Use only within the href attribute of an anchor tag in HTML emails. In text emails, add the http:// prefix without spaces inside the parentheses. Include anchor tags in the email body (not in retrieved link content) to retain click-tracking.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/redirectto/)
          *
          * @param url - The URL to redirect to
@@ -598,6 +641,7 @@ declare namespace Platform {
         function RedirectTo(url: string): void;
         /**
          * Percent-encodes a complete URL. When encodeReservedKeywords is false (default), only space characters are encoded as %20. When true, all URL-reserved characters are also encoded (spaces become +).
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/urlencode/)
          *
          * @param url - The complete URL to encode
@@ -612,6 +656,7 @@ declare namespace Platform {
         function UrlEncode(url: string, encodeReservedKeywords?: boolean): string;
         /**
          * Encodes any string value to Base64. Note: values encoded with this function can only be decoded using `Platform.Function.Base64Decode()` or `Base64Decode()` — not other Base64 decoders. For a simpler single-parameter form without charset control, see `Base64Encode()`.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/base64encode/)
          *
          * @param string - String to encode
@@ -623,6 +668,7 @@ declare namespace Platform {
         function Base64Encode(string: string, charset?: string): string;
         /**
          * Decodes a Base64-encoded string. Only works with values encoded using `Platform.Function.Base64Encode()` or `Base64Encode()` — not arbitrary Base64 strings. For a simpler single-parameter form without charset control, see `Base64Decode()`.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/base64decode/)
          *
          * @param encodedString - Base64 encoded string to decode
@@ -634,6 +680,7 @@ declare namespace Platform {
         function Base64Decode(encodedString: string, charset?: string): string;
         /**
          * Returns an MD5 hash for a given string value.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/md5/)
          *
          * @param string - String to evaluate
@@ -645,7 +692,8 @@ declare namespace Platform {
         function MD5(string: string, charset?: string): string;
         /**
          * Converts a JavaScript object into its JSON string representation. Works only with known JSON-serializable types. Not to be confused with `String()`, which converts CLR response objects to plain strings.
-         * [ssjs.guide reference](https://ssjs.guide/platform-functions/stringify/)
+         *
+         * [ssjs.guide reference](https://ssjs.guide/global-functions/stringify/)
          *
          * @param object - JavaScript object to serialize to JSON.
          * @returns JSON string representation of the object.
@@ -656,6 +704,7 @@ declare namespace Platform {
         function Stringify(object: object): string;
         /**
          * Retrieves content from a specified classic Content Area by numeric ID. Deprecated — Content Areas are no longer supported on current SFMC infrastructure.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentarea/)
          *
          * @deprecated
@@ -670,6 +719,7 @@ declare namespace Platform {
         function ContentArea(id: number, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
         /**
          * Retrieves content from a specified classic Content Area by name. Deprecated — Content Areas are no longer supported on current SFMC infrastructure.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentareabyname/)
          *
          * @deprecated
@@ -684,6 +734,7 @@ declare namespace Platform {
         function ContentAreaByName(name: string, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
         /**
          * Indicates whether the passed-in user-agent value represents a CHTML browser. CHTML browsers (e.g. feature phones) use a modified version of HTML. Returns true when the user agent is a CHTML browser.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/ischtmlbrowser/)
          *
          * @param userAgentString - User-agent string to evaluate.
@@ -698,6 +749,7 @@ declare namespace Platform {
     namespace Variable {
         /**
          * Retrieves the value of an AMPscript variable from the SSJS context.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-variable/)
          *
          * @param variableName - Name of the AMPscript variable
@@ -709,6 +761,7 @@ declare namespace Platform {
         function GetValue(variableName: string): string;
         /**
          * Assigns a value to an AMPscript variable from the SSJS context.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-variable/)
          *
          * @param variableName - Name of the AMPscript variable
@@ -723,6 +776,7 @@ declare namespace Platform {
     namespace Response {
         /**
          * Sets a response header on the current page response.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
          *
          * @param headerName - Name of the response header.
@@ -734,6 +788,7 @@ declare namespace Platform {
         function SetResponseHeader(headerName: string, value: string): void;
         /**
          * Removes a previously set HTTP response header from the response.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
          *
          * @param headerName - Name of the HTTP response header to remove.
@@ -743,6 +798,7 @@ declare namespace Platform {
         function RemoveResponseHeader(headerName: string): void;
         /**
          * Redirects the current page to a new URL. Pass false for a 302 temporary redirect or true for a 301 permanent redirect. Do not use 301 if you want browsers to re-check the original URL later.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
          *
          * @param url - URL to redirect to.
@@ -753,6 +809,7 @@ declare namespace Platform {
         function Redirect(url: string, movedPermanently: boolean): void;
         /**
          * Sets a cookie on the client browser response.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
          *
          * @param name - Name of the cookie to set.
@@ -765,6 +822,7 @@ declare namespace Platform {
         function SetCookie(name: string, value: string, expires?: string, secure?: boolean): void;
         /**
          * Removes a cookie from the client browser by setting its expiration to a past date.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
          *
          * @param name - Name of the cookie to remove.
@@ -774,6 +832,7 @@ declare namespace Platform {
         function RemoveCookie(name: string): void;
         /**
          * Writes content to the HTTP response output. Distinct from the bare-name `Write()``, which write to the rendered page output.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
          *
          * @param content - Content string to write to the response.
@@ -788,6 +847,7 @@ declare namespace Platform {
     namespace Request {
         /**
          * Retrieves the value of a URL query string parameter.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
          *
          * @param parameterName - Name of the query string parameter.
@@ -799,6 +859,7 @@ declare namespace Platform {
         function GetQueryStringParameter(parameterName: string): string;
         /**
          * Retrieves data from a named form field, including values sent via POST.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
          *
          * @param name - Name of the form field to retrieve.
@@ -809,6 +870,7 @@ declare namespace Platform {
         function GetFormField(name: string): string;
         /**
          * Returns the raw body of the HTTP POST request. CAVEAT: Only returns data on the FIRST call per request; subsequent calls return nothing. Store the result in a variable if you need it multiple times.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
          *
          * @param encoding - Character encoding for the post data.
@@ -820,6 +882,7 @@ declare namespace Platform {
         function GetPostData(encoding?: string): string;
         /**
          * Retrieves the value of a named cookie from the HTTP request sent by the client browser.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
          *
          * @param cookieName - Name of the cookie to retrieve.
@@ -830,6 +893,7 @@ declare namespace Platform {
         function GetCookieValue(cookieName: string): string;
         /**
          * Returns the language preferences of the client browser as specified in the HTTP Accept-Language request header.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
          *
          * @example
@@ -839,6 +903,7 @@ declare namespace Platform {
         function GetUserLanguages(): string;
         /**
          * Returns the value of the named HTTP request header, or null if not present.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
          *
          * @param headerName - Name of the HTTP request header to retrieve.
@@ -860,6 +925,7 @@ declare namespace Platform {
     namespace Recipient {
         /**
          * Returns the value of a subscriber attribute or sendable data extension field for the current recipient.
+         *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-recipient/)
          *
          * @param attributeName - Name of the subscriber attribute or sendable DE field to retrieve
@@ -872,8 +938,212 @@ declare namespace Platform {
 }
 
 // ── Bare-name globals (aliasOf Platform.*) ──────────────────────────────────
+declare namespace Variable {
+    /**
+     * Retrieves the value of an AMPscript variable from the SSJS context.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-variable/)
+     *
+     * @param variableName - Name of the AMPscript variable
+     * @example
+     * var sk = Platform.Variable.GetValue("SubscriberKey");
+     * Write(sk);
+     * // Bare-name alias: Variable.GetValue("SubscriberKey")
+     */
+    function GetValue(variableName: string): string;
+    /**
+     * Assigns a value to an AMPscript variable from the SSJS context.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-variable/)
+     *
+     * @param variableName - Name of the AMPscript variable
+     * @param value - Value to assign
+     * @example
+     * Platform.Variable.SetValue("greeting", "Hello from SSJS");
+     * // @greeting is now available in subsequent AMPscript blocks
+     * // Bare-name alias: Variable.SetValue("greeting", "Hello from SSJS")
+     */
+    function SetValue(variableName: string, value: string): void;
+}
+
+declare namespace Request {
+    /**
+     * Retrieves the value of a URL query string parameter.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     *
+     * @param parameterName - Name of the query string parameter.
+     * @example
+     * // Page URL: /mypage?email=jane@example.com
+     * var email = Platform.Request.GetQueryStringParameter("email");
+     * Write(email);
+     */
+    function GetQueryStringParameter(parameterName: string): string;
+    /**
+     * Retrieves data from a named form field, including values sent via POST.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     *
+     * @param name - Name of the form field to retrieve.
+     * @example
+     * var email = Platform.Request.GetFormField("emailAddress");
+     * Write(email);
+     */
+    function GetFormField(name: string): string;
+    /**
+     * Returns the raw body of the HTTP POST request. CAVEAT: Only returns data on the FIRST call per request; subsequent calls return nothing. Store the result in a variable if you need it multiple times.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     *
+     * @param encoding - Character encoding for the post data.
+     * @example
+     * // Read raw POST body once and store it:
+     * var rawBody = Platform.Request.GetPostData();
+     * var payload = Platform.Function.ParseJSON(rawBody);
+     */
+    function GetPostData(encoding?: string): string;
+    /**
+     * Retrieves the value of a named cookie from the HTTP request sent by the client browser.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     *
+     * @param cookieName - Name of the cookie to retrieve.
+     * @example
+     * var sessionId = Platform.Request.GetCookieValue("sessionId");
+     * if (sessionId) { Write("Session: " + sessionId); }
+     */
+    function GetCookieValue(cookieName: string): string;
+    /**
+     * Returns the language preferences of the client browser as specified in the HTTP Accept-Language request header.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     *
+     * @example
+     * var lang = Platform.Request.GetUserLanguages();
+     * Write(lang); // e.g. "en-US,en;q=0.9"
+     */
+    function GetUserLanguages(): string;
+    /**
+     * Returns the value of the named HTTP request header, or null if not present.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     *
+     * @param headerName - Name of the HTTP request header to retrieve.
+     * @example
+     * var auth = Platform.Request.GetRequestHeader("Authorization");
+     * if (auth) { Write("Auth: " + auth); }
+     */
+    function GetRequestHeader(headerName: string): string;
+    /**
+     * Returns an object describing the client browser.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     *
+     * @example
+     * var browser = Platform.Request.Browser;
+     * Write(Stringify(browser));
+     */
+    var Browser: object;
+    /**
+     * Returns the IP address of the client.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     *
+     * @example
+     * Write(Platform.Request.ClientIP);
+     */
+    var ClientIP: string;
+    /**
+     * Returns true if the current request was made over HTTPS.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     *
+     * @example
+     * if (Platform.Request.HasSSL) {
+     *     Write("Secure connection");
+     * } else {
+     *     Platform.Response.Redirect("https://" + Platform.Request.RequestURL);
+     * }
+     */
+    var HasSSL: boolean;
+    /**
+     * Returns true if the current request was made over HTTPS (alias of HasSSL).
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     *
+     * @example
+     * Write(Platform.Request.IsSSL);
+     */
+    var IsSSL: boolean;
+    /**
+     * Returns the HTTP method (GET, POST, etc.) of the current request.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     *
+     * @example
+     * var method = Platform.Request.Method;
+     * if (method === "POST") {
+     *     var body = Platform.Request.GetPostData();
+     *     // handle POST
+     * }
+     */
+    var Method: string;
+    /**
+     * Returns the full query string of the current request URL.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     *
+     * @example
+     * Write(Platform.Request.QueryString);
+     */
+    var QueryString: string;
+    /**
+     * Returns the referrer URL from the HTTP Referer header.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     *
+     * @example
+     * Write(Platform.Request.ReferrerURL);
+     */
+    var ReferrerURL: string;
+    /**
+     * Returns the full URL of the current page request.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     *
+     * @example
+     * Write("Current page: " + Platform.Request.RequestURL);
+     */
+    var RequestURL: string;
+    /**
+     * Returns the user-agent string from the HTTP request.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     *
+     * @example
+     * Write(Platform.Request.UserAgent);
+     */
+    var UserAgent: string;
+}
+
+declare namespace Recipient {
+    /**
+     * Returns the value of a subscriber attribute or sendable data extension field for the current recipient.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-recipient/)
+     *
+     * @param attributeName - Name of the subscriber attribute or sendable DE field to retrieve
+     * @example
+     * var email = Platform.Recipient.GetAttributeValue("EmailAddress");
+     * Platform.Response.Write(email);
+     */
+    function GetAttributeValue(attributeName: string): string;
+}
+
 /**
  * Retrieves content from a specified classic Content Area by numeric ID. Deprecated — Content Areas are no longer supported on current SFMC infrastructure.
+ *
+ * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentarea/)
  *
  * @deprecated
  * @param id - Numeric ID of the Content Area.
@@ -888,6 +1158,8 @@ declare function ContentArea(id: number, regionName?: string, stopOnError?: bool
 /**
  * Retrieves content from a specified classic Content Area by name. Deprecated — Content Areas are no longer supported on current SFMC infrastructure.
  *
+ * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentareabyname/)
+ *
  * @deprecated
  * @param name - Name of the Content Area.
  * @param regionName - Impression region for content.
@@ -901,6 +1173,8 @@ declare function ContentAreaByName(name: string, regionName?: string, stopOnErro
 /**
  * Marks the start of a named impression tracking region within content.
  *
+ * [ssjs.guide reference](https://ssjs.guide/platform-functions/beginimpressionregion/)
+ *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @param name - Name identifying the impression region
  * @example
@@ -912,6 +1186,8 @@ declare function BeginImpressionRegion(name: string): void;
 /**
  * Marks the end of an impression tracking region within content.
  *
+ * [ssjs.guide reference](https://ssjs.guide/platform-functions/endimpressionregion/)
+ *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @param closeAll - When true, closes all nested impression regions
  * @example
@@ -922,6 +1198,8 @@ declare function BeginImpressionRegion(name: string): void;
 declare function EndImpressionRegion(closeAll?: boolean): void;
 /**
  * Returns the current system timestamp, or the timestamp of the triggering send when called with true.
+ *
+ * [ssjs.guide reference](https://ssjs.guide/platform-functions/now/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @param useContextTime - When true, returns the time the triggering send or activity was initiated. When false or omitted, returns the current system clock time.
@@ -936,6 +1214,8 @@ declare function Now(useContextTime?: boolean): string;
 /**
  * Converts a date-time value from Marketing Cloud system time (CST) to the local time of the account or user.
  *
+ * [ssjs.guide reference](https://ssjs.guide/platform-functions/systemdatetolocaldate/)
+ *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @param dateValue - Date-time string in system time (CST)
  * @example
@@ -946,6 +1226,8 @@ declare function Now(useContextTime?: boolean): string;
 declare function SystemDateToLocalDate(dateValue: string): string;
 /**
  * Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST).
+ *
+ * [ssjs.guide reference](https://ssjs.guide/platform-functions/localdatetosystemdate/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @param dateValue - Date-time string in local account/user time
@@ -958,6 +1240,8 @@ declare function LocalDateToSystemDate(dateValue: string): string;
 /**
  * Redirects the current page to a new URL. Pass false for a 302 temporary redirect or true for a 301 permanent redirect. Do not use 301 if you want browsers to re-check the original URL later.
  *
+ * [ssjs.guide reference](https://ssjs.guide/platform-response/redirect/)
+ *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @param url - URL to redirect to.
  * @param movedPermanently - True for 301 permanent redirect, false for 302 temporary.
@@ -968,6 +1252,8 @@ declare function Redirect(url: string, movedPermanently: boolean): void;
 /**
  * Generates a new globally unique identifier string.
  *
+ * [ssjs.guide reference](https://ssjs.guide/platform-functions/guid/)
+ *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @example
  * var id = Platform.Function.GUID();
@@ -976,6 +1262,8 @@ declare function Redirect(url: string, movedPermanently: boolean): void;
 declare function GUID(): string;
 /**
  * Checks whether a string is a valid email address format.
+ *
+ * [ssjs.guide reference](https://ssjs.guide/platform-functions/isemailaddress/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @param value - String to validate
@@ -990,6 +1278,8 @@ declare function IsEmailAddress(value: string): boolean;
 /**
  * Evaluates whether a string contains a valid phone number.
  *
+ * [ssjs.guide reference](https://ssjs.guide/platform-functions/isphonenumber/)
+ *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @param value - String to evaluate
  * @example
@@ -1002,6 +1292,7 @@ declare function IsEmailAddress(value: string): boolean;
 declare function IsPhoneNumber(value: string): boolean;
 /**
  * Writes content to the HTTP response output. Distinct from the bare-name `Write()``, which write to the rendered page output.
+ *
  * [ssjs.guide reference](https://ssjs.guide/global-functions/write/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1013,6 +1304,7 @@ declare function IsPhoneNumber(value: string): boolean;
 declare function Write(content: string): void;
 /**
  * Converts a JavaScript object into its JSON string representation. Works only with known JSON-serializable types. Not to be confused with `String()`, which converts CLR response objects to plain strings.
+ *
  * [ssjs.guide reference](https://ssjs.guide/global-functions/stringify/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1148,6 +1440,7 @@ interface DataExtensionInstance {
 declare namespace Account {
     /**
      * Initializes an Account instance bound to the specified external key. Required before invoking any other Account method on the returned instance.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/account/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1160,6 +1453,7 @@ declare namespace Account {
     function Init(key: string): any;
     /**
      * Retrieves accounts based on the specified filter criteria.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/account/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1172,6 +1466,7 @@ declare namespace Account {
     function Retrieve(filter: object): object[];
     /**
      * Updates the account with the supplied attributes. If `properties` includes `TimeZoneID`, the call uses that value to update the account time zone.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/account/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1187,6 +1482,7 @@ declare namespace Account {
 declare namespace Account.Tracking {
     /**
      * Returns an array of tracking data related to the accounts specified by the passed filter argument.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/account/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1201,6 +1497,7 @@ declare namespace Account.Tracking {
 declare namespace AccountUser {
     /**
      * Initializes an AccountUser instance bound to the specified external key and client ID (MID). Required before invoking any other AccountUser method on the returned instance.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/accountuser/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1214,6 +1511,7 @@ declare namespace AccountUser {
     function Init(targetUserKey: string, myClientID: number): any;
     /**
      * Creates a new account user from the supplied properties object.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/accountuser/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1235,6 +1533,7 @@ declare namespace AccountUser {
     function Add(properties: object): string;
     /**
      * Retrieves account users based on the specified filter criteria.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/accountuser/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1247,6 +1546,7 @@ declare namespace AccountUser {
     function Retrieve(filter: object): object[];
     /**
      * Updates the account user with the supplied attributes.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/accountuser/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1260,6 +1560,7 @@ declare namespace AccountUser {
     function Update(properties: object): string;
     /**
      * Activates the account user.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/accountuser/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1272,6 +1573,7 @@ declare namespace AccountUser {
     function Activate(): string;
     /**
      * Deactivates the account user. Note: account users cannot be deleted via server-side JavaScript — deactivation is the only "removal" path.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/accountuser/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1286,6 +1588,7 @@ declare namespace AccountUser {
 declare namespace Portfolio {
     /**
      * Initializes a Portfolio instance bound to the specified external key. Required before invoking any other Portfolio method on the returned instance.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/portfolio/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1298,6 +1601,7 @@ declare namespace Portfolio {
     function Init(key: string): any;
     /**
      * Creates a new portfolio (file) object from the supplied properties.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/portfolio/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1317,6 +1621,7 @@ declare namespace Portfolio {
     function Add(properties: object): string;
     /**
      * Returns an array of portfolio objects matching the specified filter.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/portfolio/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1329,6 +1634,7 @@ declare namespace Portfolio {
     function Retrieve(filter: object): object[];
     /**
      * Updates the portfolio object with the supplied attributes.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/portfolio/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1342,6 +1648,7 @@ declare namespace Portfolio {
     function Update(properties: object): string;
     /**
      * Removes the previously initialized portfolio object.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/portfolio/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1356,6 +1663,7 @@ declare namespace Portfolio {
 declare namespace ContentAreaObj {
     /**
      * Initializes a ContentAreaObj instance bound to the specified external key. DEPRECATED — Content Areas have been deprecated; new content areas cannot be created or updated. Existing content areas remain readable on older accounts only.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/contentareaobj/)
      *
      * @deprecated
@@ -1369,6 +1677,7 @@ declare namespace ContentAreaObj {
     function Init(key: string): any;
     /**
      * Creates a new content area from the supplied properties. DEPRECATED — calls fail on accounts where the Content Areas feature has been retired.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/contentareaobj/)
      *
      * @deprecated
@@ -1390,6 +1699,7 @@ declare namespace ContentAreaObj {
     function Add(properties: object): string;
     /**
      * Returns an array of content areas matching the specified filter. DEPRECATED — read-only access only; the Content Areas feature has been retired for new content.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/contentareaobj/)
      *
      * @deprecated
@@ -1403,6 +1713,7 @@ declare namespace ContentAreaObj {
     function Retrieve(filter: object): object[];
     /**
      * Updates the content area with the supplied attributes. DEPRECATED — calls fail on accounts where the Content Areas feature has been retired.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/contentareaobj/)
      *
      * @deprecated
@@ -1417,6 +1728,7 @@ declare namespace ContentAreaObj {
     function Update(properties: object): string;
     /**
      * Removes the previously initialized content area. DEPRECATED — calls fail on accounts where the Content Areas feature has been retired.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/contentareaobj/)
      *
      * @deprecated
@@ -1432,6 +1744,7 @@ declare namespace ContentAreaObj {
 declare namespace Folder {
     /**
      * Initializes a Folder instance, optionally bound to the specified external key. When called without arguments, a subsequent `<FolderInstance>.SetID(id)` call is required to bind the instance to a specific folder.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/folder/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1447,6 +1760,7 @@ declare namespace Folder {
     function Init(key?: string): any;
     /**
      * Creates a new folder as a child of an existing folder.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/folder/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1469,6 +1783,7 @@ declare namespace Folder {
     function Add(properties: object): string;
     /**
      * Returns an array of folders matching the specified filter. Supports simple `{Property, SimpleOperator, Value}` filters and complex filters with `LeftOperand`, `LogicalOperator`, `RightOperand`. Use dot notation (e.g. `ParentFolder.Name`) to filter on child fields.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/folder/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1486,6 +1801,7 @@ declare namespace Folder {
     function Retrieve(filter: object): object[];
     /**
      * Updates the folder with the supplied attributes.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/folder/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1499,6 +1815,7 @@ declare namespace Folder {
     function Update(properties: object): string;
     /**
      * Removes the previously initialized folder.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/folder/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1511,6 +1828,7 @@ declare namespace Folder {
     function Remove(): string;
     /**
      * Binds a previously initialized Folder instance to a specific folder ID. Use this when the folder has no external key, after calling `Folder.Init()` without arguments.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/folder/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1526,6 +1844,7 @@ declare namespace Folder {
 declare namespace Template {
     /**
      * Initializes a Template instance bound to the specified external key. Required before invoking any other Template method on the returned instance.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/template/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1538,6 +1857,7 @@ declare namespace Template {
     function Init(key: string): any;
     /**
      * Creates a new template from the supplied properties.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/template/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1555,6 +1875,7 @@ declare namespace Template {
     function Add(properties: object): string;
     /**
      * Returns an array of templates matching the specified filter. Pass `{ Filter: { Property, SimpleOperator, Value }, QueryAllAccounts: true }` to query across all accessible accounts.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/template/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1567,6 +1888,7 @@ declare namespace Template {
     function Retrieve(filter: object): object[];
     /**
      * Updates the template with the supplied attributes.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/template/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1582,6 +1904,7 @@ declare namespace Template {
 declare namespace DeliveryProfile {
     /**
      * Initializes a DeliveryProfile instance bound to the specified external key. Required before invoking any other DeliveryProfile method on the returned instance.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/deliveryprofile/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1594,6 +1917,7 @@ declare namespace DeliveryProfile {
     function Init(key: string): any;
     /**
      * Creates a new delivery profile from the supplied properties.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/deliveryprofile/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1612,6 +1936,7 @@ declare namespace DeliveryProfile {
     function Add(properties: object): string;
     /**
      * Updates the delivery profile with the supplied attributes.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/deliveryprofile/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1625,6 +1950,7 @@ declare namespace DeliveryProfile {
     function Update(properties: object): string;
     /**
      * Removes the previously initialized delivery profile.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/deliveryprofile/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1639,6 +1965,7 @@ declare namespace DeliveryProfile {
 declare namespace SenderProfile {
     /**
      * Initializes a SenderProfile instance bound to the specified external key. Note: SenderProfile methods only work on landing pages — they cannot run inside email messages at send time.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/senderprofile/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1651,6 +1978,7 @@ declare namespace SenderProfile {
     function Init(key: string): any;
     /**
      * Creates a new sender profile from the supplied properties.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/senderprofile/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1670,6 +1998,7 @@ declare namespace SenderProfile {
     function Add(properties: object): string;
     /**
      * Updates the sender profile with the supplied attributes.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/senderprofile/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1683,6 +2012,7 @@ declare namespace SenderProfile {
     function Update(properties: object): string;
     /**
      * Removes the previously initialized sender profile.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/senderprofile/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1697,6 +2027,7 @@ declare namespace SenderProfile {
 declare namespace SendClassification {
     /**
      * Initializes a SendClassification instance bound to the specified external key. Required before invoking any other SendClassification method on the returned instance.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/sendclassification/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1709,6 +2040,7 @@ declare namespace SendClassification {
     function Init(key: string): any;
     /**
      * Creates a new send classification from the supplied properties.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/sendclassification/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1728,6 +2060,7 @@ declare namespace SendClassification {
     function Add(properties: object): string;
     /**
      * Returns an array of send classifications matching the specified filter.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/sendclassification/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1740,6 +2073,7 @@ declare namespace SendClassification {
     function Retrieve(filter: object): object[];
     /**
      * Updates the send classification with the supplied attributes. You must include both `SenderProfileKey` and `DeliveryProfileKey` in `properties` for the update to succeed.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/sendclassification/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1758,6 +2092,7 @@ declare namespace SendClassification {
     function Update(properties: object): string;
     /**
      * Removes the previously initialized send classification.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/sendclassification/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1772,6 +2107,7 @@ declare namespace SendClassification {
 declare namespace FilterDefinition {
     /**
      * Initializes a FilterDefinition instance bound to the specified external key. Required before invoking any other FilterDefinition method on the returned instance.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/filterdefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1784,6 +2120,7 @@ declare namespace FilterDefinition {
     function Init(key: string): any;
     /**
      * Creates a new filter definition from the supplied properties. The `Filter` field accepts either a simple `{Property, SimpleOperator, Value}` filter or a complex filter with `LeftOperand`, `LogicalOperator`, `RightOperand`. `DataSource.Type` must be `"SubscriberList"` or `"DataExtension"`.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/filterdefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1803,6 +2140,7 @@ declare namespace FilterDefinition {
     function Add(properties: object): string;
     /**
      * Returns an array of filter definitions matching the specified filter.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/filterdefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1815,6 +2153,7 @@ declare namespace FilterDefinition {
     function Retrieve(filter: object): object[];
     /**
      * Updates the filter definition with the supplied attributes.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/filterdefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1828,6 +2167,7 @@ declare namespace FilterDefinition {
     function Update(properties: object): string;
     /**
      * Deletes the previously initialized filter definition.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/filterdefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1842,6 +2182,7 @@ declare namespace FilterDefinition {
 declare namespace QueryDefinition {
     /**
      * Initializes a QueryDefinition instance bound to the specified external key. Required before invoking any other QueryDefinition method on the returned instance.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/querydefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1854,6 +2195,7 @@ declare namespace QueryDefinition {
     function Init(key: string): any;
     /**
      * Creates a new query definition from the supplied properties. Pass an optional `CategoryID` to place the query inside a specific folder.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/querydefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1874,6 +2216,7 @@ declare namespace QueryDefinition {
     function Add(properties: object): string;
     /**
      * Returns an array of query definitions matching the specified filter. Supports simple `{Property, SimpleOperator, Value}` filters and complex filters with `LeftOperand`, `LogicalOperator`, `RightOperand`.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/querydefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1891,6 +2234,7 @@ declare namespace QueryDefinition {
     function Retrieve(filter: object): object[];
     /**
      * Updates the query definition with the supplied attributes.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/querydefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1907,6 +2251,7 @@ declare namespace QueryDefinition {
     function Update(properties: object): string;
     /**
      * Removes the previously initialized query definition.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/querydefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1919,6 +2264,7 @@ declare namespace QueryDefinition {
     function Remove(): string;
     /**
      * Executes the query definition. Runs the SQL and writes results into the configured target Data Extension.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/querydefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1935,6 +2281,7 @@ declare namespace QueryDefinition {
 declare namespace List {
     /**
      * Initializes a List instance bound to the specified external key. Required before invoking any other List method on the returned instance.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/list/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1947,6 +2294,7 @@ declare namespace List {
     function Init(key: string): any;
     /**
      * Creates a new list from the supplied properties and returns an initialized list instance. Note: unlike most static `Add` methods, this returns a `ListInstance`, not `"OK"`.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/list/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1959,6 +2307,7 @@ declare namespace List {
     function Add(properties: object): any;
     /**
      * Returns an array of lists matching the specified filter.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/list/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1971,6 +2320,7 @@ declare namespace List {
     function Retrieve(filter: object): object[];
     /**
      * Removes the previously initialized list.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/list/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -1985,6 +2335,7 @@ declare namespace List {
 declare namespace List.Subscribers {
     /**
      * Adds a subscriber to the previously initialized list.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2002,6 +2353,7 @@ declare namespace List.Subscribers {
     function Add(properties: object): string;
     /**
      * Returns the subscribers belonging to the previously initialized list. Pass an optional filter to narrow the results; omit it to return all subscribers on the list.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2015,6 +2367,7 @@ declare namespace List.Subscribers {
     function Retrieve(filter?: object): object[];
     /**
      * Removes the specified subscriber from the previously initialized list.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2028,6 +2381,7 @@ declare namespace List.Subscribers {
     function Unsubscribe(emailAddress: string): string;
     /**
      * Updates the status of the specified subscriber on the previously initialized list.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2042,6 +2396,7 @@ declare namespace List.Subscribers {
     function Update(emailAddress: string, status: string): string;
     /**
      * Adds the subscriber if not on the list, otherwise updates the supplied attributes. If `attributes.Status` is supplied, the subscriber's list status is updated.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2058,6 +2413,7 @@ declare namespace List.Subscribers {
 declare namespace List.Subscribers.Tracking {
     /**
      * Returns an array of tracking data for subscribers matching the filter.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2073,6 +2429,7 @@ declare namespace List.Subscribers.Tracking {
 declare namespace Subscriber {
     /**
      * Initializes a Subscriber instance bound to the specified subscriber key. Required before invoking any instance method on the returned object.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2085,6 +2442,7 @@ declare namespace Subscriber {
     function Init(key: string): any;
     /**
      * Creates a new subscriber from the supplied properties.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2104,6 +2462,7 @@ declare namespace Subscriber {
     function Add(properties: object): string;
     /**
      * Returns an array of subscribers matching the specified filter.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2116,6 +2475,7 @@ declare namespace Subscriber {
     function Retrieve(filter: object): object[];
     /**
      * Creates a new subscriber, or updates an existing one matched by EmailAddress / SubscriberKey.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2134,6 +2494,7 @@ declare namespace Subscriber {
     function Upsert(properties: object): string;
     /**
      * Retrieves statistical data for the specified subscriber (sends, opens, clicks, bounces, unsubscribes).
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2147,6 +2508,7 @@ declare namespace Subscriber {
     function Statistics(subscriberKey: string): object;
     /**
      * Updates the previously initialized subscriber with the supplied attributes.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2160,6 +2522,7 @@ declare namespace Subscriber {
     function Update(properties: object): string;
     /**
      * Deletes the previously initialized subscriber.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2172,6 +2535,7 @@ declare namespace Subscriber {
     function Remove(): string;
     /**
      * Sets the previously initialized subscriber's status to `"Unsubscribed"`.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2186,6 +2550,7 @@ declare namespace Subscriber {
 declare namespace Subscriber.Attributes {
     /**
      * Returns an array of attributes associated with the previously initialized subscriber.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2200,6 +2565,7 @@ declare namespace Subscriber.Attributes {
 declare namespace Subscriber.Lists {
     /**
      * Returns the lists the previously initialized subscriber is a member of.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2214,6 +2580,7 @@ declare namespace Subscriber.Lists {
 declare namespace Email {
     /**
      * Initializes an Email instance bound to the specified external key. Required before invoking any other Email method on the returned instance. External keys cannot be set in the UI — set one via SOAP API, or look up the value via `Email.Retrieve()`.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2226,6 +2593,7 @@ declare namespace Email {
     function Init(key: string): any;
     /**
      * Creates a new email message from the supplied properties and returns an initialized email instance. Note: unlike most static `Add` methods, this returns an `EmailInstance`, not `"OK"`.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2247,6 +2615,7 @@ declare namespace Email {
     function Add(properties: object): any;
     /**
      * Returns an array of email messages matching the specified filter.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2259,6 +2628,7 @@ declare namespace Email {
     function Retrieve(filter: object): object[];
     /**
      * Updates the email message with the supplied attributes.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2272,6 +2642,7 @@ declare namespace Email {
     function Update(properties: object): string;
     /**
      * Removes the previously initialized email message.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2284,6 +2655,7 @@ declare namespace Email {
     function Remove(): string;
     /**
      * Runs validation checks on the previously initialized email message. Returns a `{Task: {ValidationStatus: boolean, ValidationMessages: string}}` object.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2298,6 +2670,7 @@ declare namespace Email {
     function Validate(): object;
     /**
      * Runs content checks on the previously initialized email message. Returns a `{Task: {CheckPassed: boolean, ResultMessage: string}}` object.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2314,6 +2687,7 @@ declare namespace Email {
 declare namespace Send {
     /**
      * Initializes a Send instance bound to the specified send ID. Required before invoking any other Send method on the returned instance.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2326,6 +2700,7 @@ declare namespace Send {
     function Init(id: number): any;
     /**
      * Creates a new send to the specified email and list(s). Pass an `options` object to override From name, From address, subject, send time, etc.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2342,6 +2717,7 @@ declare namespace Send {
     function Add(emailKey: string, listIds: any[], options?: object): string;
     /**
      * Returns an array of sends matching the specified filter.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2354,6 +2730,7 @@ declare namespace Send {
     function Retrieve(filter: object): object[];
     /**
      * Returns information about the lists targeted by a send. Filter must restrict results to specific send ID(s).
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2366,6 +2743,7 @@ declare namespace Send {
     function RetrieveLists(filter: object): object[];
     /**
      * Removes the previously initialized send.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2378,6 +2756,7 @@ declare namespace Send {
     function Remove(): string;
     /**
      * Attempts to cancel the previously initialized send.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2392,6 +2771,7 @@ declare namespace Send {
 declare namespace Send.Tracking {
     /**
      * Returns tracking data for sends matching the filter. This is a static call on `Send.Tracking.*` — no `Send.Init()` is required.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2404,6 +2784,7 @@ declare namespace Send.Tracking {
     function Retrieve(filter: object): object[];
     /**
      * Returns click tracking data for the previously initialized send.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2417,6 +2798,7 @@ declare namespace Send.Tracking {
     function ClickRetrieve(filter: object): object[];
     /**
      * Returns aggregated tracking data for the previously initialized send. Aggregates by `type` over the date range, grouped by `groupBy`.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2435,6 +2817,7 @@ declare namespace Send.Tracking {
 declare namespace Send.Definition {
     /**
      * Initializes a SendDefinition instance bound to the specified external key. Required before invoking any instance method on the returned object.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2447,6 +2830,7 @@ declare namespace Send.Definition {
     function Init(key: string): any;
     /**
      * Creates a new send definition.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2463,6 +2847,7 @@ declare namespace Send.Definition {
     function Add(esdParams: object, sendClassificationKey: string, emailKey: string, listIds: any[]): string;
     /**
      * Creates a new send definition that targets a sendable Data Extension.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2480,6 +2865,7 @@ declare namespace Send.Definition {
     function AddWithDE(esdParams: object, sendClassificationKey: string, emailKey: string, sendableDataExtensionKey: string, publicationListKey: string): string;
     /**
      * Creates a new send definition that targets the audience defined by a filter definition.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2497,6 +2883,7 @@ declare namespace Send.Definition {
     function AddWithFilterDefinition(esdParams: object, sendClassificationKey: string, emailKey: string, filterDefinitionKey: string, listId: number): string;
     /**
      * Returns an array of send definitions, optionally filtered. When no filter is supplied, all send definitions are returned.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2509,6 +2896,7 @@ declare namespace Send.Definition {
     function Retrieve(filter?: object): object[];
     /**
      * Updates the previously initialized send definition.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2522,6 +2910,7 @@ declare namespace Send.Definition {
     function Update(properties: object): string;
     /**
      * Deletes the previously initialized send definition.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2534,6 +2923,7 @@ declare namespace Send.Definition {
     function Remove(): string;
     /**
      * Sends email messages to the lists associated with the previously initialized send definition.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2548,6 +2938,7 @@ declare namespace Send.Definition {
 declare namespace TriggeredSend {
     /**
      * Initializes a TriggeredSend instance bound to the specified external key. Required before invoking any instance method on the returned object. Note: TriggeredSend methods cannot be used in the context of an email message or email preview.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2560,6 +2951,7 @@ declare namespace TriggeredSend {
     function Init(key: string): any;
     /**
      * Creates a new triggered send definition from the supplied properties and returns an initialized TriggeredSend instance. Note: unlike most static `Add` methods, this returns a `TriggeredSendInstance`, not `"OK"`.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2580,6 +2972,7 @@ declare namespace TriggeredSend {
     function Add(properties: object): any;
     /**
      * Returns an array of triggered send definitions matching the specified filter.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2592,6 +2985,7 @@ declare namespace TriggeredSend {
     function Retrieve(filter: object): object[];
     /**
      * Updates the previously initialized triggered send definition.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2605,6 +2999,7 @@ declare namespace TriggeredSend {
     function Update(properties: object): string;
     /**
      * Starts (reactivates) a paused triggered send definition.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2617,6 +3012,7 @@ declare namespace TriggeredSend {
     function Start(): string;
     /**
      * Pauses an active triggered send definition.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2629,6 +3025,7 @@ declare namespace TriggeredSend {
     function Pause(): string;
     /**
      * Publishes a triggered send definition, making it active and ready to accept sends. Use this to move a definition from Draft / Inactive to Active.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2641,6 +3038,7 @@ declare namespace TriggeredSend {
     function Publish(): string;
     /**
      * Sends an email using the previously initialized triggered send definition. On failure, inspect `<TriggeredSendInstance>.LastMessage` for error details.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2658,6 +3056,7 @@ declare namespace TriggeredSend {
 declare namespace TriggeredSend.Tracking {
     /**
      * Returns tracking data for the previously initialized triggered send definition.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2673,6 +3072,7 @@ declare namespace TriggeredSend.Tracking {
 declare namespace TriggeredSend.Tracking.Clicks {
     /**
      * Returns click tracking information for the previously initialized triggered send definition.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2688,6 +3088,7 @@ declare namespace TriggeredSend.Tracking.Clicks {
 declare namespace TriggeredSend.Tracking.TotalByInterval {
     /**
      * Returns aggregated tracking data for the previously initialized triggered send. Aggregates by `type` over the date range, grouped by `groupBy`.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2706,6 +3107,7 @@ declare namespace TriggeredSend.Tracking.TotalByInterval {
 declare namespace DataExtension {
     /**
      * Initializes a DataExtension instance bound to the specified external key. Required before invoking any `Fields` or `Rows` sub-namespace method on the returned instance. Note: Core Library DataExtension methods do not support enterprise-level data extensions.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2718,6 +3120,7 @@ declare namespace DataExtension {
     function Init(key: string): DataExtensionInstance;
     /**
      * Creates a new data extension from the supplied properties and returns an initialized DataExtension instance. Note: unlike most static `Add` methods, this returns a `DataExtensionInstance`, not `"OK"`.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2742,6 +3145,7 @@ declare namespace DataExtension {
     function Add(properties: object): DataExtensionInstance;
     /**
      * Returns an array of data extensions matching the specified filter. Pass `queryAllAccounts: true` to search all accounts accessible to the authenticated user.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2757,6 +3161,7 @@ declare namespace DataExtension {
 declare namespace DataExtension.Fields {
     /**
      * Adds a field to the previously initialized data extension. `properties.Name` is required; the rest (`CustomerKey`, `FieldType`, `MaxLength`, `IsRequired`, `IsPrimaryKey`, `Ordinal`, `Scale`, `DefaultValue`) are optional. `FieldType` accepts: 'Boolean', 'Date', 'Decimal', 'EmailAddress', 'Locale', 'Number', 'Phone', 'Text'.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-fields/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2771,6 +3176,7 @@ declare namespace DataExtension.Fields {
     function Add(properties: object): string;
     /**
      * Returns an array of field definitions for the previously initialized data extension.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-fields/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2783,6 +3189,7 @@ declare namespace DataExtension.Fields {
     function Retrieve(): object[];
     /**
      * Updates which data extension field is used to relate the data extension to the All Subscribers list during sending. Pass the name of the data extension field, and which subscriber attribute it should map to.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-fields/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2799,6 +3206,7 @@ declare namespace DataExtension.Fields {
 declare namespace DataExtension.Rows {
     /**
      * Adds one or more rows to the previously initialized data extension.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2816,6 +3224,7 @@ declare namespace DataExtension.Rows {
     function Add(rowData: any[]): string;
     /**
      * Returns rows where the specified columns equal the specified values (AND-joined). Optionally limits results and orders by a field. When initializing a data extension for `Lookup()` from an email message, you must use the data extension Name; on landing pages, either Name or external key works — make them identical to be safe.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2832,6 +3241,7 @@ declare namespace DataExtension.Rows {
     function Lookup(searchFieldNames: any[], searchValues: any[], limit?: number, orderByFieldName?: string): object[];
     /**
      * Deletes rows from the previously initialized data extension where the specified columns equal the specified values (AND-joined). For large deletion requests, batch the work — this method times out on long-running deletes.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2846,6 +3256,7 @@ declare namespace DataExtension.Rows {
     function Remove(columnNames: any[], columnValues: any[]): number;
     /**
      * Retrieves up to 2500 rows from the previously initialized data extension. When called without a filter, returns all rows (subject to the 2500-row cap). Cannot be used in the context of an email message or email preview.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2861,6 +3272,7 @@ declare namespace DataExtension.Rows {
     function Retrieve(filter?: object): object[];
     /**
      * Updates the columns of rows where `whereFieldNames` equal `whereValues` (AND-joined). Throws if no row matches.
+     *
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2879,6 +3291,7 @@ declare namespace DataExtension.Rows {
 declare namespace DateTime.TimeZone {
     /**
      * Retrieves an array of time zones matching the specified filter criteria. If no filter is supplied the function returns all available time zones.
+     *
      * [ssjs.guide reference](https://ssjs.guide/platform-objects/datetime-timezone/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2895,6 +3308,7 @@ declare namespace DateTime.TimeZone {
 declare namespace Attribute {
     /**
      * Returns the value of the specified subscriber attribute or sendable data extension field for the current recipient. Preferred over Platform.Recipient.GetAttributeValue() — both methods are equivalent.
+     *
      * [ssjs.guide reference](https://ssjs.guide/global-functions/attribute/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -2910,6 +3324,7 @@ declare namespace Attribute {
 declare namespace ErrorUtil {
     /**
      * Inspects a WSProxy result object and throws an exception when its `Status` property starts with `"Error:"`. WSProxy methods never raise exceptions on SOAP-level errors — instead they return a result object whose `Status` field signals the outcome. Wrap WSProxy calls in a `try`/`catch` block and call this function immediately after each call to convert non-OK results into catchable exceptions.
+     *
      * [ssjs.guide reference](https://ssjs.guide/platform-objects/errorutil/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -3055,7 +3470,8 @@ declare namespace UnsubEvent {
 declare namespace HTTP {
     /**
      * Performs an HTTP GET request and returns the response body. When supplying `headerNames` and `headerValues`, both arrays must have equal length and parallel ordering.
-     * [ssjs.guide reference](https://ssjs.guide/http/http-get/)
+     *
+     * [ssjs.guide reference](https://ssjs.guide/http/get/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @param url - URL to request.
@@ -3069,7 +3485,8 @@ declare namespace HTTP {
     function Get(url: string, headerNames?: any[], headerValues?: any[]): object;
     /**
      * Performs an HTTP POST request with a content type and payload. Pass empty arrays for `headerNames` and `headerValues` if no custom headers are needed.
-     * [ssjs.guide reference](https://ssjs.guide/http/http-post/)
+     *
+     * [ssjs.guide reference](https://ssjs.guide/http/post/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @param url - URL to post to.
@@ -3088,6 +3505,7 @@ declare namespace HTTP {
 declare namespace HTTPHeader {
     /**
      * Retrieves the value of the specified HTTP request header.
+     *
      * [ssjs.guide reference](https://ssjs.guide/platform-objects/httpheader/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -3100,6 +3518,7 @@ declare namespace HTTPHeader {
     function GetValue(name: string): string;
     /**
      * Sets the value of the specified HTTP header. The host and content-length headers cannot be changed.
+     *
      * [ssjs.guide reference](https://ssjs.guide/platform-objects/httpheader/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -3112,6 +3531,7 @@ declare namespace HTTPHeader {
     function SetValue(name: string, value: string): void;
     /**
      * Removes the specified entry from the HTTP header.
+     *
      * [ssjs.guide reference](https://ssjs.guide/platform-objects/httpheader/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
@@ -3130,6 +3550,7 @@ declare namespace Script {
             constructor();
             /**
              * Creates a new Marketing Cloud object via the SOAP API.
+             *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/createitem/)
              *
              * @param objectType - SOAP API object type name
@@ -3146,6 +3567,7 @@ declare namespace Script {
             createItem(objectType: string, properties: object): object;
             /**
              * Updates an existing Marketing Cloud object via the SOAP API.
+             *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/updateitem/)
              *
              * @param objectType - SOAP API object type name
@@ -3162,6 +3584,7 @@ declare namespace Script {
             updateItem(objectType: string, properties: object): object;
             /**
              * Deletes a Marketing Cloud object via the SOAP API.
+             *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/deleteitem/)
              *
              * @param objectType - SOAP API object type name
@@ -3178,6 +3601,7 @@ declare namespace Script {
             deleteItem(objectType: string, properties: object): object;
             /**
              * Retrieves Marketing Cloud objects matching an optional filter via the SOAP API. The third parameter is a simple or complex filter; the fourth sets RetrieveOptions; the fifth sets additional request properties such as QueryAllAccounts.
+             *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/retrieve/)
              *
              * @param objectType - SOAP API object type name
@@ -3205,6 +3629,7 @@ declare namespace Script {
             retrieve(objectType: string, columns: any[], filter?: object, retrieveOptions?: object, requestProps?: object): object;
             /**
              * Retrieves the next page of results from a previous retrieve call that returned HasMoreRows = true.
+             *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/getnextbatch/)
              *
              * @param objectType - SOAP API object type name used in the original retrieve call
@@ -3223,7 +3648,8 @@ declare namespace Script {
             getNextBatch(objectType: string, requestId: string): object;
             /**
              * Executes a perform action on a single Marketing Cloud object.
-             * [ssjs.guide reference](https://ssjs.guide/wsproxy/performitem/)
+             *
+             * [ssjs.guide reference](https://ssjs.guide/wsproxy/perform/)
              *
              * @param objectType - SOAP API object type name.
              * @param properties - Object properties identifying the target item (e.g. { ObjectID: "..." }).
@@ -3238,6 +3664,7 @@ declare namespace Script {
             performItem(objectType: string, properties: object, action: string, performOptions?: object): object;
             /**
              * Executes a perform action on multiple Marketing Cloud objects in a single SOAP API call.
+             *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/performbatch/)
              *
              * @param objectType - SOAP API object type name
@@ -3254,6 +3681,7 @@ declare namespace Script {
             performBatch(objectType: string, propertiesArray: any[], action: string, performOptions?: object): object;
             /**
              * Returns structural metadata (ObjectDefinition) for one or more SOAP API object types.
+             *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/describe/)
              *
              * @param objectType - Object type name or array of type names to describe
@@ -3266,6 +3694,7 @@ declare namespace Script {
             describe(objectType: string): object;
             /**
              * Executes a named method on a Marketing Cloud object.
+             *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/execute/)
              *
              * @param objectType - SOAP API object type name.
@@ -3279,6 +3708,7 @@ declare namespace Script {
             execute(objectType: string, requestName: string): object;
             /**
              * Sets the maximum number of objects returned per SOAP API page (default is 2500).
+             *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/setbatchsize/)
              *
              * @param batchSize - Maximum number of objects per batch
@@ -3290,6 +3720,7 @@ declare namespace Script {
             setBatchSize(batchSize: number): void;
             /**
              * Sets the business unit MID for cross-account operations.
+             *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/setclientid/)
              *
              * @param clientId - Object containing the MID of the target business unit
@@ -3301,6 +3732,7 @@ declare namespace Script {
             setClientId(clientId: object): void;
             /**
              * Clears all client IDs set on the WSProxy instance, reverting to the default execution context credentials.
+             *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/resetclientids/)
              *
              * @example
@@ -3313,6 +3745,7 @@ declare namespace Script {
             resetClientIds(): void;
             /**
              * Creates multiple Marketing Cloud objects in a single SOAP API call.
+             *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/createbatch/)
              *
              * @param objectType - SOAP API object type name
@@ -3330,6 +3763,7 @@ declare namespace Script {
             createBatch(objectType: string, propertiesArray: any[]): object;
             /**
              * Updates multiple Marketing Cloud objects in a single SOAP API call.
+             *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/updatebatch/)
              *
              * @param objectType - SOAP API object type name
@@ -3346,6 +3780,7 @@ declare namespace Script {
             updateBatch(objectType: string, propertiesArray: any[]): object;
             /**
              * Deletes multiple Marketing Cloud objects in a single SOAP API call.
+             *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/deletebatch/)
              *
              * @param objectType - SOAP API object type name
@@ -3365,6 +3800,7 @@ declare namespace Script {
             constructor(url: string);
             /**
              * Executes the HTTP request and returns a Script.Util.HttpResponse object. The response object has a `statusCode` property and a `content` property. Use String(resp.content) to convert the CLR content to a JavaScript string before parsing with Platform.Function.ParseJSON().
+             *
              * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
              *
              * @example
@@ -3379,6 +3815,7 @@ declare namespace Script {
             send(): object;
             /**
              * Sets a request header on the Script.Util HTTP request. Note: setting a custom header disables content caching for Script.Util.HttpGet.
+             *
              * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
              *
              * @param name - Header name (e.g. "Authorization", "Content-Type")
@@ -3392,6 +3829,7 @@ declare namespace Script {
             setHeader(name: string, value: string): void;
             /**
              * Removes all custom headers previously set on the request.
+             *
              * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
              *
              * @example
@@ -3403,6 +3841,7 @@ declare namespace Script {
             clearHeaders(): void;
             /**
              * Removes a specific header from the request by name.
+             *
              * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
              *
              * @param name - Name of the header to remove
@@ -3419,6 +3858,7 @@ declare namespace Script {
             constructor(url: string);
             /**
              * Executes the HTTP request and returns a Script.Util.HttpResponse object. The response object has a `statusCode` property and a `content` property. Use String(resp.content) to convert the CLR content to a JavaScript string before parsing with Platform.Function.ParseJSON().
+             *
              * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
              *
              * @example
@@ -3433,6 +3873,7 @@ declare namespace Script {
             send(): object;
             /**
              * Sets a request header on the Script.Util HTTP request. Note: setting a custom header disables content caching for Script.Util.HttpGet.
+             *
              * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
              *
              * @param name - Header name (e.g. "Authorization", "Content-Type")
@@ -3446,6 +3887,7 @@ declare namespace Script {
             setHeader(name: string, value: string): void;
             /**
              * Removes all custom headers previously set on the request.
+             *
              * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
              *
              * @example
@@ -3457,6 +3899,7 @@ declare namespace Script {
             clearHeaders(): void;
             /**
              * Removes a specific header from the request by name.
+             *
              * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
              *
              * @param name - Name of the header to remove

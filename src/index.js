@@ -27,7 +27,20 @@ export const SSJS_GLOBALS = [
     {
         name: 'Variable',
         type: 'object',
-        description: 'Namespace marker — bare-name access to Platform.Variable.* methods.',
+        aliasOf: 'Platform.Variable',
+        description: 'Bare-name access to Platform.Variable.* methods.',
+    },
+    {
+        name: 'Request',
+        type: 'object',
+        aliasOf: 'Platform.Request',
+        description: 'Bare-name access to Platform.Request.* methods.',
+    },
+    {
+        name: 'Recipient',
+        type: 'object',
+        aliasOf: 'Platform.Recipient',
+        description: 'Bare-name access to Platform.Recipient.* methods.',
     },
     {
         name: 'Attribute',
