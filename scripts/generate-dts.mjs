@@ -220,7 +220,7 @@ const PLATFORM_NAMESPACE_MAP = {
 
 /**
  * Build a JSDoc block comment for a method entry.
- * Emits: description, ssjs.guide link, @deprecated, @remarks, @param, @returns, @example.
+ * Emits: description, ssjs.guide link, \@deprecated, \@remarks, \@param, \@returns, \@example.
  * Returns an empty string when there is nothing to say.
  *
  * @param {object} m - ssjs-data method entry
