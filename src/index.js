@@ -213,7 +213,7 @@ export const SSJS_GLOBALS = [
         aliasOf: 'Platform.Function.IsPhoneNumber',
         requiresCoreLoad: true,
     },
-    { name: 'Write', aliasOf: 'Platform.Response.Write', requiresCoreLoad: true },
+    { name: 'Write', aliasOf: 'Platform.Response.Write' },
     { name: 'Stringify', aliasOf: 'Platform.Function.Stringify', requiresCoreLoad: true },
     // ── Core-library namespace markers ───────────────────────────────────────
     {

@@ -1295,7 +1295,6 @@ declare function IsPhoneNumber(value: string): boolean;
  *
  * [ssjs.guide reference](https://ssjs.guide/global-functions/write/)
  *
- * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @param content - Content string to write to the response.
  * @example
  * var data = { name: "Jane", status: "active" };
