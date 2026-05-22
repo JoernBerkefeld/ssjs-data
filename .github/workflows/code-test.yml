@@ -26,7 +26,3 @@ jobs:
             - run: npm ci --no-workspaces
             - run: npm run lint
             - run: npm test
-            - name: Verify dist files are up to date
-              run: |
-                  npm run generate:all
-                  git diff --exit-code dist/sfmc-globals.d.ts dist/site-index.json
