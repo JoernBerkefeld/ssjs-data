@@ -640,7 +640,7 @@
     "returnType": "object"
   },
   {
-    "name": "proxy.createItem",
+    "name": "<WSProxyInstance>.createItem",
     "url": "/wsproxy/createitem/",
     "section": "WSProxy",
     "type": "method",
@@ -652,7 +652,7 @@
     "returnType": "object"
   },
   {
-    "name": "proxy.updateItem",
+    "name": "<WSProxyInstance>.updateItem",
     "url": "/wsproxy/updateitem/",
     "section": "WSProxy",
     "type": "method",
@@ -664,7 +664,7 @@
     "returnType": "object"
   },
   {
-    "name": "proxy.deleteItem",
+    "name": "<WSProxyInstance>.deleteItem",
     "url": "/wsproxy/deleteitem/",
     "section": "WSProxy",
     "type": "method",
@@ -676,7 +676,7 @@
     "returnType": "object"
   },
   {
-    "name": "proxy.retrieve",
+    "name": "<WSProxyInstance>.retrieve",
     "url": "/wsproxy/retrieve/",
     "section": "WSProxy",
     "type": "method",
@@ -691,7 +691,7 @@
     "returnType": "object"
   },
   {
-    "name": "proxy.getNextBatch",
+    "name": "<WSProxyInstance>.getNextBatch",
     "url": "/wsproxy/getnextbatch/",
     "section": "WSProxy",
     "type": "method",
@@ -703,8 +703,8 @@
     "returnType": "object"
   },
   {
-    "name": "proxy.performItem",
-    "url": "/wsproxy/perform/",
+    "name": "<WSProxyInstance>.performItem",
+    "url": "/wsproxy/performitem/",
     "section": "WSProxy",
     "type": "method",
     "description": "Executes a perform action on a single Marketing Cloud object.",
@@ -717,7 +717,7 @@
     "returnType": "object"
   },
   {
-    "name": "proxy.performBatch",
+    "name": "<WSProxyInstance>.performBatch",
     "url": "/wsproxy/performbatch/",
     "section": "WSProxy",
     "type": "method",
@@ -731,7 +731,7 @@
     "returnType": "object"
   },
   {
-    "name": "proxy.describe",
+    "name": "<WSProxyInstance>.describe",
     "url": "/wsproxy/describe/",
     "section": "WSProxy",
     "type": "method",
@@ -742,7 +742,7 @@
     "returnType": "object"
   },
   {
-    "name": "proxy.execute",
+    "name": "<WSProxyInstance>.execute",
     "url": "/wsproxy/execute/",
     "section": "WSProxy",
     "type": "method",
@@ -754,7 +754,7 @@
     "returnType": "object"
   },
   {
-    "name": "proxy.setBatchSize",
+    "name": "<WSProxyInstance>.setBatchSize",
     "url": "/wsproxy/setbatchsize/",
     "section": "WSProxy",
     "type": "method",
@@ -765,7 +765,7 @@
     "returnType": "void"
   },
   {
-    "name": "proxy.setClientId",
+    "name": "<WSProxyInstance>.setClientId",
     "url": "/wsproxy/setclientid/",
     "section": "WSProxy",
     "type": "method",
@@ -776,7 +776,7 @@
     "returnType": "void"
   },
   {
-    "name": "proxy.resetClientIds",
+    "name": "<WSProxyInstance>.resetClientIds",
     "url": "/wsproxy/resetclientids/",
     "section": "WSProxy",
     "type": "method",
@@ -784,7 +784,7 @@
     "returnType": "void"
   },
   {
-    "name": "proxy.createBatch",
+    "name": "<WSProxyInstance>.createBatch",
     "url": "/wsproxy/createbatch/",
     "section": "WSProxy",
     "type": "method",
@@ -796,7 +796,7 @@
     "returnType": "object"
   },
   {
-    "name": "proxy.updateBatch",
+    "name": "<WSProxyInstance>.updateBatch",
     "url": "/wsproxy/updatebatch/",
     "section": "WSProxy",
     "type": "method",
@@ -808,7 +808,7 @@
     "returnType": "object"
   },
   {
-    "name": "proxy.deleteBatch",
+    "name": "<WSProxyInstance>.deleteBatch",
     "url": "/wsproxy/deletebatch/",
     "section": "WSProxy",
     "type": "method",

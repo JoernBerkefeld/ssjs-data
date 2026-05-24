@@ -38,10 +38,7 @@ export const httpMethodUrl = (name) => `/http/${name.toLowerCase()}/`;
  *
  * @type {Record<string, string>}
  */
-export const WSPROXY_METHOD_URL_OVERRIDES = {
-    // performItem's page is named "perform" (file: perform.md, permalink: /wsproxy/perform/)
-    performitem: '/wsproxy/perform/',
-};
+export const WSPROXY_METHOD_URL_OVERRIDES = {};
 
 /**
  * URL for a WSProxy method page.

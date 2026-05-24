@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Canonical SSJS (Server-Side JavaScript) catalog for SFMC tooling.
  *
  * Single source of truth consumed by:

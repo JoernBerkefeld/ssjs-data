@@ -116,7 +116,7 @@ function paramNames(entry) {
 /**
  * Build one index record from an ssjs-data entry.
  *
- * @param {string} name - Qualified name for lookup (e.g. "HTTP.Get", "proxy.createItem")
+ * @param {string} name - Qualified name for lookup (e.g. "HTTP.Get", "<WSProxyInstance>.createItem")
  * @param {string} url - Site-relative URL (e.g. "/http/get/")
  * @param {string} section - Human-readable section label
  * @param {string} type - "function" | "method" | "object" | "property"
@@ -170,9 +170,9 @@ for (const fn of HTTP_METHODS) {
 }
 
 // ── WSProxy methods ────────────────────────────────────────────────────────
-// Rule 4: wsproxy/ folder matches proxy prefix → strip prefix → /wsproxy/<method>/
+// Rule 4: wsproxy/ folder matches WSProxyInstance prefix → /wsproxy/<method>/
 for (const fn of WSPROXY_METHODS) {
-    index.push(record(`proxy.${fn.name}`, wsproxyMethodUrl(fn.name), 'WSProxy', 'method', fn));
+    index.push(record(`<WSProxyInstance>.${fn.name}`, wsproxyMethodUrl(fn.name), 'WSProxy', 'method', fn));
 }
 
 // ── Script.Util constructors ───────────────────────────────────────────────
