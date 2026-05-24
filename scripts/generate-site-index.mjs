@@ -34,7 +34,6 @@ import {
     ECMASCRIPT_URLS,
     GUIDE_URLS,
     PLATFORM_FUNCTION_GLOBAL_ALIAS,
-    PLATFORM_FUNCTION_NO_PAGE,
 } from '../src/urls.js';
 
 import {
@@ -153,10 +152,6 @@ const index = [];
 // deprecated functions with no ssjs.guide page are omitted.
 for (const fn of PLATFORM_FUNCTIONS) {
     const lower = fn.name.toLowerCase();
-    if (PLATFORM_FUNCTION_NO_PAGE.has(lower)) {
-        continue;
-    }
-
     const url = PLATFORM_FUNCTION_GLOBAL_ALIAS.has(lower)
         ? globalFunctionUrl(fn.name)
         : platformFunctionUrl(fn.name);

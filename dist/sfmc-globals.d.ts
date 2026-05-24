@@ -691,9 +691,9 @@ declare namespace Platform {
          */
         function MD5(string: string, charset?: string): string;
         /**
-         * Converts a JavaScript object into its JSON string representation. Works only with known JSON-serializable types. Not to be confused with `String()`, which converts CLR response objects to plain strings.
+         * Converts a JavaScript object into its JSON string representation. Works only with known JSON-serializable types. Not to be confused with `String()`, which converts CLR response objects to plain strings. The bare-name Stringify() global is equivalent but requires Platform.Load("core","1.1.5"); this Platform.Function form works without it.
          *
-         * [ssjs.guide reference](https://ssjs.guide/global-functions/stringify/)
+         * [ssjs.guide reference](https://ssjs.guide/platform-functions/stringify/)
          *
          * @param object - JavaScript object to serialize to JSON.
          * @returns JSON string representation of the object.
@@ -703,7 +703,7 @@ declare namespace Platform {
          */
         function Stringify(object: object): string;
         /**
-         * Retrieves content from a specified classic Content Area by numeric ID. Deprecated — Content Areas are no longer supported on current SFMC infrastructure.
+         * Retrieves content from a specified classic Content Area by numeric ID. Deprecated — Content Areas are no longer supported on current SFMC infrastructure. Note: the bare-name ContentArea() global uses a string errorMsg as the 3rd parameter and requires Platform.Load("core","1.1.5"); this Platform.Function form does not.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentarea/)
          *
@@ -718,7 +718,7 @@ declare namespace Platform {
          */
         function ContentArea(id: number, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
         /**
-         * Retrieves content from a specified classic Content Area by name. Deprecated — Content Areas are no longer supported on current SFMC infrastructure.
+         * Retrieves content from a specified classic Content Area by name. Deprecated — Content Areas are no longer supported on current SFMC infrastructure. Note: the bare-name ContentAreaByName() global uses a string errorMsg as the 3rd parameter and requires Platform.Load("core","1.1.5"); this Platform.Function form does not.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentareabyname/)
          *
@@ -937,7 +937,7 @@ declare namespace Platform {
     }
 }
 
-// ── Bare-name globals (aliasOf Platform.*) ──────────────────────────────────
+// ── Bare-name globals ────────────────────────────────────────────────────────
 declare namespace Variable {
     /**
      * Retrieves the value of an AMPscript variable from the SSJS context.
@@ -1141,35 +1141,102 @@ declare namespace Recipient {
 }
 
 /**
- * Retrieves content from a specified classic Content Area by numeric ID. Deprecated — Content Areas are no longer supported on current SFMC infrastructure.
+ * Native JavaScript function that converts any value to its string representation. Essential in SSJS for converting the CLR response object returned by Script.Util.HttpRequest.send().content into a JavaScript string that can be passed to Platform.Function.ParseJSON(). Unlike Stringify(), String() works on CLR/.NET objects and does not produce JSON output.
  *
- * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentarea/)
+ * [ssjs.guide reference](https://ssjs.guide/global-functions/string/)
+ *
+ * @param value - Value to convert to string (any type, including CLR objects)
+ * @example
+ * // Convert a CLR response object to a JavaScript string for JSON parsing:
+ * var req = new Script.Util.HttpRequest("https://api.example.com/data");
+ * req.method = "GET";
+ * var resp = req.send();
+ * var responseStr = String(resp.content);  // CLR -> JS string
+ * var responseJSON = Platform.Function.ParseJSON(responseStr);
+ *
+ * // Also works for numbers and other primitives:
+ * var num = 42;
+ * var str = String(num); // "42"
+ */
+declare function String(value: any): string;
+/**
+ * Native JavaScript Error constructor. Creates an Error object that can be thrown or caught. Use inside try/catch blocks for structured error handling in SSJS. The caught error object has a message property.
+ *
+ * [ssjs.guide reference](https://ssjs.guide/global-functions/error/)
+ *
+ * @param message - Human-readable description of the error
+ * @example
+ * try {
+ *     var req = new Script.Util.HttpRequest("https://api.example.com/data");
+ *     req.method = "GET";
+ *     req.continueOnError = false;
+ *     var resp = req.send();
+ *     if (resp.statusCode !== 200) {
+ *         throw new Error("Request failed with status: " + resp.statusCode);
+ *     }
+ * } catch (e) {
+ *     Write("Error: " + e.message);
+ * }
+ */
+declare function Error(message?: string): object;
+/**
+ * Encodes plain text to a Base64 encoded string. Requires `Platform.Load("core", "1.1.5")` before use. For charset control, use `Platform.Function.Base64Encode(string, charset)` instead.
+ *
+ * [ssjs.guide reference](https://ssjs.guide/global-functions/base64encode/)
+ *
+ * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @param string - Text to encode
+ * @example
+ * var decoded = 'Convert to Base64';
+ * var encoded = Base64Encode(decoded); // "Q29udmVydCB0byBCYXNlNjQ="
+ */
+declare function Base64Encode(string: string): string;
+/**
+ * Decodes a Base64 encoded string to plain text. Requires `Platform.Load("core", "1.1.5")` before use. For charset control, use `Platform.Function.Base64Decode(encodedString, charset)` instead.
+ *
+ * [ssjs.guide reference](https://ssjs.guide/global-functions/base64decode/)
+ *
+ * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @param encodedString - Base64 encoded string to decode
+ * @example
+ * var encoded = 'VGhpcyB3YXMgYSBCYXNlNjQgZW5jb2RlZCBzdHJpbmcu';
+ * var decoded = Base64Decode(encoded); // "This was a Base64 encoded string."
+ */
+declare function Base64Decode(encodedString: string): string;
+/**
+ * Retrieves content from a classic Content Area by numeric ID. Deprecated — Content Areas are no longer supported on current SFMC infrastructure. Note: the Platform.Function.ContentArea() variant does not require Platform.Load and accepts a boolean stopOnError parameter instead of a string errorMsg.
+ *
+ * [ssjs.guide reference](https://ssjs.guide/global-functions/contentarea/)
  *
  * @deprecated
+ * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @param id - Numeric ID of the Content Area.
  * @param regionName - Impression region for content.
- * @param stopOnError - When true, throws on failure; when false the call proceeds.
+ * @param errorMsg - Error message string returned on failure.
  * @param fallbackContent - Default content to display when the area cannot be retrieved.
  * @returns Rendered content from the Content Area.
  * @example
- * var content = Platform.Function.ContentArea(123456, "impressionRegion", false, "defaultContentHere");
+ * Platform.Load("core", "1.1.5");
+ * var content = ContentArea(123456, "impressionRegion", "fallback error msg", "defaultContentHere");
  */
-declare function ContentArea(id: number, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
+declare function ContentArea(id: number, regionName?: string, errorMsg?: string, fallbackContent?: string): string;
 /**
- * Retrieves content from a specified classic Content Area by name. Deprecated — Content Areas are no longer supported on current SFMC infrastructure.
+ * Retrieves content from a classic Content Area by name. Deprecated — Content Areas are no longer supported on current SFMC infrastructure. Note: the Platform.Function.ContentAreaByName() variant does not require Platform.Load and accepts a boolean stopOnError parameter instead of a string errorMsg.
  *
- * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentareabyname/)
+ * [ssjs.guide reference](https://ssjs.guide/global-functions/contentareabyname/)
  *
  * @deprecated
+ * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @param name - Name of the Content Area.
  * @param regionName - Impression region for content.
- * @param stopOnError - When true, throws on failure; when false the call proceeds.
+ * @param errorMsg - Error message string returned on failure.
  * @param fallbackContent - Default content to display when the area cannot be retrieved.
  * @returns Rendered content from the Content Area.
  * @example
- * var content = Platform.Function.ContentAreaByName("My Content\\myContentArea", "impressionRegion", false, "defaultContentHere");
+ * Platform.Load("core", "1.1.5");
+ * var content = ContentAreaByName("My Content\\myContentArea", "impressionRegion", "fallback error msg", "defaultContentHere");
  */
-declare function ContentAreaByName(name: string, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
+declare function ContentAreaByName(name: string, regionName?: string, errorMsg?: string, fallbackContent?: string): string;
 /**
  * Marks the start of a named impression tracking region within content.
  *
@@ -1302,7 +1369,7 @@ declare function IsPhoneNumber(value: string): boolean;
  */
 declare function Write(content: string): void;
 /**
- * Converts a JavaScript object into its JSON string representation. Works only with known JSON-serializable types. Not to be confused with `String()`, which converts CLR response objects to plain strings.
+ * Converts a JavaScript object into its JSON string representation. Works only with known JSON-serializable types. Not to be confused with `String()`, which converts CLR response objects to plain strings. The bare-name Stringify() global is equivalent but requires Platform.Load("core","1.1.5"); this Platform.Function form works without it.
  *
  * [ssjs.guide reference](https://ssjs.guide/global-functions/stringify/)
  *
@@ -1314,6 +1381,21 @@ declare function Write(content: string): void;
  * Platform.Function.Write(json);
  */
 declare function Stringify(object: object): string;
+/**
+ * Applies a formatting rule to a string or numeric value. Use format codes such as `C` (currency), `D` (decimal), `N` (number with separators), `P` (percentage), `O` (ISO 8601 date), `s` (sortable date), `d` (short date), `t` (12-hour time), etc. Append a digit to control decimal places, e.g. `C2` for two decimal places.
+ *
+ * [ssjs.guide reference](https://ssjs.guide/global-functions/format/)
+ *
+ * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @param textToFormat - The string or number to apply a formatting rule to.
+ * @param formatCode - A format code to apply. Numeric: C, D, E, F, G, N, P (append digit for decimal places). Date/time: d, M, f, g, O, r, s, t, T, or a custom pattern.
+ * @example
+ * Platform.Load("core", "1.1.5");
+ * var price = Format(4213.65, "C2");  // "$4,213.65"
+ * var isoDate = Format("2024-08-05T13:41:23", "O");  // "2024-08-05T13:41:23.0000000"
+ * Write(price + " / " + isoDate);
+ */
+declare function Format(textToFormat: string | number, formatCode: string): string;
 
 // ── DataExtension instance interfaces ───────────────────────────────────────
 interface DataExtensionFields {
@@ -3648,7 +3730,7 @@ declare namespace Script {
             /**
              * Executes a perform action on a single Marketing Cloud object.
              *
-             * [ssjs.guide reference](https://ssjs.guide/wsproxy/perform/)
+             * [ssjs.guide reference](https://ssjs.guide/wsproxy/performitem/)
              *
              * @param objectType - SOAP API object type name.
              * @param properties - Object properties identifying the target item (e.g. { ObjectID: "..." }).

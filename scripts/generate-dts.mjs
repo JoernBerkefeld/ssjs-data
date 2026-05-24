@@ -511,15 +511,11 @@ line('    }');
 line('}');
 line('');
 
-// ── Bare-name globals (aliasOf Platform.*) ────────────────────────────────────
-line('// ── Bare-name globals (aliasOf Platform.*) ──────────────────────────────────');
+// ── Bare-name globals ─────────────────────────────────────────────────────────
+line('// ── Bare-name globals ────────────────────────────────────────────────────────');
 for (const g of SSJS_GLOBALS) {
-    if (!g.aliasOf) {
-        continue;
-    }
-
     // Namespace object alias (e.g. Variable → Platform.Variable) — emit declare namespace
-    if (g.type === 'object') {
+    if (g.type === 'object' && g.aliasOf) {
         const ns = PLATFORM_NAMESPACE_MAP[g.aliasOf];
         if (ns) {
             line(`declare namespace ${g.name} {`);
@@ -532,6 +528,26 @@ for (const g of SSJS_GLOBALS) {
         continue;
     }
 
+    // Full function definition without aliasOf — emit directly from this entry's own params/types
+    if (!g.aliasOf) {
+        if (!g.params) {
+            continue; // skip non-function entries without params
+        }
+        const gn = g.name.toLowerCase();
+        const globalGuideUrl = GLOBAL_FUNCTION_PAGES.has(gn)
+            ? GUIDE_BASE_URL + globalFunctionUrl(gn)
+            : null;
+        const comment = buildJsDocComment(g, '', globalGuideUrl);
+        const retType = toTsType(g.returnType);
+        const paramStr = buildParamStr(g.params, g.minArgs ?? 0);
+        if (comment) {
+            line(comment.trimEnd());
+        }
+        line(`declare function ${g.name}(${paramStr}): ${retType};`);
+        continue;
+    }
+
+    // aliasOf: resolve the source Platform.Function entry and inherit its signature
     const src = resolveAlias(g.aliasOf);
     if (!src) {
         // Fallback: emit as any

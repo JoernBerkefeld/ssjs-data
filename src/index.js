@@ -178,8 +178,85 @@ export const SSJS_GLOBALS = [
     // Every Platform.Function.X() is also callable as X(). The canonical
     // definition lives in PLATFORM_FUNCTIONS. A subset requires a preceding
     // Platform.Load("core", "1.1.5") call (requiresCoreLoad: true).
-    { name: 'ContentArea', aliasOf: 'Platform.Function.ContentArea', deprecated: true },
-    { name: 'ContentAreaByName', aliasOf: 'Platform.Function.ContentAreaByName', deprecated: true },
+    {
+        name: 'ContentArea',
+        minArgs: 1,
+        maxArgs: 4,
+        deprecated: true,
+        requiresCoreLoad: true,
+        description:
+            'Retrieves content from a classic Content Area by numeric ID. ' +
+            'Deprecated — Content Areas are no longer supported on current SFMC infrastructure. ' +
+            'Note: the Platform.Function.ContentArea() variant does not require Platform.Load and ' +
+            'accepts a boolean stopOnError parameter instead of a string errorMsg.',
+        params: [
+            { name: 'id', description: 'Numeric ID of the Content Area.', type: 'number' },
+            {
+                name: 'regionName',
+                description: 'Impression region for content.',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'errorMsg',
+                description: 'Error message string returned on failure.',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'fallbackContent',
+                description: 'Default content to display when the area cannot be retrieved.',
+                type: 'string',
+                optional: true,
+            },
+        ],
+        returnType: 'string',
+        returnDescription: 'Rendered content from the Content Area.',
+        syntax: 'ContentArea(id[, regionName, errorMsg, fallbackContent])',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var content = ContentArea(123456, "impressionRegion", "fallback error msg", "defaultContentHere");',
+    },
+    {
+        name: 'ContentAreaByName',
+        minArgs: 1,
+        maxArgs: 4,
+        deprecated: true,
+        requiresCoreLoad: true,
+        description:
+            'Retrieves content from a classic Content Area by name. ' +
+            'Deprecated — Content Areas are no longer supported on current SFMC infrastructure. ' +
+            'Note: the Platform.Function.ContentAreaByName() variant does not require Platform.Load and ' +
+            'accepts a boolean stopOnError parameter instead of a string errorMsg.',
+        params: [
+            { name: 'name', description: 'Name of the Content Area.', type: 'string' },
+            {
+                name: 'regionName',
+                description: 'Impression region for content.',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'errorMsg',
+                description: 'Error message string returned on failure.',
+                type: 'string',
+                optional: true,
+            },
+            {
+                name: 'fallbackContent',
+                description: 'Default content to display when the area cannot be retrieved.',
+                type: 'string',
+                optional: true,
+            },
+        ],
+        returnType: 'string',
+        returnDescription: 'Rendered content from the Content Area.',
+        syntax: 'ContentAreaByName(name[, regionName, errorMsg, fallbackContent])',
+        example:
+            String.raw`Platform.Load("core", "1.1.5");` +
+            '\n' +
+            String.raw`var content = ContentAreaByName("My Content\\myContentArea", "impressionRegion", "fallback error msg", "defaultContentHere");`,
+    },
     {
         name: 'BeginImpressionRegion',
         aliasOf: 'Platform.Function.BeginImpressionRegion',
@@ -1584,7 +1661,9 @@ export const PLATFORM_FUNCTIONS = [
         description:
             'Converts a JavaScript object into its JSON string representation. ' +
             'Works only with known JSON-serializable types. ' +
-            'Not to be confused with `String()`, which converts CLR response objects to plain strings.',
+            'Not to be confused with `String()`, which converts CLR response objects to plain strings. ' +
+            'The bare-name Stringify() global is equivalent but requires Platform.Load("core","1.1.5"); ' +
+            'this Platform.Function form works without it.',
         params: [
             {
                 name: 'object',
@@ -1605,7 +1684,9 @@ export const PLATFORM_FUNCTIONS = [
         deprecated: true,
         description:
             'Retrieves content from a specified classic Content Area by numeric ID. ' +
-            'Deprecated — Content Areas are no longer supported on current SFMC infrastructure.',
+            'Deprecated — Content Areas are no longer supported on current SFMC infrastructure. ' +
+            'Note: the bare-name ContentArea() global uses a string errorMsg as the 3rd parameter ' +
+            'and requires Platform.Load("core","1.1.5"); this Platform.Function form does not.',
         params: [
             { name: 'id', description: 'Numeric ID of the Content Area.', type: 'number' },
             {
@@ -1640,7 +1721,9 @@ export const PLATFORM_FUNCTIONS = [
         deprecated: true,
         description:
             'Retrieves content from a specified classic Content Area by name. ' +
-            'Deprecated — Content Areas are no longer supported on current SFMC infrastructure.',
+            'Deprecated — Content Areas are no longer supported on current SFMC infrastructure. ' +
+            'Note: the bare-name ContentAreaByName() global uses a string errorMsg as the 3rd parameter ' +
+            'and requires Platform.Load("core","1.1.5"); this Platform.Function form does not.',
         params: [
             { name: 'name', description: 'Name of the Content Area.', type: 'string' },
             {

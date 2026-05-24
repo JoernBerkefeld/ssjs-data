@@ -33,24 +33,12 @@ export const platformFunctionUrl = (name) => `/platform-functions/${name.toLower
 export const httpMethodUrl = (name) => `/http/${name.toLowerCase()}/`;
 
 /**
- * Overrides for WSProxy method URLs where the page slug differs from name.toLowerCase().
- * Key: method name in lowercase. Value: site-relative URL.
- *
- * @type {Record<string, string>}
- */
-export const WSPROXY_METHOD_URL_OVERRIDES = {};
-
-/**
  * URL for a WSProxy method page.
- * Checks WSPROXY_METHOD_URL_OVERRIDES first, then falls back to /wsproxy/<name.toLowerCase()>/.
  *
  * @param {string} name - Method name (any case)
  * @returns {string} Site-relative URL
  */
-export const wsproxyMethodUrl = (name) => {
-    const lower = name.toLowerCase();
-    return WSPROXY_METHOD_URL_OVERRIDES[lower] ?? `/wsproxy/${lower}/`;
-};
+export const wsproxyMethodUrl = (name) => `/wsproxy/${name.toLowerCase()}/`;
 
 /**
  * URL for a global-function page.
@@ -179,6 +167,8 @@ export const GLOBAL_FUNCTION_PAGES = new Set([
     'error',
     'variable',
     'attribute',
+    'contentarea',
+    'contentareabyname',
 ]);
 
 /**
@@ -189,12 +179,4 @@ export const GLOBAL_FUNCTION_PAGES = new Set([
  *
  * @type {Set.<string>}
  */
-export const PLATFORM_FUNCTION_GLOBAL_ALIAS = new Set(['stringify']);
-
-/**
- * Platform.Function names (all lowercase) that have no dedicated ssjs.guide page.
- * Omit these from the site-index to avoid dead links.
- *
- * @type {Set.<string>}
- */
-export const PLATFORM_FUNCTION_NO_PAGE = new Set(['contentarea', 'contentareabyname']);
+export const PLATFORM_FUNCTION_GLOBAL_ALIAS = new Set([]);
