@@ -4,13 +4,13 @@ if [[ $SKIP_HOOKS -gt 0 ]]; then
 fi
 
 # ── Regenerate dist files when source data or URL rules change ────────────────
-# Check whether any staged file touches the data or URL source files.
+# Paths are relative to this repo root (ssjs-data/).
 STAGED=$(git diff --cached --name-only)
 
 NEEDS_REGEN=false
 for f in $STAGED; do
   case "$f" in
-    ssjs-data/src/index.js|ssjs-data/src/urls.js)
+    src/index.js|src/urls.js)
       NEEDS_REGEN=true
       break
       ;;
@@ -19,10 +19,25 @@ done
 
 if [ "$NEEDS_REGEN" = true ]; then
   echo "[PRE-COMMIT] 🔄 ssjs-data source changed — regenerating dist files..."
-  (cd ssjs-data && npm run generate:all) || {
+  npm run generate:all --no-workspaces || {
     echo "[PRE-COMMIT] ❌ generate:all failed. Fix the errors above and try again."
     exit 1
   }
-  git add ssjs-data/dist/sfmc-globals.d.ts ssjs-data/dist/site-index.json ssjs.guide/site-index.json
+  git add dist/sfmc-globals.d.ts dist/site-index.json
   echo "[PRE-COMMIT] ✅ dist files regenerated and staged."
 fi
+
+# ── Lint & test ───────────────────────────────────────────────────────────────
+echo "[PRE-COMMIT] Run lint-staged"
+npx lint-staged || {
+  echo "[PRE-COMMIT] lint-staged reported errors it could not auto-fix. Fix them manually and try again."
+  exit 1
+}
+
+echo "[PRE-COMMIT] Running tests..."
+npm test --no-workspaces || {
+  echo "[PRE-COMMIT] Tests failed. Fix the errors above and try again."
+  exit 1
+}
+
+echo "[PRE-COMMIT] All checks passed."
