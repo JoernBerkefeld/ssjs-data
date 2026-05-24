@@ -179,4 +179,4 @@ export const GLOBAL_FUNCTION_PAGES = new Set([
  *
  * @type {Set.<string>}
  */
-export const PLATFORM_FUNCTION_GLOBAL_ALIAS = new Set([]);
+export const PLATFORM_FUNCTION_GLOBAL_ALIAS = new Set();

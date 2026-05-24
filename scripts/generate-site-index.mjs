@@ -167,7 +167,9 @@ for (const fn of HTTP_METHODS) {
 // ── WSProxy methods ────────────────────────────────────────────────────────
 // Rule 4: wsproxy/ folder matches WSProxyInstance prefix → /wsproxy/<method>/
 for (const fn of WSPROXY_METHODS) {
-    index.push(record(`<WSProxyInstance>.${fn.name}`, wsproxyMethodUrl(fn.name), 'WSProxy', 'method', fn));
+    index.push(
+        record(`<WSProxyInstance>.${fn.name}`, wsproxyMethodUrl(fn.name), 'WSProxy', 'method', fn),
+    );
 }
 
 // ── Script.Util constructors ───────────────────────────────────────────────
