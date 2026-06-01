@@ -45,6 +45,7 @@ import {
     ECMASCRIPT_BUILTINS,
     ATTRIBUTE_METHODS,
     DATE_TIME_TIMEZONE_METHODS,
+    DATE_TIME_METHODS,
     ERROR_UTIL_METHODS,
     ACCOUNT_METHODS,
     ACCOUNT_TRACKING_METHODS,
@@ -548,6 +549,11 @@ for (const g of SSJS_GLOBALS) {
     }
 
     // aliasOf: resolve the source Platform.Function entry and inherit its signature
+    // Dotted-name aliases (e.g. DateTime.SystemDateToLocalDate) are emitted via their
+    // CORE_CLASS_MAP namespace block — skip here to avoid invalid dotted declare function.
+    if (g.name.includes('.')) {
+        continue;
+    }
     const src = resolveAlias(g.aliasOf);
     if (!src) {
         // Fallback: emit as any
@@ -662,6 +668,7 @@ const CORE_CLASS_MAP = [
         g(CORE_LIBRARY_URLS, 'DataExtension.Fields'),
     ],
     ['DataExtension.Rows', DATA_EXTENSION_ROWS_METHODS, g(CORE_LIBRARY_URLS, 'DataExtension.Rows')],
+    ['DateTime', DATE_TIME_METHODS, g(PLATFORM_OBJECT_URLS, 'DateTime')],
     ['DateTime.TimeZone', DATE_TIME_TIMEZONE_METHODS, g(PLATFORM_OBJECT_URLS, 'DateTime.TimeZone')],
 ];
 

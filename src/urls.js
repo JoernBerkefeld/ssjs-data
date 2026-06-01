@@ -65,7 +65,8 @@ export const PLATFORM_OBJECT_URLS = {
     'Platform.Request': '/platform-objects/platform-request/',
     'Platform.Recipient': '/platform-objects/platform-recipient/',
     HTTPHeader: '/platform-objects/httpheader/',
-    'DateTime.TimeZone': '/platform-objects/datetime-timezone/',
+    DateTime: '/platform-objects/datetime/',
+    'DateTime.TimeZone': '/platform-objects/datetime/',
     ErrorUtil: '/platform-objects/errorutil/',
 };
 

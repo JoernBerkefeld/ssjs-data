@@ -49,6 +49,7 @@ import {
     PLATFORM_RECIPIENT_METHODS,
     HTTPHEADER_METHODS,
     DATE_TIME_TIMEZONE_METHODS,
+    DATE_TIME_METHODS,
     ERROR_UTIL_METHODS,
     ATTRIBUTE_METHODS,
     DATA_EXTENSION_METHODS,
@@ -221,6 +222,11 @@ const PLATFORM_OBJECT_GROUPS = [
         url: PLATFORM_OBJECT_URLS['Platform.Recipient'],
     },
     { array: HTTPHEADER_METHODS, prefix: 'HTTPHeader', url: PLATFORM_OBJECT_URLS.HTTPHeader },
+    {
+        array: DATE_TIME_METHODS,
+        prefix: 'DateTime',
+        url: PLATFORM_OBJECT_URLS['DateTime'],
+    },
     {
         array: DATE_TIME_TIMEZONE_METHODS,
         prefix: 'DateTime.TimeZone',

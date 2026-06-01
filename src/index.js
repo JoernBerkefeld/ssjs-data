@@ -269,12 +269,12 @@ export const SSJS_GLOBALS = [
     },
     { name: 'Now', aliasOf: 'Platform.Function.Now', requiresCoreLoad: true },
     {
-        name: 'SystemDateToLocalDate',
+        name: 'DateTime.SystemDateToLocalDate',
         aliasOf: 'Platform.Function.SystemDateToLocalDate',
         requiresCoreLoad: true,
     },
     {
-        name: 'LocalDateToSystemDate',
+        name: 'DateTime.LocalDateToSystemDate',
         aliasOf: 'Platform.Function.LocalDateToSystemDate',
         requiresCoreLoad: true,
     },
@@ -1007,13 +1007,13 @@ export const PLATFORM_FUNCTIONS = [
             'Converts a date-time value from Marketing Cloud system time (CST) to the local time of the account or user.',
         params: [
             {
-                name: 'dateValue',
+                name: 'dateString',
                 description: 'Date-time string in system time (CST)',
                 type: 'string',
             },
         ],
         returnType: 'string',
-        syntax: 'Platform.Function.SystemDateToLocalDate(dateValue)',
+        syntax: 'Platform.Function.SystemDateToLocalDate(dateString)',
         example:
             'var systemDate = Platform.Function.Now();\nvar localDate = Platform.Function.SystemDateToLocalDate(systemDate);\nWrite(localDate);',
     },
@@ -1025,13 +1025,13 @@ export const PLATFORM_FUNCTIONS = [
             'Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST).',
         params: [
             {
-                name: 'dateValue',
+                name: 'dateString',
                 description: 'Date-time string in local account/user time',
                 type: 'string',
             },
         ],
         returnType: 'string',
-        syntax: 'Platform.Function.LocalDateToSystemDate(dateValue)',
+        syntax: 'Platform.Function.LocalDateToSystemDate(dateString)',
         example:
             'var localDate = "8/5/2025 12:00:00 PM";\nvar systemDate = Platform.Function.LocalDateToSystemDate(localDate);\nWrite(systemDate);',
     },
@@ -6235,6 +6235,51 @@ export const ATTRIBUTE_METHODS = [
 ];
 
 export const attributeMethodNames = new Set(ATTRIBUTE_METHODS.map((m) => m.name.toLowerCase()));
+
+// ── DateTime methods ─────────────────────────────────────────────────────────
+// Short-form date-time conversion helpers on the DateTime namespace.
+// Require Platform.Load("core", "1.1.5").
+
+export const DATE_TIME_METHODS = [
+    {
+        name: 'SystemDateToLocalDate',
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Converts a date-time value from Marketing Cloud system time (CST) to the local time of the account or user.',
+        params: [
+            {
+                name: 'dateString',
+                description: 'Date-time string in system time (CST)',
+                type: 'string',
+            },
+        ],
+        returnType: 'string',
+        requiresCoreLoad: true,
+        syntax: 'DateTime.SystemDateToLocalDate(dateString)',
+        example:
+            'var localTime = DateTime.SystemDateToLocalDate(Platform.Function.Now());\nWrite(localTime);',
+    },
+    {
+        name: 'LocalDateToSystemDate',
+        minArgs: 1,
+        maxArgs: 1,
+        description:
+            'Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST).',
+        params: [
+            {
+                name: 'dateString',
+                description: 'Date-time string in local account/user time',
+                type: 'string',
+            },
+        ],
+        returnType: 'string',
+        requiresCoreLoad: true,
+        syntax: 'DateTime.LocalDateToSystemDate(dateString)',
+        example:
+            'var systemTime = DateTime.LocalDateToSystemDate("8/5/2025 12:34 PM");\nWrite(systemTime);',
+    },
+];
 
 // ── DateTime.TimeZone methods ────────────────────────────────────────────────
 // Methods on the DateTime.TimeZone namespace. Require Platform.Load("core", "1.1.5").

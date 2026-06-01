@@ -307,25 +307,25 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/systemdatetolocaldate/)
          *
-         * @param dateValue - Date-time string in system time (CST)
+         * @param dateString - Date-time string in system time (CST)
          * @example
          * var systemDate = Platform.Function.Now();
          * var localDate = Platform.Function.SystemDateToLocalDate(systemDate);
          * Write(localDate);
          */
-        function SystemDateToLocalDate(dateValue: string): string;
+        function SystemDateToLocalDate(dateString: string): string;
         /**
          * Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST).
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/localdatetosystemdate/)
          *
-         * @param dateValue - Date-time string in local account/user time
+         * @param dateString - Date-time string in local account/user time
          * @example
          * var localDate = "8/5/2025 12:00:00 PM";
          * var systemDate = Platform.Function.LocalDateToSystemDate(localDate);
          * Write(systemDate);
          */
-        function LocalDateToSystemDate(dateValue: string): string;
+        function LocalDateToSystemDate(dateString: string): string;
         /**
          * Raises an error with an optional scope flag. When the second parameter is true, the error stops only the current recipient's send. When false, the error halts the entire send job.
          *
@@ -1278,32 +1278,6 @@ declare function EndImpressionRegion(closeAll?: boolean): void;
  * var sendTime = Platform.Function.Now(true);
  */
 declare function Now(useContextTime?: boolean): string;
-/**
- * Converts a date-time value from Marketing Cloud system time (CST) to the local time of the account or user.
- *
- * [ssjs.guide reference](https://ssjs.guide/platform-functions/systemdatetolocaldate/)
- *
- * @remarks Requires `Platform.Load("Core", "1")` before use.
- * @param dateValue - Date-time string in system time (CST)
- * @example
- * var systemDate = Platform.Function.Now();
- * var localDate = Platform.Function.SystemDateToLocalDate(systemDate);
- * Write(localDate);
- */
-declare function SystemDateToLocalDate(dateValue: string): string;
-/**
- * Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST).
- *
- * [ssjs.guide reference](https://ssjs.guide/platform-functions/localdatetosystemdate/)
- *
- * @remarks Requires `Platform.Load("Core", "1")` before use.
- * @param dateValue - Date-time string in local account/user time
- * @example
- * var localDate = "8/5/2025 12:00:00 PM";
- * var systemDate = Platform.Function.LocalDateToSystemDate(localDate);
- * Write(systemDate);
- */
-declare function LocalDateToSystemDate(dateValue: string): string;
 /**
  * Redirects the current page to a new URL. Pass false for a 302 temporary redirect or true for a 301 permanent redirect. Do not use 301 if you want browsers to re-check the original URL later.
  *
@@ -3369,11 +3343,37 @@ declare namespace DataExtension.Rows {
      */
     function Update(rowData: object, whereFieldNames: any[], whereValues: any[]): string;
 }
+declare namespace DateTime {
+    /**
+     * Converts a date-time value from Marketing Cloud system time (CST) to the local time of the account or user.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/datetime/)
+     *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param dateString - Date-time string in system time (CST)
+     * @example
+     * var localTime = DateTime.SystemDateToLocalDate(Platform.Function.Now());
+     * Write(localTime);
+     */
+    function SystemDateToLocalDate(dateString: string): string;
+    /**
+     * Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST).
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/datetime/)
+     *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param dateString - Date-time string in local account/user time
+     * @example
+     * var systemTime = DateTime.LocalDateToSystemDate("8/5/2025 12:34 PM");
+     * Write(systemTime);
+     */
+    function LocalDateToSystemDate(dateString: string): string;
+}
 declare namespace DateTime.TimeZone {
     /**
      * Retrieves an array of time zones matching the specified filter criteria. If no filter is supplied the function returns all available time zones.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/datetime-timezone/)
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/datetime/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
