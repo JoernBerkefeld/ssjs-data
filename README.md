@@ -88,6 +88,7 @@ import {
     TRIGGERED_SEND_TRACKING_CLICKS_METHODS,
     TRIGGERED_SEND_TRACKING_TOTAL_BY_INTERVAL_METHODS,
     // DateTime / ErrorUtil
+    DATE_TIME_METHODS,
     DATE_TIME_TIMEZONE_METHODS,
     ERROR_UTIL_METHODS,
     // Script.Util
@@ -297,6 +298,19 @@ for (const method of ATTRIBUTE_METHODS) {
 }
 if (attributeMethodNames.has('getvalue')) { /* ... */ }
 const m = attributeMethodLookup.get('getvalue');
+```
+
+### `DATE_TIME_METHODS`
+
+`DateTime` namespace methods for date conversion between local and system (UTC) time. These require `Platform.Load("core", "1")`:
+
+```js
+import { DATE_TIME_METHODS } from 'ssjs-data';
+
+for (const method of DATE_TIME_METHODS) {
+    console.log(method.name);   // e.g. 'SystemDateToLocalDate', 'LocalDateToSystemDate'
+    console.log(method.syntax); // e.g. 'DateTime.SystemDateToLocalDate(dateString)'
+}
 ```
 
 ### `DATE_TIME_TIMEZONE_METHODS`
