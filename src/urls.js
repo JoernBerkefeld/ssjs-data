@@ -60,6 +60,7 @@ export const globalFunctionUrl = (name) => `/global-functions/${name.toLowerCase
  */
 export const PLATFORM_OBJECT_URLS = {
     Platform: '/platform-objects/platform-load/',
+    'Platform.Function': '/platform-functions/',
     'Platform.Variable': '/platform-objects/platform-variable/',
     'Platform.Response': '/platform-objects/platform-response/',
     'Platform.Request': '/platform-objects/platform-request/',

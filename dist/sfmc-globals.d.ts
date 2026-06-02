@@ -18,6 +18,12 @@ declare namespace Platform {
      * var rows = de.Rows.Retrieve();
      */
     function Load(libraryName: string, version: string): void;
+    /**
+     * SFMC Platform function API.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-functions/)
+     *
+     */
     namespace Function {
         /**
          * Retrieves a single field value from a Data Extension row matching filter criteria. To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).
@@ -746,6 +752,12 @@ declare namespace Platform {
          */
         function IsCHTMLBrowser(userAgentString: string): boolean;
     }
+    /**
+     * SSJS variable declaration and retrieval methods.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-variable/)
+     *
+     */
     namespace Variable {
         /**
          * Retrieves the value of an AMPscript variable from the SSJS context.
@@ -773,6 +785,12 @@ declare namespace Platform {
          */
         function SetValue(variableName: string, value: string): void;
     }
+    /**
+     * HTTP response manipulation methods.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
+     *
+     */
     namespace Response {
         /**
          * Sets a response header on the current page response.
@@ -844,6 +862,12 @@ declare namespace Platform {
         var ContentType: string;
         var CharacterSet: string;
     }
+    /**
+     * HTTP request reading methods and properties.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     *
+     */
     namespace Request {
         /**
          * Retrieves the value of a URL query string parameter.
@@ -922,6 +946,12 @@ declare namespace Platform {
         const RequestURL: string;
         const UserAgent: string;
     }
+    /**
+     * Methods to access subscriber and recipient data.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-recipient/)
+     *
+     */
     namespace Recipient {
         /**
          * Returns the value of a subscriber attribute or sendable data extension field for the current recipient.
@@ -1376,6 +1406,8 @@ interface DataExtensionFields {
     /**
      * Adds a field to the previously initialized data extension. `properties.Name` is required; the rest (`CustomerKey`, `FieldType`, `MaxLength`, `IsRequired`, `IsPrimaryKey`, `Ordinal`, `Scale`, `DefaultValue`) are optional. `FieldType` accepts: 'Boolean', 'Date', 'Decimal', 'EmailAddress', 'Locale', 'Number', 'Phone', 'Text'.
      *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-fields/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @param properties - Object describing the new field.
      * @returns Returns "OK" on success or throws on failure.
@@ -1389,6 +1421,8 @@ interface DataExtensionFields {
     /**
      * Returns an array of field definitions for the previously initialized data extension.
      *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-fields/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @returns List of field-definition objects.
      * @example
@@ -1399,6 +1433,8 @@ interface DataExtensionFields {
     Retrieve(): object[];
     /**
      * Updates which data extension field is used to relate the data extension to the All Subscribers list during sending. Pass the name of the data extension field, and which subscriber attribute it should map to.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-fields/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @param deFieldName - Name of the data extension field that should make the connection to the subscriber list.
@@ -1414,6 +1450,8 @@ interface DataExtensionFields {
 interface DataExtensionRows {
     /**
      * Adds one or more rows to the previously initialized data extension.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @param rowData - Array of objects, one per row to add. Each object's keys must match data extension field names.
@@ -1431,6 +1469,8 @@ interface DataExtensionRows {
     /**
      * Returns rows where the specified columns equal the specified values (AND-joined). Optionally limits results and orders by a field. When initializing a data extension for `Lookup()` from an email message, you must use the data extension Name; on landing pages, either Name or external key works — make them identical to be safe.
      *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @param searchFieldNames - Array of column names to match against.
      * @param searchValues - Array of values to match (one per column, in order).
@@ -1446,6 +1486,8 @@ interface DataExtensionRows {
     /**
      * Deletes rows from the previously initialized data extension where the specified columns equal the specified values (AND-joined). For large deletion requests, batch the work — this method times out on long-running deletes.
      *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
+     *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @param columnNames - Array of column names to match against.
      * @param columnValues - Array of values to match (one per column, in order).
@@ -1458,6 +1500,8 @@ interface DataExtensionRows {
     Remove(columnNames: any[], columnValues: any[]): number;
     /**
      * Retrieves up to 2500 rows from the previously initialized data extension. When called without a filter, returns all rows (subject to the 2500-row cap). Cannot be used in the context of an email message or email preview.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @param filter - WSProxy-style filter object — simple `{Property, SimpleOperator, Value}` or compound with `LeftOperand`/`LogicalOperator`/`RightOperand`. Optional per the example, despite the doc table marking `Required: Yes`.
@@ -1472,6 +1516,8 @@ interface DataExtensionRows {
     Retrieve(filter?: object): object[];
     /**
      * Updates the columns of rows where `whereFieldNames` equal `whereValues` (AND-joined). Throws if no row matches.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @param rowData - Object whose keys are columns to update and values are the new values.
@@ -3627,7 +3673,33 @@ declare namespace HTTPHeader {
 // ── Script.Util ──────────────────────────────────────────────────────────────
 declare namespace Script {
     namespace Util {
+        /**
+         * Creates a WSProxy instance for making SOAP API calls against the Marketing Cloud web service. No Platform.Load is required.
+         *
+         * [ssjs.guide reference](https://ssjs.guide/wsproxy/)
+         *
+         * @returns An authenticated WSProxy object bound to the current execution context.
+         * @example
+         * var api = new Script.Util.WSProxy();
+         * var result = api.retrieve("DataExtension", ["Name", "CustomerKey"]);
+         * if (result.Status === "OK") {
+         *     Write(Stringify(result.Results));
+         * }
+         */
         class WSProxy {
+            /**
+             * Creates a WSProxy instance for making SOAP API calls against the Marketing Cloud web service. No Platform.Load is required.
+             *
+             * [ssjs.guide reference](https://ssjs.guide/wsproxy/)
+             *
+             * @returns An authenticated WSProxy object bound to the current execution context.
+             * @example
+             * var api = new Script.Util.WSProxy();
+             * var result = api.retrieve("DataExtension", ["Name", "CustomerKey"]);
+             * if (result.Status === "OK") {
+             *     Write(Stringify(result.Results));
+             * }
+             */
             constructor();
             /**
              * Creates a new Marketing Cloud object via the SOAP API.
@@ -3877,7 +3949,45 @@ declare namespace Script {
              */
             deleteBatch(objectType: string, propertiesArray: any[]): object;
         }
+        /**
+         * Creates an HTTP request handler that supports any HTTP method (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS). Unlike Platform.Function.HTTPGet/HTTPPost, this handler supports custom methods and headers. Call send() to execute the request and receive a Script.Util.HttpResponse object.
+         *
+         * [ssjs.guide reference](https://ssjs.guide/http/script-util-httprequest/)
+         *
+         * @param url - The destination URL for the request
+         * @example
+         * var url = "https://api.example.com/items/123";
+         * var req = new Script.Util.HttpRequest(url);
+         * req.emptyContentHandling = 0;
+         * req.retries = 2;
+         * req.continueOnError = true;
+         * req.contentType = "application/json";
+         * req.method = "PUT";
+         * req.setHeader("Authorization", "Bearer " + accessToken);
+         * req.postData = Stringify({ status: "active" });
+         * var resp = req.send();
+         * var result = Platform.Function.ParseJSON(String(resp.content));
+         */
         class HttpRequest {
+            /**
+             * Creates an HTTP request handler that supports any HTTP method (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS). Unlike Platform.Function.HTTPGet/HTTPPost, this handler supports custom methods and headers. Call send() to execute the request and receive a Script.Util.HttpResponse object.
+             *
+             * [ssjs.guide reference](https://ssjs.guide/http/script-util-httprequest/)
+             *
+             * @param url - The destination URL for the request
+             * @example
+             * var url = "https://api.example.com/items/123";
+             * var req = new Script.Util.HttpRequest(url);
+             * req.emptyContentHandling = 0;
+             * req.retries = 2;
+             * req.continueOnError = true;
+             * req.contentType = "application/json";
+             * req.method = "PUT";
+             * req.setHeader("Authorization", "Bearer " + accessToken);
+             * req.postData = Stringify({ status: "active" });
+             * var resp = req.send();
+             * var result = Platform.Function.ParseJSON(String(resp.content));
+             */
             constructor(url: string);
             /**
              * Executes the HTTP request and returns a Script.Util.HttpResponse object. The response object has a `statusCode` property and a `content` property. Use String(resp.content) to convert the CLR content to a JavaScript string before parsing with Platform.Function.ParseJSON().
@@ -3935,7 +4045,41 @@ declare namespace Script {
              */
             removeHeader(name: string): void;
         }
+        /**
+         * Creates an HTTP GET request handler. Unlike Platform.Function.HTTPGet, this handler caches content for use in mail sends and supports custom headers. Only works with HTTP on port 80 and HTTPS on port 443. Call send() to execute the request and receive a Script.Util.HttpResponse object.
+         *
+         * [ssjs.guide reference](https://ssjs.guide/http/script-util-httpget/)
+         *
+         * @param url - The URL to retrieve content from
+         * @example
+         * var req = new Script.Util.HttpGet("https://api.example.com/data");
+         * req.setHeader("Authorization", "Bearer " + accessToken);
+         * req.retries = 2;
+         * req.continueOnError = true;
+         * var resp = req.send();
+         * if (resp.statusCode == 200) {
+         *     var result = Platform.Function.ParseJSON(String(resp.content));
+         *     Platform.Response.Write(Platform.Function.Stringify(result));
+         * }
+         */
         class HttpGet {
+            /**
+             * Creates an HTTP GET request handler. Unlike Platform.Function.HTTPGet, this handler caches content for use in mail sends and supports custom headers. Only works with HTTP on port 80 and HTTPS on port 443. Call send() to execute the request and receive a Script.Util.HttpResponse object.
+             *
+             * [ssjs.guide reference](https://ssjs.guide/http/script-util-httpget/)
+             *
+             * @param url - The URL to retrieve content from
+             * @example
+             * var req = new Script.Util.HttpGet("https://api.example.com/data");
+             * req.setHeader("Authorization", "Bearer " + accessToken);
+             * req.retries = 2;
+             * req.continueOnError = true;
+             * var resp = req.send();
+             * if (resp.statusCode == 200) {
+             *     var result = Platform.Function.ParseJSON(String(resp.content));
+             *     Platform.Response.Write(Platform.Function.Stringify(result));
+             * }
+             */
             constructor(url: string);
             /**
              * Executes the HTTP request and returns a Script.Util.HttpResponse object. The response object has a `statusCode` property and a `content` property. Use String(resp.content) to convert the CLR content to a JavaScript string before parsing with Platform.Function.ParseJSON().

@@ -344,10 +344,11 @@ function emitIfaceMember(m, indent = '    ', guideUrl = null) {
  *
  * @param {Array} methods - array of ssjs-data method entries
  * @param {string} indent - indentation string to prepend to each member
+ * @param {string|null} guideUrl - optional ssjs.guide reference URL forwarded to each member
  * @returns {string} Newline-joined TypeScript declaration lines
  */
-function emitIfaceBlock(methods, indent = '    ') {
-    return methods.map((m) => emitIfaceMember(m, indent)).join('\n');
+function emitIfaceBlock(methods, indent = '    ', guideUrl = null) {
+    return methods.map((m) => emitIfaceMember(m, indent, guideUrl)).join('\n');
 }
 
 /**
@@ -462,7 +463,9 @@ for (const m of PLATFORM_METHODS) {
     line(emitNsMember(m, '    ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS.Platform));
 }
 // Platform.Function
-line('    namespace Function {');
+line(
+    `${buildJsDocComment({ description: 'SFMC Platform function API.' }, '    ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Function'])}    namespace Function {`,
+);
 for (const m of PLATFORM_FUNCTIONS) {
     const lower = m.name.toLowerCase();
     const fnUrl = PLATFORM_FUNCTION_GLOBAL_ALIAS.has(lower)
@@ -472,13 +475,17 @@ for (const m of PLATFORM_FUNCTIONS) {
 }
 line('    }');
 // Platform.Variable
-line('    namespace Variable {');
+line(
+    `${buildJsDocComment({ description: 'SSJS variable declaration and retrieval methods.' }, '    ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Variable'])}    namespace Variable {`,
+);
 for (const m of PLATFORM_VARIABLE_METHODS) {
     line(emitNsMember(m, '        ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Variable']));
 }
 line('    }');
 // Platform.Response
-line('    namespace Response {');
+line(
+    `${buildJsDocComment({ description: 'HTTP response manipulation methods.' }, '    ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Response'])}    namespace Response {`,
+);
 for (const m of PLATFORM_RESPONSE_METHODS) {
     if (isPropertyEntry(m)) {
         // Response properties are mutable (get/set) — no JSDoc here; just the TS declaration
@@ -491,7 +498,9 @@ for (const m of PLATFORM_RESPONSE_METHODS) {
 }
 line('    }');
 // Platform.Request
-line('    namespace Request {');
+line(
+    `${buildJsDocComment({ description: 'HTTP request reading methods and properties.' }, '    ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Request'])}    namespace Request {`,
+);
 for (const m of PLATFORM_REQUEST_METHODS) {
     if (isPropertyEntry(m)) {
         // Request properties are read-only — no JSDoc here; just the TS declaration
@@ -504,7 +513,9 @@ for (const m of PLATFORM_REQUEST_METHODS) {
 }
 line('    }');
 // Platform.Recipient
-line('    namespace Recipient {');
+line(
+    `${buildJsDocComment({ description: 'Methods to access subscriber and recipient data.' }, '    ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Recipient'])}    namespace Recipient {`,
+);
 for (const m of PLATFORM_RECIPIENT_METHODS) {
     line(emitNsMember(m, '        ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Recipient']));
 }
@@ -600,10 +611,22 @@ line('');
 // ── DataExtension instance interfaces ─────────────────────────────────────────
 line('// ── DataExtension instance interfaces ───────────────────────────────────────');
 line('interface DataExtensionFields {');
-line(emitIfaceBlock(DATA_EXTENSION_FIELDS_METHODS));
+line(
+    emitIfaceBlock(
+        DATA_EXTENSION_FIELDS_METHODS,
+        '    ',
+        GUIDE_BASE_URL + CORE_LIBRARY_URLS['DataExtension.Fields'],
+    ),
+);
 line('}');
 line('interface DataExtensionRows {');
-line(emitIfaceBlock(DATA_EXTENSION_ROWS_METHODS));
+line(
+    emitIfaceBlock(
+        DATA_EXTENSION_ROWS_METHODS,
+        '    ',
+        GUIDE_BASE_URL + CORE_LIBRARY_URLS['DataExtension.Rows'],
+    ),
+);
 line('}');
 line('interface DataExtensionInstance {');
 line('    Fields: DataExtensionFields;');
@@ -744,8 +767,16 @@ line('declare namespace Script {');
 line('    namespace Util {');
 for (const ctor of SCRIPT_UTIL_CONSTRUCTORS) {
     const ctorParamStr = buildParamStr(ctor.params, ctor.minArgs ?? 0);
-    line(`        class ${ctor.name} {`);
-    line(`            constructor(${ctorParamStr});`);
+    const ctorGuideUrl =
+        ctor.name === 'WSProxy'
+            ? GUIDE_BASE_URL + GUIDE_URLS.wsproxy
+            : ctor.name === 'HttpRequest'
+              ? GUIDE_BASE_URL + GUIDE_URLS.scriptUtilHttpRequest
+              : GUIDE_BASE_URL + GUIDE_URLS.scriptUtilHttpGet;
+    line(`${buildJsDocComment(ctor, '        ', ctorGuideUrl)}        class ${ctor.name} {`);
+    line(
+        `${buildJsDocComment(ctor, '            ', ctorGuideUrl)}            constructor(${ctorParamStr});`,
+    );
     // Instance methods: WSProxy gets WSPROXY_METHODS; Http* gets SCRIPT_UTIL_REQUEST_METHODS
     if (ctor.name === 'WSProxy') {
         for (const m of WSPROXY_METHODS) {
