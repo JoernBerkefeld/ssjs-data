@@ -1551,7 +1551,7 @@ declare namespace Account {
      * Platform.Load("core", "1.1.5");
      * var myAccount = Account.Init("MyCustomerKey");
      */
-    function Init(key: string): any;
+    function Init(key: string): AccountInstance;
     /**
      * Retrieves accounts based on the specified filter criteria.
      *
@@ -1565,6 +1565,8 @@ declare namespace Account {
      * var getAcct = Account.Retrieve({Property:"CustomerKey",SimpleOperator:"equals",Value:"MyAccount"});
      */
     function Retrieve(filter: object): object[];
+}
+interface AccountInstance {
     /**
      * Updates the account with the supplied attributes. If `properties` includes `TimeZoneID`, the call uses that value to update the account time zone.
      *
@@ -1578,7 +1580,7 @@ declare namespace Account {
      * var myAccount = Account.Init("MyCustomerKey");
      * var status = myAccount.Update({ "FromName" : "Demo From Name" });
      */
-    function Update(properties: object): string;
+    Update(properties: object): string;
 }
 declare namespace Account.Tracking {
     /**
@@ -1609,7 +1611,7 @@ declare namespace AccountUser {
      * Platform.Load("core", "1.1.5");
      * var acctUser = AccountUser.Init("myAccountUser", 123456789);
      */
-    function Init(targetUserKey: string, myClientID: number): any;
+    function Init(targetUserKey: string, myClientID: number): AccountUserInstance;
     /**
      * Creates a new account user from the supplied properties object.
      *
@@ -1645,6 +1647,8 @@ declare namespace AccountUser {
      * var accountUser = AccountUser.Retrieve({Property:"CustomerKey",SimpleOperator:"equals",Value:"MyAccount"});
      */
     function Retrieve(filter: object): object[];
+}
+interface AccountUserInstance {
     /**
      * Updates the account user with the supplied attributes.
      *
@@ -1658,7 +1662,7 @@ declare namespace AccountUser {
      * var acctUser = AccountUser.Init("myAccountUser", 123456789);
      * var status = acctUser.Update({ "Password": "XXXXX" });
      */
-    function Update(properties: object): string;
+    Update(properties: object): string;
     /**
      * Activates the account user.
      *
@@ -1671,7 +1675,7 @@ declare namespace AccountUser {
      * var acctUser = AccountUser.Init("myAccountUser", 123456789);
      * var status = acctUser.Activate();
      */
-    function Activate(): string;
+    Activate(): string;
     /**
      * Deactivates the account user. Note: account users cannot be deleted via server-side JavaScript — deactivation is the only "removal" path.
      *
@@ -1684,7 +1688,7 @@ declare namespace AccountUser {
      * var acctUser = AccountUser.Init("myAccountUser", 123456789);
      * var status = acctUser.Deactivate();
      */
-    function Deactivate(): string;
+    Deactivate(): string;
 }
 declare namespace Portfolio {
     /**
@@ -1699,7 +1703,7 @@ declare namespace Portfolio {
      * Platform.Load("core", "1.1.5");
      * var portObj = Portfolio.Init("myPortfolioCK");
      */
-    function Init(key: string): any;
+    function Init(key: string): PortfolioInstance;
     /**
      * Creates a new portfolio (file) object from the supplied properties.
      *
@@ -1733,6 +1737,8 @@ declare namespace Portfolio {
      * var portObjArr = Portfolio.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "PortfolioObjectKey" });
      */
     function Retrieve(filter: object): object[];
+}
+interface PortfolioInstance {
     /**
      * Updates the portfolio object with the supplied attributes.
      *
@@ -1746,7 +1752,7 @@ declare namespace Portfolio {
      * var portObj = Portfolio.Init("myPortfolioCK");
      * var status = portObj.Update({ DisplayName: "Updated SSJS Image" });
      */
-    function Update(properties: object): string;
+    Update(properties: object): string;
     /**
      * Removes the previously initialized portfolio object.
      *
@@ -1759,7 +1765,7 @@ declare namespace Portfolio {
      * var portObj = Portfolio.Init("myPortfolioCK");
      * var status = portObj.Remove();
      */
-    function Remove(): string;
+    Remove(): string;
 }
 declare namespace ContentAreaObj {
     /**
@@ -1775,7 +1781,7 @@ declare namespace ContentAreaObj {
      * Platform.Load("core", "1.1.5");
      * var area = ContentAreaObj.Init("myCA");
      */
-    function Init(key: string): any;
+    function Init(key: string): ContentAreaObjInstance;
     /**
      * Creates a new content area from the supplied properties. DEPRECATED — calls fail on accounts where the Content Areas feature has been retired.
      *
@@ -1812,6 +1818,8 @@ declare namespace ContentAreaObj {
      * var results = ContentAreaObj.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "myCA" });
      */
     function Retrieve(filter: object): object[];
+}
+interface ContentAreaObjInstance {
     /**
      * Updates the content area with the supplied attributes. DEPRECATED — calls fail on accounts where the Content Areas feature has been retired.
      *
@@ -1826,7 +1834,7 @@ declare namespace ContentAreaObj {
      * var obj = ContentAreaObj.Init("myCA");
      * var status = obj.Update({ Name: "Name Updated By SSJS" });
      */
-    function Update(properties: object): string;
+    Update(properties: object): string;
     /**
      * Removes the previously initialized content area. DEPRECATED — calls fail on accounts where the Content Areas feature has been retired.
      *
@@ -1840,7 +1848,7 @@ declare namespace ContentAreaObj {
      * var obj = ContentAreaObj.Init("myCA");
      * var status = obj.Remove();
      */
-    function Remove(): string;
+    Remove(): string;
 }
 declare namespace Folder {
     /**
@@ -1858,7 +1866,7 @@ declare namespace Folder {
      * var myIDFolder = Folder.Init();
      * myIDFolder.SetID(12345);
      */
-    function Init(key?: string): any;
+    function Init(key?: string): FolderInstance;
     /**
      * Creates a new folder as a child of an existing folder.
      *
@@ -1900,6 +1908,8 @@ declare namespace Folder {
      * Write(Stringify(folders));
      */
     function Retrieve(filter: object): object[];
+}
+interface FolderInstance {
     /**
      * Updates the folder with the supplied attributes.
      *
@@ -1913,7 +1923,7 @@ declare namespace Folder {
      * var myFolder = Folder.Init("myFolder");
      * var status = myFolder.Update({ Name: "Updated Folder Name" });
      */
-    function Update(properties: object): string;
+    Update(properties: object): string;
     /**
      * Removes the previously initialized folder.
      *
@@ -1926,7 +1936,7 @@ declare namespace Folder {
      * var myFolder = Folder.Init("myFolder");
      * myFolder.Remove();
      */
-    function Remove(): string;
+    Remove(): string;
     /**
      * Binds a previously initialized Folder instance to a specific folder ID. Use this when the folder has no external key, after calling `Folder.Init()` without arguments.
      *
@@ -1940,7 +1950,7 @@ declare namespace Folder {
      * var myIDFolder = Folder.Init();
      * myIDFolder.SetID(12345);
      */
-    function SetID(id: number): void;
+    SetID(id: number): void;
 }
 declare namespace Template {
     /**
@@ -1955,7 +1965,7 @@ declare namespace Template {
      * Platform.Load("core", "1");
      * var t = Template.Init("myTemplate");
      */
-    function Init(key: string): any;
+    function Init(key: string): TemplateInstance;
     /**
      * Creates a new template from the supplied properties.
      *
@@ -1987,6 +1997,8 @@ declare namespace Template {
      * var getTemplate = Template.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "MyTemplate" });
      */
     function Retrieve(filter: object): object[];
+}
+interface TemplateInstance {
     /**
      * Updates the template with the supplied attributes.
      *
@@ -2000,7 +2012,7 @@ declare namespace Template {
      * var myTemplate = Template.Init("myTemplateCK");
      * var status = myTemplate.Update({ TemplateName: "Edited Template" });
      */
-    function Update(properties: object): string;
+    Update(properties: object): string;
 }
 declare namespace DeliveryProfile {
     /**
@@ -2015,7 +2027,7 @@ declare namespace DeliveryProfile {
      * Platform.Load("core", "1");
      * var myProfile = DeliveryProfile.Init("myDeliveryProfile");
      */
-    function Init(key: string): any;
+    function Init(key: string): DeliveryProfileInstance;
     /**
      * Creates a new delivery profile from the supplied properties.
      *
@@ -2035,6 +2047,8 @@ declare namespace DeliveryProfile {
      * var status = DeliveryProfile.Add(newDP);
      */
     function Add(properties: object): string;
+}
+interface DeliveryProfileInstance {
     /**
      * Updates the delivery profile with the supplied attributes.
      *
@@ -2048,7 +2062,7 @@ declare namespace DeliveryProfile {
      * var myProfile = DeliveryProfile.Init("myDeliveryProfile");
      * var status = myProfile.Update({ Name: "SSJS Updated Delivery Profile" });
      */
-    function Update(properties: object): string;
+    Update(properties: object): string;
     /**
      * Removes the previously initialized delivery profile.
      *
@@ -2061,7 +2075,7 @@ declare namespace DeliveryProfile {
      * var myProfile = DeliveryProfile.Init("myDeliveryProfile");
      * var status = myProfile.Remove();
      */
-    function Remove(): string;
+    Remove(): string;
 }
 declare namespace SenderProfile {
     /**
@@ -2076,7 +2090,7 @@ declare namespace SenderProfile {
      * Platform.Load("core", "1");
      * var myProfile = SenderProfile.Init("mySenderProfile");
      */
-    function Init(key: string): any;
+    function Init(key: string): SenderProfileInstance;
     /**
      * Creates a new sender profile from the supplied properties.
      *
@@ -2097,6 +2111,8 @@ declare namespace SenderProfile {
      * var status = SenderProfile.Add(newSP);
      */
     function Add(properties: object): string;
+}
+interface SenderProfileInstance {
     /**
      * Updates the sender profile with the supplied attributes.
      *
@@ -2110,7 +2126,7 @@ declare namespace SenderProfile {
      * var myProfile = SenderProfile.Init("mySenderProfile");
      * var status = myProfile.Update({ Name: "SSJS Updated Sender Profile" });
      */
-    function Update(properties: object): string;
+    Update(properties: object): string;
     /**
      * Removes the previously initialized sender profile.
      *
@@ -2123,7 +2139,7 @@ declare namespace SenderProfile {
      * var myProfile = SenderProfile.Init("mySenderProfile");
      * var status = myProfile.Remove();
      */
-    function Remove(): string;
+    Remove(): string;
 }
 declare namespace SendClassification {
     /**
@@ -2138,7 +2154,7 @@ declare namespace SendClassification {
      * Platform.Load("core", "1");
      * var sc = SendClassification.Init("mySendClassification");
      */
-    function Init(key: string): any;
+    function Init(key: string): SendClassificationInstance;
     /**
      * Creates a new send classification from the supplied properties.
      *
@@ -2172,6 +2188,8 @@ declare namespace SendClassification {
      * var results = SendClassification.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "mySendClassification" });
      */
     function Retrieve(filter: object): object[];
+}
+interface SendClassificationInstance {
     /**
      * Updates the send classification with the supplied attributes. You must include both `SenderProfileKey` and `DeliveryProfileKey` in `properties` for the update to succeed.
      *
@@ -2190,7 +2208,7 @@ declare namespace SendClassification {
      * };
      * var status = sc.Update(updatedSC);
      */
-    function Update(properties: object): string;
+    Update(properties: object): string;
     /**
      * Removes the previously initialized send classification.
      *
@@ -2203,7 +2221,7 @@ declare namespace SendClassification {
      * var sc = SendClassification.Init("mySendClassification");
      * var status = sc.Remove();
      */
-    function Remove(): string;
+    Remove(): string;
 }
 declare namespace FilterDefinition {
     /**
@@ -2218,7 +2236,7 @@ declare namespace FilterDefinition {
      * Platform.Load("core", "1");
      * var fd = FilterDefinition.Init("myFilterDef");
      */
-    function Init(key: string): any;
+    function Init(key: string): FilterDefinitionInstance;
     /**
      * Creates a new filter definition from the supplied properties. The `Filter` field accepts either a simple `{Property, SimpleOperator, Value}` filter or a complex filter with `LeftOperand`, `LogicalOperator`, `RightOperand`. `DataSource.Type` must be `"SubscriberList"` or `"DataExtension"`.
      *
@@ -2252,6 +2270,8 @@ declare namespace FilterDefinition {
      * var results = FilterDefinition.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "myFilterDef" });
      */
     function Retrieve(filter: object): object[];
+}
+interface FilterDefinitionInstance {
     /**
      * Updates the filter definition with the supplied attributes.
      *
@@ -2265,7 +2285,7 @@ declare namespace FilterDefinition {
      * var fd = FilterDefinition.Init("myFilterDef");
      * var status = fd.Update({ Name: "Updated Name" });
      */
-    function Update(properties: object): string;
+    Update(properties: object): string;
     /**
      * Deletes the previously initialized filter definition.
      *
@@ -2278,7 +2298,7 @@ declare namespace FilterDefinition {
      * var myFD = FilterDefinition.Init("myFilterDef");
      * myFD.Remove();
      */
-    function Remove(): string;
+    Remove(): string;
 }
 declare namespace QueryDefinition {
     /**
@@ -2293,7 +2313,7 @@ declare namespace QueryDefinition {
      * Platform.Load("core", "1");
      * var qd = QueryDefinition.Init("myQueryDef");
      */
-    function Init(key: string): any;
+    function Init(key: string): QueryDefinitionInstance;
     /**
      * Creates a new query definition from the supplied properties. Pass an optional `CategoryID` to place the query inside a specific folder.
      *
@@ -2333,6 +2353,8 @@ declare namespace QueryDefinition {
      * Write(Stringify(result));
      */
     function Retrieve(filter: object): object[];
+}
+interface QueryDefinitionInstance {
     /**
      * Updates the query definition with the supplied attributes.
      *
@@ -2349,7 +2371,7 @@ declare namespace QueryDefinition {
      *     QueryText: "SELECT SubKey, Email, Name FROM [Example Target DE] where FavoriteItemID=12"
      * });
      */
-    function Update(properties: object): string;
+    Update(properties: object): string;
     /**
      * Removes the previously initialized query definition.
      *
@@ -2362,7 +2384,7 @@ declare namespace QueryDefinition {
      * var qd = QueryDefinition.Init("myQueryDef");
      * var status = qd.Remove();
      */
-    function Remove(): string;
+    Remove(): string;
     /**
      * Executes the query definition. Runs the SQL and writes results into the configured target Data Extension.
      *
@@ -2377,7 +2399,7 @@ declare namespace QueryDefinition {
      * var result = qd.Perform("start");
      * Write(Stringify(result));
      */
-    function Perform(action: string): string;
+    Perform(action: string): string;
 }
 declare namespace List {
     /**
@@ -2392,7 +2414,7 @@ declare namespace List {
      * Platform.Load("core", "1");
      * var myList = List.Init("myList");
      */
-    function Init(key: string): any;
+    function Init(key: string): ListInstance;
     /**
      * Creates a new list from the supplied properties and returns an initialized list instance. Note: unlike most static `Add` methods, this returns a `ListInstance`, not `"OK"`.
      *
@@ -2405,7 +2427,7 @@ declare namespace List {
      * Platform.Load("core", "1.1.5");
      * var myNewList = List.Add({ CustomerKey: "libList", Name: "testLib", Description: "desc" });
      */
-    function Add(properties: object): any;
+    function Add(properties: object): ListInstance;
     /**
      * Returns an array of lists matching the specified filter.
      *
@@ -2419,6 +2441,8 @@ declare namespace List {
      * var lists = List.Retrieve({ Property: "ListName", SimpleOperator: "equals", Value: "BirthdayList" });
      */
     function Retrieve(filter: object): object[];
+}
+interface ListInstance {
     /**
      * Removes the previously initialized list.
      *
@@ -2431,101 +2455,7 @@ declare namespace List {
      * var myList = List.Init("myList");
      * var status = myList.Remove();
      */
-    function Remove(): string;
-}
-declare namespace List.Subscribers {
-    /**
-     * Adds a subscriber to the previously initialized list.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param properties - Object containing subscriber properties (EmailAddress, SubscriberKey, optionally list status).
-     * @returns Returns "OK" on success or throws on failure.
-     * @example
-     * Platform.Load("core", "1");
-     * var list = List.Init("MY_LIST_KEY");
-     * var result = list.Subscribers.Add({
-     *     EmailAddress: "test@example.com",
-     *     SubscriberKey: "test@example.com"
-     * });
-     * Write(Stringify(result));
-     */
-    function Add(properties: object): string;
-    /**
-     * Returns the subscribers belonging to the previously initialized list. Pass an optional filter to narrow the results; omit it to return all subscribers on the list.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param filter - Optional WSProxy-style filter object to narrow the results.
-     * @returns List of subscriber objects on the list (filtered when a filter is supplied).
-     * @example
-     * Platform.Load("core", "1");
-     * var list = List.Init("MY_LIST_KEY");
-     * var subscribers = list.Subscribers.Retrieve();
-     */
-    function Retrieve(filter?: object): object[];
-    /**
-     * Removes the specified subscriber from the previously initialized list.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param emailAddress - Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.
-     * @returns Returns "OK" on success or throws on failure.
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var myList = List.Init("myList");
-     * var status = myList.Subscribers.Unsubscribe("aruiz@example.com");
-     */
-    function Unsubscribe(emailAddress: string): string;
-    /**
-     * Updates the status of the specified subscriber on the previously initialized list.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param emailAddress - Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.
-     * @param status - New status of the subscriber on the list.
-     * @returns Returns "OK" on success or throws on failure.
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var myList = List.Init("myList");
-     * var status = myList.Subscribers.Update("aruiz@example.com", "Active");
-     */
-    function Update(emailAddress: string, status: string): string;
-    /**
-     * Adds the subscriber if not on the list, otherwise updates the supplied attributes. If `attributes.Status` is supplied, the subscriber's list status is updated.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param emailAddress - Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.
-     * @param attributes - Additional subscriber attributes to set or update.
-     * @returns Returns "OK" on success or throws on failure.
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var myList = List.Init("myList");
-     * var status = myList.Subscribers.Upsert("aruiz@example.com", { ZipCode: "46202" });
-     */
-    function Upsert(emailAddress: string, attributes: object): string;
-}
-declare namespace List.Subscribers.Tracking {
-    /**
-     * Returns an array of tracking data for subscribers matching the filter.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param filter - PascalCase WSProxy-style filter object identifying the subscribers.
-     * @returns List of tracking records matching the filter.
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var myList = List.Init("MyList");
-     * var results = myList.Subscribers.Tracking.Retrieve({ Property: "SubscriberKey", SimpleOperator: "equals", Value: "MyKey" });
-     */
-    function Retrieve(filter: object): object[];
+    Remove(): string;
 }
 declare namespace Subscriber {
     /**
@@ -2540,7 +2470,7 @@ declare namespace Subscriber {
      * Platform.Load("core", "1");
      * var sub = Subscriber.Init("mySubscriber");
      */
-    function Init(key: string): any;
+    function Init(key: string): SubscriberInstance;
     /**
      * Creates a new subscriber from the supplied properties.
      *
@@ -2607,6 +2537,8 @@ declare namespace Subscriber {
      * Write(Stringify(stats));
      */
     function Statistics(subscriberKey: string): object;
+}
+interface SubscriberInstance {
     /**
      * Updates the previously initialized subscriber with the supplied attributes.
      *
@@ -2620,7 +2552,7 @@ declare namespace Subscriber {
      * var subObj = Subscriber.Init("SubKey");
      * var status = subObj.Update({ EmailTypePreference: "HTML", Attributes: { "First Name": "Test", "Last Name": "User" } });
      */
-    function Update(properties: object): string;
+    Update(properties: object): string;
     /**
      * Deletes the previously initialized subscriber.
      *
@@ -2633,7 +2565,7 @@ declare namespace Subscriber {
      * var subObj = Subscriber.Init("SubKey");
      * var status = subObj.Remove();
      */
-    function Remove(): string;
+    Remove(): string;
     /**
      * Sets the previously initialized subscriber's status to `"Unsubscribed"`.
      *
@@ -2646,37 +2578,7 @@ declare namespace Subscriber {
      * var subObj = Subscriber.Init("SubKey");
      * var status = subObj.Unsubscribe();
      */
-    function Unsubscribe(): string;
-}
-declare namespace Subscriber.Attributes {
-    /**
-     * Returns an array of attributes associated with the previously initialized subscriber.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @returns List of attribute objects for the subscriber.
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var subObj = Subscriber.Init("SubKey");
-     * var attributes = subObj.Attributes.Retrieve();
-     */
-    function Retrieve(): object[];
-}
-declare namespace Subscriber.Lists {
-    /**
-     * Returns the lists the previously initialized subscriber is a member of.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @returns List of list objects the subscriber belongs to.
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var subObj = Subscriber.Init("SubKey");
-     * var listArray = subObj.Lists.Retrieve();
-     */
-    function Retrieve(): object[];
+    Unsubscribe(): string;
 }
 declare namespace Email {
     /**
@@ -2691,7 +2593,7 @@ declare namespace Email {
      * Platform.Load("core", "1");
      * var myEmail = Email.Init("myEmail");
      */
-    function Init(key: string): any;
+    function Init(key: string): EmailInstance;
     /**
      * Creates a new email message from the supplied properties and returns an initialized email instance. Note: unlike most static `Add` methods, this returns an `EmailInstance`, not `"OK"`.
      *
@@ -2713,7 +2615,7 @@ declare namespace Email {
      * };
      * var myEmail = Email.Add(newMail);
      */
-    function Add(properties: object): any;
+    function Add(properties: object): EmailInstance;
     /**
      * Returns an array of email messages matching the specified filter.
      *
@@ -2727,6 +2629,8 @@ declare namespace Email {
      * var results = Email.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "myEmail" });
      */
     function Retrieve(filter: object): object[];
+}
+interface EmailInstance {
     /**
      * Updates the email message with the supplied attributes.
      *
@@ -2740,7 +2644,7 @@ declare namespace Email {
      * var myEmail = Email.Init("myEmail");
      * var status = myEmail.Update({ Name: "Updated Name", Subject: "Updated Email Subject" });
      */
-    function Update(properties: object): string;
+    Update(properties: object): string;
     /**
      * Removes the previously initialized email message.
      *
@@ -2753,7 +2657,7 @@ declare namespace Email {
      * var myEmail = Email.Init("myEmail");
      * myEmail.Remove();
      */
-    function Remove(): string;
+    Remove(): string;
     /**
      * Runs validation checks on the previously initialized email message. Returns a `{Task: {ValidationStatus: boolean, ValidationMessages: string}}` object.
      *
@@ -2768,7 +2672,7 @@ declare namespace Email {
      * Write(results.Task.ValidationStatus);
      * Write(results.Task.ValidationMessages);
      */
-    function Validate(): object;
+    Validate(): object;
     /**
      * Runs content checks on the previously initialized email message. Returns a `{Task: {CheckPassed: boolean, ResultMessage: string}}` object.
      *
@@ -2783,7 +2687,7 @@ declare namespace Email {
      * Write(results.Task.CheckPassed);
      * Write(results.Task.ResultMessage);
      */
-    function CheckContent(): object;
+    CheckContent(): object;
 }
 declare namespace Send {
     /**
@@ -2798,7 +2702,7 @@ declare namespace Send {
      * Platform.Load("core", "1");
      * var s = Send.Init(12345);
      */
-    function Init(id: number): any;
+    function Init(id: number): SendInstance;
     /**
      * Creates a new send to the specified email and list(s). Pass an `options` object to override From name, From address, subject, send time, etc.
      *
@@ -2842,6 +2746,8 @@ declare namespace Send {
      * var listsSentTo = Send.RetrieveLists({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });
      */
     function RetrieveLists(filter: object): object[];
+}
+interface SendInstance {
     /**
      * Removes the previously initialized send.
      *
@@ -2854,7 +2760,7 @@ declare namespace Send {
      * var s = Send.Init(12345);
      * s.Remove();
      */
-    function Remove(): string;
+    Remove(): string;
     /**
      * Attempts to cancel the previously initialized send.
      *
@@ -2867,7 +2773,7 @@ declare namespace Send {
      * var mySend = Send.Init(12345);
      * var status = mySend.CancelSend();
      */
-    function CancelSend(): string;
+    CancelSend(): string;
 }
 declare namespace Send.Tracking {
     /**
@@ -2883,37 +2789,6 @@ declare namespace Send.Tracking {
      * var sendTracking = Send.Tracking.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });
      */
     function Retrieve(filter: object): object[];
-    /**
-     * Returns click tracking data for the previously initialized send.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param filter - WSProxy-style filter restricting results.
-     * @returns List of click tracking records matching the filter.
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var singleSend = Send.Init(12345);
-     * var results = singleSend.Tracking.ClickRetrieve({ Property: "ID", SimpleOperator: "equals", Value: 12345 });
-     */
-    function ClickRetrieve(filter: object): object[];
-    /**
-     * Returns aggregated tracking data for the previously initialized send. Aggregates by `type` over the date range, grouped by `groupBy`.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param type - Type of data to aggregate.
-     * @param startDate - Start date of the data period (MM-DD-YYYY).
-     * @param endDate - End date of the data period (MM-DD-YYYY).
-     * @param groupBy - Interval used to aggregate data.
-     * @returns List of aggregated tracking records.
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var singleSend = Send.Init(12345);
-     * var results = singleSend.Tracking.TotalByIntervalRetrieve("Click", "07-01-2010", "07-31-2010", "day");
-     */
-    function TotalByIntervalRetrieve(type: string, startDate: string, endDate: string, groupBy: string): object[];
 }
 declare namespace Send.Definition {
     /**
@@ -2928,7 +2803,7 @@ declare namespace Send.Definition {
      * Platform.Load("core", "1.1.5");
      * var esd = Send.Definition.Init("myESD");
      */
-    function Init(key: string): any;
+    function Init(key: string): SendDefinitionInstance;
     /**
      * Creates a new send definition.
      *
@@ -2995,46 +2870,6 @@ declare namespace Send.Definition {
      * var esd = Send.Definition.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "ssjs_test_esd" });
      */
     function Retrieve(filter?: object): object[];
-    /**
-     * Updates the previously initialized send definition.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param properties - Properties to update.
-     * @returns Returns "OK" on success or throws on failure.
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var sendDef = Send.Definition.Init("MY_SEND_DEF_KEY");
-     * var result = sendDef.Update({ Name: "Updated Send Definition Name" });
-     */
-    function Update(properties: object): string;
-    /**
-     * Deletes the previously initialized send definition.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @returns Returns "OK" on success or throws on failure.
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var esd = Send.Definition.Init("myESD");
-     * var status = esd.Remove();
-     */
-    function Remove(): string;
-    /**
-     * Sends email messages to the lists associated with the previously initialized send definition.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @returns Returns "OK" on success or throws on failure.
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var esd = Send.Definition.Init("myESD");
-     * var status = esd.Send();
-     */
-    function Send(): string;
 }
 declare namespace TriggeredSend {
     /**
@@ -3049,7 +2884,7 @@ declare namespace TriggeredSend {
      * Platform.Load("core", "1");
      * var triggeredSend = TriggeredSend.Init("support");
      */
-    function Init(key: string): any;
+    function Init(key: string): TriggeredSendInstance;
     /**
      * Creates a new triggered send definition from the supplied properties and returns an initialized TriggeredSend instance. Note: unlike most static `Add` methods, this returns a `TriggeredSendInstance`, not `"OK"`.
      *
@@ -3070,7 +2905,7 @@ declare namespace TriggeredSend {
      * };
      * var tsd = TriggeredSend.Add(newTSD);
      */
-    function Add(properties: object): any;
+    function Add(properties: object): TriggeredSendInstance;
     /**
      * Returns an array of triggered send definitions matching the specified filter.
      *
@@ -3084,6 +2919,8 @@ declare namespace TriggeredSend {
      * var results = TriggeredSend.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "ssjs_tsd_key" });
      */
     function Retrieve(filter: object): object[];
+}
+interface TriggeredSendInstance {
     /**
      * Updates the previously initialized triggered send definition.
      *
@@ -3097,7 +2934,7 @@ declare namespace TriggeredSend {
      * var tsd = TriggeredSend.Init("triggeredSend");
      * var status = tsd.Update({ Name: "Updated TSD Name" });
      */
-    function Update(properties: object): string;
+    Update(properties: object): string;
     /**
      * Starts (reactivates) a paused triggered send definition.
      *
@@ -3110,7 +2947,7 @@ declare namespace TriggeredSend {
      * var ts = TriggeredSend.Init("MY_TRIGGERED_SEND_KEY");
      * var result = ts.Start();
      */
-    function Start(): string;
+    Start(): string;
     /**
      * Pauses an active triggered send definition.
      *
@@ -3123,7 +2960,7 @@ declare namespace TriggeredSend {
      * var ts = TriggeredSend.Init("MY_TRIGGERED_SEND_KEY");
      * var status = ts.Pause();
      */
-    function Pause(): string;
+    Pause(): string;
     /**
      * Publishes a triggered send definition, making it active and ready to accept sends. Use this to move a definition from Draft / Inactive to Active.
      *
@@ -3136,7 +2973,7 @@ declare namespace TriggeredSend {
      * var ts = TriggeredSend.Init("MY_TRIGGERED_SEND_KEY");
      * var result = ts.Publish();
      */
-    function Publish(): string;
+    Publish(): string;
     /**
      * Sends an email using the previously initialized triggered send definition. On failure, inspect `<TriggeredSendInstance>.LastMessage` for error details.
      *
@@ -3152,58 +2989,7 @@ declare namespace TriggeredSend {
      * var status = ts.Send("aruiz@example.com", { FirstName: "Angel", CouponCode: "AA1AF" });
      * if (status != "OK") { var message = ts.LastMessage; }
      */
-    function Send(emailAddress: string, sendTimeAttributes?: object): string;
-}
-declare namespace TriggeredSend.Tracking {
-    /**
-     * Returns tracking data for the previously initialized triggered send definition.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param filter - Optional WSProxy-style filter object.
-     * @returns List of tracking records.
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var tsd = TriggeredSend.Init("MyTSDKey");
-     * var tsdTracking = tsd.Tracking.Retrieve();
-     */
-    function Retrieve(filter?: object): object[];
-}
-declare namespace TriggeredSend.Tracking.Clicks {
-    /**
-     * Returns click tracking information for the previously initialized triggered send definition.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param filter - WSProxy-style filter restricting click results.
-     * @returns List of click tracking records matching the filter.
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var tsd = TriggeredSend.Init("MyTSDKey");
-     * var results = tsd.Tracking.Clicks.Retrieve({ Property: "SendUrlID", SimpleOperator: "equals", Value: 12345 });
-     */
-    function Retrieve(filter: object): object[];
-}
-declare namespace TriggeredSend.Tracking.TotalByInterval {
-    /**
-     * Returns aggregated tracking data for the previously initialized triggered send. Aggregates by `type` over the date range, grouped by `groupBy`.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param type - Type of data to aggregate.
-     * @param startDate - Start date of the data period (MM-DD-YYYY).
-     * @param endDate - End date of the data period (MM-DD-YYYY).
-     * @param groupBy - Interval used to aggregate data.
-     * @returns List of aggregated tracking records.
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var tsd = TriggeredSend.Init("MyTSDKey");
-     * var results = tsd.Tracking.TotalByInterval.Retrieve("Click", "07-01-2010", "07-31-2010", "day");
-     */
-    function Retrieve(type: string, startDate: string, endDate: string, groupBy: string): object[];
+    Send(emailAddress: string, sendTimeAttributes?: object): string;
 }
 declare namespace DataExtension {
     /**
@@ -3258,136 +3044,6 @@ declare namespace DataExtension {
      * var results = DataExtension.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "myDEKey" });
      */
     function Retrieve(filter: object, queryAllAccounts?: boolean): object[];
-}
-declare namespace DataExtension.Fields {
-    /**
-     * Adds a field to the previously initialized data extension. `properties.Name` is required; the rest (`CustomerKey`, `FieldType`, `MaxLength`, `IsRequired`, `IsPrimaryKey`, `Ordinal`, `Scale`, `DefaultValue`) are optional. `FieldType` accepts: 'Boolean', 'Date', 'Decimal', 'EmailAddress', 'Locale', 'Number', 'Phone', 'Text'.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-fields/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param properties - Object describing the new field.
-     * @returns Returns "OK" on success or throws on failure.
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var de = DataExtension.Init("SSJSTest");
-     * var newField = { Name: "NewFieldV2", CustomerKey: "CustomerKey", FieldType: "Number", IsRequired: true, DefaultValue: "100" };
-     * var status = de.Fields.Add(newField);
-     */
-    function Add(properties: object): string;
-    /**
-     * Returns an array of field definitions for the previously initialized data extension.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-fields/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @returns List of field-definition objects.
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var birthdayDE = DataExtension.Init("birthdayDE");
-     * var fields = birthdayDE.Fields.Retrieve();
-     */
-    function Retrieve(): object[];
-    /**
-     * Updates which data extension field is used to relate the data extension to the All Subscribers list during sending. Pass the name of the data extension field, and which subscriber attribute it should map to.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-fields/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param deFieldName - Name of the data extension field that should make the connection to the subscriber list.
-     * @param subscriberField - Subscriber attribute to map the data extension field to.
-     * @returns Returns "OK" on success or throws on failure (assumed; doc has no `@returns`, treated as `"OK"` for consistency with sibling `Fields.*` methods).
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var updateDE = DataExtension.Init("sendableDataExtension");
-     * var status = updateDE.Fields.UpdateSendableField("DifferentSubKey", "Subscriber Key");
-     */
-    function UpdateSendableField(deFieldName: string, subscriberField: string): string;
-}
-declare namespace DataExtension.Rows {
-    /**
-     * Adds one or more rows to the previously initialized data extension.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param rowData - Array of objects, one per row to add. Each object's keys must match data extension field names.
-     * @returns Returns "OK" on success or throws on failure.
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var arrContacts = [
-     *     { Email: "jdoe@example.com", FirstName: "John", LastName: "Doe" },
-     *     { Email: "aruiz@example.com", FirstName: "Angel", LastName: "Ruiz" }
-     * ];
-     * var birthdayDE = DataExtension.Init("birthdayDE");
-     * birthdayDE.Rows.Add(arrContacts);
-     */
-    function Add(rowData: any[]): string;
-    /**
-     * Returns rows where the specified columns equal the specified values (AND-joined). Optionally limits results and orders by a field. When initializing a data extension for `Lookup()` from an email message, you must use the data extension Name; on landing pages, either Name or external key works — make them identical to be safe.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param searchFieldNames - Array of column names to match against.
-     * @param searchValues - Array of values to match (one per column, in order).
-     * @param limit - Maximum number of rows to return.
-     * @param orderByFieldName - Field to order results by.
-     * @returns Rows matching the lookup criteria.
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var testDE = DataExtension.Init("testDE");
-     * var data = testDE.Rows.Lookup(["Age"], [25], 2, "LastName");
-     */
-    function Lookup(searchFieldNames: any[], searchValues: any[], limit?: number, orderByFieldName?: string): object[];
-    /**
-     * Deletes rows from the previously initialized data extension where the specified columns equal the specified values (AND-joined). For large deletion requests, batch the work — this method times out on long-running deletes.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param columnNames - Array of column names to match against.
-     * @param columnValues - Array of values to match (one per column, in order).
-     * @returns The number of rows that were modified (deleted).
-     * @example
-     * Platform.Load("Core", "1.1.5");
-     * var memberDE = DataExtension.Init("MembershipRewards");
-     * var result = memberDE.Rows.Remove(["Area"], ["Kensington"]);
-     */
-    function Remove(columnNames: any[], columnValues: any[]): number;
-    /**
-     * Retrieves up to 2500 rows from the previously initialized data extension. When called without a filter, returns all rows (subject to the 2500-row cap). Cannot be used in the context of an email message or email preview.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param filter - WSProxy-style filter object — simple `{Property, SimpleOperator, Value}` or compound with `LeftOperand`/`LogicalOperator`/`RightOperand`. Optional per the example, despite the doc table marking `Required: Yes`.
-     * @returns Rows from the data extension matching the filter (or all rows when no filter is supplied).
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var birthdayDE = DataExtension.Init("birthdayDE");
-     * var data = birthdayDE.Rows.Retrieve();
-     * var filter = { Property: "Age", SimpleOperator: "greaterThan", Value: 20 };
-     * var moredata = birthdayDE.Rows.Retrieve(filter);
-     */
-    function Retrieve(filter?: object): object[];
-    /**
-     * Updates the columns of rows where `whereFieldNames` equal `whereValues` (AND-joined). Throws if no row matches.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param rowData - Object whose keys are columns to update and values are the new values.
-     * @param whereFieldNames - Array of column names to match against.
-     * @param whereValues - Array of values to match (one per column, in order).
-     * @returns Returns "OK" on success or throws on failure.
-     * @example
-     * Platform.Load("Core", "1");
-     * var dataExt = DataExtension.Init("NTO Customer List");
-     * var fieldsToUpdate = { StateProvince: "QC", PreferredActivity: "Sailing" };
-     * var result = dataExt.Rows.Update(fieldsToUpdate, ["MemberId", "Country"], [9868600, "CA"]);
-     */
-    function Update(rowData: object, whereFieldNames: any[], whereValues: any[]): string;
 }
 declare namespace DateTime {
     /**

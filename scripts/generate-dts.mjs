@@ -87,6 +87,23 @@ const INSTANCE_TYPE_MAP = {
     DataExtensionInstance: 'DataExtensionInstance',
     WSProxyInstance: 'Script.Util.WSProxy',
     HttpRequestInstance: 'Script.Util.HttpRequest',
+    AccountInstance: 'AccountInstance',
+    AccountUserInstance: 'AccountUserInstance',
+    PortfolioInstance: 'PortfolioInstance',
+    ContentAreaObjInstance: 'ContentAreaObjInstance',
+    FolderInstance: 'FolderInstance',
+    TemplateInstance: 'TemplateInstance',
+    DeliveryProfileInstance: 'DeliveryProfileInstance',
+    SenderProfileInstance: 'SenderProfileInstance',
+    SendClassificationInstance: 'SendClassificationInstance',
+    FilterDefinitionInstance: 'FilterDefinitionInstance',
+    QueryDefinitionInstance: 'QueryDefinitionInstance',
+    ListInstance: 'ListInstance',
+    SubscriberInstance: 'SubscriberInstance',
+    EmailInstance: 'EmailInstance',
+    SendInstance: 'SendInstance',
+    SendDefinitionInstance: 'SendDefinitionInstance',
+    TriggeredSendInstance: 'TriggeredSendInstance',
 };
 
 /**
@@ -700,11 +717,31 @@ for (const [nsName, methods, guideUrl] of CORE_CLASS_MAP) {
     if (!methods || methods.length === 0) {
         continue;
     }
-    line(`declare namespace ${nsName} {`);
-    for (const m of methods) {
-        line(emitNsMember(m, '    ', guideUrl));
+    const staticMethods = methods.filter((m) => m.isStatic !== false);
+    const instanceMethods = methods.filter((m) => m.isStatic === false);
+    // Emit namespace block containing only static methods.
+    // isStatic:false methods must NOT appear here — they are only callable on an
+    // instance returned by Init(), not directly on the class namespace.
+    if (staticMethods.length > 0) {
+        line(`declare namespace ${nsName} {`);
+        for (const m of staticMethods) {
+            line(emitNsMember(m, '    ', guideUrl));
+        }
+        line('}');
     }
-    line('}');
+    // Emit a matching instance interface for top-level classes (no dot in name).
+    // Dotted sub-namespace paths (e.g. DataExtension.Fields, List.Subscribers) are
+    // accessed via their parent class instance and are handled via the parent's
+    // interface (DataExtensionInstance already declared above) or via future
+    // sub-interface properties — not as standalone declare namespace blocks.
+    // DataExtensionInstance is already emitted explicitly above — skip it here.
+    if (instanceMethods.length > 0 && !nsName.includes('.') && nsName !== 'DataExtension') {
+        line(`interface ${nsName}Instance {`);
+        for (const m of instanceMethods) {
+            line(emitIfaceMember(m, '    ', guideUrl));
+        }
+        line('}');
+    }
 }
 line('');
 
