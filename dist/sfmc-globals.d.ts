@@ -1537,6 +1537,219 @@ interface DataExtensionInstance {
     Rows: DataExtensionRows;
 }
 
+// ── Core Library sub-namespace instance interfaces ───────────────────────────
+interface ListSubscribersTrackingInstance {
+    /**
+     * Returns an array of tracking data for subscribers matching the filter.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
+     *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - PascalCase WSProxy-style filter object identifying the subscribers.
+     * @returns List of tracking records matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myList = List.Init("MyList");
+     * var results = myList.Subscribers.Tracking.Retrieve({ Property: "SubscriberKey", SimpleOperator: "equals", Value: "MyKey" });
+     */
+    Retrieve(filter: object): object[];
+}
+interface ListSubscribersInstance {
+    /**
+     * Adds a subscriber to the previously initialized list.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
+     *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param properties - Object containing subscriber properties (EmailAddress, SubscriberKey, optionally list status).
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1");
+     * var list = List.Init("MY_LIST_KEY");
+     * var result = list.Subscribers.Add({
+     *     EmailAddress: "test@example.com",
+     *     SubscriberKey: "test@example.com"
+     * });
+     * Write(Stringify(result));
+     */
+    Add(properties: object): string;
+    /**
+     * Returns the subscribers belonging to the previously initialized list. Pass an optional filter to narrow the results; omit it to return all subscribers on the list.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
+     *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - Optional WSProxy-style filter object to narrow the results.
+     * @returns List of subscriber objects on the list (filtered when a filter is supplied).
+     * @example
+     * Platform.Load("core", "1");
+     * var list = List.Init("MY_LIST_KEY");
+     * var subscribers = list.Subscribers.Retrieve();
+     */
+    Retrieve(filter?: object): object[];
+    /**
+     * Removes the specified subscriber from the previously initialized list.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
+     *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param emailAddress - Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myList = List.Init("myList");
+     * var status = myList.Subscribers.Unsubscribe("aruiz@example.com");
+     */
+    Unsubscribe(emailAddress: string): string;
+    /**
+     * Updates the status of the specified subscriber on the previously initialized list.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
+     *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param emailAddress - Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.
+     * @param status - New status of the subscriber on the list.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myList = List.Init("myList");
+     * var status = myList.Subscribers.Update("aruiz@example.com", "Active");
+     */
+    Update(emailAddress: string, status: string): string;
+    /**
+     * Adds the subscriber if not on the list, otherwise updates the supplied attributes. If `attributes.Status` is supplied, the subscriber's list status is updated.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
+     *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param emailAddress - Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.
+     * @param attributes - Additional subscriber attributes to set or update.
+     * @returns Returns "OK" on success or throws on failure.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var myList = List.Init("myList");
+     * var status = myList.Subscribers.Upsert("aruiz@example.com", { ZipCode: "46202" });
+     */
+    Upsert(emailAddress: string, attributes: object): string;
+    readonly Tracking: ListSubscribersTrackingInstance;
+}
+interface SubscriberAttributesInstance {
+    /**
+     * Returns an array of attributes associated with the previously initialized subscriber.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
+     *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns List of attribute objects for the subscriber.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var subObj = Subscriber.Init("SubKey");
+     * var attributes = subObj.Attributes.Retrieve();
+     */
+    Retrieve(): object[];
+}
+interface SubscriberListsInstance {
+    /**
+     * Returns the lists the previously initialized subscriber is a member of.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
+     *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @returns List of list objects the subscriber belongs to.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var subObj = Subscriber.Init("SubKey");
+     * var listArray = subObj.Lists.Retrieve();
+     */
+    Retrieve(): object[];
+}
+interface SendTrackingInstance {
+    /**
+     * Returns click tracking data for the previously initialized send.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
+     *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - WSProxy-style filter restricting results.
+     * @returns List of click tracking records matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var singleSend = Send.Init(12345);
+     * var results = singleSend.Tracking.ClickRetrieve({ Property: "ID", SimpleOperator: "equals", Value: 12345 });
+     */
+    ClickRetrieve(filter: object): object[];
+    /**
+     * Returns aggregated tracking data for the previously initialized send. Aggregates by `type` over the date range, grouped by `groupBy`.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
+     *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param type - Type of data to aggregate.
+     * @param startDate - Start date of the data period (MM-DD-YYYY).
+     * @param endDate - End date of the data period (MM-DD-YYYY).
+     * @param groupBy - Interval used to aggregate data.
+     * @returns List of aggregated tracking records.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var singleSend = Send.Init(12345);
+     * var results = singleSend.Tracking.TotalByIntervalRetrieve("Click", "07-01-2010", "07-31-2010", "day");
+     */
+    TotalByIntervalRetrieve(type: string, startDate: string, endDate: string, groupBy: string): object[];
+}
+interface TriggeredSendTrackingClicksInstance {
+    /**
+     * Returns click tracking information for the previously initialized triggered send definition.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
+     *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - WSProxy-style filter restricting click results.
+     * @returns List of click tracking records matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var tsd = TriggeredSend.Init("MyTSDKey");
+     * var results = tsd.Tracking.Clicks.Retrieve({ Property: "SendUrlID", SimpleOperator: "equals", Value: 12345 });
+     */
+    Retrieve(filter: object): object[];
+}
+interface TriggeredSendTrackingTotalByIntervalInstance {
+    /**
+     * Returns aggregated tracking data for the previously initialized triggered send. Aggregates by `type` over the date range, grouped by `groupBy`.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
+     *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param type - Type of data to aggregate.
+     * @param startDate - Start date of the data period (MM-DD-YYYY).
+     * @param endDate - End date of the data period (MM-DD-YYYY).
+     * @param groupBy - Interval used to aggregate data.
+     * @returns List of aggregated tracking records.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var tsd = TriggeredSend.Init("MyTSDKey");
+     * var results = tsd.Tracking.TotalByInterval.Retrieve("Click", "07-01-2010", "07-31-2010", "day");
+     */
+    Retrieve(type: string, startDate: string, endDate: string, groupBy: string): object[];
+}
+interface TriggeredSendTrackingInstance {
+    /**
+     * Returns tracking data for the previously initialized triggered send definition.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
+     *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @param filter - Optional WSProxy-style filter object.
+     * @returns List of tracking records.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var tsd = TriggeredSend.Init("MyTSDKey");
+     * var tsdTracking = tsd.Tracking.Retrieve();
+     */
+    Retrieve(filter?: object): object[];
+    readonly Clicks: TriggeredSendTrackingClicksInstance;
+    readonly TotalByInterval: TriggeredSendTrackingTotalByIntervalInstance;
+}
+
 // ── Core Library namespaces ──────────────────────────────────────────────────
 declare namespace Account {
     /**
@@ -2456,6 +2669,7 @@ interface ListInstance {
      * var status = myList.Remove();
      */
     Remove(): string;
+    readonly Subscribers: ListSubscribersInstance;
 }
 declare namespace Subscriber {
     /**
@@ -2579,6 +2793,8 @@ interface SubscriberInstance {
      * var status = subObj.Unsubscribe();
      */
     Unsubscribe(): string;
+    readonly Attributes: SubscriberAttributesInstance;
+    readonly Lists: SubscriberListsInstance;
 }
 declare namespace Email {
     /**
@@ -2774,6 +2990,7 @@ interface SendInstance {
      * var status = mySend.CancelSend();
      */
     CancelSend(): string;
+    readonly Tracking: SendTrackingInstance;
 }
 declare namespace Send.Tracking {
     /**
@@ -2990,6 +3207,7 @@ interface TriggeredSendInstance {
      * if (status != "OK") { var message = ts.LastMessage; }
      */
     Send(emailAddress: string, sendTimeAttributes?: object): string;
+    readonly Tracking: TriggeredSendTrackingInstance;
 }
 declare namespace DataExtension {
     /**
@@ -3901,8 +4119,77 @@ declare namespace Math {
     const SQRT1_2: number;
 }
 
+interface RegExp {
+    /**
+     * Tests whether the string matches the pattern. Returns true if the pattern is found, false otherwise. When the g flag is set, successive calls advance lastIndex.
+     *
+     * @param string - The string to test against the regular expression
+     * @example
+     * var emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+     * if (emailRe.test(subscriberEmail)) {
+     *     Write("Valid email");
+     * }
+     */
+    test(string: string): boolean;
+    /**
+     * Executes a search for a match in the string. Returns an array with the full match at index 0 and any capture groups at subsequent indices, or null if no match is found. The array also has index and input properties. When the g flag is set, successive calls advance lastIndex.
+     *
+     * @param string - The string to search
+     * @example
+     * var re = /(\d{4})-(\d{2})-(\d{2})/;
+     * var result = re.exec("Order placed on 2026-01-15");
+     * if (result) {
+     *     Write("Year: " + result[1]); // "2026"
+     *     Write("Month: " + result[2]); // "01"
+     * }
+     */
+    exec(string: string): any[];
+    /**
+     * The text of the pattern, excluding the enclosing slashes and any flags.
+     *
+     * @example
+     * var re = /hello/gi;
+     * Write(re.source); // "hello"
+     */
+    readonly source: string;
+    /**
+     * True if the g (global) flag was specified when creating the regular expression.
+     *
+     * @example
+     * var re = /hello/g;
+     * Write(re.global); // true
+     */
+    readonly global: boolean;
+    /**
+     * True if the i (case-insensitive) flag was specified.
+     *
+     * @example
+     * var re = /hello/i;
+     * Write(re.ignoreCase); // true
+     */
+    readonly ignoreCase: boolean;
+    /**
+     * True if the m (multiline) flag was specified.
+     *
+     * @example
+     * var re = /^hello/m;
+     * Write(re.multiline); // true
+     */
+    readonly multiline: boolean;
+    /**
+     * The index at which to start the next match. Only relevant when the g or y flag is set. Automatically updated by exec() and test().
+     *
+     * @example
+     * var re = /\d+/g;
+     * re.exec("abc 123 def 456");
+     * Write(re.lastIndex); // 7 (after first match)
+     */
+    readonly lastIndex: number;
+}
+
 // Global ECMAScript functions
 declare function parseInt(string?: string, radix?: number): number;
 declare function parseFloat(string?: string): number;
 declare function isNaN(value?: any): boolean;
 declare function isFinite(value?: any): boolean;
+declare function RegExp(pattern: string, flags?: string): RegExp;

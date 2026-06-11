@@ -132,6 +132,7 @@ export const ECMASCRIPT_URLS = {
     Math: '/ecmascript-builtins/math/',
     'Number.prototype': '/ecmascript-builtins/number-methods/',
     'Object.prototype': '/ecmascript-builtins/object-methods/',
+    RegExp: '/language/regular-expressions/',
 };
 
 /**

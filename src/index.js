@@ -7263,6 +7263,150 @@ export const ECMASCRIPT_BUILTINS = [
             'Write(isFinite(1 / 0)); // false (Infinity)\n' +
             'Write(isFinite(NaN)); // false',
     },
+    // ── RegExp constructor ────────────────────────────────────────────────────
+    // Emitted as `declare function RegExp(...)` so that `new RegExp(...)` and
+    // `RegExp(...)` both pass TypeScript validation in .ssjs files.
+    {
+        name: 'RegExp',
+        owner: 'Global',
+        description:
+            'Creates a regular expression object for pattern matching. ' +
+            'Prefer the literal syntax (/pattern/flags) when the pattern is known at write time. ' +
+            'Use the constructor when the pattern must be built dynamically at runtime.',
+        params: [
+            {
+                name: 'pattern',
+                description: 'Regular expression pattern string',
+                type: 'string',
+            },
+            {
+                name: 'flags',
+                description: 'Optional flags: g (global), i (case-insensitive), m (multiline)',
+                type: 'string',
+                optional: true,
+            },
+        ],
+        returnType: 'RegExp',
+        syntax: 'new RegExp(pattern[, flags])',
+        minArgs: 1,
+        maxArgs: 2,
+        example:
+            'var fieldName = "email";\n' +
+            'var re = new RegExp(fieldName + "=([^&]+)", "i");\n' +
+            'var match = queryString.match(re);\n' +
+            'if (match) { Write(match[1]); }',
+    },
+    // ── RegExp.prototype methods ──────────────────────────────────────────────
+    {
+        name: 'test',
+        owner: 'RegExp',
+        description:
+            'Tests whether the string matches the pattern. ' +
+            'Returns true if the pattern is found, false otherwise. ' +
+            'When the g flag is set, successive calls advance lastIndex.',
+        params: [
+            {
+                name: 'string',
+                description: 'The string to test against the regular expression',
+                type: 'string',
+            },
+        ],
+        returnType: 'boolean',
+        syntax: 'RegExp.test(string)',
+        minArgs: 1,
+        maxArgs: 1,
+        example:
+            'var emailRe = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n' +
+            'if (emailRe.test(subscriberEmail)) {\n' +
+            '    Write("Valid email");\n' +
+            '}',
+    },
+    {
+        name: 'exec',
+        owner: 'RegExp',
+        description:
+            'Executes a search for a match in the string. ' +
+            'Returns an array with the full match at index 0 and any capture groups at subsequent indices, ' +
+            'or null if no match is found. ' +
+            'The array also has index and input properties. ' +
+            'When the g flag is set, successive calls advance lastIndex.',
+        params: [
+            {
+                name: 'string',
+                description: 'The string to search',
+                type: 'string',
+            },
+        ],
+        returnType: 'array',
+        syntax: 'RegExp.exec(string)',
+        minArgs: 1,
+        maxArgs: 1,
+        example:
+            'var re = /(\\d{4})-(\\d{2})-(\\d{2})/;\n' +
+            'var result = re.exec("Order placed on 2026-01-15");\n' +
+            'if (result) {\n' +
+            '    Write("Year: " + result[1]); // "2026"\n' +
+            '    Write("Month: " + result[2]); // "01"\n' +
+            '}',
+    },
+    // ── RegExp.prototype properties ───────────────────────────────────────────
+    {
+        name: 'source',
+        owner: 'RegExp',
+        isProperty: true,
+        description: 'The text of the pattern, excluding the enclosing slashes and any flags.',
+        params: [],
+        returnType: 'string',
+        syntax: 'RegExp.source',
+        example: 'var re = /hello/gi;\nWrite(re.source); // "hello"',
+    },
+    {
+        name: 'global',
+        owner: 'RegExp',
+        isProperty: true,
+        description:
+            'True if the g (global) flag was specified when creating the regular expression.',
+        params: [],
+        returnType: 'boolean',
+        syntax: 'RegExp.global',
+        example: 'var re = /hello/g;\nWrite(re.global); // true',
+    },
+    {
+        name: 'ignoreCase',
+        owner: 'RegExp',
+        isProperty: true,
+        description: 'True if the i (case-insensitive) flag was specified.',
+        params: [],
+        returnType: 'boolean',
+        syntax: 'RegExp.ignoreCase',
+        example: 'var re = /hello/i;\nWrite(re.ignoreCase); // true',
+    },
+    {
+        name: 'multiline',
+        owner: 'RegExp',
+        isProperty: true,
+        description: 'True if the m (multiline) flag was specified.',
+        params: [],
+        returnType: 'boolean',
+        syntax: 'RegExp.multiline',
+        example: 'var re = /^hello/m;\nWrite(re.multiline); // true',
+    },
+    {
+        name: 'lastIndex',
+        owner: 'RegExp',
+        isProperty: true,
+        description:
+            'The index at which to start the next match. ' +
+            'Only relevant when the g or y flag is set. ' +
+            'Automatically updated by exec() and test().',
+        params: [],
+        returnType: 'number',
+        syntax: 'RegExp.lastIndex',
+        example:
+            'var re = /\\d+/g;\n' +
+            're.exec("abc 123 def 456");\n' +
+            'Write(re.lastIndex); // 7 (after first match)',
+    },
 ];
 
 // ── Unsupported ES6+ syntax ──────────────────────────────────────────────────

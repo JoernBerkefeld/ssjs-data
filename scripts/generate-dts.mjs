@@ -712,6 +712,88 @@ const CORE_CLASS_MAP = [
     ['DateTime.TimeZone', DATE_TIME_TIMEZONE_METHODS, g(PLATFORM_OBJECT_URLS, 'DateTime.TimeZone')],
 ];
 
+// ── Core Library sub-namespace instance interfaces ────────────────────────────
+// Emitted leaf-first so child types are declared before the parent interfaces that
+// reference them (e.g. ListSubscribersTrackingInstance before ListSubscribersInstance).
+line('// ── Core Library sub-namespace instance interfaces ───────────────────────────');
+const SUB_NS_IFACE_DEFS = [
+    // Leaf-level (no children)
+    [
+        'ListSubscribersTrackingInstance',
+        LIST_SUBSCRIBERS_TRACKING_METHODS,
+        g(CORE_LIBRARY_URLS, 'List.Subscribers.Tracking'),
+        [],
+    ],
+    [
+        'ListSubscribersInstance',
+        LIST_SUBSCRIBERS_METHODS,
+        g(CORE_LIBRARY_URLS, 'List.Subscribers'),
+        [{ prop: 'Tracking', type: 'ListSubscribersTrackingInstance' }],
+    ],
+    [
+        'SubscriberAttributesInstance',
+        SUBSCRIBER_ATTRIBUTES_METHODS,
+        g(CORE_LIBRARY_URLS, 'Subscriber.Attributes'),
+        [],
+    ],
+    [
+        'SubscriberListsInstance',
+        SUBSCRIBER_LISTS_METHODS,
+        g(CORE_LIBRARY_URLS, 'Subscriber.Lists'),
+        [],
+    ],
+    ['SendTrackingInstance', SEND_TRACKING_METHODS, g(CORE_LIBRARY_URLS, 'Send.Tracking'), []],
+    [
+        'TriggeredSendTrackingClicksInstance',
+        TRIGGERED_SEND_TRACKING_CLICKS_METHODS,
+        g(CORE_LIBRARY_URLS, 'TriggeredSend.Tracking.Clicks'),
+        [],
+    ],
+    [
+        'TriggeredSendTrackingTotalByIntervalInstance',
+        TRIGGERED_SEND_TRACKING_TOTAL_BY_INTERVAL_METHODS,
+        g(CORE_LIBRARY_URLS, 'TriggeredSend.Tracking.TotalByInterval'),
+        [],
+    ],
+    // Parent-level (reference the leaf interfaces above)
+    [
+        'TriggeredSendTrackingInstance',
+        TRIGGERED_SEND_TRACKING_METHODS,
+        g(CORE_LIBRARY_URLS, 'TriggeredSend.Tracking'),
+        [
+            { prop: 'Clicks', type: 'TriggeredSendTrackingClicksInstance' },
+            { prop: 'TotalByInterval', type: 'TriggeredSendTrackingTotalByIntervalInstance' },
+        ],
+    ],
+];
+
+/** Sub-namespace properties to inject into top-level instance interfaces. */
+const INSTANCE_SUB_NAMESPACES = {
+    List: [{ prop: 'Subscribers', type: 'ListSubscribersInstance' }],
+    Subscriber: [
+        { prop: 'Attributes', type: 'SubscriberAttributesInstance' },
+        { prop: 'Lists', type: 'SubscriberListsInstance' },
+    ],
+    Send: [{ prop: 'Tracking', type: 'SendTrackingInstance' }],
+    TriggeredSend: [{ prop: 'Tracking', type: 'TriggeredSendTrackingInstance' }],
+};
+
+for (const [ifaceName, methods, guideUrl, subProps] of SUB_NS_IFACE_DEFS) {
+    const instanceMethods = (methods ?? []).filter((m) => m.isStatic === false);
+    if (instanceMethods.length === 0 && subProps.length === 0) {
+        continue;
+    }
+    line(`interface ${ifaceName} {`);
+    for (const m of instanceMethods) {
+        line(emitIfaceMember(m, '    ', guideUrl));
+    }
+    for (const { prop, type } of subProps) {
+        line(`    readonly ${prop}: ${type};`);
+    }
+    line('}');
+}
+line('');
+
 line('// ── Core Library namespaces ──────────────────────────────────────────────────');
 for (const [nsName, methods, guideUrl] of CORE_CLASS_MAP) {
     if (!methods || methods.length === 0) {
@@ -731,16 +813,21 @@ for (const [nsName, methods, guideUrl] of CORE_CLASS_MAP) {
     }
     // Emit a matching instance interface for top-level classes (no dot in name).
     // Dotted sub-namespace paths (e.g. DataExtension.Fields, List.Subscribers) are
-    // accessed via their parent class instance and are handled via the parent's
-    // interface (DataExtensionInstance already declared above) or via future
-    // sub-interface properties — not as standalone declare namespace blocks.
+    // accessed via their parent class instance; their instance interfaces are declared
+    // in the SUB_NS_IFACE_DEFS block above and injected as typed properties below.
     // DataExtensionInstance is already emitted explicitly above — skip it here.
-    if (instanceMethods.length > 0 && !nsName.includes('.') && nsName !== 'DataExtension') {
-        line(`interface ${nsName}Instance {`);
-        for (const m of instanceMethods) {
-            line(emitIfaceMember(m, '    ', guideUrl));
+    if (!nsName.includes('.') && nsName !== 'DataExtension') {
+        const subProps = INSTANCE_SUB_NAMESPACES[nsName] ?? [];
+        if (instanceMethods.length > 0 || subProps.length > 0) {
+            line(`interface ${nsName}Instance {`);
+            for (const m of instanceMethods) {
+                line(emitIfaceMember(m, '    ', guideUrl));
+            }
+            for (const { prop, type } of subProps) {
+                line(`    readonly ${prop}: ${type};`);
+            }
+            line('}');
         }
-        line('}');
     }
 }
 line('');
