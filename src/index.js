@@ -6,7 +6,10 @@
  *   - prettier-plugin-sfmc (language registration)
  *   - vscode-sfmc-language (completions, hover, diagnostics)
  *
- * Schema version: 0.3.0 — additive fields added in this version:
+ * Schema version: 0.4.0 — additive fields added in this version:
+ *   - ampscriptEquivalent?: string | null — the canonical AMPscript function name this
+ *       Platform.Function maps to, or null when no AMPscript equivalent exists.
+ *       Used by mcp-server-sfmc conversion tools. (PLATFORM_FUNCTIONS only)
  *   - isStatic?: boolean      — true for namespace-level calls (Class.Method()), false for instance calls
  *   - deprecated?: boolean    — true for entries that resolve at runtime but should not be used in new code
  *   - isProperty?: boolean    — true for entries accessed without parentheses (e.g. Platform.Request.HasSSL)
@@ -411,6 +414,7 @@ export const PLATFORM_METHODS = [
 export const PLATFORM_FUNCTIONS = [
     {
         name: 'Lookup',
+        ampscriptEquivalent: 'Lookup',
         minArgs: 4,
         maxArgs: 4,
         description:
@@ -442,6 +446,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'LookupRows',
+        ampscriptEquivalent: 'LookupRows',
         minArgs: 3,
         maxArgs: 3,
         description:
@@ -473,6 +478,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'LookupOrderedRows',
+        ampscriptEquivalent: 'LookupOrderedRows',
         minArgs: 5,
         maxArgs: 5,
         description:
@@ -517,6 +523,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'InsertData',
+        ampscriptEquivalent: 'InsertData',
         minArgs: 3,
         maxArgs: 3,
         description:
@@ -543,6 +550,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'InsertDE',
+        ampscriptEquivalent: 'InsertDE',
         minArgs: 3,
         maxArgs: 3,
         description:
@@ -569,6 +577,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'UpdateData',
+        ampscriptEquivalent: 'UpdateData',
         minArgs: 5,
         maxArgs: 5,
         description:
@@ -607,6 +616,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'UpdateDE',
+        ampscriptEquivalent: 'UpdateDE',
         minArgs: 5,
         maxArgs: 5,
         description:
@@ -645,6 +655,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'UpsertData',
+        ampscriptEquivalent: 'UpsertData',
         minArgs: 5,
         maxArgs: 5,
         description:
@@ -682,6 +693,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'UpsertDE',
+        ampscriptEquivalent: 'UpsertDE',
         minArgs: 5,
         maxArgs: 5,
         description:
@@ -719,6 +731,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'DeleteData',
+        ampscriptEquivalent: 'DeleteData',
         minArgs: 3,
         maxArgs: 3,
         description:
@@ -746,6 +759,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'DeleteDE',
+        ampscriptEquivalent: 'DeleteDE',
         minArgs: 3,
         maxArgs: 3,
         description:
@@ -772,6 +786,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'ContentBlockByKey',
+        ampscriptEquivalent: 'ContentBlockByKey',
         minArgs: 1,
         maxArgs: 4,
         description: 'Renders a Content Builder asset referenced by customer key.',
@@ -810,6 +825,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'ContentBlockByName',
+        ampscriptEquivalent: 'ContentBlockByName',
         minArgs: 1,
         maxArgs: 5,
         description:
@@ -856,6 +872,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'ContentBlockByID',
+        ampscriptEquivalent: 'ContentBlockByID',
         minArgs: 1,
         maxArgs: 4,
         description: 'Renders a Content Builder asset by its numeric identifier.',
@@ -890,6 +907,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'ContentImageByKey',
+        ampscriptEquivalent: 'ContentImageByKey',
         minArgs: 1,
         maxArgs: 2,
         description:
@@ -914,6 +932,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'ContentImageByID',
+        ampscriptEquivalent: 'ContentImageByID',
         minArgs: 1,
         maxArgs: 2,
         description:
@@ -933,6 +952,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'TreatAsContent',
+        ampscriptEquivalent: 'TreatAsContent',
         minArgs: 1,
         maxArgs: 1,
         description: 'Processes a string as AMPscript/HTML and returns rendered output.',
@@ -950,6 +970,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'BeginImpressionRegion',
+        ampscriptEquivalent: 'BeginImpressionRegion',
         minArgs: 1,
         maxArgs: 1,
         description: 'Marks the start of a named impression tracking region within content.',
@@ -963,6 +984,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'EndImpressionRegion',
+        ampscriptEquivalent: 'EndImpressionRegion',
         minArgs: 0,
         maxArgs: 1,
         description: 'Marks the end of an impression tracking region within content.',
@@ -981,6 +1003,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'Now',
+        ampscriptEquivalent: 'Now',
         minArgs: 0,
         maxArgs: 1,
         description:
@@ -1001,6 +1024,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'SystemDateToLocalDate',
+        ampscriptEquivalent: 'SystemDateToLocalDate',
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -1019,6 +1043,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'LocalDateToSystemDate',
+        ampscriptEquivalent: 'LocalDateToSystemDate',
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -1037,6 +1062,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'RaiseError',
+        ampscriptEquivalent: 'RaiseError',
         minArgs: 1,
         maxArgs: 4,
         description:
@@ -1076,6 +1102,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'GUID',
+        ampscriptEquivalent: 'GUID',
         minArgs: 0,
         maxArgs: 0,
         description: 'Generates a new globally unique identifier string.',
@@ -1087,6 +1114,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'IsEmailAddress',
+        ampscriptEquivalent: 'IsEmailAddress',
         minArgs: 1,
         maxArgs: 1,
         description: 'Checks whether a string is a valid email address format.',
@@ -1098,6 +1126,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'IsPhoneNumber',
+        ampscriptEquivalent: 'IsPhoneNumber',
         minArgs: 1,
         maxArgs: 1,
         description: 'Evaluates whether a string contains a valid phone number.',
@@ -1109,6 +1138,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'CreateObject',
+        ampscriptEquivalent: 'CreateObject',
         minArgs: 1,
         maxArgs: 1,
         description: 'Instantiates a Marketing Cloud SOAP API object.',
@@ -1120,6 +1150,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'SetObjectProperty',
+        ampscriptEquivalent: 'SetObjectProperty',
         minArgs: 3,
         maxArgs: 3,
         description: 'Assigns a property value on a SOAP API object.',
@@ -1135,6 +1166,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'AddObjectArrayItem',
+        ampscriptEquivalent: 'AddObjectArrayItem',
         minArgs: 3,
         maxArgs: 3,
         description: "Appends an item to a SOAP API object's array property.",
@@ -1150,6 +1182,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'InvokeCreate',
+        ampscriptEquivalent: 'InvokeCreate',
         minArgs: 3,
         maxArgs: 3,
         description: 'Executes a SOAP API Create call on an API object.',
@@ -1178,6 +1211,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'InvokeUpdate',
+        ampscriptEquivalent: 'InvokeUpdate',
         minArgs: 3,
         maxArgs: 3,
         description: 'Executes a SOAP API Update call on an API object.',
@@ -1206,6 +1240,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'InvokeDelete',
+        ampscriptEquivalent: 'InvokeDelete',
         minArgs: 3,
         maxArgs: 3,
         description: 'Executes a SOAP API Delete call on an API object.',
@@ -1234,6 +1269,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'InvokeRetrieve',
+        ampscriptEquivalent: 'InvokeRetrieve',
         minArgs: 2,
         maxArgs: 2,
         description: 'Executes a SOAP API Retrieve call.',
@@ -1261,6 +1297,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'InvokePerform',
+        ampscriptEquivalent: 'InvokePerform',
         minArgs: 4,
         maxArgs: 4,
         description: 'Executes a SOAP API Perform action on an API object.',
@@ -1291,6 +1328,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'InvokeConfigure',
+        ampscriptEquivalent: null,
         minArgs: 4,
         maxArgs: 4,
         description: 'Executes a SOAP API Configure call on an API object.',
@@ -1318,6 +1356,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'InvokeExecute',
+        ampscriptEquivalent: 'InvokeExecute',
         minArgs: 3,
         maxArgs: 3,
         description: 'Executes a SOAP API Execute call on an API object.',
@@ -1346,6 +1385,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'InvokeExtract',
+        ampscriptEquivalent: null,
         minArgs: 2,
         maxArgs: 3,
         description: 'Invokes the Extract SOAP API method on the specified object.',
@@ -1374,6 +1414,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'InvokeSchedule',
+        ampscriptEquivalent: null,
         minArgs: 3,
         maxArgs: 5,
         description: 'Invokes the Schedule SOAP API method on the specified object.',
@@ -1405,6 +1446,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'HTTPGet',
+        ampscriptEquivalent: 'HTTPGet',
         minArgs: 2,
         maxArgs: 6,
         description:
@@ -1463,6 +1505,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'HTTPPost',
+        ampscriptEquivalent: 'HTTPPost',
         minArgs: 3,
         maxArgs: 6,
         description:
@@ -1510,6 +1553,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'ParseJSON',
+        ampscriptEquivalent: null,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -1536,6 +1580,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'RedirectTo',
+        ampscriptEquivalent: 'RedirectTo',
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -1557,6 +1602,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'UrlEncode',
+        ampscriptEquivalent: 'URLEncode',
         minArgs: 1,
         maxArgs: 2,
         description:
@@ -1586,6 +1632,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'Base64Encode',
+        ampscriptEquivalent: 'Base64Encode',
         minArgs: 1,
         maxArgs: 2,
         description:
@@ -1609,6 +1656,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'Base64Decode',
+        ampscriptEquivalent: 'Base64Decode',
         minArgs: 1,
         maxArgs: 2,
         description:
@@ -1636,6 +1684,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'MD5',
+        ampscriptEquivalent: 'MD5',
         minArgs: 1,
         maxArgs: 2,
         description: 'Returns an MD5 hash for a given string value.',
@@ -1656,6 +1705,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'Stringify',
+        ampscriptEquivalent: null,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -1679,6 +1729,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'ContentArea',
+        ampscriptEquivalent: 'ContentArea',
         minArgs: 1,
         maxArgs: 4,
         deprecated: true,
@@ -1716,6 +1767,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'ContentAreaByName',
+        ampscriptEquivalent: 'ContentAreaByName',
         minArgs: 1,
         maxArgs: 4,
         deprecated: true,
@@ -1752,6 +1804,7 @@ export const PLATFORM_FUNCTIONS = [
     },
     {
         name: 'IsCHTMLBrowser',
+        ampscriptEquivalent: 'IsCHTMLBrowser',
         minArgs: 1,
         maxArgs: 1,
         description:
