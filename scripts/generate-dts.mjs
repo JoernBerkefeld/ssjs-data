@@ -426,7 +426,9 @@ function emitArrayMember(m, indent = '    ') {
     if (isPropertyEntry(m)) {
         return `${indent}readonly ${m.name}: number;`;
     }
-    const retType = ARRAY_T_RETURNS[m.name] ?? toTsType(m.returnType);
+    const retType = Object.hasOwn(ARRAY_T_RETURNS, m.name)
+        ? ARRAY_T_RETURNS[m.name]
+        : toTsType(m.returnType);
     if (!m.params || m.params.length === 0) {
         return `${indent}${m.name}(): ${retType};`;
     }
@@ -978,12 +980,45 @@ line('// ── ECMAScript built-ins (SFMC-supported subset only) ────�
         line('');
     }
 
-    // Object.prototype → interface Object
+    // Object.prototype → interface Object (instance members)
     const objectMembers = byOwner.get('Object.prototype') ?? [];
     if (objectMembers.length > 0) {
         line('interface Object {');
         for (const m of objectMembers) {
             line(emitIfaceMember(m));
+        }
+        line('}');
+        line('');
+    }
+
+    // Object (statics, e.g. Object.defineProperty) → declare namespace Object
+    const objectStatics = byOwner.get('Object') ?? [];
+    if (objectStatics.length > 0) {
+        line('declare namespace Object {');
+        for (const m of objectStatics) {
+            line(emitNsMember(m));
+        }
+        line('}');
+        line('');
+    }
+
+    // Date.prototype → interface Date (instance methods)
+    const dateMembers = byOwner.get('Date.prototype') ?? [];
+    if (dateMembers.length > 0) {
+        line('interface Date {');
+        for (const m of dateMembers) {
+            line(emitIfaceMember(m));
+        }
+        line('}');
+        line('');
+    }
+
+    // Date (statics, e.g. Date.UTC) → declare namespace Date
+    const dateStatics = byOwner.get('Date') ?? [];
+    if (dateStatics.length > 0) {
+        line('declare namespace Date {');
+        for (const m of dateStatics) {
+            line(emitNsMember(m));
         }
         line('}');
         line('');
@@ -1046,6 +1081,9 @@ line('// ── ECMAScript built-ins (SFMC-supported subset only) ────�
         'String.prototype',
         'Number.prototype',
         'Object.prototype',
+        'Object',
+        'Date.prototype',
+        'Date',
         'Math',
         'RegExp',
         'Global',

@@ -4025,8 +4025,8 @@ interface Array<T> {
     slice(start?: number, end?: number): T[];
     sort(compareFn?: any): T[];
     reverse(): T[];
-    splice(start: number, deleteCount?: number, ...items: T[]): T[];
     readonly length: number;
+    toLocaleString(): string;
 }
 
 interface String {
@@ -4041,6 +4041,7 @@ interface String {
     split(separator?: any, limit?: number): any[];
     substring(start?: number, end?: number): string;
     toLowerCase(): string;
+    toLocaleLowerCase(): string;
     toUpperCase(): string;
     concat(...strings: string[]): string;
     substr(start?: number, length?: number): string;
@@ -4088,6 +4089,113 @@ interface Object {
      * }
      */
     hasOwnProperty(v?: string): boolean;
+}
+
+declare namespace Object {
+    /**
+     * Defines a new property on an object, or modifies an existing one, with the given descriptor.
+     *
+     * @param obj - The object on which to define the property
+     * @param prop - The name of the property to define
+     * @param descriptor - Property descriptor (value, enumerable, writable, configurable, get, set)
+     * @example
+     * var o = {};
+     * Object.defineProperty(o, "x", { value: 42, enumerable: true });
+     * Write(o.x); // 42
+     */
+    function defineProperty(obj?: object, prop?: string, descriptor?: object): object;
+}
+
+interface Date {
+    /**
+     * Returns the four-digit year of the date according to local time.
+     *
+     * @example
+     * var d = new Date();
+     * Write(d.getFullYear()); // e.g. 2026
+     */
+    getFullYear(): number;
+    /**
+     * Returns the minutes (0–59) of the date according to local time.
+     *
+     * @example
+     * var d = new Date();
+     * Write(d.getMinutes());
+     */
+    getMinutes(): number;
+    /**
+     * Returns the seconds (0–59) of the date according to local time.
+     *
+     * @example
+     * var d = new Date();
+     * Write(d.getSeconds());
+     */
+    getSeconds(): number;
+    /**
+     * Returns the day of the week (0 = Sunday … 6 = Saturday) according to local time.
+     *
+     * @example
+     * var d = new Date();
+     * Write(d.getDay()); // 0–6
+     */
+    getDay(): number;
+    /**
+     * Returns the milliseconds (0–999) of the date according to local time.
+     *
+     * @example
+     * var d = new Date();
+     * Write(d.getMilliseconds());
+     */
+    getMilliseconds(): number;
+    /**
+     * Returns a human-readable string representing the date.
+     *
+     * @example
+     * var d = new Date(0);
+     * Write(d.toString());
+     */
+    toString(): string;
+    /**
+     * Returns the date portion of the date as a human-readable string.
+     *
+     * @example
+     * var d = new Date(0);
+     * Write(d.toDateString()); // "Wed, 31 Dec 1969" (locale-dependent)
+     */
+    toDateString(): string;
+    /**
+     * Returns the date as a string using the UTC time zone.
+     *
+     * @example
+     * var d = new Date(0);
+     * Write(d.toUTCString()); // "Thu, 01 Jan 1970 00:00:00 UTC"
+     */
+    toUTCString(): string;
+    /**
+     * Returns the primitive value of the date as the number of milliseconds since the Unix epoch.
+     *
+     * @example
+     * var d = new Date(0);
+     * Write(d.valueOf()); // 0
+     */
+    valueOf(): number;
+}
+
+declare namespace Date {
+    /**
+     * Returns the number of milliseconds since the Unix epoch for the given UTC date components.
+     *
+     * @param year - Full year
+     * @param month - Month (0–11)
+     * @param day - Day of the month (1–31)
+     * @param hours - Hours (0–23)
+     * @param minutes - Minutes (0–59)
+     * @param seconds - Seconds (0–59)
+     * @param milliseconds - Milliseconds (0–999)
+     * @example
+     * Write(Date.UTC(1970, 0, 1)); // 0
+     */
+    function UTC(year?: number, month?: number, day?: number, hours?: number, minutes?: number, seconds?: number, milliseconds?: number): number;
 }
 
 declare namespace Math {

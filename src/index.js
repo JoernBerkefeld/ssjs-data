@@ -6569,12 +6569,21 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
 // Note: Array.prototype.indexOf, splice, and lastIndexOf exist but are broken;
 // use the polyfills from POLYFILLABLE_METHODS for correct behaviour.
 
-/** @type {{name: string, owner: string, description: string, params?: {name: string, description: string, type?: string, optional?: boolean}[], returnType?: string, syntax?: string, example?: string}[]} */
+/**
+ * ECMAScript built-in methods/properties confirmed to work in SFMC SSJS.
+ *
+ * `esVersion` records the ECMAScript edition that standardized the member
+ * (3 = ES3, 5 = ES5). It is documentation-only metadata surfaced on ssjs.guide
+ * and is NOT consumed for IntelliSense, validation, or any LSP/MCP/VSCE logic.
+ *
+ * @type {{name: string, owner: string, esVersion: 3 | 5, isStatic?: boolean, isProperty?: boolean, description: string, params?: {name: string, description: string, type?: string, optional?: boolean}[], returnType?: string, syntax?: string, minArgs?: number, maxArgs?: number, example?: string}[]}
+ */
 export const ECMASCRIPT_BUILTINS = [
     // ── Array.prototype ──────────────────────────────────────────────────────
     {
         name: 'join',
         owner: 'Array.prototype',
+        esVersion: 3,
         description:
             'Joins all array elements into a string, separated by the specified delimiter.',
         params: [
@@ -6592,6 +6601,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'push',
         owner: 'Array.prototype',
+        esVersion: 3,
         description:
             'Appends one or more elements to the end of an array and returns the new length.',
         params: [
@@ -6608,6 +6618,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'pop',
         owner: 'Array.prototype',
+        esVersion: 3,
         description: 'Removes and returns the last element from an array.',
         params: [],
         returnType: 'any',
@@ -6617,6 +6628,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'shift',
         owner: 'Array.prototype',
+        esVersion: 3,
         description: 'Removes and returns the first element from an array.',
         params: [],
         returnType: 'any',
@@ -6626,6 +6638,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'unshift',
         owner: 'Array.prototype',
+        esVersion: 3,
         description:
             'Inserts one or more elements at the start of an array and returns the new length.',
         params: [
@@ -6642,6 +6655,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'concat',
         owner: 'Array.prototype',
+        esVersion: 3,
         description:
             'Returns a new array formed by merging this array with other arrays or values.',
         params: [{ name: 'value', description: 'Array or value to concatenate', type: 'any' }],
@@ -6652,6 +6666,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'slice',
         owner: 'Array.prototype',
+        esVersion: 3,
         description: 'Returns a shallow copy of a portion of an array.',
         params: [
             {
@@ -6668,6 +6683,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'sort',
         owner: 'Array.prototype',
+        esVersion: 3,
         description: 'Sorts the array in place and returns it. Default sort is lexicographic.',
         params: [
             {
@@ -6685,6 +6701,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'reverse',
         owner: 'Array.prototype',
+        esVersion: 3,
         description: 'Reverses the elements of an array in place.',
         params: [],
         returnType: 'array',
@@ -6692,50 +6709,31 @@ export const ECMASCRIPT_BUILTINS = [
         example: 'var arr = [1, 2, 3];\narr.reverse(); // [3, 2, 1]',
     },
     {
-        name: 'splice',
-        owner: 'Array.prototype',
-        description:
-            'Removes or replaces elements and optionally inserts new ones in place. ' +
-            'Returns an array of the removed elements.',
-        params: [
-            {
-                name: 'start',
-                description: 'Index at which to start changing the array',
-                type: 'number',
-            },
-            {
-                name: 'deleteCount',
-                description: 'Number of elements to remove (omit to remove all from start)',
-                type: 'number',
-                optional: true,
-            },
-            {
-                name: 'item',
-                description: 'Elements to insert at start (repeat for multiple)',
-                type: 'any',
-                optional: true,
-            },
-        ],
-        returnType: 'array',
-        syntax: 'Array.splice(start[, deleteCount[, item1[, ...]]])',
-        example:
-            'var arr = [1, 2, 3, 4];\n' +
-            'var removed = arr.splice(1, 2); // removed: [2, 3], arr: [1, 4]\n' +
-            'arr.splice(1, 0, 9, 8); // arr: [1, 9, 8, 4]',
-    },
-    {
         name: 'length',
         owner: 'Array.prototype',
+        esVersion: 3,
         description: 'Returns the number of elements in the array.',
         params: [],
         returnType: 'number',
         syntax: 'Array.length',
         example: 'var arr = [1, 2, 3];\nWrite(arr.length); // 3',
     },
+    {
+        name: 'toLocaleString',
+        owner: 'Array.prototype',
+        esVersion: 3,
+        description:
+            'Returns a string representing the array elements, joined by a locale-specific separator.',
+        params: [],
+        returnType: 'string',
+        syntax: 'Array.toLocaleString()',
+        example: 'var arr = [1, 2, 3];\nWrite(arr.toLocaleString()); // "1,2,3"',
+    },
     // ── String.prototype ─────────────────────────────────────────────────────
     {
         name: 'charAt',
         owner: 'String.prototype',
+        esVersion: 3,
         description: 'Returns the character at the specified index.',
         params: [{ name: 'index', description: 'Zero-based character index', type: 'number' }],
         returnType: 'string',
@@ -6745,6 +6743,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'charCodeAt',
         owner: 'String.prototype',
+        esVersion: 3,
         description: 'Returns the UTF-16 code unit at the specified index.',
         params: [{ name: 'index', description: 'Zero-based character index', type: 'number' }],
         returnType: 'number',
@@ -6754,6 +6753,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'indexOf',
         owner: 'String.prototype',
+        esVersion: 3,
         description:
             'Returns the index of the first occurrence of a substring, or -1 if not found.',
         params: [
@@ -6772,6 +6772,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'lastIndexOf',
         owner: 'String.prototype',
+        esVersion: 3,
         description: 'Returns the index of the last occurrence of a substring, or -1 if not found.',
         params: [
             { name: 'searchValue', description: 'Substring to search for', type: 'string' },
@@ -6789,6 +6790,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'match',
         owner: 'String.prototype',
+        esVersion: 3,
         description: 'Matches a string against a regular expression and returns the matches array.',
         params: [
             { name: 'regexp', description: 'Regular expression to match against', type: 'RegExp' },
@@ -6801,6 +6803,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'replace',
         owner: 'String.prototype',
+        esVersion: 3,
         description:
             'Returns a new string with matches replaced by a replacement string or function.',
         params: [
@@ -6815,6 +6818,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'search',
         owner: 'String.prototype',
+        esVersion: 3,
         description: 'Searches for a match and returns the index of the first match, or -1.',
         params: [
             { name: 'regexp', description: 'Regular expression to search for', type: 'RegExp' },
@@ -6826,6 +6830,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'slice',
         owner: 'String.prototype',
+        esVersion: 3,
         description: 'Extracts a section of a string and returns it as a new string.',
         params: [
             {
@@ -6842,6 +6847,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'split',
         owner: 'String.prototype',
+        esVersion: 3,
         description: 'Splits a string into an array of substrings using a separator.',
         params: [
             { name: 'separator', description: 'String or RegExp to split on', type: 'any' },
@@ -6859,6 +6865,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'substring',
         owner: 'String.prototype',
+        esVersion: 3,
         description: 'Returns the characters between two indices of a string.',
         params: [
             { name: 'start', description: 'Start index (inclusive)', type: 'number' },
@@ -6871,6 +6878,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'toLowerCase',
         owner: 'String.prototype',
+        esVersion: 3,
         description: 'Returns the string converted to lowercase.',
         params: [],
         returnType: 'string',
@@ -6878,8 +6886,19 @@ export const ECMASCRIPT_BUILTINS = [
         example: 'var str = "Hello World";\nWrite(str.toLowerCase()); // "hello world"',
     },
     {
+        name: 'toLocaleLowerCase',
+        owner: 'String.prototype',
+        esVersion: 3,
+        description: 'Returns the string converted to lowercase according to host locale mappings.',
+        params: [],
+        returnType: 'string',
+        syntax: 'String.toLocaleLowerCase()',
+        example: 'var str = "AbC";\nWrite(str.toLocaleLowerCase()); // "abc"',
+    },
+    {
         name: 'toUpperCase',
         owner: 'String.prototype',
+        esVersion: 3,
         description: 'Returns the string converted to uppercase.',
         params: [],
         returnType: 'string',
@@ -6889,6 +6908,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'concat',
         owner: 'String.prototype',
+        esVersion: 3,
         description:
             'Returns a new string formed by concatenating this string with one or more additional strings.',
         params: [
@@ -6905,6 +6925,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'substr',
         owner: 'String.prototype',
+        esVersion: 3,
         description:
             'Returns a substring starting at start and running for length characters. ' +
             'If start is negative it is treated as (stringLength + start). ' +
@@ -6929,6 +6950,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'length',
         owner: 'String.prototype',
+        esVersion: 3,
         description: 'Returns the number of characters in the string.',
         params: [],
         returnType: 'number',
@@ -6939,6 +6961,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'abs',
         owner: 'Math',
+        esVersion: 3,
         description: 'Returns the absolute value of a number.',
         params: [{ name: 'x', description: 'A number', type: 'number' }],
         returnType: 'number',
@@ -6948,6 +6971,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'ceil',
         owner: 'Math',
+        esVersion: 3,
         description: 'Rounds a number up to the next integer.',
         params: [{ name: 'x', description: 'A number', type: 'number' }],
         returnType: 'number',
@@ -6957,6 +6981,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'floor',
         owner: 'Math',
+        esVersion: 3,
         description: 'Rounds a number down to the nearest integer.',
         params: [{ name: 'x', description: 'A number', type: 'number' }],
         returnType: 'number',
@@ -6966,6 +6991,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'max',
         owner: 'Math',
+        esVersion: 3,
         description: 'Returns the largest of the supplied numbers.',
         params: [{ name: 'values', description: 'Numbers to compare (variadic)', type: 'number' }],
         returnType: 'number',
@@ -6975,6 +7001,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'min',
         owner: 'Math',
+        esVersion: 3,
         description: 'Returns the smallest of the supplied numbers.',
         params: [{ name: 'values', description: 'Numbers to compare (variadic)', type: 'number' }],
         returnType: 'number',
@@ -6984,6 +7011,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'pow',
         owner: 'Math',
+        esVersion: 3,
         description: 'Returns the base raised to the exponent power.',
         params: [
             { name: 'base', description: 'The base number', type: 'number' },
@@ -6996,6 +7024,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'random',
         owner: 'Math',
+        esVersion: 3,
         description: 'Returns a pseudo-random floating-point number in [0, 1).',
         params: [],
         returnType: 'number',
@@ -7005,6 +7034,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'round',
         owner: 'Math',
+        esVersion: 3,
         description: 'Rounds a number to the nearest integer.',
         params: [{ name: 'x', description: 'A number', type: 'number' }],
         returnType: 'number',
@@ -7014,6 +7044,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'sqrt',
         owner: 'Math',
+        esVersion: 3,
         description: 'Returns the square root of a number.',
         params: [{ name: 'x', description: 'A non-negative number', type: 'number' }],
         returnType: 'number',
@@ -7023,6 +7054,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'sin',
         owner: 'Math',
+        esVersion: 3,
         description: 'Returns the sine of an angle given in radians.',
         params: [{ name: 'x', description: 'Angle in radians', type: 'number' }],
         returnType: 'number',
@@ -7032,6 +7064,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'cos',
         owner: 'Math',
+        esVersion: 3,
         description: 'Returns the cosine of an angle given in radians.',
         params: [{ name: 'x', description: 'Angle in radians', type: 'number' }],
         returnType: 'number',
@@ -7041,6 +7074,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'tan',
         owner: 'Math',
+        esVersion: 3,
         description: 'Returns the tangent of an angle given in radians.',
         params: [{ name: 'x', description: 'Angle in radians', type: 'number' }],
         returnType: 'number',
@@ -7050,6 +7084,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'asin',
         owner: 'Math',
+        esVersion: 3,
         description: 'Returns the arc sine (in radians) of a number in the range [-1, 1].',
         params: [{ name: 'x', description: 'A number between -1 and 1', type: 'number' }],
         returnType: 'number',
@@ -7059,6 +7094,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'acos',
         owner: 'Math',
+        esVersion: 3,
         description: 'Returns the arc cosine (in radians) of a number in the range [-1, 1].',
         params: [{ name: 'x', description: 'A number between -1 and 1', type: 'number' }],
         returnType: 'number',
@@ -7068,6 +7104,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'atan',
         owner: 'Math',
+        esVersion: 3,
         description: 'Returns the arc tangent (in radians) of a number.',
         params: [{ name: 'x', description: 'A number', type: 'number' }],
         returnType: 'number',
@@ -7077,6 +7114,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'atan2',
         owner: 'Math',
+        esVersion: 3,
         description:
             'Returns the angle (in radians) from the positive x-axis to the point (x, y). ' +
             'Unlike atan, atan2 correctly handles all quadrants.',
@@ -7091,6 +7129,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'exp',
         owner: 'Math',
+        esVersion: 3,
         description: 'Returns e raised to the power of x (e^x).',
         params: [{ name: 'x', description: 'The exponent', type: 'number' }],
         returnType: 'number',
@@ -7100,6 +7139,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'log',
         owner: 'Math',
+        esVersion: 3,
         description: 'Returns the natural logarithm (base e) of a number.',
         params: [{ name: 'x', description: 'A positive number', type: 'number' }],
         returnType: 'number',
@@ -7110,6 +7150,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'PI',
         owner: 'Math',
+        esVersion: 3,
         description: "The ratio of a circle's circumference to its diameter (~3.14159).",
         params: [],
         returnType: 'number',
@@ -7119,6 +7160,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'E',
         owner: 'Math',
+        esVersion: 3,
         description: "Euler's number, the base of the natural logarithm (~2.71828).",
         params: [],
         returnType: 'number',
@@ -7128,6 +7170,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'LN2',
         owner: 'Math',
+        esVersion: 3,
         description: 'The natural logarithm of 2 (~0.69315).',
         params: [],
         returnType: 'number',
@@ -7137,6 +7180,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'LN10',
         owner: 'Math',
+        esVersion: 3,
         description: 'The natural logarithm of 10 (~2.30259).',
         params: [],
         returnType: 'number',
@@ -7146,6 +7190,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'LOG2E',
         owner: 'Math',
+        esVersion: 3,
         description: 'The base-2 logarithm of e (~1.44270).',
         params: [],
         returnType: 'number',
@@ -7155,6 +7200,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'LOG10E',
         owner: 'Math',
+        esVersion: 3,
         description: 'The base-10 logarithm of e (~0.43429).',
         params: [],
         returnType: 'number',
@@ -7164,6 +7210,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'SQRT2',
         owner: 'Math',
+        esVersion: 3,
         description: 'The square root of 2 (~1.41421).',
         params: [],
         returnType: 'number',
@@ -7173,6 +7220,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'SQRT1_2',
         owner: 'Math',
+        esVersion: 3,
         description: 'The square root of 1/2 (~0.70711); equivalent to 1/Math.SQRT2.',
         params: [],
         returnType: 'number',
@@ -7183,6 +7231,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'toFixed',
         owner: 'Number.prototype',
+        esVersion: 3,
         description:
             'Returns a string representing the number in fixed-point notation with the given number of decimal places.',
         params: [
@@ -7201,6 +7250,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'toExponential',
         owner: 'Number.prototype',
+        esVersion: 3,
         description:
             'Returns a string representing the number in exponential notation. ' +
             'If fractionDigits is omitted, enough digits are included to uniquely identify the value.',
@@ -7219,6 +7269,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'toPrecision',
         owner: 'Number.prototype',
+        esVersion: 3,
         description:
             'Returns a string representing the number to the specified number of significant digits.',
         params: [
@@ -7237,6 +7288,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'hasOwnProperty',
         owner: 'Object.prototype',
+        esVersion: 3,
         description:
             'Returns true if the object has the specified property as its own (not inherited) property. ' +
             'Commonly used to safely iterate for...in loops.',
@@ -7253,6 +7305,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'parseInt',
         owner: 'Global',
+        esVersion: 3,
         description:
             'Parses a string and returns an integer in the specified radix (base). ' +
             'Leading whitespace is ignored. Returns NaN if no valid integer is found. ' +
@@ -7276,6 +7329,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'parseFloat',
         owner: 'Global',
+        esVersion: 3,
         description:
             'Parses a string and returns a floating-point number. ' +
             'Stops parsing at the first character that is not part of a valid number. ' +
@@ -7291,6 +7345,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'isNaN',
         owner: 'Global',
+        esVersion: 3,
         description:
             'Returns true if the value is NaN (Not-a-Number) after applying ToNumber conversion. ' +
             'Use this to guard against failed parseInt/parseFloat calls.',
@@ -7305,6 +7360,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'isFinite',
         owner: 'Global',
+        esVersion: 3,
         description:
             'Returns true if the value is a finite number (not NaN, +Infinity, or -Infinity) ' +
             'after applying ToNumber conversion.',
@@ -7322,6 +7378,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'RegExp',
         owner: 'Global',
+        esVersion: 3,
         description:
             'Creates a regular expression object for pattern matching. ' +
             'Prefer the literal syntax (/pattern/flags) when the pattern is known at write time. ' +
@@ -7353,6 +7410,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'test',
         owner: 'RegExp',
+        esVersion: 3,
         description:
             'Tests whether the string matches the pattern. ' +
             'Returns true if the pattern is found, false otherwise. ' +
@@ -7377,6 +7435,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'exec',
         owner: 'RegExp',
+        esVersion: 3,
         description:
             'Executes a search for a match in the string. ' +
             'Returns an array with the full match at index 0 and any capture groups at subsequent indices, ' +
@@ -7406,6 +7465,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'source',
         owner: 'RegExp',
+        esVersion: 3,
         isProperty: true,
         description: 'The text of the pattern, excluding the enclosing slashes and any flags.',
         params: [],
@@ -7416,6 +7476,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'global',
         owner: 'RegExp',
+        esVersion: 3,
         isProperty: true,
         description:
             'True if the g (global) flag was specified when creating the regular expression.',
@@ -7427,6 +7488,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'ignoreCase',
         owner: 'RegExp',
+        esVersion: 3,
         isProperty: true,
         description: 'True if the i (case-insensitive) flag was specified.',
         params: [],
@@ -7437,6 +7499,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'multiline',
         owner: 'RegExp',
+        esVersion: 3,
         isProperty: true,
         description: 'True if the m (multiline) flag was specified.',
         params: [],
@@ -7447,6 +7510,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'lastIndex',
         owner: 'RegExp',
+        esVersion: 3,
         isProperty: true,
         description:
             'The index at which to start the next match. ' +
@@ -7459,6 +7523,153 @@ export const ECMASCRIPT_BUILTINS = [
             'var re = /\\d+/g;\n' +
             're.exec("abc 123 def 456");\n' +
             'Write(re.lastIndex); // 7 (after first match)',
+    },
+    // ── Date.prototype ─────────────────────────────────────────────────────────
+    {
+        name: 'getFullYear',
+        owner: 'Date.prototype',
+        esVersion: 3,
+        description: 'Returns the four-digit year of the date according to local time.',
+        params: [],
+        returnType: 'number',
+        syntax: 'Date.getFullYear()',
+        example: 'var d = new Date();\nWrite(d.getFullYear()); // e.g. 2026',
+    },
+    {
+        name: 'getMinutes',
+        owner: 'Date.prototype',
+        esVersion: 3,
+        description: 'Returns the minutes (0–59) of the date according to local time.',
+        params: [],
+        returnType: 'number',
+        syntax: 'Date.getMinutes()',
+        example: 'var d = new Date();\nWrite(d.getMinutes());',
+    },
+    {
+        name: 'getSeconds',
+        owner: 'Date.prototype',
+        esVersion: 3,
+        description: 'Returns the seconds (0–59) of the date according to local time.',
+        params: [],
+        returnType: 'number',
+        syntax: 'Date.getSeconds()',
+        example: 'var d = new Date();\nWrite(d.getSeconds());',
+    },
+    {
+        name: 'getDay',
+        owner: 'Date.prototype',
+        esVersion: 3,
+        description:
+            'Returns the day of the week (0 = Sunday … 6 = Saturday) according to local time.',
+        params: [],
+        returnType: 'number',
+        syntax: 'Date.getDay()',
+        example: 'var d = new Date();\nWrite(d.getDay()); // 0–6',
+    },
+    {
+        name: 'getMilliseconds',
+        owner: 'Date.prototype',
+        esVersion: 3,
+        description: 'Returns the milliseconds (0–999) of the date according to local time.',
+        params: [],
+        returnType: 'number',
+        syntax: 'Date.getMilliseconds()',
+        example: 'var d = new Date();\nWrite(d.getMilliseconds());',
+    },
+    {
+        name: 'toString',
+        owner: 'Date.prototype',
+        esVersion: 3,
+        description: 'Returns a human-readable string representing the date.',
+        params: [],
+        returnType: 'string',
+        syntax: 'Date.toString()',
+        example: 'var d = new Date(0);\nWrite(d.toString());',
+    },
+    {
+        name: 'toDateString',
+        owner: 'Date.prototype',
+        esVersion: 3,
+        description: 'Returns the date portion of the date as a human-readable string.',
+        params: [],
+        returnType: 'string',
+        syntax: 'Date.toDateString()',
+        example:
+            'var d = new Date(0);\nWrite(d.toDateString()); // "Wed, 31 Dec 1969" (locale-dependent)',
+    },
+    {
+        name: 'toUTCString',
+        owner: 'Date.prototype',
+        esVersion: 3,
+        description: 'Returns the date as a string using the UTC time zone.',
+        params: [],
+        returnType: 'string',
+        syntax: 'Date.toUTCString()',
+        example: 'var d = new Date(0);\nWrite(d.toUTCString()); // "Thu, 01 Jan 1970 00:00:00 UTC"',
+    },
+    {
+        name: 'valueOf',
+        owner: 'Date.prototype',
+        esVersion: 3,
+        description:
+            'Returns the primitive value of the date as the number of milliseconds since the Unix epoch.',
+        params: [],
+        returnType: 'number',
+        syntax: 'Date.valueOf()',
+        example: 'var d = new Date(0);\nWrite(d.valueOf()); // 0',
+    },
+    // ── Date statics ───────────────────────────────────────────────────────────
+    {
+        name: 'UTC',
+        owner: 'Date',
+        esVersion: 3,
+        isStatic: true,
+        description:
+            'Returns the number of milliseconds since the Unix epoch for the given UTC date components.',
+        params: [
+            { name: 'year', description: 'Full year', type: 'number' },
+            { name: 'month', description: 'Month (0–11)', type: 'number', optional: true },
+            { name: 'day', description: 'Day of the month (1–31)', type: 'number', optional: true },
+            { name: 'hours', description: 'Hours (0–23)', type: 'number', optional: true },
+            { name: 'minutes', description: 'Minutes (0–59)', type: 'number', optional: true },
+            { name: 'seconds', description: 'Seconds (0–59)', type: 'number', optional: true },
+            {
+                name: 'milliseconds',
+                description: 'Milliseconds (0–999)',
+                type: 'number',
+                optional: true,
+            },
+        ],
+        returnType: 'number',
+        syntax: 'Date.UTC(year[, month[, day[, hours[, minutes[, seconds[, ms]]]]]])',
+        example: 'Write(Date.UTC(1970, 0, 1)); // 0',
+    },
+    // ── Object statics ─────────────────────────────────────────────────────────
+    {
+        name: 'defineProperty',
+        owner: 'Object',
+        esVersion: 5,
+        isStatic: true,
+        description:
+            'Defines a new property on an object, or modifies an existing one, with the given descriptor.',
+        params: [
+            {
+                name: 'obj',
+                description: 'The object on which to define the property',
+                type: 'object',
+            },
+            { name: 'prop', description: 'The name of the property to define', type: 'string' },
+            {
+                name: 'descriptor',
+                description:
+                    'Property descriptor (value, enumerable, writable, configurable, get, set)',
+                type: 'object',
+            },
+        ],
+        returnType: 'object',
+        syntax: 'Object.defineProperty(obj, prop, descriptor)',
+        example:
+            'var o = {};\nObject.defineProperty(o, "x", { value: 42, enumerable: true });\nWrite(o.x); // 42',
     },
 ];
 
@@ -7642,11 +7853,19 @@ for (const entry of UNSUPPORTED_SYNTAX) {
 // or one that exists natively but returns wrong results (category: 'broken').
 // The polyfill strings are rewritten originals based on patterns documented at
 // https://gortonington.com/javascript-array-methods-in-sfmc/
+//
+// `esVersion` records the ECMAScript edition that standardized the member
+// (3 = ES3, 5 = ES5, 6 = ES6/ES2015+). It is documentation-only metadata
+// surfaced on ssjs.guide and is NOT consumed by any LSP/MCP/VSCE/ESLint logic.
+// Note: a member can be standardized in ES3 (e.g. Array.splice) yet still be
+// broken in the SFMC engine, which is why ES3 appears here too.
 
+/** @type {{method: string, owner: string, esVersion: 3 | 5 | 6, isStatic: boolean, category: 'unavailable' | 'broken', ambiguousWithString: boolean, description: string, polyfill: string}[]} */
 export const POLYFILLABLE_METHODS = [
     {
         method: 'copyWithin',
         owner: 'Array.prototype',
+        esVersion: 6,
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
@@ -7663,6 +7882,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'entries',
         owner: 'Array.prototype',
+        esVersion: 6,
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
@@ -7684,6 +7904,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'fill',
         owner: 'Array.prototype',
+        esVersion: 6,
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
@@ -7701,6 +7922,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'filter',
         owner: 'Array.prototype',
+        esVersion: 5,
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
@@ -7718,6 +7940,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'find',
         owner: 'Array.prototype',
+        esVersion: 6,
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
@@ -7734,6 +7957,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'findIndex',
         owner: 'Array.prototype',
+        esVersion: 6,
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
@@ -7750,6 +7974,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'forEach',
         owner: 'Array.prototype',
+        esVersion: 5,
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
@@ -7765,6 +7990,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'includes',
         owner: 'Array.prototype',
+        esVersion: 6,
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
@@ -7780,6 +8006,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'indexOf',
         owner: 'Array.prototype',
+        esVersion: 5,
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: true,
@@ -7796,6 +8023,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'lastIndexOf',
         owner: 'Array.prototype',
+        esVersion: 5,
         isStatic: false,
         category: 'broken',
         ambiguousWithString: true,
@@ -7813,6 +8041,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'map',
         owner: 'Array.prototype',
+        esVersion: 5,
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
@@ -7830,6 +8059,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'reduce',
         owner: 'Array.prototype',
+        esVersion: 5,
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
@@ -7848,6 +8078,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'reduceRight',
         owner: 'Array.prototype',
+        esVersion: 5,
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
@@ -7866,6 +8097,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'some',
         owner: 'Array.prototype',
+        esVersion: 5,
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
@@ -7882,6 +8114,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'splice',
         owner: 'Array.prototype',
+        esVersion: 3,
         isStatic: false,
         category: 'broken',
         ambiguousWithString: false,
@@ -7914,6 +8147,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'trim',
         owner: 'String.prototype',
+        esVersion: 5,
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
@@ -7926,6 +8160,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'startsWith',
         owner: 'String.prototype',
+        esVersion: 6,
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
@@ -7939,6 +8174,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'endsWith',
         owner: 'String.prototype',
+        esVersion: 6,
         isStatic: false,
         category: 'unavailable',
         ambiguousWithString: false,
@@ -7950,8 +8186,24 @@ export const POLYFILLABLE_METHODS = [
             '};',
     },
     {
+        method: 'getPrototypeOf',
+        owner: 'Object',
+        esVersion: 5,
+        isStatic: true,
+        category: 'broken',
+        ambiguousWithString: false,
+        description:
+            'Object.getPrototypeOf exists in SFMC SSJS but throws at runtime, so it cannot be used. Access the constructor prototype directly or use a known reference instead.',
+        polyfill:
+            'Object.getPrototypeOf = function (obj) {\n' +
+            '    if (obj === null || obj === undefined) { return null; }\n' +
+            '    return obj.constructor ? obj.constructor.prototype : null;\n' +
+            '};',
+    },
+    {
         method: 'isArray',
         owner: 'Array',
+        esVersion: 5,
         isStatic: true,
         category: 'unavailable',
         ambiguousWithString: false,
@@ -7964,6 +8216,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'of',
         owner: 'Array',
+        esVersion: 6,
         isStatic: true,
         category: 'unavailable',
         ambiguousWithString: false,
