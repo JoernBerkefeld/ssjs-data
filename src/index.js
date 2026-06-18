@@ -8119,16 +8119,20 @@ export const POLYFILLABLE_METHODS = [
         category: 'broken',
         ambiguousWithString: false,
         description:
-            'Array.prototype.splice exists in SFMC SSJS but ignores its first two parameters. A polyfill is needed for correct behavior.',
+            'Array.prototype.splice(start, deleteCount, item1, …, itemN) works correctly in SFMC SSJS for the delete-only form (splice(start) and splice(start, deleteCount)). The bug surfaces only when inserting items: as soon as a third argument (item1) is passed, the engine ignores start and deleteCount and just overwrites from the left with the items to insert. A polyfill is needed only if you insert items; it also accepts unlimited additional items.',
         polyfill:
-            'Array.prototype.splice = function (startIndex, deleteCount) {\n' +
+            'Array.prototype.splice = function (start, deleteCount) {\n' +
             '    var arr = this;\n' +
-            '    var endIndex = startIndex + deleteCount;\n' +
+            '    var len = arr.length;\n' +
+            '    start = start < 0 ? (len + start < 0 ? 0 : len + start) : (start > len ? len : start);\n' +
+            '    var removeCount = arguments.length < 2 ? len - start : (deleteCount < 0 ? 0 : deleteCount);\n' +
+            '    if (removeCount > len - start) { removeCount = len - start; }\n' +
+            '    var endIndex = start + removeCount;\n' +
             '    var before = [];\n' +
             '    var removed = [];\n' +
             '    var after = [];\n' +
-            '    for (var i = 0; i < arr.length; i++) {\n' +
-            '        if (i < startIndex) { before.push(arr[i]); }\n' +
+            '    for (var i = 0; i < len; i++) {\n' +
+            '        if (i < start) { before.push(arr[i]); }\n' +
             '        else if (i < endIndex) { removed.push(arr[i]); }\n' +
             '        else { after.push(arr[i]); }\n' +
             '    }\n' +

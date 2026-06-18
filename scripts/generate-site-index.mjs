@@ -83,6 +83,7 @@ import {
     CONTENT_AREA_OBJ_METHODS,
     PORTFOLIO_METHODS,
     ECMASCRIPT_BUILTINS,
+    POLYFILLABLE_METHODS,
     CORE_LIBRARY_OBJECTS,
     SSJS_GLOBALS,
 } from '../src/index.js';
@@ -413,6 +414,19 @@ for (const fn of ECMASCRIPT_BUILTINS) {
             fn,
         ),
     );
+}
+
+// ── ECMAScript builtins that are broken / unavailable (need polyfills) ──────
+// These have no native working behavior but are documented on the same
+// ecmascript-builtins owner page (and on /engine-limitations/polyfills/), so
+// they must be discoverable via search and linkable from the VS Code extension.
+for (const fn of POLYFILLABLE_METHODS) {
+    const url = ECMASCRIPT_URLS[fn.owner];
+    if (!url) {
+        continue;
+    }
+    const ownerShort = fn.owner.replace('.prototype', '');
+    index.push(record(`${ownerShort}.${fn.method}`, url, 'ECMAScript Builtins', 'method', fn));
 }
 
 // ── SSJS Globals ───────────────────────────────────────────────────────────

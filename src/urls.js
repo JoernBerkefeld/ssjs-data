@@ -128,6 +128,7 @@ export const CORE_LIBRARY_URLS = {
  */
 export const ECMASCRIPT_URLS = {
     'Array.prototype': '/ecmascript-builtins/array-methods/',
+    Array: '/ecmascript-builtins/array-methods/',
     'String.prototype': '/ecmascript-builtins/string-methods/',
     Math: '/ecmascript-builtins/math/',
     'Number.prototype': '/ecmascript-builtins/number-methods/',
