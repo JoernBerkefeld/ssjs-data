@@ -13,6 +13,78 @@
 /** Base URL of the ssjs.guide documentation site. */
 export const GUIDE_BASE_URL = 'https://ssjs.guide';
 
+/** Base URL of the MDN JavaScript reference. */
+export const MDN_BASE_URL = 'https://developer.mozilla.org/en-US';
+
+/**
+ * Known JavaScript global constructors that MDN documents under
+ * /docs/Web/JavaScript/Reference/Global_Objects/<Ctor>/.
+ */
+const MDN_GLOBAL_CONSTRUCTORS = new Set([
+    'Array',
+    'String',
+    'Number',
+    'Object',
+    'Math',
+    'Date',
+    'RegExp',
+    'Boolean',
+    'Function',
+    'JSON',
+]);
+
+/** Top-level global functions/values that MDN documents under Global_Objects/<member>. */
+const MDN_GLOBAL_FUNCTIONS = new Set([
+    'parseInt',
+    'parseFloat',
+    'isNaN',
+    'isFinite',
+    'encodeURI',
+    'decodeURI',
+    'encodeURIComponent',
+    'decodeURIComponent',
+]);
+
+/**
+ * Derive the MDN documentation URL for an ECMAScript built-in.
+ *
+ * Produces a direct deep link when the owner/member resolves to a known
+ * constructor or global function, and a search-URL fallback otherwise so the
+ * link always lands the user on a useful MDN page.
+ *
+ * @param {string} owner - The builtin's `owner` (e.g. 'Array.prototype', 'Math', 'Global')
+ * @param {string} member - The method/property name (e.g. 'splice', 'PI', 'parseInt')
+ * @returns {string} Fully-qualified MDN URL
+ */
+export const mdnBuiltinUrl = (owner, member) => {
+    const reference = `${MDN_BASE_URL}/docs/Web/JavaScript/Reference`;
+    const search = () => `${MDN_BASE_URL}/search?q=${encodeURIComponent(`${owner}.${member}`)}`;
+
+    if (!owner || !member) {
+        return search();
+    }
+
+    // Global owner: either a global function (parseInt, isNaN, …) or a
+    // constructor referenced as a member (e.g. RegExp itself).
+    if (owner === 'Global') {
+        if (MDN_GLOBAL_CONSTRUCTORS.has(member)) {
+            return `${reference}/Global_Objects/${member}`;
+        }
+        if (MDN_GLOBAL_FUNCTIONS.has(member)) {
+            return `${reference}/Global_Objects/${member}`;
+        }
+        return search();
+    }
+
+    // Strip `.prototype` to get the owning constructor for instance members.
+    const constructor = owner.replace(/\.prototype$/, '');
+    if (MDN_GLOBAL_CONSTRUCTORS.has(constructor)) {
+        return `${reference}/Global_Objects/${constructor}/${member}`;
+    }
+
+    return search();
+};
+
 // ── Per-function URL derivation ──────────────────────────────────────────────
 // These functions map a function/method name to its own dedicated page URL.
 
