@@ -112,14 +112,21 @@ function stubArgs(m, minOverride) {
     const min = minOverride ?? m.minArgs ?? 0;
     const params = m.params ?? [];
     const parts = [];
-    for (let i = 0; i < Math.max(min, params.length > 0 ? 1 : 0); i++) {
+    // Emit at least `min` required args. When a signature is optional-only
+    // (min === 0) emit no args so the generated call still type-checks; otherwise
+    // emit correctly-typed stubs for the required leading params.
+    for (let i = 0; i < min; i++) {
         const p = params[i];
         if (!p) {
             parts.push('null');
             continue;
         }
         const t = (p.type ?? 'any').toLowerCase();
-        if (t.includes('string')) {
+        // A union/array type (e.g. `string|string[]`, `string[]`) maps to `string[]`
+        // in the generated .d.ts, so emit an array stub to satisfy the signature.
+        if (t.includes('[]') || t.includes('array')) {
+            parts.push('[]');
+        } else if (t.includes('string')) {
             parts.push(`"${p.name}"`);
         } else if (t.includes('number')) {
             parts.push('1');
@@ -127,13 +134,39 @@ function stubArgs(m, minOverride) {
             parts.push('true');
         } else if (t.includes('function')) {
             parts.push('function() {}');
-        } else if (t.includes('array') || t.endsWith('[]')) {
-            parts.push('[]');
+        } else if (t === 'regexp') {
+            // Use the shared RegExp instance stub so String.match/search type-check.
+            parts.push('_re');
         } else {
             parts.push('{}');
         }
     }
     return parts.join(', ');
+}
+
+/**
+ * Resolve a global alias's `aliasOf` (e.g. 'Platform.Function.Now',
+ * 'Platform.Response.Redirect') to its source ssjs-data method entry so the
+ * generated test call can use the real signature.
+ *
+ * @param {string} aliasOf - dotted path of the alias target
+ * @returns {object|null} The source method entry, or null when not resolvable
+ */
+function resolveGlobalAlias(aliasOf) {
+    const parts = (aliasOf ?? '').split('.');
+    if (parts.length !== 3 || parts[0] !== 'Platform') {
+        return null;
+    }
+    const key = parts[2].toLowerCase();
+    const tables = {
+        Function: PLATFORM_FUNCTIONS,
+        Response: PLATFORM_RESPONSE_METHODS,
+        Variable: PLATFORM_VARIABLE_METHODS,
+        Request: PLATFORM_REQUEST_METHODS,
+        Recipient: PLATFORM_RECIPIENT_METHODS,
+    };
+    const table = tables[parts[1]];
+    return table?.find((m) => m.name.toLowerCase() === key) ?? null;
 }
 
 /**
@@ -219,7 +252,7 @@ const coreGroups = [
     ['Email', EMAIL_METHODS, '_email'],
     ['Send', SEND_METHODS, '_send'],
     ['Send.Tracking', SEND_TRACKING_METHODS, '_sendTracking'],
-    ['Send.Definition', SEND_DEFINITION_METHODS, 'Send.Definition'],
+    ['Send.Definition', SEND_DEFINITION_METHODS, '_sendDef'],
     ['TriggeredSend', TRIGGERED_SEND_METHODS, '_triggeredSend'],
     ['TriggeredSend.Tracking', TRIGGERED_SEND_TRACKING_METHODS, '_tsTracking'],
     ['TriggeredSend.Tracking.Clicks', TRIGGERED_SEND_TRACKING_CLICKS_METHODS, '_tsClicks'],
@@ -258,6 +291,25 @@ for (const m of ECMASCRIPT_BUILTINS) {
         }
         case 'Number.prototype': {
             callExpr = `_num.${m.name}(${stubArgs(m)})`;
+
+            break;
+        }
+        case 'Date.prototype': {
+            // Instance methods are exercised on a Date instance stub, mirroring how
+            // Array/String/Number prototype methods use _arr/_str/_num.
+            callExpr = isProperty(m) ? `_date.${m.name}` : `_date.${m.name}(${stubArgs(m)})`;
+
+            break;
+        }
+        case 'Date': {
+            // Statics such as Date.UTC live on the Date namespace/constructor.
+            callExpr = isProperty(m) ? `Date.${m.name}` : `Date.${m.name}(${stubArgs(m)})`;
+
+            break;
+        }
+        case 'Object': {
+            // Statics such as Object.defineProperty live on the Object namespace.
+            callExpr = isProperty(m) ? `Object.${m.name}` : `Object.${m.name}(${stubArgs(m)})`;
 
             break;
         }
@@ -303,12 +355,11 @@ for (const g of SSJS_GLOBALS) {
               : `${g.name}(${stubArgs(g)})`;
         add(g.name, 'SSJS Global', g, expr, isProperty(g));
     } else if (g.aliasOf) {
-        add(
-            `${g.name} (alias of ${g.aliasOf})`,
-            'SSJS Global Alias',
-            g,
-            `${g.name}(${stubArgs({ minArgs: 1, params: [{ name: 'arg', type: 'any' }] })})`,
-        );
+        // Resolve the alias target so the generated call uses the real signature
+        // (correct arg count and types) instead of a single `{}` placeholder.
+        const target = resolveGlobalAlias(g.aliasOf);
+        const callExpr = target ? `${g.name}(${stubArgs(target)})` : `${g.name}()`;
+        add(`${g.name} (alias of ${g.aliasOf})`, 'SSJS Global Alias', g, callExpr);
     }
 }
 
@@ -388,7 +439,9 @@ function inDts(item) {
     if (item.category === 'ECMAScript') {
         const owner = item.entry.owner;
         if (owner === 'Global') {
-            return new RegExp(String.raw`declare function ${name}\b`).test(dts);
+            // Constructible globals (e.g. RegExp) are emitted as
+            // `declare var X: XConstructor`; plain globals as `declare function X`.
+            return new RegExp(String.raw`declare (?:function|var) ${name}\b`).test(dts);
         }
         if (owner === 'Math') {
             return dts.includes('namespace Math') && new RegExp(String.raw`\b${name}\b`).test(dts);
@@ -408,7 +461,9 @@ function inDts(item) {
     }
     if (item.category === 'SSJS Global' || item.category === 'SSJS Global Alias') {
         const bare = id.split(' ')[0];
-        return new RegExp(String.raw`declare function ${bare}\b`).test(dts);
+        // Constructible globals (String, Error, RegExp, …) are emitted as
+        // `declare var X: XConstructor`; plain globals as `declare function X`.
+        return new RegExp(String.raw`declare (?:function|var) ${bare}\b`).test(dts);
     }
     if (id.startsWith('Attribute.')) {
         return dts.includes('namespace Attribute');
@@ -611,7 +666,7 @@ const lines = [
     'var _httpReq = new Script.Util.HttpRequest("https://example.com");',
     'var _de = DataExtension.Init("TestDE");',
     'var _account = Account.Init("");',
-    'var _accountUser = AccountUser.Init("", "");',
+    'var _accountUser = AccountUser.Init("", 1);',
     'var _portfolio = Portfolio.Init("");',
     'var _contentArea = ContentAreaObj.Init("");',
     'var _folder = Folder.Init("");',
@@ -628,7 +683,8 @@ const lines = [
     'var _subscriberAttrs = _subscriber.Attributes;',
     'var _subscriberLists = _subscriber.Lists;',
     'var _email = Email.Init("");',
-    'var _send = Send.Init("");',
+    'var _send = Send.Init(1);',
+    'var _sendDef = Send.Definition.Init("");',
     'var _sendTracking = _send.Tracking;',
     'var _triggeredSend = TriggeredSend.Init("");',
     'var _tsTracking = _triggeredSend.Tracking;',
@@ -639,6 +695,7 @@ const lines = [
     'var _num = 42;',
     'var _obj = {};',
     'var _re = /test/i;',
+    'var _date = new Date();',
     '',
 ];
 
@@ -670,7 +727,7 @@ lines.push(
     'void (_str.match(_reCtor));',
     '',
     '// Native constructors — ssjs.guide/engine-limitations/known-bugs.md',
-    'var _date = new Date();',
+    'var _dateCtor = new Date();',
     'var _arrCtor = new Array(3);',
     'var _objCtor = new Object();',
     '',

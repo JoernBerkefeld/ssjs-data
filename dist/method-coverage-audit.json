@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-06-11T21:51:14.203Z",
+  "generatedAt": "2026-06-19T16:45:32.451Z",
   "totals": {
-    "catalogEntries": 322,
-    "dtsCovered": 322,
+    "catalogEntries": 334,
+    "dtsCovered": 334,
     "dtsMissingFlat": 0,
     "dtsMissingNested": 13,
     "dtsMissingTotal": 13
@@ -174,6 +174,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "Lookup",
+          "ampscriptEquivalent": "Lookup",
           "minArgs": 4,
           "maxArgs": 4,
           "description": "Retrieves a single field value from a Data Extension row matching filter criteria. To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).",
@@ -203,7 +204,7 @@
           "syntax": "Platform.Function.Lookup(deName, returnField, whereFieldNames, whereFieldValues)",
           "example": "// Single filter:\nvar email = Platform.Function.Lookup(\"Subscribers\", \"EmailAddress\", \"SubscriberKey\", \"abc123\");\n\n// Multiple filters (AND logic):\nvar phone = Platform.Function.Lookup(\"CustomerData\", \"Phone\", [\"FirstName\", \"LastName\"], [\"Carolyn\", \"Baumgartner\"]);"
         },
-        "callExpr": "Platform.Function.Lookup(\"deName\", \"returnField\", \"whereFieldNames\", \"whereFieldValues\")",
+        "callExpr": "Platform.Function.Lookup(\"deName\", \"returnField\", [], [])",
         "isProperty": false
       },
       {
@@ -211,6 +212,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "LookupRows",
+          "ampscriptEquivalent": "LookupRows",
           "minArgs": 3,
           "maxArgs": 3,
           "description": "Returns a result set of rows from a Data Extension matching filter criteria. Returns up to 2,000 rows. To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).",
@@ -235,7 +237,7 @@
           "syntax": "Platform.Function.LookupRows(deName, whereFieldNames, whereFieldValues)",
           "example": "// Single filter:\nvar rows = Platform.Function.LookupRows(\"MyDE\", \"Status\", \"active\");\nfor (var i = 0; i < rows.length; i++) {\n    Write(rows[i][\"Name\"] + \"<br>\");\n}\n\n// Multiple filters (AND logic):\nvar rows2 = Platform.Function.LookupRows(\"CustomerData\", [\"PreferredLanguage\", \"RewardsTier\"], [\"English\", \"Gold\"]);"
         },
-        "callExpr": "Platform.Function.LookupRows(\"deName\", \"whereFieldNames\", \"whereFieldValues\")",
+        "callExpr": "Platform.Function.LookupRows(\"deName\", [], [])",
         "isProperty": false
       },
       {
@@ -243,6 +245,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "LookupOrderedRows",
+          "ampscriptEquivalent": "LookupOrderedRows",
           "minArgs": 5,
           "maxArgs": 5,
           "description": "Returns an ordered result set from a Data Extension. The sort expression is a single string in the format \"ColumnName ASC\" or \"ColumnName DESC\". Multiple columns can be separated by commas. Returns up to 2,000 rows; values below 1 for count default to 2,000. To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).",
@@ -277,7 +280,7 @@
           "syntax": "Platform.Function.LookupOrderedRows(deName, count, orderBy, whereFieldNames, whereFieldValues)",
           "example": "// Single filter, sorted by LastName ASC:\nvar rows = Platform.Function.LookupOrderedRows(\"MyDE\", 10, \"LastName ASC\", \"RewardsTier\", \"Silver\");\nfor (var i = 0; i < rows.length; i++) {\n    Write(rows[i][\"Email\"] + \"<br>\");\n}\n\n// Multiple filters (AND logic):\nvar rows2 = Platform.Function.LookupOrderedRows(\"CustomerData\", 0, \"LastName ASC\", [\"PreferredLanguage\", \"RewardsTier\"], [\"English\", \"Silver\"]);"
         },
-        "callExpr": "Platform.Function.LookupOrderedRows(\"deName\", 1, \"orderBy\", \"whereFieldNames\", \"whereFieldValues\")",
+        "callExpr": "Platform.Function.LookupOrderedRows(\"deName\", 1, \"orderBy\", [], [])",
         "isProperty": false
       },
       {
@@ -285,6 +288,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "InsertData",
+          "ampscriptEquivalent": "InsertData",
           "minArgs": 3,
           "maxArgs": 3,
           "description": "Adds a new row to a Data Extension. Use this function in CloudPages, landing pages, microsites, and SMS messages. Use InsertDE() for email contexts.",
@@ -309,7 +313,7 @@
           "syntax": "Platform.Function.InsertData(deName, fieldNames, fieldValues)",
           "example": "var rowsAffected = Platform.Function.InsertData(\"MyDE\", [\"Email\", \"Name\"], [\"jane@example.com\", \"Jane\"]);"
         },
-        "callExpr": "Platform.Function.InsertData(\"deName\", \"fieldNames\", [])",
+        "callExpr": "Platform.Function.InsertData(\"deName\", [], [])",
         "isProperty": false
       },
       {
@@ -317,6 +321,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "InsertDE",
+          "ampscriptEquivalent": "InsertDE",
           "minArgs": 3,
           "maxArgs": 3,
           "description": "Adds a new row to a Data Extension. Use this function in email contexts. Use InsertData() for CloudPages, landing pages, microsites, and SMS messages.",
@@ -341,7 +346,7 @@
           "syntax": "Platform.Function.InsertDE(deName, fieldNames, fieldValues)",
           "example": "Platform.Function.InsertDE(\"MyDE\", [\"Email\", \"Name\"], [\"jane@example.com\", \"Jane\"]);"
         },
-        "callExpr": "Platform.Function.InsertDE(\"deName\", \"fieldNames\", [])",
+        "callExpr": "Platform.Function.InsertDE(\"deName\", [], [])",
         "isProperty": false
       },
       {
@@ -349,6 +354,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "UpdateData",
+          "ampscriptEquivalent": "UpdateData",
           "minArgs": 5,
           "maxArgs": 5,
           "description": "Modifies existing rows in a Data Extension matching filter criteria. Use this function in CloudPages, landing pages, microsites, and SMS messages. Use UpdateDE() for email contexts.",
@@ -383,7 +389,7 @@
           "syntax": "Platform.Function.UpdateData(deName, whereFieldNames, whereFieldValues, fieldNames, fieldValues)",
           "example": "var count = Platform.Function.UpdateData(\"MyDE\", [\"Email\"], [\"jane@example.com\"], [\"Status\"], [\"inactive\"]);"
         },
-        "callExpr": "Platform.Function.UpdateData(\"deName\", \"whereFieldNames\", \"whereFieldValues\", \"fieldNames\", [])",
+        "callExpr": "Platform.Function.UpdateData(\"deName\", [], [], [], [])",
         "isProperty": false
       },
       {
@@ -391,6 +397,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "UpdateDE",
+          "ampscriptEquivalent": "UpdateDE",
           "minArgs": 5,
           "maxArgs": 5,
           "description": "Modifies existing rows in a Data Extension matching filter criteria. Use this function in email contexts. Use UpdateData() for CloudPages, landing pages, microsites, and SMS messages.",
@@ -425,7 +432,7 @@
           "syntax": "Platform.Function.UpdateDE(deName, whereFieldNames, whereFieldValues, fieldNames, fieldValues)",
           "example": "var count = Platform.Function.UpdateDE(\"MyDE\", [\"Email\"], [\"jane@example.com\"], [\"Status\"], [\"inactive\"]);"
         },
-        "callExpr": "Platform.Function.UpdateDE(\"deName\", \"whereFieldNames\", \"whereFieldValues\", \"fieldNames\", [])",
+        "callExpr": "Platform.Function.UpdateDE(\"deName\", [], [], [], [])",
         "isProperty": false
       },
       {
@@ -433,6 +440,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "UpsertData",
+          "ampscriptEquivalent": "UpsertData",
           "minArgs": 5,
           "maxArgs": 5,
           "description": "Inserts a new row or updates an existing one in a Data Extension. Use this function in non-sendable contexts such as CloudPages and landing pages.",
@@ -467,7 +475,7 @@
           "syntax": "Platform.Function.UpsertData(deName, whereFieldNames, whereFieldValues, fieldNames, fieldValues)",
           "example": "var count = Platform.Function.UpsertData(\"CustomerData\", [\"ID\"], [\"12345\"], [\"Company\", \"Country\"], [\"exampleCompany\", \"USA\"]);"
         },
-        "callExpr": "Platform.Function.UpsertData(\"deName\", \"whereFieldNames\", \"whereFieldValues\", \"fieldNames\", [])",
+        "callExpr": "Platform.Function.UpsertData(\"deName\", [], [], [], [])",
         "isProperty": false
       },
       {
@@ -475,6 +483,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "UpsertDE",
+          "ampscriptEquivalent": "UpsertDE",
           "minArgs": 5,
           "maxArgs": 5,
           "description": "Inserts a new row or updates an existing one in a Data Extension. Use this function in sendable contexts such as email messages.",
@@ -509,7 +518,7 @@
           "syntax": "Platform.Function.UpsertDE(deName, whereFieldNames, whereFieldValues, fieldNames, fieldValues)",
           "example": "var count = Platform.Function.UpsertDE(\"CustomerData\", [\"ID\"], [\"12345\"], [\"Company\", \"Country\"], [\"exampleCompany\", \"USA\"]);"
         },
-        "callExpr": "Platform.Function.UpsertDE(\"deName\", \"whereFieldNames\", \"whereFieldValues\", \"fieldNames\", [])",
+        "callExpr": "Platform.Function.UpsertDE(\"deName\", [], [], [], [])",
         "isProperty": false
       },
       {
@@ -517,6 +526,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "DeleteData",
+          "ampscriptEquivalent": "DeleteData",
           "minArgs": 3,
           "maxArgs": 3,
           "description": "Removes rows from a Data Extension matching filter criteria. Use this function in non-sendable contexts such as CloudPages and landing pages. Use DeleteDE() for email contexts.",
@@ -541,7 +551,7 @@
           "syntax": "Platform.Function.DeleteData(deName, whereFieldNames, whereFieldValues)",
           "example": "var count = Platform.Function.DeleteData(\"MyDE\", [\"Email\"], [\"jane@example.com\"]);"
         },
-        "callExpr": "Platform.Function.DeleteData(\"deName\", \"whereFieldNames\", [])",
+        "callExpr": "Platform.Function.DeleteData(\"deName\", [], [])",
         "isProperty": false
       },
       {
@@ -549,6 +559,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "DeleteDE",
+          "ampscriptEquivalent": "DeleteDE",
           "minArgs": 3,
           "maxArgs": 3,
           "description": "Removes rows from a Data Extension matching filter criteria. Use this function in email contexts. Use DeleteData() for CloudPages, landing pages, microsites, and SMS messages.",
@@ -573,7 +584,7 @@
           "syntax": "Platform.Function.DeleteDE(deName, whereFieldNames, whereFieldValues)",
           "example": "var count = Platform.Function.DeleteDE(\"MyDE\", [\"Email\"], [\"jane@example.com\"]);"
         },
-        "callExpr": "Platform.Function.DeleteDE(\"deName\", \"whereFieldNames\", [])",
+        "callExpr": "Platform.Function.DeleteDE(\"deName\", [], [])",
         "isProperty": false
       },
       {
@@ -581,6 +592,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "ContentBlockByKey",
+          "ampscriptEquivalent": "ContentBlockByKey",
           "minArgs": 1,
           "maxArgs": 4,
           "description": "Renders a Content Builder asset referenced by customer key.",
@@ -621,6 +633,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "ContentBlockByName",
+          "ampscriptEquivalent": "ContentBlockByName",
           "minArgs": 1,
           "maxArgs": 5,
           "description": "Renders a Content Builder asset referenced by folder path and name. If the same name is used across multiple folders, supply the full path.",
@@ -667,6 +680,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "ContentBlockByID",
+          "ampscriptEquivalent": "ContentBlockByID",
           "minArgs": 1,
           "maxArgs": 4,
           "description": "Renders a Content Builder asset by its numeric identifier.",
@@ -707,6 +721,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "ContentImageByKey",
+          "ampscriptEquivalent": "ContentImageByKey",
           "minArgs": 1,
           "maxArgs": 2,
           "description": "Returns an HTML img tag for a Content Builder image identified by its external key. An optional fallback image ID can be supplied if the primary image is not found.",
@@ -735,6 +750,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "ContentImageByID",
+          "ampscriptEquivalent": "ContentImageByID",
           "minArgs": 1,
           "maxArgs": 2,
           "description": "Returns an HTML img tag for a Content Builder image identified by its numeric ID. An optional fallback ID can be supplied if the primary image is not found.",
@@ -763,6 +779,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "TreatAsContent",
+          "ampscriptEquivalent": "TreatAsContent",
           "minArgs": 1,
           "maxArgs": 1,
           "description": "Processes a string as AMPscript/HTML and returns rendered output.",
@@ -785,6 +802,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "BeginImpressionRegion",
+          "ampscriptEquivalent": "BeginImpressionRegion",
           "minArgs": 1,
           "maxArgs": 1,
           "description": "Marks the start of a named impression tracking region within content.",
@@ -807,6 +825,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "EndImpressionRegion",
+          "ampscriptEquivalent": "EndImpressionRegion",
           "minArgs": 0,
           "maxArgs": 1,
           "description": "Marks the end of an impression tracking region within content.",
@@ -822,7 +841,7 @@
           "syntax": "Platform.Function.EndImpressionRegion([closeAll])",
           "example": "Platform.Function.BeginImpressionRegion(\"footer\");\nWrite(footerContent);\nPlatform.Function.EndImpressionRegion();"
         },
-        "callExpr": "Platform.Function.EndImpressionRegion(true)",
+        "callExpr": "Platform.Function.EndImpressionRegion()",
         "isProperty": false
       },
       {
@@ -830,6 +849,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "Now",
+          "ampscriptEquivalent": "Now",
           "minArgs": 0,
           "maxArgs": 1,
           "description": "Returns the current system timestamp, or the timestamp of the triggering send when called with true.",
@@ -845,7 +865,7 @@
           "syntax": "Platform.Function.Now([useContextTime])",
           "example": "var current = Platform.Function.Now();\nWrite(current); // e.g. \"8/5/2025 12:00:00 PM\"\n\n// Use context time during triggered sends:\nvar sendTime = Platform.Function.Now(true);"
         },
-        "callExpr": "Platform.Function.Now(true)",
+        "callExpr": "Platform.Function.Now()",
         "isProperty": false
       },
       {
@@ -853,6 +873,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "SystemDateToLocalDate",
+          "ampscriptEquivalent": "SystemDateToLocalDate",
           "minArgs": 1,
           "maxArgs": 1,
           "description": "Converts a date-time value from Marketing Cloud system time (CST) to the local time of the account or user.",
@@ -875,6 +896,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "LocalDateToSystemDate",
+          "ampscriptEquivalent": "LocalDateToSystemDate",
           "minArgs": 1,
           "maxArgs": 1,
           "description": "Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST).",
@@ -897,6 +919,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "RaiseError",
+          "ampscriptEquivalent": "RaiseError",
           "minArgs": 1,
           "maxArgs": 4,
           "description": "Raises an error with an optional scope flag. When the second parameter is true, the error stops only the current recipient's send. When false, the error halts the entire send job.",
@@ -937,6 +960,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "GUID",
+          "ampscriptEquivalent": "GUID",
           "minArgs": 0,
           "maxArgs": 0,
           "description": "Generates a new globally unique identifier string.",
@@ -953,6 +977,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "IsEmailAddress",
+          "ampscriptEquivalent": "IsEmailAddress",
           "minArgs": 1,
           "maxArgs": 1,
           "description": "Checks whether a string is a valid email address format.",
@@ -975,6 +1000,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "IsPhoneNumber",
+          "ampscriptEquivalent": "IsPhoneNumber",
           "minArgs": 1,
           "maxArgs": 1,
           "description": "Evaluates whether a string contains a valid phone number.",
@@ -997,6 +1023,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "CreateObject",
+          "ampscriptEquivalent": "CreateObject",
           "minArgs": 1,
           "maxArgs": 1,
           "description": "Instantiates a Marketing Cloud SOAP API object.",
@@ -1019,6 +1046,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "SetObjectProperty",
+          "ampscriptEquivalent": "SetObjectProperty",
           "minArgs": 3,
           "maxArgs": 3,
           "description": "Assigns a property value on a SOAP API object.",
@@ -1051,6 +1079,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "AddObjectArrayItem",
+          "ampscriptEquivalent": "AddObjectArrayItem",
           "minArgs": 3,
           "maxArgs": 3,
           "description": "Appends an item to a SOAP API object's array property.",
@@ -1083,6 +1112,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "InvokeCreate",
+          "ampscriptEquivalent": "InvokeCreate",
           "minArgs": 3,
           "maxArgs": 3,
           "description": "Executes a SOAP API Create call on an API object.",
@@ -1115,6 +1145,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "InvokeUpdate",
+          "ampscriptEquivalent": "InvokeUpdate",
           "minArgs": 3,
           "maxArgs": 3,
           "description": "Executes a SOAP API Update call on an API object.",
@@ -1147,6 +1178,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "InvokeDelete",
+          "ampscriptEquivalent": "InvokeDelete",
           "minArgs": 3,
           "maxArgs": 3,
           "description": "Executes a SOAP API Delete call on an API object.",
@@ -1179,6 +1211,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "InvokeRetrieve",
+          "ampscriptEquivalent": "InvokeRetrieve",
           "minArgs": 2,
           "maxArgs": 2,
           "description": "Executes a SOAP API Retrieve call.",
@@ -1206,6 +1239,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "InvokePerform",
+          "ampscriptEquivalent": "InvokePerform",
           "minArgs": 4,
           "maxArgs": 4,
           "description": "Executes a SOAP API Perform action on an API object.",
@@ -1243,6 +1277,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "InvokeConfigure",
+          "ampscriptEquivalent": null,
           "minArgs": 4,
           "maxArgs": 4,
           "description": "Executes a SOAP API Configure call on an API object.",
@@ -1280,6 +1315,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "InvokeExecute",
+          "ampscriptEquivalent": "InvokeExecute",
           "minArgs": 3,
           "maxArgs": 3,
           "description": "Executes a SOAP API Execute call on an API object.",
@@ -1312,6 +1348,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "InvokeExtract",
+          "ampscriptEquivalent": null,
           "minArgs": 2,
           "maxArgs": 3,
           "description": "Invokes the Extract SOAP API method on the specified object.",
@@ -1345,6 +1382,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "InvokeSchedule",
+          "ampscriptEquivalent": null,
           "minArgs": 3,
           "maxArgs": 5,
           "description": "Invokes the Schedule SOAP API method on the specified object.",
@@ -1389,6 +1427,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "HTTPGet",
+          "ampscriptEquivalent": "HTTPGet",
           "minArgs": 2,
           "maxArgs": 6,
           "description": "Performs an HTTP GET request and returns the response body. Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds.",
@@ -1440,6 +1479,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "HTTPPost",
+          "ampscriptEquivalent": "HTTPPost",
           "minArgs": 3,
           "maxArgs": 6,
           "description": "Performs an HTTP POST request with a content type and payload. Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. Returns the HTTP status code (e.g. 200 for success).",
@@ -1490,6 +1530,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "ParseJSON",
+          "ampscriptEquivalent": null,
           "minArgs": 1,
           "maxArgs": 1,
           "description": "Parses a JSON-formatted string (or array of strings) and returns the resulting JavaScript object (or array of objects). SFMC-native equivalent of JSON.parse(), which is not available in the legacy SSJS engine.",
@@ -1500,11 +1541,11 @@
               "type": "string|string[]"
             }
           ],
-          "returnType": "object|object[]",
+          "returnType": "any",
           "syntax": "Platform.Function.ParseJSON(jsonString)",
           "example": "var jsonString = '{\"name\":\"Jane\",\"age\":30}';\nvar obj = Platform.Function.ParseJSON(jsonString);\nWrite(obj.name); // outputs: Jane\n\n// Use String() to convert CLR response content before parsing:\nvar req = new Script.Util.HttpRequest(\"https://api.example.com/data\");\nreq.method = \"GET\";\nvar resp = req.send();\nvar result = Platform.Function.ParseJSON(String(resp.content));"
         },
-        "callExpr": "Platform.Function.ParseJSON(\"jsonString\")",
+        "callExpr": "Platform.Function.ParseJSON([])",
         "isProperty": false
       },
       {
@@ -1512,6 +1553,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "RedirectTo",
+          "ampscriptEquivalent": "RedirectTo",
           "minArgs": 1,
           "maxArgs": 1,
           "description": "Specifies the target of an email link as a complete URL stored in an attribute, data extension field, or variable. Use only within the href attribute of an anchor tag in HTML emails. In text emails, add the http:// prefix without spaces inside the parentheses. Include anchor tags in the email body (not in retrieved link content) to retain click-tracking.",
@@ -1534,6 +1576,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "UrlEncode",
+          "ampscriptEquivalent": "URLEncode",
           "minArgs": 1,
           "maxArgs": 2,
           "description": "Percent-encodes a complete URL. When encodeReservedKeywords is false (default), only space characters are encoded as %20. When true, all URL-reserved characters are also encoded (spaces become +).",
@@ -1563,6 +1606,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "Base64Encode",
+          "ampscriptEquivalent": "Base64Encode",
           "minArgs": 1,
           "maxArgs": 2,
           "description": "Encodes any string value to Base64. Note: values encoded with this function can only be decoded using `Platform.Function.Base64Decode()` or `Base64Decode()` — not other Base64 decoders. For a simpler single-parameter form without charset control, see `Base64Encode()`.",
@@ -1591,6 +1635,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "Base64Decode",
+          "ampscriptEquivalent": "Base64Decode",
           "minArgs": 1,
           "maxArgs": 2,
           "description": "Decodes a Base64-encoded string. Only works with values encoded using `Platform.Function.Base64Encode()` or `Base64Encode()` — not arbitrary Base64 strings. For a simpler single-parameter form without charset control, see `Base64Decode()`.",
@@ -1619,6 +1664,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "MD5",
+          "ampscriptEquivalent": "MD5",
           "minArgs": 1,
           "maxArgs": 2,
           "description": "Returns an MD5 hash for a given string value.",
@@ -1647,19 +1693,20 @@
         "category": "Platform.Function",
         "entry": {
           "name": "Stringify",
+          "ampscriptEquivalent": null,
           "minArgs": 1,
           "maxArgs": 1,
           "description": "Converts a JavaScript object into its JSON string representation. Works only with known JSON-serializable types. Not to be confused with `String()`, which converts CLR response objects to plain strings. The bare-name Stringify() global is equivalent but requires Platform.Load(\"core\",\"1.1.5\"); this Platform.Function form works without it.",
           "params": [
             {
-              "name": "object",
-              "description": "JavaScript object to serialize to JSON.",
-              "type": "object"
+              "name": "value",
+              "description": "Value to serialize to JSON. Accepts objects, arrays, strings, numbers, and booleans.",
+              "type": "any"
             }
           ],
           "returnType": "string",
-          "returnDescription": "JSON string representation of the object.",
-          "syntax": "Platform.Function.Stringify(object)",
+          "returnDescription": "JSON string representation of the value.",
+          "syntax": "Platform.Function.Stringify(value)",
           "example": "var json = Platform.Function.Stringify({ name: \"Jane\", age: 30 });\nPlatform.Function.Write(json);"
         },
         "callExpr": "Platform.Function.Stringify({})",
@@ -1670,6 +1717,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "ContentArea",
+          "ampscriptEquivalent": "ContentArea",
           "minArgs": 1,
           "maxArgs": 4,
           "deprecated": true,
@@ -1712,6 +1760,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "ContentAreaByName",
+          "ampscriptEquivalent": "ContentAreaByName",
           "minArgs": 1,
           "maxArgs": 4,
           "deprecated": true,
@@ -1754,6 +1803,7 @@
         "category": "Platform.Function",
         "entry": {
           "name": "IsCHTMLBrowser",
+          "ampscriptEquivalent": "IsCHTMLBrowser",
           "minArgs": 1,
           "maxArgs": 1,
           "description": "Indicates whether the passed-in user-agent value represents a CHTML browser. CHTML browsers (e.g. feature phones) use a modified version of HTML. Returns true when the user agent is a CHTML browser.",
@@ -2084,7 +2134,7 @@
           "syntax": "Platform.Request.GetPostData([encoding])",
           "example": "// Read raw POST body once and store it:\nvar rawBody = Platform.Request.GetPostData();\nvar payload = Platform.Function.ParseJSON(rawBody);"
         },
-        "callExpr": "Platform.Request.GetPostData(\"encoding\")",
+        "callExpr": "Platform.Request.GetPostData()",
         "isProperty": false
       },
       {
@@ -2609,7 +2659,7 @@
           "syntax": "HTTP.Post(url, contentType, payload, headerNames, headerValues)",
           "example": "Platform.Load(\"core\", \"1.1.5\");\nvar payload = Stringify({ email: \"jane@example.com\" });\nvar response = HTTP.Post(\"https://api.example.com/items\", \"application/json\", payload);"
         },
-        "callExpr": "HTTP.Post(\"url\", \"contentType\", \"payload\", \"headerNames\", [])",
+        "callExpr": "HTTP.Post(\"url\", \"contentType\", \"payload\", [], [])",
         "isProperty": false
       }
     ],
@@ -2698,7 +2748,7 @@
               "type": "object"
             }
           ],
-          "returnType": "object",
+          "returnType": "WSProxyResult",
           "returnDescription": "Object with Status, StatusMessage, RequestID, and Results array.",
           "syntax": "<WSProxyInstance>.createItem(objectType, properties)",
           "example": "var api = new Script.Util.WSProxy();\nvar result = api.createItem(\"DataExtensionObject\", {\n    CustomerKey: \"MyDE\",\n    Properties: { Property: [{ Name: \"Email\", Value: \"jane@example.com\" }] }\n});\nif (result.Status === \"OK\") { Write(\"Created\"); }"
@@ -2727,7 +2777,7 @@
               "type": "object"
             }
           ],
-          "returnType": "object",
+          "returnType": "WSProxyResult",
           "returnDescription": "Object with Status, StatusMessage, RequestID, and Results array.",
           "syntax": "<WSProxyInstance>.updateItem(objectType, properties)",
           "example": "var api = new Script.Util.WSProxy();\nvar result = api.updateItem(\"DataExtensionObject\", {\n    CustomerKey: \"MyDE\",\n    Properties: { Property: [{ Name: \"Status\", Value: \"inactive\" }] }\n});\nif (result.Status === \"OK\") { Write(\"Updated\"); }"
@@ -2756,7 +2806,7 @@
               "type": "object"
             }
           ],
-          "returnType": "object",
+          "returnType": "WSProxyResult",
           "returnDescription": "Object with Status, StatusMessage, RequestID, and Results array.",
           "syntax": "<WSProxyInstance>.deleteItem(objectType, properties)",
           "example": "var api = new Script.Util.WSProxy();\nvar result = api.deleteItem(\"DataExtensionObject\", {\n    CustomerKey: \"MyDE\",\n    Keys: { Key: [{ Name: \"Email\", Value: \"jane@example.com\" }] }\n});\nif (result.Status === \"OK\") { Write(\"Deleted\"); }"
@@ -2803,7 +2853,7 @@
               "optional": true
             }
           ],
-          "returnType": "object",
+          "returnType": "WSProxyResult",
           "returnDescription": "Object with Status, HasMoreRows, RequestID, and Results array.",
           "syntax": "<WSProxyInstance>.retrieve(objectType, columns[, filter[, retrieveOptions[, requestProps]]])",
           "example": "var api = new Script.Util.WSProxy();\nvar cols = [\"Name\", \"CustomerKey\", \"Status\"];\nvar filter = {\n    Property: \"Status\",\n    SimpleOperator: \"equals\",\n    Value: \"Active\"\n};\nvar result = api.retrieve(\"DataExtension\", cols, filter);\nif (result.Status === \"OK\") {\n    var rows = result.Results;\n    for (var i = 0; i < rows.length; i++) {\n        Write(rows[i].Name + \"<br>\");\n    }\n}"
@@ -2832,7 +2882,7 @@
               "type": "string"
             }
           ],
-          "returnType": "object",
+          "returnType": "WSProxyResult",
           "returnDescription": "Object with Status, HasMoreRows, RequestID, and Results array.",
           "syntax": "<WSProxyInstance>.getNextBatch(objectType, requestId)",
           "example": "var api = new Script.Util.WSProxy();\nvar result = api.retrieve(\"DataExtension\", [\"Name\"], {});\nwhile (result.HasMoreRows) {\n    result = api.getNextBatch(\"DataExtension\", result.RequestID);\n    for (var i = 0; i < result.Results.length; i++) {\n        Write(result.Results[i].Name + \"<br>\");\n    }\n}"
@@ -2875,7 +2925,7 @@
               "optional": true
             }
           ],
-          "returnType": "object",
+          "returnType": "WSProxyResult",
           "returnDescription": "Object with Status, StatusMessage, RequestID, and Results array.",
           "syntax": "<WSProxyInstance>.performItem(objectType, properties, action[, performOptions])",
           "example": "var api = new Script.Util.WSProxy();\nvar result = api.performItem(\"QueryDefinition\", { ObjectID: queryObjectId }, \"Start\");\nWrite(result.Status);"
@@ -2918,7 +2968,7 @@
               "optional": true
             }
           ],
-          "returnType": "object",
+          "returnType": "WSProxyResult",
           "returnDescription": "Object with Status, StatusMessage, RequestID, and Results array.",
           "syntax": "<WSProxyInstance>.performBatch(objectType, propertiesArray, action[, performOptions])",
           "example": "var api = new Script.Util.WSProxy();\nvar items = [{ ObjectID: id1 }, { ObjectID: id2 }];\nvar result = api.performBatch(\"QueryDefinition\", items, \"Start\");\nWrite(result.Status);"
@@ -2942,7 +2992,7 @@
               "type": "string"
             }
           ],
-          "returnType": "object",
+          "returnType": "WSProxyResult",
           "returnDescription": "Object with Status and Results array containing ObjectDefinition entries.",
           "syntax": "<WSProxyInstance>.describe(objectType)",
           "example": "var api = new Script.Util.WSProxy();\nvar result = api.describe(\"DataExtension\");\nWrite(Stringify(result.Results));"
@@ -2974,7 +3024,7 @@
               ]
             }
           ],
-          "returnType": "object",
+          "returnType": "WSProxyResult",
           "returnDescription": "Object with Status, StatusMessage, RequestID, and Results array.",
           "syntax": "<WSProxyInstance>.execute(objectType, requestName)",
           "example": "var api = new Script.Util.WSProxy();\nvar result = api.execute(\"DataExtensionObject\", \"LogUnsubEvent\");\nWrite(result.Status);"
@@ -3066,7 +3116,7 @@
               "type": "array"
             }
           ],
-          "returnType": "object",
+          "returnType": "WSProxyResult",
           "returnDescription": "Object with Status, StatusMessage, RequestID, and Results array.",
           "syntax": "<WSProxyInstance>.createBatch(objectType, propertiesArray)",
           "example": "var api = new Script.Util.WSProxy();\nvar items = [\n    { CustomerKey: \"MyDE\", Properties: { Property: [{ Name: \"Email\", Value: \"a@example.com\" }] } },\n    { CustomerKey: \"MyDE\", Properties: { Property: [{ Name: \"Email\", Value: \"b@example.com\" }] } }\n];\nvar result = api.createBatch(\"DataExtensionObject\", items);\nWrite(result.Status);"
@@ -3095,7 +3145,7 @@
               "type": "array"
             }
           ],
-          "returnType": "object",
+          "returnType": "WSProxyResult",
           "returnDescription": "Object with Status, StatusMessage, RequestID, and Results array.",
           "syntax": "<WSProxyInstance>.updateBatch(objectType, propertiesArray)",
           "example": "var api = new Script.Util.WSProxy();\nvar items = [\n    { CustomerKey: \"MyDE\", Keys: { Key: [{ Name: \"Email\", Value: \"a@example.com\" }] }, Properties: { Property: [{ Name: \"Status\", Value: \"active\" }] } }\n];\nvar result = api.updateBatch(\"DataExtensionObject\", items);\nWrite(result.Status);"
@@ -3124,7 +3174,7 @@
               "type": "array"
             }
           ],
-          "returnType": "object",
+          "returnType": "WSProxyResult",
           "returnDescription": "Object with Status, StatusMessage, RequestID, and Results array.",
           "syntax": "<WSProxyInstance>.deleteBatch(objectType, propertiesArray)",
           "example": "var api = new Script.Util.WSProxy();\nvar items = [\n    { CustomerKey: \"MyDE\", Keys: { Key: [{ Name: \"Email\", Value: \"old@example.com\" }] } }\n];\nvar result = api.deleteBatch(\"DataExtensionObject\", items);\nWrite(result.Status);"
@@ -3143,7 +3193,7 @@
           "maxArgs": 0,
           "description": "Executes the HTTP request and returns a Script.Util.HttpResponse object. The response object has a `statusCode` property and a `content` property. Use String(resp.content) to convert the CLR content to a JavaScript string before parsing with Platform.Function.ParseJSON().",
           "params": [],
-          "returnType": "object",
+          "returnType": "HttpResponseInstance",
           "syntax": "<HttpRequestInstance>.send()",
           "example": "var req = new Script.Util.HttpRequest(\"https://api.example.com/data\");\nreq.method = \"GET\";\nreq.setHeader(\"Authorization\", \"Bearer \" + accessToken);\nvar resp = req.send();\nif (resp.statusCode == 200) {\n    var result = Platform.Function.ParseJSON(String(resp.content));\n}"
         },
@@ -3506,7 +3556,7 @@
           "syntax": "<DataExtensionInstance>.Rows.Retrieve([filter])",
           "example": "Platform.Load(\"core\", \"1.1.5\");\nvar birthdayDE = DataExtension.Init(\"birthdayDE\");\nvar data = birthdayDE.Rows.Retrieve();\nvar filter = { Property: \"Age\", SimpleOperator: \"greaterThan\", Value: 20 };\nvar moredata = birthdayDE.Rows.Retrieve(filter);"
         },
-        "callExpr": "_de.Rows.Retrieve({})",
+        "callExpr": "_de.Rows.Retrieve()",
         "isProperty": false
       },
       {
@@ -4089,7 +4139,7 @@
           "syntax": "Folder.Init([key])",
           "example": "Platform.Load(\"core\", \"1\");\nvar myFolder = Folder.Init(\"myFolder\");\n// or, when the folder has no external key:\nvar myIDFolder = Folder.Init();\nmyIDFolder.SetID(12345);"
         },
-        "callExpr": "Folder.Init(\"key\")",
+        "callExpr": "Folder.Init()",
         "isProperty": false
       },
       {
@@ -5095,7 +5145,7 @@
           "syntax": "<ListInstance>.Subscribers.Retrieve([filter])",
           "example": "Platform.Load(\"core\", \"1\");\nvar list = List.Init(\"MY_LIST_KEY\");\nvar subscribers = list.Subscribers.Retrieve();"
         },
-        "callExpr": "_listSubscribers.Retrieve({})",
+        "callExpr": "_listSubscribers.Retrieve()",
         "isProperty": false
       },
       {
@@ -6067,7 +6117,7 @@
           "syntax": "Send.Definition.Retrieve([filter])",
           "example": "Platform.Load(\"core\", \"1.1.5\");\nvar esd = Send.Definition.Retrieve({ Property: \"CustomerKey\", SimpleOperator: \"equals\", Value: \"ssjs_test_esd\" });"
         },
-        "callExpr": "Send.Definition.Retrieve({})",
+        "callExpr": "Send.Definition.Retrieve()",
         "isProperty": false
       },
       {
@@ -6095,7 +6145,7 @@
           "syntax": "<SendDefinitionInstance>.Update(properties)",
           "example": "Platform.Load(\"core\", \"1.1.5\");\nvar sendDef = Send.Definition.Init(\"MY_SEND_DEF_KEY\");\nvar result = sendDef.Update({ Name: \"Updated Send Definition Name\" });"
         },
-        "callExpr": "Send.Definition.Update({})",
+        "callExpr": "_sendDef.Update({})",
         "isProperty": false
       },
       {
@@ -6117,7 +6167,7 @@
           "syntax": "<SendDefinitionInstance>.Remove()",
           "example": "Platform.Load(\"core\", \"1.1.5\");\nvar esd = Send.Definition.Init(\"myESD\");\nvar status = esd.Remove();"
         },
-        "callExpr": "Send.Definition.Remove()",
+        "callExpr": "_sendDef.Remove()",
         "isProperty": false
       },
       {
@@ -6139,7 +6189,7 @@
           "syntax": "<SendDefinitionInstance>.Send()",
           "example": "Platform.Load(\"core\", \"1.1.5\");\nvar esd = Send.Definition.Init(\"myESD\");\nvar status = esd.Send();"
         },
-        "callExpr": "Send.Definition.Send()",
+        "callExpr": "_sendDef.Send()",
         "isProperty": false
       },
       {
@@ -6368,7 +6418,7 @@
           "syntax": "<TriggeredSendInstance>.Tracking.Retrieve([filter])",
           "example": "Platform.Load(\"core\", \"1.1.5\");\nvar tsd = TriggeredSend.Init(\"MyTSDKey\");\nvar tsdTracking = tsd.Tracking.Retrieve();"
         },
-        "callExpr": "_tsTracking.Retrieve({})",
+        "callExpr": "_tsTracking.Retrieve()",
         "isProperty": false
       },
       {
@@ -6682,6 +6732,7 @@
         "entry": {
           "name": "join",
           "owner": "Array.prototype",
+          "esVersion": 3,
           "description": "Joins all array elements into a string, separated by the specified delimiter.",
           "params": [
             {
@@ -6695,7 +6746,7 @@
           "syntax": "Array.join([separator])",
           "example": "var arr = [\"a\", \"b\", \"c\"];\nvar str = arr.join(\", \"); // \"a, b, c\""
         },
-        "callExpr": "_arr.join(\"separator\")",
+        "callExpr": "_arr.join()",
         "isProperty": false
       },
       {
@@ -6704,6 +6755,7 @@
         "entry": {
           "name": "push",
           "owner": "Array.prototype",
+          "esVersion": 3,
           "description": "Appends one or more elements to the end of an array and returns the new length.",
           "params": [
             {
@@ -6716,7 +6768,7 @@
           "syntax": "Array.push(element[, ...])",
           "example": "var arr = [1, 2];\narr.push(3);\n// arr is now [1, 2, 3]"
         },
-        "callExpr": "_arr.push({})",
+        "callExpr": "_arr.push()",
         "isProperty": false
       },
       {
@@ -6725,6 +6777,7 @@
         "entry": {
           "name": "pop",
           "owner": "Array.prototype",
+          "esVersion": 3,
           "description": "Removes and returns the last element from an array.",
           "params": [],
           "returnType": "any",
@@ -6740,6 +6793,7 @@
         "entry": {
           "name": "shift",
           "owner": "Array.prototype",
+          "esVersion": 3,
           "description": "Removes and returns the first element from an array.",
           "params": [],
           "returnType": "any",
@@ -6755,6 +6809,7 @@
         "entry": {
           "name": "unshift",
           "owner": "Array.prototype",
+          "esVersion": 3,
           "description": "Inserts one or more elements at the start of an array and returns the new length.",
           "params": [
             {
@@ -6767,7 +6822,7 @@
           "syntax": "Array.unshift(element[, ...])",
           "example": "var arr = [2, 3];\narr.unshift(1);\n// arr is now [1, 2, 3]"
         },
-        "callExpr": "_arr.unshift({})",
+        "callExpr": "_arr.unshift()",
         "isProperty": false
       },
       {
@@ -6776,6 +6831,7 @@
         "entry": {
           "name": "concat",
           "owner": "Array.prototype",
+          "esVersion": 3,
           "description": "Returns a new array formed by merging this array with other arrays or values.",
           "params": [
             {
@@ -6788,7 +6844,7 @@
           "syntax": "Array.concat(value[, ...])",
           "example": "var a = [1, 2];\nvar b = [3, 4];\nvar c = a.concat(b); // [1, 2, 3, 4]"
         },
-        "callExpr": "_arr.concat({})",
+        "callExpr": "_arr.concat()",
         "isProperty": false
       },
       {
@@ -6797,6 +6853,7 @@
         "entry": {
           "name": "slice",
           "owner": "Array.prototype",
+          "esVersion": 3,
           "description": "Returns a shallow copy of a portion of an array.",
           "params": [
             {
@@ -6815,7 +6872,7 @@
           "syntax": "Array.slice([start[, end]])",
           "example": "var arr = [1, 2, 3, 4, 5];\nvar sub = arr.slice(1, 3); // [2, 3]"
         },
-        "callExpr": "_arr.slice(1)",
+        "callExpr": "_arr.slice()",
         "isProperty": false
       },
       {
@@ -6824,6 +6881,7 @@
         "entry": {
           "name": "sort",
           "owner": "Array.prototype",
+          "esVersion": 3,
           "description": "Sorts the array in place and returns it. Default sort is lexicographic.",
           "params": [
             {
@@ -6837,7 +6895,7 @@
           "syntax": "Array.sort([compareFn])",
           "example": "var arr = [3, 1, 2];\narr.sort(function(a, b) { return a - b; }); // [1, 2, 3]"
         },
-        "callExpr": "_arr.sort(function() {})",
+        "callExpr": "_arr.sort()",
         "isProperty": false
       },
       {
@@ -6846,6 +6904,7 @@
         "entry": {
           "name": "reverse",
           "owner": "Array.prototype",
+          "esVersion": 3,
           "description": "Reverses the elements of an array in place.",
           "params": [],
           "returnType": "array",
@@ -6856,44 +6915,12 @@
         "isProperty": false
       },
       {
-        "id": "Array.prototype.splice",
-        "category": "ECMAScript",
-        "entry": {
-          "name": "splice",
-          "owner": "Array.prototype",
-          "description": "Removes or replaces elements and optionally inserts new ones in place. Returns an array of the removed elements.",
-          "params": [
-            {
-              "name": "start",
-              "description": "Index at which to start changing the array",
-              "type": "number"
-            },
-            {
-              "name": "deleteCount",
-              "description": "Number of elements to remove (omit to remove all from start)",
-              "type": "number",
-              "optional": true
-            },
-            {
-              "name": "item",
-              "description": "Elements to insert at start (repeat for multiple)",
-              "type": "any",
-              "optional": true
-            }
-          ],
-          "returnType": "array",
-          "syntax": "Array.splice(start[, deleteCount[, item1[, ...]]])",
-          "example": "var arr = [1, 2, 3, 4];\nvar removed = arr.splice(1, 2); // removed: [2, 3], arr: [1, 4]\narr.splice(1, 0, 9, 8); // arr: [1, 9, 8, 4]"
-        },
-        "callExpr": "_arr.splice(1)",
-        "isProperty": false
-      },
-      {
         "id": "Array.prototype.length",
         "category": "ECMAScript",
         "entry": {
           "name": "length",
           "owner": "Array.prototype",
+          "esVersion": 3,
           "description": "Returns the number of elements in the array.",
           "params": [],
           "returnType": "number",
@@ -6904,11 +6931,28 @@
         "isProperty": true
       },
       {
+        "id": "Array.prototype.toLocaleString",
+        "category": "ECMAScript",
+        "entry": {
+          "name": "toLocaleString",
+          "owner": "Array.prototype",
+          "esVersion": 3,
+          "description": "Returns a string representing the array elements, joined by a locale-specific separator.",
+          "params": [],
+          "returnType": "string",
+          "syntax": "Array.toLocaleString()",
+          "example": "var arr = [1, 2, 3];\nWrite(arr.toLocaleString()); // \"1,2,3\""
+        },
+        "callExpr": "_arr.toLocaleString()",
+        "isProperty": false
+      },
+      {
         "id": "String.prototype.charAt",
         "category": "ECMAScript",
         "entry": {
           "name": "charAt",
           "owner": "String.prototype",
+          "esVersion": 3,
           "description": "Returns the character at the specified index.",
           "params": [
             {
@@ -6921,7 +6965,7 @@
           "syntax": "String.charAt(index)",
           "example": "var str = \"Hello\";\nWrite(str.charAt(1)); // \"e\""
         },
-        "callExpr": "_str.charAt(1)",
+        "callExpr": "_str.charAt()",
         "isProperty": false
       },
       {
@@ -6930,6 +6974,7 @@
         "entry": {
           "name": "charCodeAt",
           "owner": "String.prototype",
+          "esVersion": 3,
           "description": "Returns the UTF-16 code unit at the specified index.",
           "params": [
             {
@@ -6942,7 +6987,7 @@
           "syntax": "String.charCodeAt(index)",
           "example": "var str = \"A\";\nWrite(str.charCodeAt(0)); // 65"
         },
-        "callExpr": "_str.charCodeAt(1)",
+        "callExpr": "_str.charCodeAt()",
         "isProperty": false
       },
       {
@@ -6951,6 +6996,7 @@
         "entry": {
           "name": "indexOf",
           "owner": "String.prototype",
+          "esVersion": 3,
           "description": "Returns the index of the first occurrence of a substring, or -1 if not found.",
           "params": [
             {
@@ -6969,7 +7015,7 @@
           "syntax": "String.indexOf(searchValue[, fromIndex])",
           "example": "var str = \"Hello, world!\";\nWrite(str.indexOf(\"world\")); // 7"
         },
-        "callExpr": "_str.indexOf(\"searchValue\")",
+        "callExpr": "_str.indexOf()",
         "isProperty": false
       },
       {
@@ -6978,6 +7024,7 @@
         "entry": {
           "name": "lastIndexOf",
           "owner": "String.prototype",
+          "esVersion": 3,
           "description": "Returns the index of the last occurrence of a substring, or -1 if not found.",
           "params": [
             {
@@ -6996,7 +7043,7 @@
           "syntax": "String.lastIndexOf(searchValue[, fromIndex])",
           "example": "var str = \"abcabc\";\nWrite(str.lastIndexOf(\"b\")); // 4"
         },
-        "callExpr": "_str.lastIndexOf(\"searchValue\")",
+        "callExpr": "_str.lastIndexOf()",
         "isProperty": false
       },
       {
@@ -7005,6 +7052,7 @@
         "entry": {
           "name": "match",
           "owner": "String.prototype",
+          "esVersion": 3,
           "description": "Matches a string against a regular expression and returns the matches array.",
           "params": [
             {
@@ -7017,7 +7065,7 @@
           "syntax": "String.match(regexp)",
           "example": "var str = \"test@example.com\";\nvar matches = str.match(/[\\w.]+@[\\w.]+/);\nif (matches) { Write(matches[0]); }"
         },
-        "callExpr": "_str.match({})",
+        "callExpr": "_str.match()",
         "isProperty": false
       },
       {
@@ -7026,6 +7074,7 @@
         "entry": {
           "name": "replace",
           "owner": "String.prototype",
+          "esVersion": 3,
           "description": "Returns a new string with matches replaced by a replacement string or function.",
           "params": [
             {
@@ -7043,7 +7092,7 @@
           "syntax": "String.replace(searchValue, replaceValue)",
           "example": "var str = \"Hello, world!\";\nWrite(str.replace(\"world\", \"SSJS\")); // \"Hello, SSJS!\""
         },
-        "callExpr": "_str.replace({})",
+        "callExpr": "_str.replace()",
         "isProperty": false
       },
       {
@@ -7052,6 +7101,7 @@
         "entry": {
           "name": "search",
           "owner": "String.prototype",
+          "esVersion": 3,
           "description": "Searches for a match and returns the index of the first match, or -1.",
           "params": [
             {
@@ -7064,7 +7114,7 @@
           "syntax": "String.search(regexp)",
           "example": "var str = \"foo123bar\";\nWrite(str.search(/\\d+/)); // 3"
         },
-        "callExpr": "_str.search({})",
+        "callExpr": "_str.search()",
         "isProperty": false
       },
       {
@@ -7073,6 +7123,7 @@
         "entry": {
           "name": "slice",
           "owner": "String.prototype",
+          "esVersion": 3,
           "description": "Extracts a section of a string and returns it as a new string.",
           "params": [
             {
@@ -7091,7 +7142,7 @@
           "syntax": "String.slice(start[, end])",
           "example": "var str = \"Hello, world!\";\nWrite(str.slice(7, 12)); // \"world\""
         },
-        "callExpr": "_str.slice(1)",
+        "callExpr": "_str.slice()",
         "isProperty": false
       },
       {
@@ -7100,6 +7151,7 @@
         "entry": {
           "name": "split",
           "owner": "String.prototype",
+          "esVersion": 3,
           "description": "Splits a string into an array of substrings using a separator.",
           "params": [
             {
@@ -7118,7 +7170,7 @@
           "syntax": "String.split(separator[, limit])",
           "example": "var str = \"a,b,c\";\nvar parts = str.split(\",\"); // [\"a\", \"b\", \"c\"]"
         },
-        "callExpr": "_str.split({})",
+        "callExpr": "_str.split()",
         "isProperty": false
       },
       {
@@ -7127,6 +7179,7 @@
         "entry": {
           "name": "substring",
           "owner": "String.prototype",
+          "esVersion": 3,
           "description": "Returns the characters between two indices of a string.",
           "params": [
             {
@@ -7145,7 +7198,7 @@
           "syntax": "String.substring(start[, end])",
           "example": "var str = \"Hello, world!\";\nWrite(str.substring(7, 12)); // \"world\""
         },
-        "callExpr": "_str.substring(1)",
+        "callExpr": "_str.substring()",
         "isProperty": false
       },
       {
@@ -7154,6 +7207,7 @@
         "entry": {
           "name": "toLowerCase",
           "owner": "String.prototype",
+          "esVersion": 3,
           "description": "Returns the string converted to lowercase.",
           "params": [],
           "returnType": "string",
@@ -7164,11 +7218,28 @@
         "isProperty": false
       },
       {
+        "id": "String.prototype.toLocaleLowerCase",
+        "category": "ECMAScript",
+        "entry": {
+          "name": "toLocaleLowerCase",
+          "owner": "String.prototype",
+          "esVersion": 3,
+          "description": "Returns the string converted to lowercase according to host locale mappings.",
+          "params": [],
+          "returnType": "string",
+          "syntax": "String.toLocaleLowerCase()",
+          "example": "var str = \"AbC\";\nWrite(str.toLocaleLowerCase()); // \"abc\""
+        },
+        "callExpr": "_str.toLocaleLowerCase()",
+        "isProperty": false
+      },
+      {
         "id": "String.prototype.toUpperCase",
         "category": "ECMAScript",
         "entry": {
           "name": "toUpperCase",
           "owner": "String.prototype",
+          "esVersion": 3,
           "description": "Returns the string converted to uppercase.",
           "params": [],
           "returnType": "string",
@@ -7184,6 +7255,7 @@
         "entry": {
           "name": "concat",
           "owner": "String.prototype",
+          "esVersion": 3,
           "description": "Returns a new string formed by concatenating this string with one or more additional strings.",
           "params": [
             {
@@ -7196,7 +7268,7 @@
           "syntax": "String.concat(string[, ...])",
           "example": "var str = \"Hello\";\nWrite(str.concat(\", \", \"world!\")); // \"Hello, world!\""
         },
-        "callExpr": "_str.concat(\"string\")",
+        "callExpr": "_str.concat()",
         "isProperty": false
       },
       {
@@ -7205,6 +7277,7 @@
         "entry": {
           "name": "substr",
           "owner": "String.prototype",
+          "esVersion": 3,
           "description": "Returns a substring starting at start and running for length characters. If start is negative it is treated as (stringLength + start). Note: prefer substring() for portability; substr is defined in ES3 Annex B.",
           "params": [
             {
@@ -7223,7 +7296,7 @@
           "syntax": "String.substr(start[, length])",
           "example": "var str = \"Hello, world!\";\nWrite(str.substr(7, 5)); // \"world\""
         },
-        "callExpr": "_str.substr(1)",
+        "callExpr": "_str.substr()",
         "isProperty": false
       },
       {
@@ -7232,6 +7305,7 @@
         "entry": {
           "name": "length",
           "owner": "String.prototype",
+          "esVersion": 3,
           "description": "Returns the number of characters in the string.",
           "params": [],
           "returnType": "number",
@@ -7247,6 +7321,7 @@
         "entry": {
           "name": "abs",
           "owner": "Math",
+          "esVersion": 3,
           "description": "Returns the absolute value of a number.",
           "params": [
             {
@@ -7259,7 +7334,7 @@
           "syntax": "Math.abs(x)",
           "example": "Write(Math.abs(-5)); // 5"
         },
-        "callExpr": "Math.abs(1)",
+        "callExpr": "Math.abs()",
         "isProperty": false
       },
       {
@@ -7268,6 +7343,7 @@
         "entry": {
           "name": "ceil",
           "owner": "Math",
+          "esVersion": 3,
           "description": "Rounds a number up to the next integer.",
           "params": [
             {
@@ -7280,7 +7356,7 @@
           "syntax": "Math.ceil(x)",
           "example": "Write(Math.ceil(4.1)); // 5"
         },
-        "callExpr": "Math.ceil(1)",
+        "callExpr": "Math.ceil()",
         "isProperty": false
       },
       {
@@ -7289,6 +7365,7 @@
         "entry": {
           "name": "floor",
           "owner": "Math",
+          "esVersion": 3,
           "description": "Rounds a number down to the nearest integer.",
           "params": [
             {
@@ -7301,7 +7378,7 @@
           "syntax": "Math.floor(x)",
           "example": "Write(Math.floor(4.9)); // 4"
         },
-        "callExpr": "Math.floor(1)",
+        "callExpr": "Math.floor()",
         "isProperty": false
       },
       {
@@ -7310,6 +7387,7 @@
         "entry": {
           "name": "max",
           "owner": "Math",
+          "esVersion": 3,
           "description": "Returns the largest of the supplied numbers.",
           "params": [
             {
@@ -7322,7 +7400,7 @@
           "syntax": "Math.max(value1[, value2, ...])",
           "example": "Write(Math.max(1, 5, 3)); // 5"
         },
-        "callExpr": "Math.max(1)",
+        "callExpr": "Math.max()",
         "isProperty": false
       },
       {
@@ -7331,6 +7409,7 @@
         "entry": {
           "name": "min",
           "owner": "Math",
+          "esVersion": 3,
           "description": "Returns the smallest of the supplied numbers.",
           "params": [
             {
@@ -7343,7 +7422,7 @@
           "syntax": "Math.min(value1[, value2, ...])",
           "example": "Write(Math.min(1, 5, 3)); // 1"
         },
-        "callExpr": "Math.min(1)",
+        "callExpr": "Math.min()",
         "isProperty": false
       },
       {
@@ -7352,6 +7431,7 @@
         "entry": {
           "name": "pow",
           "owner": "Math",
+          "esVersion": 3,
           "description": "Returns the base raised to the exponent power.",
           "params": [
             {
@@ -7369,7 +7449,7 @@
           "syntax": "Math.pow(base, exponent)",
           "example": "Write(Math.pow(2, 10)); // 1024"
         },
-        "callExpr": "Math.pow(1)",
+        "callExpr": "Math.pow()",
         "isProperty": false
       },
       {
@@ -7378,6 +7458,7 @@
         "entry": {
           "name": "random",
           "owner": "Math",
+          "esVersion": 3,
           "description": "Returns a pseudo-random floating-point number in [0, 1).",
           "params": [],
           "returnType": "number",
@@ -7393,6 +7474,7 @@
         "entry": {
           "name": "round",
           "owner": "Math",
+          "esVersion": 3,
           "description": "Rounds a number to the nearest integer.",
           "params": [
             {
@@ -7405,7 +7487,7 @@
           "syntax": "Math.round(x)",
           "example": "Write(Math.round(4.5)); // 5"
         },
-        "callExpr": "Math.round(1)",
+        "callExpr": "Math.round()",
         "isProperty": false
       },
       {
@@ -7414,6 +7496,7 @@
         "entry": {
           "name": "sqrt",
           "owner": "Math",
+          "esVersion": 3,
           "description": "Returns the square root of a number.",
           "params": [
             {
@@ -7426,7 +7509,7 @@
           "syntax": "Math.sqrt(x)",
           "example": "Write(Math.sqrt(16)); // 4"
         },
-        "callExpr": "Math.sqrt(1)",
+        "callExpr": "Math.sqrt()",
         "isProperty": false
       },
       {
@@ -7435,6 +7518,7 @@
         "entry": {
           "name": "sin",
           "owner": "Math",
+          "esVersion": 3,
           "description": "Returns the sine of an angle given in radians.",
           "params": [
             {
@@ -7447,7 +7531,7 @@
           "syntax": "Math.sin(x)",
           "example": "Write(Math.sin(Math.PI / 2)); // 1"
         },
-        "callExpr": "Math.sin(1)",
+        "callExpr": "Math.sin()",
         "isProperty": false
       },
       {
@@ -7456,6 +7540,7 @@
         "entry": {
           "name": "cos",
           "owner": "Math",
+          "esVersion": 3,
           "description": "Returns the cosine of an angle given in radians.",
           "params": [
             {
@@ -7468,7 +7553,7 @@
           "syntax": "Math.cos(x)",
           "example": "Write(Math.cos(0)); // 1"
         },
-        "callExpr": "Math.cos(1)",
+        "callExpr": "Math.cos()",
         "isProperty": false
       },
       {
@@ -7477,6 +7562,7 @@
         "entry": {
           "name": "tan",
           "owner": "Math",
+          "esVersion": 3,
           "description": "Returns the tangent of an angle given in radians.",
           "params": [
             {
@@ -7489,7 +7575,7 @@
           "syntax": "Math.tan(x)",
           "example": "Write(Math.tan(Math.PI / 4)); // ~1"
         },
-        "callExpr": "Math.tan(1)",
+        "callExpr": "Math.tan()",
         "isProperty": false
       },
       {
@@ -7498,6 +7584,7 @@
         "entry": {
           "name": "asin",
           "owner": "Math",
+          "esVersion": 3,
           "description": "Returns the arc sine (in radians) of a number in the range [-1, 1].",
           "params": [
             {
@@ -7510,7 +7597,7 @@
           "syntax": "Math.asin(x)",
           "example": "Write(Math.asin(1)); // ~1.5708 (π/2)"
         },
-        "callExpr": "Math.asin(1)",
+        "callExpr": "Math.asin()",
         "isProperty": false
       },
       {
@@ -7519,6 +7606,7 @@
         "entry": {
           "name": "acos",
           "owner": "Math",
+          "esVersion": 3,
           "description": "Returns the arc cosine (in radians) of a number in the range [-1, 1].",
           "params": [
             {
@@ -7531,7 +7619,7 @@
           "syntax": "Math.acos(x)",
           "example": "Write(Math.acos(1)); // 0"
         },
-        "callExpr": "Math.acos(1)",
+        "callExpr": "Math.acos()",
         "isProperty": false
       },
       {
@@ -7540,6 +7628,7 @@
         "entry": {
           "name": "atan",
           "owner": "Math",
+          "esVersion": 3,
           "description": "Returns the arc tangent (in radians) of a number.",
           "params": [
             {
@@ -7552,7 +7641,7 @@
           "syntax": "Math.atan(x)",
           "example": "Write(Math.atan(1)); // ~0.7854 (π/4)"
         },
-        "callExpr": "Math.atan(1)",
+        "callExpr": "Math.atan()",
         "isProperty": false
       },
       {
@@ -7561,6 +7650,7 @@
         "entry": {
           "name": "atan2",
           "owner": "Math",
+          "esVersion": 3,
           "description": "Returns the angle (in radians) from the positive x-axis to the point (x, y). Unlike atan, atan2 correctly handles all quadrants.",
           "params": [
             {
@@ -7578,7 +7668,7 @@
           "syntax": "Math.atan2(y, x)",
           "example": "Write(Math.atan2(1, 1)); // ~0.7854 (π/4)"
         },
-        "callExpr": "Math.atan2(1)",
+        "callExpr": "Math.atan2()",
         "isProperty": false
       },
       {
@@ -7587,6 +7677,7 @@
         "entry": {
           "name": "exp",
           "owner": "Math",
+          "esVersion": 3,
           "description": "Returns e raised to the power of x (e^x).",
           "params": [
             {
@@ -7599,7 +7690,7 @@
           "syntax": "Math.exp(x)",
           "example": "Write(Math.exp(1)); // ~2.71828 (e)"
         },
-        "callExpr": "Math.exp(1)",
+        "callExpr": "Math.exp()",
         "isProperty": false
       },
       {
@@ -7608,6 +7699,7 @@
         "entry": {
           "name": "log",
           "owner": "Math",
+          "esVersion": 3,
           "description": "Returns the natural logarithm (base e) of a number.",
           "params": [
             {
@@ -7620,7 +7712,7 @@
           "syntax": "Math.log(x)",
           "example": "Write(Math.log(Math.E)); // 1"
         },
-        "callExpr": "Math.log(1)",
+        "callExpr": "Math.log()",
         "isProperty": false
       },
       {
@@ -7629,6 +7721,7 @@
         "entry": {
           "name": "PI",
           "owner": "Math",
+          "esVersion": 3,
           "description": "The ratio of a circle's circumference to its diameter (~3.14159).",
           "params": [],
           "returnType": "number",
@@ -7644,6 +7737,7 @@
         "entry": {
           "name": "E",
           "owner": "Math",
+          "esVersion": 3,
           "description": "Euler's number, the base of the natural logarithm (~2.71828).",
           "params": [],
           "returnType": "number",
@@ -7659,6 +7753,7 @@
         "entry": {
           "name": "LN2",
           "owner": "Math",
+          "esVersion": 3,
           "description": "The natural logarithm of 2 (~0.69315).",
           "params": [],
           "returnType": "number",
@@ -7674,6 +7769,7 @@
         "entry": {
           "name": "LN10",
           "owner": "Math",
+          "esVersion": 3,
           "description": "The natural logarithm of 10 (~2.30259).",
           "params": [],
           "returnType": "number",
@@ -7689,6 +7785,7 @@
         "entry": {
           "name": "LOG2E",
           "owner": "Math",
+          "esVersion": 3,
           "description": "The base-2 logarithm of e (~1.44270).",
           "params": [],
           "returnType": "number",
@@ -7704,6 +7801,7 @@
         "entry": {
           "name": "LOG10E",
           "owner": "Math",
+          "esVersion": 3,
           "description": "The base-10 logarithm of e (~0.43429).",
           "params": [],
           "returnType": "number",
@@ -7719,6 +7817,7 @@
         "entry": {
           "name": "SQRT2",
           "owner": "Math",
+          "esVersion": 3,
           "description": "The square root of 2 (~1.41421).",
           "params": [],
           "returnType": "number",
@@ -7734,6 +7833,7 @@
         "entry": {
           "name": "SQRT1_2",
           "owner": "Math",
+          "esVersion": 3,
           "description": "The square root of 1/2 (~0.70711); equivalent to 1/Math.SQRT2.",
           "params": [],
           "returnType": "number",
@@ -7749,6 +7849,7 @@
         "entry": {
           "name": "toFixed",
           "owner": "Number.prototype",
+          "esVersion": 3,
           "description": "Returns a string representing the number in fixed-point notation with the given number of decimal places.",
           "params": [
             {
@@ -7762,7 +7863,7 @@
           "syntax": "Number.toFixed([fractionDigits])",
           "example": "var price = 9.99;\nWrite(price.toFixed(2)); // \"9.99\"\nWrite((1.5).toFixed(0)); // \"2\""
         },
-        "callExpr": "_num.toFixed(1)",
+        "callExpr": "_num.toFixed()",
         "isProperty": false
       },
       {
@@ -7771,6 +7872,7 @@
         "entry": {
           "name": "toExponential",
           "owner": "Number.prototype",
+          "esVersion": 3,
           "description": "Returns a string representing the number in exponential notation. If fractionDigits is omitted, enough digits are included to uniquely identify the value.",
           "params": [
             {
@@ -7784,7 +7886,7 @@
           "syntax": "Number.toExponential([fractionDigits])",
           "example": "Write((123456).toExponential(2)); // \"1.23e+5\""
         },
-        "callExpr": "_num.toExponential(1)",
+        "callExpr": "_num.toExponential()",
         "isProperty": false
       },
       {
@@ -7793,6 +7895,7 @@
         "entry": {
           "name": "toPrecision",
           "owner": "Number.prototype",
+          "esVersion": 3,
           "description": "Returns a string representing the number to the specified number of significant digits.",
           "params": [
             {
@@ -7806,7 +7909,7 @@
           "syntax": "Number.toPrecision([precision])",
           "example": "Write((123.456).toPrecision(5)); // \"123.46\""
         },
-        "callExpr": "_num.toPrecision(1)",
+        "callExpr": "_num.toPrecision()",
         "isProperty": false
       },
       {
@@ -7815,6 +7918,7 @@
         "entry": {
           "name": "hasOwnProperty",
           "owner": "Object.prototype",
+          "esVersion": 3,
           "description": "Returns true if the object has the specified property as its own (not inherited) property. Commonly used to safely iterate for...in loops.",
           "params": [
             {
@@ -7827,7 +7931,7 @@
           "syntax": "Object.hasOwnProperty(v)",
           "example": "var obj = {a: 1};\nfor (var key in obj) {\n    if (obj.hasOwnProperty(key)) { Write(key); }\n}"
         },
-        "callExpr": "_obj.hasOwnProperty(\"v\")",
+        "callExpr": "_obj.hasOwnProperty()",
         "isProperty": false
       },
       {
@@ -7836,6 +7940,7 @@
         "entry": {
           "name": "parseInt",
           "owner": "Global",
+          "esVersion": 3,
           "description": "Parses a string and returns an integer in the specified radix (base). Leading whitespace is ignored. Returns NaN if no valid integer is found. Always specify a radix to avoid octal/hex ambiguity.",
           "params": [
             {
@@ -7854,7 +7959,7 @@
           "syntax": "parseInt(string[, radix])",
           "example": "Write(parseInt(\"42\", 10)); // 42\nWrite(parseInt(\"0xFF\", 16)); // 255\nWrite(parseInt(\"abc\", 10)); // NaN"
         },
-        "callExpr": "parseInt(\"string\")",
+        "callExpr": "parseInt()",
         "isProperty": false
       },
       {
@@ -7863,6 +7968,7 @@
         "entry": {
           "name": "parseFloat",
           "owner": "Global",
+          "esVersion": 3,
           "description": "Parses a string and returns a floating-point number. Stops parsing at the first character that is not part of a valid number. Returns NaN if no valid number is found.",
           "params": [
             {
@@ -7875,7 +7981,7 @@
           "syntax": "parseFloat(string)",
           "example": "Write(parseFloat(\"3.14\")); // 3.14\nWrite(parseFloat(\"3.14abc\")); // 3.14\nWrite(parseFloat(\"abc\")); // NaN"
         },
-        "callExpr": "parseFloat(\"string\")",
+        "callExpr": "parseFloat()",
         "isProperty": false
       },
       {
@@ -7884,6 +7990,7 @@
         "entry": {
           "name": "isNaN",
           "owner": "Global",
+          "esVersion": 3,
           "description": "Returns true if the value is NaN (Not-a-Number) after applying ToNumber conversion. Use this to guard against failed parseInt/parseFloat calls.",
           "params": [
             {
@@ -7896,7 +8003,7 @@
           "syntax": "isNaN(value)",
           "example": "Write(isNaN(NaN)); // true\nWrite(isNaN(parseInt(\"abc\", 10))); // true\nWrite(isNaN(42)); // false"
         },
-        "callExpr": "isNaN({})",
+        "callExpr": "isNaN()",
         "isProperty": false
       },
       {
@@ -7905,6 +8012,7 @@
         "entry": {
           "name": "isFinite",
           "owner": "Global",
+          "esVersion": 3,
           "description": "Returns true if the value is a finite number (not NaN, +Infinity, or -Infinity) after applying ToNumber conversion.",
           "params": [
             {
@@ -7917,7 +8025,7 @@
           "syntax": "isFinite(value)",
           "example": "Write(isFinite(42)); // true\nWrite(isFinite(1 / 0)); // false (Infinity)\nWrite(isFinite(NaN)); // false"
         },
-        "callExpr": "isFinite({})",
+        "callExpr": "isFinite()",
         "isProperty": false
       },
       {
@@ -7926,6 +8034,7 @@
         "entry": {
           "name": "RegExp",
           "owner": "Global",
+          "esVersion": 3,
           "description": "Creates a regular expression object for pattern matching. Prefer the literal syntax (/pattern/flags) when the pattern is known at write time. Use the constructor when the pattern must be built dynamically at runtime.",
           "params": [
             {
@@ -7955,6 +8064,7 @@
         "entry": {
           "name": "test",
           "owner": "RegExp",
+          "esVersion": 3,
           "description": "Tests whether the string matches the pattern. Returns true if the pattern is found, false otherwise. When the g flag is set, successive calls advance lastIndex.",
           "params": [
             {
@@ -7978,6 +8088,7 @@
         "entry": {
           "name": "exec",
           "owner": "RegExp",
+          "esVersion": 3,
           "description": "Executes a search for a match in the string. Returns an array with the full match at index 0 and any capture groups at subsequent indices, or null if no match is found. The array also has index and input properties. When the g flag is set, successive calls advance lastIndex.",
           "params": [
             {
@@ -8001,6 +8112,7 @@
         "entry": {
           "name": "source",
           "owner": "RegExp",
+          "esVersion": 3,
           "isProperty": true,
           "description": "The text of the pattern, excluding the enclosing slashes and any flags.",
           "params": [],
@@ -8017,6 +8129,7 @@
         "entry": {
           "name": "global",
           "owner": "RegExp",
+          "esVersion": 3,
           "isProperty": true,
           "description": "True if the g (global) flag was specified when creating the regular expression.",
           "params": [],
@@ -8033,6 +8146,7 @@
         "entry": {
           "name": "ignoreCase",
           "owner": "RegExp",
+          "esVersion": 3,
           "isProperty": true,
           "description": "True if the i (case-insensitive) flag was specified.",
           "params": [],
@@ -8049,6 +8163,7 @@
         "entry": {
           "name": "multiline",
           "owner": "RegExp",
+          "esVersion": 3,
           "isProperty": true,
           "description": "True if the m (multiline) flag was specified.",
           "params": [],
@@ -8065,6 +8180,7 @@
         "entry": {
           "name": "lastIndex",
           "owner": "RegExp",
+          "esVersion": 3,
           "isProperty": true,
           "description": "The index at which to start the next match. Only relevant when the g or y flag is set. Automatically updated by exec() and test().",
           "params": [],
@@ -8074,6 +8190,242 @@
         },
         "callExpr": "_re.lastIndex",
         "isProperty": true
+      },
+      {
+        "id": "Date.prototype.getFullYear",
+        "category": "ECMAScript",
+        "entry": {
+          "name": "getFullYear",
+          "owner": "Date.prototype",
+          "esVersion": 3,
+          "description": "Returns the four-digit year of the date according to local time.",
+          "params": [],
+          "returnType": "number",
+          "syntax": "Date.getFullYear()",
+          "example": "var d = new Date();\nWrite(d.getFullYear()); // e.g. 2026"
+        },
+        "callExpr": "_date.getFullYear()",
+        "isProperty": false
+      },
+      {
+        "id": "Date.prototype.getMinutes",
+        "category": "ECMAScript",
+        "entry": {
+          "name": "getMinutes",
+          "owner": "Date.prototype",
+          "esVersion": 3,
+          "description": "Returns the minutes (0–59) of the date according to local time.",
+          "params": [],
+          "returnType": "number",
+          "syntax": "Date.getMinutes()",
+          "example": "var d = new Date();\nWrite(d.getMinutes());"
+        },
+        "callExpr": "_date.getMinutes()",
+        "isProperty": false
+      },
+      {
+        "id": "Date.prototype.getSeconds",
+        "category": "ECMAScript",
+        "entry": {
+          "name": "getSeconds",
+          "owner": "Date.prototype",
+          "esVersion": 3,
+          "description": "Returns the seconds (0–59) of the date according to local time.",
+          "params": [],
+          "returnType": "number",
+          "syntax": "Date.getSeconds()",
+          "example": "var d = new Date();\nWrite(d.getSeconds());"
+        },
+        "callExpr": "_date.getSeconds()",
+        "isProperty": false
+      },
+      {
+        "id": "Date.prototype.getDay",
+        "category": "ECMAScript",
+        "entry": {
+          "name": "getDay",
+          "owner": "Date.prototype",
+          "esVersion": 3,
+          "description": "Returns the day of the week (0 = Sunday … 6 = Saturday) according to local time.",
+          "params": [],
+          "returnType": "number",
+          "syntax": "Date.getDay()",
+          "example": "var d = new Date();\nWrite(d.getDay()); // 0–6"
+        },
+        "callExpr": "_date.getDay()",
+        "isProperty": false
+      },
+      {
+        "id": "Date.prototype.getMilliseconds",
+        "category": "ECMAScript",
+        "entry": {
+          "name": "getMilliseconds",
+          "owner": "Date.prototype",
+          "esVersion": 3,
+          "description": "Returns the milliseconds (0–999) of the date according to local time.",
+          "params": [],
+          "returnType": "number",
+          "syntax": "Date.getMilliseconds()",
+          "example": "var d = new Date();\nWrite(d.getMilliseconds());"
+        },
+        "callExpr": "_date.getMilliseconds()",
+        "isProperty": false
+      },
+      {
+        "id": "Date.prototype.toString",
+        "category": "ECMAScript",
+        "entry": {
+          "name": "toString",
+          "owner": "Date.prototype",
+          "esVersion": 3,
+          "description": "Returns a human-readable string representing the date.",
+          "params": [],
+          "returnType": "string",
+          "syntax": "Date.toString()",
+          "example": "var d = new Date(0);\nWrite(d.toString());"
+        },
+        "callExpr": "_date.toString()",
+        "isProperty": false
+      },
+      {
+        "id": "Date.prototype.toDateString",
+        "category": "ECMAScript",
+        "entry": {
+          "name": "toDateString",
+          "owner": "Date.prototype",
+          "esVersion": 3,
+          "description": "Returns the date portion of the date as a human-readable string.",
+          "params": [],
+          "returnType": "string",
+          "syntax": "Date.toDateString()",
+          "example": "var d = new Date(0);\nWrite(d.toDateString()); // \"Wed, 31 Dec 1969\" (locale-dependent)"
+        },
+        "callExpr": "_date.toDateString()",
+        "isProperty": false
+      },
+      {
+        "id": "Date.prototype.toUTCString",
+        "category": "ECMAScript",
+        "entry": {
+          "name": "toUTCString",
+          "owner": "Date.prototype",
+          "esVersion": 3,
+          "description": "Returns the date as a string using the UTC time zone.",
+          "params": [],
+          "returnType": "string",
+          "syntax": "Date.toUTCString()",
+          "example": "var d = new Date(0);\nWrite(d.toUTCString()); // \"Thu, 01 Jan 1970 00:00:00 UTC\""
+        },
+        "callExpr": "_date.toUTCString()",
+        "isProperty": false
+      },
+      {
+        "id": "Date.prototype.valueOf",
+        "category": "ECMAScript",
+        "entry": {
+          "name": "valueOf",
+          "owner": "Date.prototype",
+          "esVersion": 3,
+          "description": "Returns the primitive value of the date as the number of milliseconds since the Unix epoch.",
+          "params": [],
+          "returnType": "number",
+          "syntax": "Date.valueOf()",
+          "example": "var d = new Date(0);\nWrite(d.valueOf()); // 0"
+        },
+        "callExpr": "_date.valueOf()",
+        "isProperty": false
+      },
+      {
+        "id": "Date.UTC",
+        "category": "ECMAScript",
+        "entry": {
+          "name": "UTC",
+          "owner": "Date",
+          "esVersion": 3,
+          "isStatic": true,
+          "description": "Returns the number of milliseconds since the Unix epoch for the given UTC date components.",
+          "params": [
+            {
+              "name": "year",
+              "description": "Full year",
+              "type": "number"
+            },
+            {
+              "name": "month",
+              "description": "Month (0–11)",
+              "type": "number",
+              "optional": true
+            },
+            {
+              "name": "day",
+              "description": "Day of the month (1–31)",
+              "type": "number",
+              "optional": true
+            },
+            {
+              "name": "hours",
+              "description": "Hours (0–23)",
+              "type": "number",
+              "optional": true
+            },
+            {
+              "name": "minutes",
+              "description": "Minutes (0–59)",
+              "type": "number",
+              "optional": true
+            },
+            {
+              "name": "seconds",
+              "description": "Seconds (0–59)",
+              "type": "number",
+              "optional": true
+            },
+            {
+              "name": "milliseconds",
+              "description": "Milliseconds (0–999)",
+              "type": "number",
+              "optional": true
+            }
+          ],
+          "returnType": "number",
+          "syntax": "Date.UTC(year[, month[, day[, hours[, minutes[, seconds[, ms]]]]]])",
+          "example": "Write(Date.UTC(1970, 0, 1)); // 0"
+        },
+        "callExpr": "Date.UTC()",
+        "isProperty": false
+      },
+      {
+        "id": "Object.defineProperty",
+        "category": "ECMAScript",
+        "entry": {
+          "name": "defineProperty",
+          "owner": "Object",
+          "esVersion": 5,
+          "isStatic": true,
+          "description": "Defines a new property on an object, or modifies an existing one, with the given descriptor.",
+          "params": [
+            {
+              "name": "obj",
+              "description": "The object on which to define the property",
+              "type": "object"
+            },
+            {
+              "name": "prop",
+              "description": "The name of the property to define",
+              "type": "string"
+            },
+            {
+              "name": "descriptor",
+              "description": "Property descriptor (value, enumerable, writable, configurable, get, set)",
+              "type": "object"
+            }
+          ],
+          "returnType": "object",
+          "syntax": "Object.defineProperty(obj, prop, descriptor)",
+          "example": "var o = {};\nObject.defineProperty(o, \"x\", { value: 42, enumerable: true });\nWrite(o.x); // 42"
+        },
+        "callExpr": "Object.defineProperty()",
+        "isProperty": false
       }
     ],
     "SSJS Global": [
@@ -8121,7 +8473,7 @@
           "syntax": "new Error([message])",
           "example": "try {\n    var req = new Script.Util.HttpRequest(\"https://api.example.com/data\");\n    req.method = \"GET\";\n    req.continueOnError = false;\n    var resp = req.send();\n    if (resp.statusCode !== 200) {\n        throw new Error(\"Request failed with status: \" + resp.statusCode);\n    }\n} catch (e) {\n    Write(\"Error: \" + e.message);\n}"
         },
-        "callExpr": "new Error(\"message\")",
+        "callExpr": "new Error()",
         "isProperty": false
       },
       {
@@ -8297,7 +8649,7 @@
           "aliasOf": "Platform.Function.BeginImpressionRegion",
           "requiresCoreLoad": true
         },
-        "callExpr": "BeginImpressionRegion({})",
+        "callExpr": "BeginImpressionRegion(\"name\")",
         "isProperty": false
       },
       {
@@ -8308,7 +8660,7 @@
           "aliasOf": "Platform.Function.EndImpressionRegion",
           "requiresCoreLoad": true
         },
-        "callExpr": "EndImpressionRegion({})",
+        "callExpr": "EndImpressionRegion()",
         "isProperty": false
       },
       {
@@ -8319,7 +8671,7 @@
           "aliasOf": "Platform.Function.Now",
           "requiresCoreLoad": true
         },
-        "callExpr": "Now({})",
+        "callExpr": "Now()",
         "isProperty": false
       },
       {
@@ -8330,7 +8682,7 @@
           "aliasOf": "Platform.Response.Redirect",
           "requiresCoreLoad": true
         },
-        "callExpr": "Redirect({})",
+        "callExpr": "Redirect(\"url\", true)",
         "isProperty": false
       },
       {
@@ -8341,7 +8693,7 @@
           "aliasOf": "Platform.Function.GUID",
           "requiresCoreLoad": true
         },
-        "callExpr": "GUID({})",
+        "callExpr": "GUID()",
         "isProperty": false
       },
       {
@@ -8352,7 +8704,7 @@
           "aliasOf": "Platform.Function.IsEmailAddress",
           "requiresCoreLoad": true
         },
-        "callExpr": "IsEmailAddress({})",
+        "callExpr": "IsEmailAddress(\"value\")",
         "isProperty": false
       },
       {
@@ -8363,7 +8715,7 @@
           "aliasOf": "Platform.Function.IsPhoneNumber",
           "requiresCoreLoad": true
         },
-        "callExpr": "IsPhoneNumber({})",
+        "callExpr": "IsPhoneNumber(\"value\")",
         "isProperty": false
       },
       {
@@ -8373,7 +8725,7 @@
           "name": "Write",
           "aliasOf": "Platform.Response.Write"
         },
-        "callExpr": "Write({})",
+        "callExpr": "Write(\"content\")",
         "isProperty": false
       },
       {

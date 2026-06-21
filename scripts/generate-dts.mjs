@@ -23,6 +23,8 @@ import {
     GUIDE_URLS,
     GLOBAL_FUNCTION_PAGES,
     PLATFORM_FUNCTION_GLOBAL_ALIAS,
+    ECMASCRIPT_URLS,
+    mdnBuiltinUrl,
 } from '../src/urls.js';
 
 import {
@@ -38,6 +40,11 @@ import {
     WSPROXY_METHODS,
     SCRIPT_UTIL_CONSTRUCTORS,
     SCRIPT_UTIL_REQUEST_METHODS,
+    SCRIPT_UTIL_REQUEST_PROPERTIES,
+    SCRIPT_UTIL_HTTPGET_PROPERTIES,
+    SCRIPT_UTIL_RESPONSE_PROPERTIES,
+    WSPROXY_RESULT_PROPERTIES,
+    CONSTRUCTIBLE_BUILTINS,
     EVENT_METHODS,
     DATA_EXTENSION_METHODS,
     DATA_EXTENSION_FIELDS_METHODS,
@@ -87,6 +94,8 @@ const INSTANCE_TYPE_MAP = {
     DataExtensionInstance: 'DataExtensionInstance',
     WSProxyInstance: 'Script.Util.WSProxy',
     HttpRequestInstance: 'Script.Util.HttpRequest',
+    HttpResponseInstance: 'HttpResponseInstance',
+    WSProxyResult: 'WSProxyResult',
     AccountInstance: 'AccountInstance',
     AccountUserInstance: 'AccountUserInstance',
     PortfolioInstance: 'PortfolioInstance',
@@ -244,22 +253,33 @@ const PLATFORM_NAMESPACE_MAP = {
  * @param {object} m - ssjs-data method entry
  * @param {string} indent - indentation string to prepend
  * @param {string|null} guideUrl - optional ssjs.guide reference URL
+ * @param {string|null} mdnUrl - optional MDN reference URL
  * @returns {string} JSDoc comment string (including trailing newline) or empty string
  */
-function buildJsDocComment(m, indent = '    ', guideUrl = null) {
+function buildJsDocComment(m, indent = '    ', guideUrl = null, mdnUrl = null) {
     const lines = [];
 
-    // ── Description + guide link ──────────────────────────────────────────────
+    // ── Description + guide / MDN links ───────────────────────────────────────
     if (m.description) {
         lines.push(`${indent} * ${m.description}`);
-        if (guideUrl) {
+        if (guideUrl || mdnUrl) {
             lines.push(`${indent} *`);
         }
     }
-    if (guideUrl) {
-        lines.push(`${indent} * [ssjs.guide reference](${guideUrl})`);
+    // Render available reference links on a single line, MDN first, separated by
+    // " / " — matching the AMPscript hover style (e.g. `MDN / ssjs.guide reference`).
+    // When only one link is present, show it alone.
+    const linkParts = [];
+    if (mdnUrl) {
+        linkParts.push(`[MDN](${mdnUrl})`);
     }
-    if (m.description || guideUrl) {
+    if (guideUrl) {
+        linkParts.push(`[ssjs.guide reference](${guideUrl})`);
+    }
+    if (linkParts.length > 0) {
+        lines.push(`${indent} * ${linkParts.join(' / ')}`);
+    }
+    if (m.description || guideUrl || mdnUrl) {
         lines.push(`${indent} *`);
     }
 
@@ -334,10 +354,11 @@ function emitNsMember(m, indent = '    ', guideUrl = null) {
  * @param {object} m - ssjs-data method entry
  * @param {string} indent - indentation string to prepend
  * @param {string|null} guideUrl - optional ssjs.guide reference URL
+ * @param {string|null} mdnUrl - optional MDN reference URL
  * @returns {string} TypeScript declaration line(s)
  */
-function emitIfaceMember(m, indent = '    ', guideUrl = null) {
-    const comment = buildJsDocComment(m, indent, guideUrl);
+function emitIfaceMember(m, indent = '    ', guideUrl = null, mdnUrl = null) {
+    const comment = buildJsDocComment(m, indent, guideUrl, mdnUrl);
     const retType = toTsType(m.returnType);
     if (isPropertyEntry(m)) {
         return `${comment}${indent}readonly ${m.name}: ${retType};`;
@@ -458,6 +479,88 @@ function emitArrayMember(m, indent = '    ') {
     return `${indent}${m.name}(${paramStr}): ${retType};`;
 }
 
+// ── Constructible built-ins helpers ──────────────────────────────────────────
+
+/**
+ * Build a parameter list from explicit `{ name, type, optional }` entries.
+ * Unlike buildParamStr, optionality is taken solely from each param's `optional`
+ * flag (no minArgs inference). An optional trailing `rest` type appends `...args`.
+ *
+ * @param {{name: string, type: string, optional?: boolean}[]} params - parameter entries
+ * @param {string|null} restType - element type for a trailing rest parameter, or null
+ * @returns {string} Comma-separated TypeScript parameter declarations
+ */
+function buildExplicitParamStr(params, restType = null) {
+    const parts = (params ?? []).map(
+        (p) => `${p.name}${p.optional ? '?' : ''}: ${toTsType(p.type)}`,
+    );
+    if (restType) {
+        parts.push(`...args: ${toTsType(restType)}[]`);
+    }
+    return parts.join(', ');
+}
+
+/**
+ * Resolve a constructible-built-in type reference. `$iface` resolves to the
+ * entry's interface name (e.g. `Error`, `Array<T>` → element form), everything
+ * else is passed through unchanged.
+ *
+ * @param {string} ref - a type reference, possibly the sentinel `$iface`
+ * @param {string} ifaceType - the resolved interface type for this entry
+ * @returns {string} The concrete TypeScript type string
+ */
+function resolveBuiltinRef(ref, ifaceType) {
+    return ref === '$iface' ? ifaceType : ref;
+}
+
+/**
+ * Emit the constructor interface + value declaration for one constructible
+ * built-in. Instance members live in the matching `interface <name>` emitted by
+ * the ECMASCRIPT_BUILTINS block (or, for Error, in `extraInstanceMembers`).
+ *
+ * @param {object} c - a CONSTRUCTIBLE_BUILTINS entry
+ * @param {object[]} [extraStatics] - additional static members (from ECMASCRIPT_BUILTINS
+ * owner groups such as `Date` or `Object`) emitted onto the constructor interface so
+ * they do not require a conflicting `declare namespace` that would break `new X()`.
+ * @returns {void}
+ */
+function emitConstructibleBuiltin(c, extraStatics = []) {
+    // The instance/interface type referenced by `new` (e.g. `Error`, `any[]`).
+    // For generic Array we reference the non-generic instance via `any[]`.
+    const ifaceType = c.interfaceName ? c.interfaceName.replace(/<.*>$/, '') : c.name;
+    const protoType = resolveBuiltinRef(c.prototype, ifaceType);
+    const ctorName = `${c.name}Constructor`;
+
+    line(`interface ${ctorName} {`);
+    if (c.construct) {
+        const p = buildExplicitParamStr(c.construct.params, c.construct.rest);
+        line(`    new (${p}): ${resolveBuiltinRef(c.construct.returns, ifaceType)};`);
+    }
+    if (c.call) {
+        const p = buildExplicitParamStr(c.call.params, c.call.rest);
+        line(`    (${p}): ${resolveBuiltinRef(c.call.returns, ifaceType)};`);
+    }
+    for (const s of c.statics ?? []) {
+        const p = buildExplicitParamStr(s.params, s.rest);
+        line(`    ${s.name}(${p}): ${resolveBuiltinRef(s.returns, ifaceType)};`);
+    }
+    // ECMASCRIPT_BUILTINS statics (e.g. Date.UTC, Object.defineProperty) live on the
+    // constructor interface — not a separate namespace — so `new Date()` keeps its
+    // construct signature.
+    const staticGuideUrl = ECMASCRIPT_URLS[c.name]
+        ? GUIDE_BASE_URL + ECMASCRIPT_URLS[c.name]
+        : null;
+    for (const m of extraStatics) {
+        const comment = buildJsDocComment(m, '    ', staticGuideUrl, mdnBuiltinUrl(c.name, m.name));
+        const paramStr = buildParamStr(m.params, m.minArgs ?? 0);
+        line(`${comment}    ${m.name}(${paramStr}): ${toTsType(m.returnType)};`);
+    }
+    line(`    readonly prototype: ${protoType};`);
+    line('}');
+    line(`declare var ${c.name}: ${ctorName};`);
+    line('');
+}
+
 // ── Build output ──────────────────────────────────────────────────────────────
 
 /** Lines of the generated .d.ts file. */
@@ -543,8 +646,14 @@ line('}');
 line('');
 
 // ── Bare-name globals ─────────────────────────────────────────────────────────
+// Names handled by the constructible-built-ins block (emitted as `declare var X:
+// XConstructor` later) must NOT also be emitted here as `declare function`.
+const CONSTRUCTIBLE_NAMES = new Set(CONSTRUCTIBLE_BUILTINS.map((c) => c.name));
 line('// ── Bare-name globals ────────────────────────────────────────────────────────');
 for (const g of SSJS_GLOBALS) {
+    if (CONSTRUCTIBLE_NAMES.has(g.name)) {
+        continue;
+    }
     // Namespace object alias (e.g. Variable → Platform.Variable) — emit declare namespace
     if (g.type === 'object' && g.aliasOf) {
         const ns = PLATFORM_NAMESPACE_MAP[g.aliasOf];
@@ -915,6 +1024,15 @@ for (const ctor of SCRIPT_UTIL_CONSTRUCTORS) {
                 emitIfaceMember(m, '            ', GUIDE_BASE_URL + GUIDE_URLS.httpRequestMethods),
             );
         }
+        // Writable instance properties differ between HttpRequest and HttpGet
+        const props =
+            ctor.name === 'HttpGet'
+                ? SCRIPT_UTIL_HTTPGET_PROPERTIES
+                : SCRIPT_UTIL_REQUEST_PROPERTIES;
+        for (const p of props) {
+            line(`            /** ${p.description} */`);
+            line(`            ${p.name}: ${toTsType(p.type)};`);
+        }
     }
     line('        }');
 }
@@ -922,9 +1040,46 @@ line('    }');
 line('}');
 line('');
 
+// ── Script.Util HTTP response instance (returned by <request>.send()) ─────────
+line('// ── Script.Util HTTP response instance ──────────────────────────────────────');
+line('interface HttpResponseInstance {');
+for (const p of SCRIPT_UTIL_RESPONSE_PROPERTIES) {
+    line(`    /** ${p.description} */`);
+    line(`    readonly ${p.name}: ${toTsType(p.type)};`);
+}
+line('}');
+line('');
+
+// ── WSProxy result object (returned by createItem/retrieve/execute/…) ─────────
+line('// ── WSProxy result object ───────────────────────────────────────────────────');
+line('interface WSProxyResult {');
+for (const p of WSPROXY_RESULT_PROPERTIES) {
+    line(`    /** ${p.description} */`);
+    line(`    readonly ${p.name}${p.optional ? '?' : ''}: ${toTsType(p.type)};`);
+}
+line('}');
+line('');
+
 // ── ECMAScript built-ins (SFMC-supported subset) ──────────────────────────────
 line('// ── ECMAScript built-ins (SFMC-supported subset only) ───────────────────────');
+
+/**
+ * Statics for constructible owners (Date, Object) captured from ECMASCRIPT_BUILTINS,
+ * emitted onto the `*Constructor` interface instead of a conflicting `declare namespace`.
+ *
+ * @type {Map<string, object[]>}
+ */
+const constructibleStatics = new Map();
 {
+    /**
+     * Resolve the ssjs.guide reference URL for an ECMAScript built-in member.
+     *
+     * @param {string} owner - the member's `owner` (e.g. 'Array.prototype', 'Math', 'Global')
+     * @returns {string|null} fully-qualified ssjs.guide URL, or null when unmapped
+     */
+    const ecmaGuideUrl = (owner) =>
+        ECMASCRIPT_URLS[owner] ? GUIDE_BASE_URL + ECMASCRIPT_URLS[owner] : null;
+
     // Group ECMASCRIPT_BUILTINS entries by their `owner` field
     const byOwner = new Map();
     for (const m of ECMASCRIPT_BUILTINS) {
@@ -936,19 +1091,33 @@ line('// ── ECMAScript built-ins (SFMC-supported subset only) ────�
 
     // Array.prototype → interface Array<T>
     const arrayMembers = byOwner.get('Array.prototype') ?? [];
+    const arrayGuideUrl = ecmaGuideUrl('Array.prototype');
     line('interface Array<T> {');
     for (const m of arrayMembers) {
-        line(emitArrayMember(m));
+        const comment = buildJsDocComment(
+            m,
+            '    ',
+            arrayGuideUrl,
+            mdnBuiltinUrl('Array.prototype', m.name),
+        );
+        line(`${comment}${emitArrayMember(m)}`);
     }
     line('}');
     line('');
 
     // String.prototype → interface String
     const stringMembers = byOwner.get('String.prototype') ?? [];
+    const stringGuideUrl = ecmaGuideUrl('String.prototype');
     line('interface String {');
     for (const m of stringMembers) {
+        const comment = buildJsDocComment(
+            m,
+            '    ',
+            stringGuideUrl,
+            mdnBuiltinUrl('String.prototype', m.name),
+        );
         if (isPropertyEntry(m)) {
-            line(`    readonly ${m.name}: number;`);
+            line(`${comment}    readonly ${m.name}: number;`);
         } else {
             const retType = toTsType(m.returnType);
             let paramStr;
@@ -963,7 +1132,7 @@ line('// ── ECMAScript built-ins (SFMC-supported subset only) ────�
             } else {
                 paramStr = buildParamStr(m.params, m.minArgs ?? 0);
             }
-            line(`    ${m.name}(${paramStr}): ${retType};`);
+            line(`${comment}    ${m.name}(${paramStr}): ${retType};`);
         }
     }
     line('}');
@@ -972,9 +1141,17 @@ line('// ── ECMAScript built-ins (SFMC-supported subset only) ────�
     // Number.prototype → interface Number
     const numberMembers = byOwner.get('Number.prototype') ?? [];
     if (numberMembers.length > 0) {
+        const numberGuideUrl = ecmaGuideUrl('Number.prototype');
         line('interface Number {');
         for (const m of numberMembers) {
-            line(emitIfaceMember(m));
+            line(
+                emitIfaceMember(
+                    m,
+                    '    ',
+                    numberGuideUrl,
+                    mdnBuiltinUrl('Number.prototype', m.name),
+                ),
+            );
         }
         line('}');
         line('');
@@ -983,54 +1160,58 @@ line('// ── ECMAScript built-ins (SFMC-supported subset only) ────�
     // Object.prototype → interface Object (instance members)
     const objectMembers = byOwner.get('Object.prototype') ?? [];
     if (objectMembers.length > 0) {
+        const objectGuideUrl = ecmaGuideUrl('Object.prototype');
         line('interface Object {');
         for (const m of objectMembers) {
-            line(emitIfaceMember(m));
+            line(
+                emitIfaceMember(
+                    m,
+                    '    ',
+                    objectGuideUrl,
+                    mdnBuiltinUrl('Object.prototype', m.name),
+                ),
+            );
         }
         line('}');
         line('');
     }
 
-    // Object (statics, e.g. Object.defineProperty) → declare namespace Object
-    const objectStatics = byOwner.get('Object') ?? [];
-    if (objectStatics.length > 0) {
-        line('declare namespace Object {');
-        for (const m of objectStatics) {
-            line(emitNsMember(m));
-        }
-        line('}');
-        line('');
-    }
+    // Object statics (e.g. Object.defineProperty) are emitted onto ObjectConstructor
+    // by the constructible-built-ins block below — NOT as a `declare namespace Object`,
+    // which would shadow the constructor and break `new Object()`.
+    constructibleStatics.set('Object', byOwner.get('Object') ?? []);
 
     // Date.prototype → interface Date (instance methods)
     const dateMembers = byOwner.get('Date.prototype') ?? [];
     if (dateMembers.length > 0) {
+        const dateGuideUrl = ecmaGuideUrl('Date.prototype');
         line('interface Date {');
         for (const m of dateMembers) {
-            line(emitIfaceMember(m));
+            line(emitIfaceMember(m, '    ', dateGuideUrl, mdnBuiltinUrl('Date.prototype', m.name)));
         }
         line('}');
         line('');
     }
 
-    // Date (statics, e.g. Date.UTC) → declare namespace Date
-    const dateStatics = byOwner.get('Date') ?? [];
-    if (dateStatics.length > 0) {
-        line('declare namespace Date {');
-        for (const m of dateStatics) {
-            line(emitNsMember(m));
-        }
-        line('}');
-        line('');
-    }
+    // Date statics (e.g. Date.UTC) are emitted onto DateConstructor by the
+    // constructible-built-ins block below — NOT as a `declare namespace Date`, which
+    // would shadow the constructor and break `new Date()`.
+    constructibleStatics.set('Date', byOwner.get('Date') ?? []);
 
     // Math → declare namespace Math
     const mathMembers = byOwner.get('Math') ?? [];
     if (mathMembers.length > 0) {
+        const mathGuideUrl = ecmaGuideUrl('Math');
         line('declare namespace Math {');
         for (const m of mathMembers) {
+            const comment = buildJsDocComment(
+                m,
+                '    ',
+                mathGuideUrl,
+                mdnBuiltinUrl('Math', m.name),
+            );
             if (isPropertyEntry(m)) {
-                line(`    const ${m.name}: number;`);
+                line(`${comment}    const ${m.name}: number;`);
             } else {
                 const retType = toTsType(m.returnType);
                 let paramStr;
@@ -1045,7 +1226,7 @@ line('// ── ECMAScript built-ins (SFMC-supported subset only) ────�
                 } else {
                     paramStr = buildParamStr(m.params, m.minArgs ?? 0);
                 }
-                line(`    function ${m.name}(${paramStr}): ${retType};`);
+                line(`${comment}    function ${m.name}(${paramStr}): ${retType};`);
             }
         }
         line('}');
@@ -1055,22 +1236,28 @@ line('// ── ECMAScript built-ins (SFMC-supported subset only) ────�
     // RegExp → interface RegExp (if present)
     const regexpMembers = byOwner.get('RegExp') ?? [];
     if (regexpMembers.length > 0) {
+        const regexpGuideUrl = ecmaGuideUrl('RegExp');
         line('interface RegExp {');
         for (const m of regexpMembers) {
-            line(emitIfaceMember(m));
+            line(emitIfaceMember(m, '    ', regexpGuideUrl, mdnBuiltinUrl('RegExp', m.name)));
         }
         line('}');
         line('');
     }
 
     // Global → top-level declare function
+    // Names handled by the constructible-built-ins block (emitted as
+    // `declare var X: XConstructor`, e.g. RegExp) must NOT also be emitted here as
+    // `declare function` — that would shadow the constructor and break `new X()`.
     const globalMembers = byOwner.get('Global') ?? [];
-    if (globalMembers.length > 0) {
+    const emittedGlobals = globalMembers.filter((m) => !CONSTRUCTIBLE_NAMES.has(m.name));
+    if (emittedGlobals.length > 0) {
         line('// Global ECMAScript functions');
-        for (const m of globalMembers) {
+        for (const m of emittedGlobals) {
+            const comment = buildJsDocComment(m, '', null, mdnBuiltinUrl('Global', m.name));
             const retType = toTsType(m.returnType);
             const paramStr = buildParamStr(m.params, m.minArgs ?? 0);
-            line(`declare function ${m.name}(${paramStr}): ${retType};`);
+            line(`${comment}declare function ${m.name}(${paramStr}): ${retType};`);
         }
         line('');
     }
@@ -1100,6 +1287,26 @@ line('// ── ECMAScript built-ins (SFMC-supported subset only) ────�
         line('}');
         line('');
     }
+}
+
+// ── Constructible built-ins (Error, String, Array, Number, Object, Date) ──────
+// Emits, per entry, a `<name>Constructor` interface and a `declare var <name>`.
+// This is what makes `new Error("x")`, `new Date()`, `new Array()` type-check and
+// gives `<name>.prototype` a typed shape so polyfills like
+// `String.prototype.startsWith = function () {}` compile under noLib:true.
+// Instance method/property shapes are emitted by the ECMASCRIPT_BUILTINS block
+// above (owner `<name>.prototype`); entries with `instanceMembers` (e.g. Error,
+// which has no prototype owner group) get their `interface <name>` emitted here.
+line('// ── Constructible built-ins (value + constructor declarations) ───────────────');
+for (const c of CONSTRUCTIBLE_BUILTINS) {
+    if (Array.isArray(c.instanceMembers) && c.instanceMembers.length > 0) {
+        line(`interface ${c.interfaceName ?? c.name} {`);
+        for (const m of c.instanceMembers) {
+            line(`    ${m.name}: ${toTsType(m.type)};`);
+        }
+        line('}');
+    }
+    emitConstructibleBuiltin(c, constructibleStatics.get(c.name) ?? []);
 }
 
 // ── Write file ────────────────────────────────────────────────────────────────

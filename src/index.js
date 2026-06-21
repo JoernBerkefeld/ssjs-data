@@ -1566,7 +1566,9 @@ export const PLATFORM_FUNCTIONS = [
                 type: 'string|string[]',
             },
         ],
-        returnType: 'object|object[]',
+        // `any` (not `object`) so callers can access dynamic properties on the parsed
+        // result, e.g. `var o = Platform.Function.ParseJSON(s); Write(o.name);`.
+        returnType: 'any',
         syntax: 'Platform.Function.ParseJSON(jsonString)',
         example:
             'var jsonString = \'{"name":"Jane","age":30}\';\n' +
@@ -1716,14 +1718,15 @@ export const PLATFORM_FUNCTIONS = [
             'this Platform.Function form works without it.',
         params: [
             {
-                name: 'object',
-                description: 'JavaScript object to serialize to JSON.',
-                type: 'object',
+                name: 'value',
+                description:
+                    'Value to serialize to JSON. Accepts objects, arrays, strings, numbers, and booleans.',
+                type: 'any',
             },
         ],
         returnType: 'string',
-        returnDescription: 'JSON string representation of the object.',
-        syntax: 'Platform.Function.Stringify(object)',
+        returnDescription: 'JSON string representation of the value.',
+        syntax: 'Platform.Function.Stringify(value)',
         example:
             'var json = Platform.Function.Stringify({ name: "Jane", age: 30 });\nPlatform.Function.Write(json);',
     },
@@ -5413,7 +5416,7 @@ export const WSPROXY_METHODS = [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
             { name: 'properties', description: 'Object properties to set', type: 'object' },
         ],
-        returnType: 'object',
+        returnType: 'WSProxyResult',
         returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
         syntax: '<WSProxyInstance>.createItem(objectType, properties)',
         example:
@@ -5434,7 +5437,7 @@ export const WSPROXY_METHODS = [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
             { name: 'properties', description: 'Object properties to update', type: 'object' },
         ],
-        returnType: 'object',
+        returnType: 'WSProxyResult',
         returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
         syntax: '<WSProxyInstance>.updateItem(objectType, properties)',
         example:
@@ -5459,7 +5462,7 @@ export const WSPROXY_METHODS = [
                 type: 'object',
             },
         ],
-        returnType: 'object',
+        returnType: 'WSProxyResult',
         returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
         syntax: '<WSProxyInstance>.deleteItem(objectType, properties)',
         example:
@@ -5499,7 +5502,7 @@ export const WSPROXY_METHODS = [
                 optional: true,
             },
         ],
-        returnType: 'object',
+        returnType: 'WSProxyResult',
         returnDescription: 'Object with Status, HasMoreRows, RequestID, and Results array.',
         syntax: '<WSProxyInstance>.retrieve(objectType, columns[, filter[, retrieveOptions[, requestProps]]])',
         example:
@@ -5537,7 +5540,7 @@ export const WSPROXY_METHODS = [
                 type: 'string',
             },
         ],
-        returnType: 'object',
+        returnType: 'WSProxyResult',
         returnDescription: 'Object with Status, HasMoreRows, RequestID, and Results array.',
         syntax: '<WSProxyInstance>.getNextBatch(objectType, requestId)',
         example:
@@ -5577,7 +5580,7 @@ export const WSPROXY_METHODS = [
                 optional: true,
             },
         ],
-        returnType: 'object',
+        returnType: 'WSProxyResult',
         returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
         syntax: '<WSProxyInstance>.performItem(objectType, properties, action[, performOptions])',
         example:
@@ -5612,7 +5615,7 @@ export const WSPROXY_METHODS = [
                 optional: true,
             },
         ],
-        returnType: 'object',
+        returnType: 'WSProxyResult',
         returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
         syntax: '<WSProxyInstance>.performBatch(objectType, propertiesArray, action[, performOptions])',
         example:
@@ -5635,7 +5638,7 @@ export const WSPROXY_METHODS = [
                 type: 'string',
             },
         ],
-        returnType: 'object',
+        returnType: 'WSProxyResult',
         returnDescription:
             'Object with Status and Results array containing ObjectDefinition entries.',
         syntax: '<WSProxyInstance>.describe(objectType)',
@@ -5659,7 +5662,7 @@ export const WSPROXY_METHODS = [
                 enum: ['LogUnsubEvent'],
             },
         ],
-        returnType: 'object',
+        returnType: 'WSProxyResult',
         returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
         syntax: '<WSProxyInstance>.execute(objectType, requestName)',
         example:
@@ -5739,7 +5742,7 @@ export const WSPROXY_METHODS = [
                 type: 'array',
             },
         ],
-        returnType: 'object',
+        returnType: 'WSProxyResult',
         returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
         syntax: '<WSProxyInstance>.createBatch(objectType, propertiesArray)',
         example:
@@ -5765,7 +5768,7 @@ export const WSPROXY_METHODS = [
                 type: 'array',
             },
         ],
-        returnType: 'object',
+        returnType: 'WSProxyResult',
         returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
         syntax: '<WSProxyInstance>.updateBatch(objectType, propertiesArray)',
         example:
@@ -5790,7 +5793,7 @@ export const WSPROXY_METHODS = [
                 type: 'array',
             },
         ],
-        returnType: 'object',
+        returnType: 'WSProxyResult',
         returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
         syntax: '<WSProxyInstance>.deleteBatch(objectType, propertiesArray)',
         example:
@@ -6499,7 +6502,7 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
             'The response object has a `statusCode` property and a `content` property. ' +
             'Use String(resp.content) to convert the CLR content to a JavaScript string before parsing with Platform.Function.ParseJSON().',
         params: [],
-        returnType: 'object',
+        returnType: 'HttpResponseInstance',
         syntax: '<HttpRequestInstance>.send()',
         example:
             'var req = new Script.Util.HttpRequest("https://api.example.com/data");\n' +
@@ -6561,6 +6564,127 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
             'req.setHeader("X-Custom", "value");\n' +
             'req.removeHeader("X-Custom");\n' +
             'var resp = req.send();',
+    },
+];
+
+// ── Script.Util.HttpRequest writable instance properties ────────────────────
+// Configurable properties on the object returned by `new Script.Util.HttpRequest(url)`.
+// Source: ssjs.guide/http/script-util-httprequest.md (HttpRequestInstance Properties).
+// These are writable (req.method = "POST"), so the generator emits them as plain
+// (non-readonly) class members.
+
+/** @type {{name: string, type: string, description: string}[]} */
+export const SCRIPT_UTIL_REQUEST_PROPERTIES = [
+    { name: 'method', type: 'string', description: 'HTTP method (GET, POST, PUT, PATCH, DELETE).' },
+    {
+        name: 'contentType',
+        type: 'string',
+        description: 'Content-Type header for the request body, e.g. "application/json".',
+    },
+    { name: 'encoding', type: 'string', description: 'Character encoding (default "UTF-8").' },
+    { name: 'timeout', type: 'number', description: 'Timeout in milliseconds (default 30000).' },
+    {
+        name: 'postData',
+        type: 'string',
+        description: 'Request body for POST/PUT/PATCH requests.',
+    },
+    {
+        name: 'emptyContentHandling',
+        type: 'boolean',
+        description:
+            'If false, throws when no content is returned; if true, continues without throwing.',
+    },
+    {
+        name: 'retries',
+        type: 'number',
+        description: 'Number of times to retry the request before throwing (default 1).',
+    },
+    {
+        name: 'continueOnError',
+        type: 'boolean',
+        description: 'If true, continues after a non-fatal error instead of throwing.',
+    },
+];
+
+// ── Script.Util.HttpGet writable instance properties ────────────────────────
+// Configurable properties on the object returned by `new Script.Util.HttpGet(url)`.
+// Source: ssjs.guide/http/script-util-httpget.md (HttpGetInstance Properties).
+// HttpGet exposes a smaller property set than HttpRequest, and its
+// `emptyContentHandling` is a numeric mode (0/1/2) rather than a boolean.
+
+/** @type {{name: string, type: string, description: string}[]} */
+export const SCRIPT_UTIL_HTTPGET_PROPERTIES = [
+    {
+        name: 'retries',
+        type: 'number',
+        description: 'Number of retry attempts on failure (default 1).',
+    },
+    {
+        name: 'continueOnError',
+        type: 'boolean',
+        description: 'If true, does not throw on an HTTP error status.',
+    },
+    {
+        name: 'emptyContentHandling',
+        type: 'number',
+        description:
+            'What to do when the GET returns no content: 0 = continue, 1 = stop, 2 = continue to next subscriber (email sends only).',
+    },
+];
+
+// ── Script.Util HTTP response instance properties ───────────────────────────
+// Read-only properties on the object returned by `<HttpRequestInstance>.send()`.
+// Identical for HttpRequest and HttpGet. Source: ssjs.guide HttpResponseInstance.
+
+/** @type {{name: string, type: string, description: string}[]} */
+export const SCRIPT_UTIL_RESPONSE_PROPERTIES = [
+    {
+        name: 'content',
+        type: 'any',
+        description: 'Response body as a CLR string — wrap with String() before use.',
+    },
+    { name: 'contentType', type: 'string', description: 'Content type returned in the response.' },
+    { name: 'encoding', type: 'string', description: 'Encoding type returned in the response.' },
+    { name: 'headers', type: 'object', description: 'Response headers.' },
+    {
+        name: 'returnStatus',
+        type: 'number',
+        description:
+            'Status value: 0 = OK, 1 = empty URL, 2 = call failed, 3 = succeeded with empty content.',
+    },
+    { name: 'statusCode', type: 'number', description: 'HTTP status code.' },
+];
+
+// ── WSProxy result object shape ─────────────────────────────────────────────
+// Shape of the object returned by the CRUD/retrieve/execute methods on a
+// `new Script.Util.WSProxy()` instance. Source: ssjs.guide/wsproxy/*.md
+// (Return Value sections are consistent across createItem, retrieve, execute, …).
+
+/** @type {{name: string, type: string, optional?: boolean, description: string}[]} */
+export const WSPROXY_RESULT_PROPERTIES = [
+    {
+        name: 'Status',
+        type: 'string',
+        description: 'Overall result status: "OK" or "Error".',
+    },
+    { name: 'RequestID', type: 'string', description: 'Server-assigned request identifier.' },
+    {
+        name: 'Results',
+        type: 'any[]',
+        description: 'Array of per-object result entries (or retrieved rows for retrieve()).',
+    },
+    {
+        name: 'HasMoreRows',
+        type: 'boolean',
+        optional: true,
+        description:
+            'For retrieve()/getNextBatch(): true when more rows exist — call getNextBatch() with RequestID.',
+    },
+    {
+        name: 'StatusMessage',
+        type: 'string',
+        optional: true,
+        description: 'Human-readable status message when present.',
     },
 ];
 
@@ -7670,6 +7794,129 @@ export const ECMASCRIPT_BUILTINS = [
         syntax: 'Object.defineProperty(obj, prop, descriptor)',
         example:
             'var o = {};\nObject.defineProperty(o, "x", { value: 42, enumerable: true });\nWrite(o.x); // 42',
+    },
+];
+
+// ── Constructible ECMAScript built-ins ───────────────────────────────────────
+// SFMC's Rhino-based engine exposes these as real constructor values: they can be
+// called with `new` (e.g. `new Error("x")`, `new Date()`) and expose a `.prototype`
+// that user code routinely polyfills (e.g. `String.prototype.startsWith = ...`).
+//
+// The generator emits, for each entry:
+//   interface <name> { ...instanceMembers }            (the prototype/instance shape)
+//   interface <name>Constructor { new(...): <iface>; (...): <callReturn>; statics; prototype }
+//   declare var <name>: <name>Constructor;
+//
+// Instance methods/properties for these types are still authored in
+// ECMASCRIPT_BUILTINS (owner `String.prototype`, `Date.prototype`, …); this list
+// only declares the *value* + *constructor* surface, plus any extra instance
+// members that are not represented as prototype methods (e.g. Error.message).
+//
+// `interfaceName` lets an entry reuse the generic interface name (e.g. Array uses
+// `Array<T>`); when omitted, the interface is named after `name`.
+export const CONSTRUCTIBLE_BUILTINS = [
+    {
+        name: 'Error',
+        // No Error.prototype methods are catalogued; declare the instance shape here.
+        instanceMembers: [
+            { name: 'message', type: 'string' },
+            { name: 'name', type: 'string' },
+        ],
+        construct: {
+            params: [{ name: 'message', type: 'string', optional: true }],
+            returns: '$iface',
+        },
+        call: { params: [{ name: 'message', type: 'string', optional: true }], returns: '$iface' },
+        prototype: '$iface',
+    },
+    {
+        name: 'String',
+        // Instance members come from ECMASCRIPT_BUILTINS owner `String.prototype`.
+        construct: { params: [{ name: 'value', type: 'any', optional: true }], returns: '$iface' },
+        call: { params: [{ name: 'value', type: 'any', optional: true }], returns: 'string' },
+        prototype: '$iface',
+        statics: [
+            {
+                name: 'fromCharCode',
+                params: [{ name: 'code', type: 'number' }],
+                rest: 'number',
+                returns: 'string',
+            },
+        ],
+    },
+    {
+        name: 'Array',
+        interfaceName: 'Array<T>',
+        // Instance members come from ECMASCRIPT_BUILTINS owner `Array.prototype`.
+        construct: {
+            params: [{ name: 'arrayLength', type: 'number', optional: true }],
+            returns: 'any[]',
+        },
+        call: {
+            params: [{ name: 'arrayLength', type: 'number', optional: true }],
+            returns: 'any[]',
+        },
+        prototype: 'any[]',
+        statics: [{ name: 'isArray', params: [{ name: 'arg', type: 'any' }], returns: 'boolean' }],
+    },
+    {
+        name: 'Number',
+        // Instance members come from ECMASCRIPT_BUILTINS owner `Number.prototype`.
+        construct: { params: [{ name: 'value', type: 'any', optional: true }], returns: '$iface' },
+        call: { params: [{ name: 'value', type: 'any', optional: true }], returns: 'number' },
+        prototype: '$iface',
+    },
+    {
+        name: 'Object',
+        // Instance members come from ECMASCRIPT_BUILTINS owner `Object.prototype`.
+        // Statics (e.g. Object.defineProperty) remain in the `declare namespace Object`.
+        construct: { params: [{ name: 'value', type: 'any', optional: true }], returns: '$iface' },
+        call: { params: [{ name: 'value', type: 'any', optional: true }], returns: 'object' },
+        prototype: '$iface',
+        // mergeNamespace: the generated `declare var Object` must coexist with the
+        // existing `declare namespace Object` statics; the generator handles this.
+    },
+    {
+        name: 'Date',
+        // Instance members come from ECMASCRIPT_BUILTINS owner `Date.prototype`.
+        // Statics (e.g. Date.UTC) remain in the `declare namespace Date`.
+        construct: {
+            // new Date(); new Date(ms); new Date(dateString); new Date(y, m, d, ...)
+            params: [
+                { name: 'valueOrYear', type: 'any', optional: true },
+                { name: 'month', type: 'number', optional: true },
+                { name: 'day', type: 'number', optional: true },
+                { name: 'hours', type: 'number', optional: true },
+                { name: 'minutes', type: 'number', optional: true },
+                { name: 'seconds', type: 'number', optional: true },
+                { name: 'milliseconds', type: 'number', optional: true },
+            ],
+            returns: '$iface',
+        },
+        call: { params: [], returns: 'string' },
+        prototype: '$iface',
+    },
+    {
+        name: 'RegExp',
+        // Instance members (test, exec, source, global, …) come from
+        // ECMASCRIPT_BUILTINS owner `RegExp`, emitted as `interface RegExp`.
+        // SSJS supports `new RegExp(pattern[, flags])` for dynamic patterns, so it
+        // must be constructible — not just callable like a plain global function.
+        construct: {
+            params: [
+                { name: 'pattern', type: 'string' },
+                { name: 'flags', type: 'string', optional: true },
+            ],
+            returns: '$iface',
+        },
+        call: {
+            params: [
+                { name: 'pattern', type: 'string' },
+                { name: 'flags', type: 'string', optional: true },
+            ],
+            returns: '$iface',
+        },
+        prototype: '$iface',
     },
 ];
 

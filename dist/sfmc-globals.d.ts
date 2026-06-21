@@ -629,7 +629,7 @@ declare namespace Platform {
          * var resp = req.send();
          * var result = Platform.Function.ParseJSON(String(resp.content));
          */
-        function ParseJSON(jsonString: string | string[]): object | object[];
+        function ParseJSON(jsonString: string | string[]): any;
         /**
          * Specifies the target of an email link as a complete URL stored in an attribute, data extension field, or variable. Use only within the href attribute of an anchor tag in HTML emails. In text emails, add the http:// prefix without spaces inside the parentheses. Include anchor tags in the email body (not in retrieved link content) to retain click-tracking.
          *
@@ -701,13 +701,13 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/stringify/)
          *
-         * @param object - JavaScript object to serialize to JSON.
-         * @returns JSON string representation of the object.
+         * @param value - Value to serialize to JSON. Accepts objects, arrays, strings, numbers, and booleans.
+         * @returns JSON string representation of the value.
          * @example
          * var json = Platform.Function.Stringify({ name: "Jane", age: 30 });
          * Platform.Function.Write(json);
          */
-        function Stringify(object: object): string;
+        function Stringify(value: any): string;
         /**
          * Retrieves content from a specified classic Content Area by numeric ID. Deprecated — Content Areas are no longer supported on current SFMC infrastructure. Note: the bare-name ContentArea() global uses a string errorMsg as the 3rd parameter and requires Platform.Load("core","1.1.5"); this Platform.Function form does not.
          *
@@ -1171,45 +1171,6 @@ declare namespace Recipient {
 }
 
 /**
- * Native JavaScript function that converts any value to its string representation. Essential in SSJS for converting the CLR response object returned by Script.Util.HttpRequest.send().content into a JavaScript string that can be passed to Platform.Function.ParseJSON(). Unlike Stringify(), String() works on CLR/.NET objects and does not produce JSON output.
- *
- * [ssjs.guide reference](https://ssjs.guide/global-functions/string/)
- *
- * @param value - Value to convert to string (any type, including CLR objects)
- * @example
- * // Convert a CLR response object to a JavaScript string for JSON parsing:
- * var req = new Script.Util.HttpRequest("https://api.example.com/data");
- * req.method = "GET";
- * var resp = req.send();
- * var responseStr = String(resp.content);  // CLR -> JS string
- * var responseJSON = Platform.Function.ParseJSON(responseStr);
- *
- * // Also works for numbers and other primitives:
- * var num = 42;
- * var str = String(num); // "42"
- */
-declare function String(value: any): string;
-/**
- * Native JavaScript Error constructor. Creates an Error object that can be thrown or caught. Use inside try/catch blocks for structured error handling in SSJS. The caught error object has a message property.
- *
- * [ssjs.guide reference](https://ssjs.guide/global-functions/error/)
- *
- * @param message - Human-readable description of the error
- * @example
- * try {
- *     var req = new Script.Util.HttpRequest("https://api.example.com/data");
- *     req.method = "GET";
- *     req.continueOnError = false;
- *     var resp = req.send();
- *     if (resp.statusCode !== 200) {
- *         throw new Error("Request failed with status: " + resp.statusCode);
- *     }
- * } catch (e) {
- *     Write("Error: " + e.message);
- * }
- */
-declare function Error(message?: string): object;
-/**
  * Encodes plain text to a Base64 encoded string. Requires `Platform.Load("core", "1.1.5")` before use. For charset control, use `Platform.Function.Base64Encode(string, charset)` instead.
  *
  * [ssjs.guide reference](https://ssjs.guide/global-functions/base64encode/)
@@ -1378,13 +1339,13 @@ declare function Write(content: string): void;
  * [ssjs.guide reference](https://ssjs.guide/global-functions/stringify/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
- * @param object - JavaScript object to serialize to JSON.
- * @returns JSON string representation of the object.
+ * @param value - Value to serialize to JSON. Accepts objects, arrays, strings, numbers, and booleans.
+ * @returns JSON string representation of the value.
  * @example
  * var json = Platform.Function.Stringify({ name: "Jane", age: 30 });
  * Platform.Function.Write(json);
  */
-declare function Stringify(object: object): string;
+declare function Stringify(value: any): string;
 /**
  * Applies a formatting rule to a string or numeric value. Use format codes such as `C` (currency), `D` (decimal), `N` (number with separators), `P` (percentage), `O` (ISO 8601 date), `s` (sortable date), `d` (short date), `t` (12-hour time), etc. Append a digit to control decimal places, e.g. `C2` for two decimal places.
  *
@@ -3591,7 +3552,7 @@ declare namespace Script {
              * });
              * if (result.Status === "OK") { Write("Created"); }
              */
-            createItem(objectType: string, properties: object): object;
+            createItem(objectType: string, properties: object): WSProxyResult;
             /**
              * Updates an existing Marketing Cloud object via the SOAP API.
              *
@@ -3608,7 +3569,7 @@ declare namespace Script {
              * });
              * if (result.Status === "OK") { Write("Updated"); }
              */
-            updateItem(objectType: string, properties: object): object;
+            updateItem(objectType: string, properties: object): WSProxyResult;
             /**
              * Deletes a Marketing Cloud object via the SOAP API.
              *
@@ -3625,7 +3586,7 @@ declare namespace Script {
              * });
              * if (result.Status === "OK") { Write("Deleted"); }
              */
-            deleteItem(objectType: string, properties: object): object;
+            deleteItem(objectType: string, properties: object): WSProxyResult;
             /**
              * Retrieves Marketing Cloud objects matching an optional filter via the SOAP API. The third parameter is a simple or complex filter; the fourth sets RetrieveOptions; the fifth sets additional request properties such as QueryAllAccounts.
              *
@@ -3653,7 +3614,7 @@ declare namespace Script {
              *     }
              * }
              */
-            retrieve(objectType: string, columns: any[], filter?: object, retrieveOptions?: object, requestProps?: object): object;
+            retrieve(objectType: string, columns: any[], filter?: object, retrieveOptions?: object, requestProps?: object): WSProxyResult;
             /**
              * Retrieves the next page of results from a previous retrieve call that returned HasMoreRows = true.
              *
@@ -3672,7 +3633,7 @@ declare namespace Script {
              *     }
              * }
              */
-            getNextBatch(objectType: string, requestId: string): object;
+            getNextBatch(objectType: string, requestId: string): WSProxyResult;
             /**
              * Executes a perform action on a single Marketing Cloud object.
              *
@@ -3688,7 +3649,7 @@ declare namespace Script {
              * var result = api.performItem("QueryDefinition", { ObjectID: queryObjectId }, "Start");
              * Write(result.Status);
              */
-            performItem(objectType: string, properties: object, action: string, performOptions?: object): object;
+            performItem(objectType: string, properties: object, action: string, performOptions?: object): WSProxyResult;
             /**
              * Executes a perform action on multiple Marketing Cloud objects in a single SOAP API call.
              *
@@ -3705,7 +3666,7 @@ declare namespace Script {
              * var result = api.performBatch("QueryDefinition", items, "Start");
              * Write(result.Status);
              */
-            performBatch(objectType: string, propertiesArray: any[], action: string, performOptions?: object): object;
+            performBatch(objectType: string, propertiesArray: any[], action: string, performOptions?: object): WSProxyResult;
             /**
              * Returns structural metadata (ObjectDefinition) for one or more SOAP API object types.
              *
@@ -3718,7 +3679,7 @@ declare namespace Script {
              * var result = api.describe("DataExtension");
              * Write(Stringify(result.Results));
              */
-            describe(objectType: string): object;
+            describe(objectType: string): WSProxyResult;
             /**
              * Executes a named method on a Marketing Cloud object.
              *
@@ -3732,7 +3693,7 @@ declare namespace Script {
              * var result = api.execute("DataExtensionObject", "LogUnsubEvent");
              * Write(result.Status);
              */
-            execute(objectType: string, requestName: string): object;
+            execute(objectType: string, requestName: string): WSProxyResult;
             /**
              * Sets the maximum number of objects returned per SOAP API page (default is 2500).
              *
@@ -3787,7 +3748,7 @@ declare namespace Script {
              * var result = api.createBatch("DataExtensionObject", items);
              * Write(result.Status);
              */
-            createBatch(objectType: string, propertiesArray: any[]): object;
+            createBatch(objectType: string, propertiesArray: any[]): WSProxyResult;
             /**
              * Updates multiple Marketing Cloud objects in a single SOAP API call.
              *
@@ -3804,7 +3765,7 @@ declare namespace Script {
              * var result = api.updateBatch("DataExtensionObject", items);
              * Write(result.Status);
              */
-            updateBatch(objectType: string, propertiesArray: any[]): object;
+            updateBatch(objectType: string, propertiesArray: any[]): WSProxyResult;
             /**
              * Deletes multiple Marketing Cloud objects in a single SOAP API call.
              *
@@ -3821,7 +3782,7 @@ declare namespace Script {
              * var result = api.deleteBatch("DataExtensionObject", items);
              * Write(result.Status);
              */
-            deleteBatch(objectType: string, propertiesArray: any[]): object;
+            deleteBatch(objectType: string, propertiesArray: any[]): WSProxyResult;
         }
         /**
          * Creates an HTTP request handler that supports any HTTP method (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS). Unlike Platform.Function.HTTPGet/HTTPPost, this handler supports custom methods and headers. Call send() to execute the request and receive a Script.Util.HttpResponse object.
@@ -3877,7 +3838,7 @@ declare namespace Script {
              *     var result = Platform.Function.ParseJSON(String(resp.content));
              * }
              */
-            send(): object;
+            send(): HttpResponseInstance;
             /**
              * Sets a request header on the Script.Util HTTP request. Note: setting a custom header disables content caching for Script.Util.HttpGet.
              *
@@ -3918,6 +3879,22 @@ declare namespace Script {
              * var resp = req.send();
              */
             removeHeader(name: string): void;
+            /** HTTP method (GET, POST, PUT, PATCH, DELETE). */
+            method: string;
+            /** Content-Type header for the request body, e.g. "application/json". */
+            contentType: string;
+            /** Character encoding (default "UTF-8"). */
+            encoding: string;
+            /** Timeout in milliseconds (default 30000). */
+            timeout: number;
+            /** Request body for POST/PUT/PATCH requests. */
+            postData: string;
+            /** If false, throws when no content is returned; if true, continues without throwing. */
+            emptyContentHandling: boolean;
+            /** Number of times to retry the request before throwing (default 1). */
+            retries: number;
+            /** If true, continues after a non-fatal error instead of throwing. */
+            continueOnError: boolean;
         }
         /**
          * Creates an HTTP GET request handler. Unlike Platform.Function.HTTPGet, this handler caches content for use in mail sends and supports custom headers. Only works with HTTP on port 80 and HTTPS on port 443. Call send() to execute the request and receive a Script.Util.HttpResponse object.
@@ -3969,7 +3946,7 @@ declare namespace Script {
              *     var result = Platform.Function.ParseJSON(String(resp.content));
              * }
              */
-            send(): object;
+            send(): HttpResponseInstance;
             /**
              * Sets a request header on the Script.Util HTTP request. Note: setting a custom header disables content caching for Script.Util.HttpGet.
              *
@@ -4010,47 +3987,358 @@ declare namespace Script {
              * var resp = req.send();
              */
             removeHeader(name: string): void;
+            /** Number of retry attempts on failure (default 1). */
+            retries: number;
+            /** If true, does not throw on an HTTP error status. */
+            continueOnError: boolean;
+            /** What to do when the GET returns no content: 0 = continue, 1 = stop, 2 = continue to next subscriber (email sends only). */
+            emptyContentHandling: number;
         }
     }
 }
 
+// ── Script.Util HTTP response instance ──────────────────────────────────────
+interface HttpResponseInstance {
+    /** Response body as a CLR string — wrap with String() before use. */
+    readonly content: any;
+    /** Content type returned in the response. */
+    readonly contentType: string;
+    /** Encoding type returned in the response. */
+    readonly encoding: string;
+    /** Response headers. */
+    readonly headers: object;
+    /** Status value: 0 = OK, 1 = empty URL, 2 = call failed, 3 = succeeded with empty content. */
+    readonly returnStatus: number;
+    /** HTTP status code. */
+    readonly statusCode: number;
+}
+
+// ── WSProxy result object ───────────────────────────────────────────────────
+interface WSProxyResult {
+    /** Overall result status: "OK" or "Error". */
+    readonly Status: string;
+    /** Server-assigned request identifier. */
+    readonly RequestID: string;
+    /** Array of per-object result entries (or retrieved rows for retrieve()). */
+    readonly Results: any[];
+    /** For retrieve()/getNextBatch(): true when more rows exist — call getNextBatch() with RequestID. */
+    readonly HasMoreRows?: boolean;
+    /** Human-readable status message when present. */
+    readonly StatusMessage?: string;
+}
+
 // ── ECMAScript built-ins (SFMC-supported subset only) ───────────────────────
 interface Array<T> {
+    /**
+     * Joins all array elements into a string, separated by the specified delimiter.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/join) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
+     *
+     * @param separator - Delimiter string (default: ",")
+     * @example
+     * var arr = ["a", "b", "c"];
+     * var str = arr.join(", "); // "a, b, c"
+     */
     join(separator?: string): string;
+    /**
+     * Appends one or more elements to the end of an array and returns the new length.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/push) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
+     *
+     * @param element - Element to append (repeat for multiple)
+     * @example
+     * var arr = [1, 2];
+     * arr.push(3);
+     * // arr is now [1, 2, 3]
+     */
     push(...elements: T[]): number;
+    /**
+     * Removes and returns the last element from an array.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/pop) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
+     *
+     * @example
+     * var arr = [1, 2, 3];
+     * var last = arr.pop(); // 3
+     */
     pop(): T;
+    /**
+     * Removes and returns the first element from an array.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/shift) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
+     *
+     * @example
+     * var arr = [1, 2, 3];
+     * var first = arr.shift(); // 1
+     */
     shift(): T;
+    /**
+     * Inserts one or more elements at the start of an array and returns the new length.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/unshift) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
+     *
+     * @param element - Element to prepend (repeat for multiple)
+     * @example
+     * var arr = [2, 3];
+     * arr.unshift(1);
+     * // arr is now [1, 2, 3]
+     */
     unshift(...elements: T[]): number;
+    /**
+     * Returns a new array formed by merging this array with other arrays or values.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/concat) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
+     *
+     * @param value - Array or value to concatenate
+     * @example
+     * var a = [1, 2];
+     * var b = [3, 4];
+     * var c = a.concat(b); // [1, 2, 3, 4]
+     */
     concat(...values: T[]): T[];
+    /**
+     * Returns a shallow copy of a portion of an array.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
+     *
+     * @param start - Start index (0-based, negative counts from end)
+     * @param end - End index (exclusive)
+     * @example
+     * var arr = [1, 2, 3, 4, 5];
+     * var sub = arr.slice(1, 3); // [2, 3]
+     */
     slice(start?: number, end?: number): T[];
+    /**
+     * Sorts the array in place and returns it. Default sort is lexicographic.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
+     *
+     * @param compareFn - Optional comparison function (a, b) returning negative, 0, or positive
+     * @example
+     * var arr = [3, 1, 2];
+     * arr.sort(function(a, b) { return a - b; }); // [1, 2, 3]
+     */
     sort(compareFn?: any): T[];
+    /**
+     * Reverses the elements of an array in place.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reverse) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
+     *
+     * @example
+     * var arr = [1, 2, 3];
+     * arr.reverse(); // [3, 2, 1]
+     */
     reverse(): T[];
+    /**
+     * Returns the number of elements in the array.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
+     *
+     * @example
+     * var arr = [1, 2, 3];
+     * Write(arr.length); // 3
+     */
     readonly length: number;
+    /**
+     * Returns a string representing the array elements, joined by a locale-specific separator.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toLocaleString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
+     *
+     * @example
+     * var arr = [1, 2, 3];
+     * Write(arr.toLocaleString()); // "1,2,3"
+     */
     toLocaleString(): string;
 }
 
 interface String {
+    /**
+     * Returns the character at the specified index.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/charAt) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
+     *
+     * @param index - Zero-based character index
+     * @example
+     * var str = "Hello";
+     * Write(str.charAt(1)); // "e"
+     */
     charAt(index?: number): string;
+    /**
+     * Returns the UTF-16 code unit at the specified index.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/charCodeAt) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
+     *
+     * @param index - Zero-based character index
+     * @example
+     * var str = "A";
+     * Write(str.charCodeAt(0)); // 65
+     */
     charCodeAt(index?: number): number;
+    /**
+     * Returns the index of the first occurrence of a substring, or -1 if not found.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/indexOf) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
+     *
+     * @param searchValue - Substring to search for
+     * @param fromIndex - Index to start the search from
+     * @example
+     * var str = "Hello, world!";
+     * Write(str.indexOf("world")); // 7
+     */
     indexOf(searchValue?: string, fromIndex?: number): number;
+    /**
+     * Returns the index of the last occurrence of a substring, or -1 if not found.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/lastIndexOf) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
+     *
+     * @param searchValue - Substring to search for
+     * @param fromIndex - Index to search backwards from
+     * @example
+     * var str = "abcabc";
+     * Write(str.lastIndexOf("b")); // 4
+     */
     lastIndexOf(searchValue?: string, fromIndex?: number): number;
+    /**
+     * Matches a string against a regular expression and returns the matches array.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/match) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
+     *
+     * @param regexp - Regular expression to match against
+     * @example
+     * var str = "test@example.com";
+     * var matches = str.match(/[\w.]+@[\w.]+/);
+     * if (matches) { Write(matches[0]); }
+     */
     match(regexp?: RegExp): any[];
+    /**
+     * Returns a new string with matches replaced by a replacement string or function.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
+     *
+     * @param searchValue - Substring or RegExp to find
+     * @param replaceValue - Replacement string
+     * @example
+     * var str = "Hello, world!";
+     * Write(str.replace("world", "SSJS")); // "Hello, SSJS!"
+     */
     replace(searchValue?: any, replaceValue?: string): string;
+    /**
+     * Searches for a match and returns the index of the first match, or -1.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/search) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
+     *
+     * @param regexp - Regular expression to search for
+     * @example
+     * var str = "foo123bar";
+     * Write(str.search(/\d+/)); // 3
+     */
     search(regexp?: RegExp): number;
+    /**
+     * Extracts a section of a string and returns it as a new string.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/slice) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
+     *
+     * @param start - Start index (negative counts from end)
+     * @param end - End index (exclusive)
+     * @example
+     * var str = "Hello, world!";
+     * Write(str.slice(7, 12)); // "world"
+     */
     slice(start?: number, end?: number): string;
+    /**
+     * Splits a string into an array of substrings using a separator.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
+     *
+     * @param separator - String or RegExp to split on
+     * @param limit - Maximum number of substrings to return
+     * @example
+     * var str = "a,b,c";
+     * var parts = str.split(","); // ["a", "b", "c"]
+     */
     split(separator?: any, limit?: number): any[];
+    /**
+     * Returns the characters between two indices of a string.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substring) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
+     *
+     * @param start - Start index (inclusive)
+     * @param end - End index (exclusive)
+     * @example
+     * var str = "Hello, world!";
+     * Write(str.substring(7, 12)); // "world"
+     */
     substring(start?: number, end?: number): string;
+    /**
+     * Returns the string converted to lowercase.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/toLowerCase) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
+     *
+     * @example
+     * var str = "Hello World";
+     * Write(str.toLowerCase()); // "hello world"
+     */
     toLowerCase(): string;
+    /**
+     * Returns the string converted to lowercase according to host locale mappings.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/toLocaleLowerCase) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
+     *
+     * @example
+     * var str = "AbC";
+     * Write(str.toLocaleLowerCase()); // "abc"
+     */
     toLocaleLowerCase(): string;
+    /**
+     * Returns the string converted to uppercase.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/toUpperCase) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
+     *
+     * @example
+     * var str = "Hello World";
+     * Write(str.toUpperCase()); // "HELLO WORLD"
+     */
     toUpperCase(): string;
+    /**
+     * Returns a new string formed by concatenating this string with one or more additional strings.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/concat) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
+     *
+     * @param string - String to append (repeat for multiple)
+     * @example
+     * var str = "Hello";
+     * Write(str.concat(", ", "world!")); // "Hello, world!"
+     */
     concat(...strings: string[]): string;
+    /**
+     * Returns a substring starting at start and running for length characters. If start is negative it is treated as (stringLength + start). Note: prefer substring() for portability; substr is defined in ES3 Annex B.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substr) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
+     *
+     * @param start - Start index (negative counts from end of string)
+     * @param length - Number of characters to extract (omit to extract to end)
+     * @example
+     * var str = "Hello, world!";
+     * Write(str.substr(7, 5)); // "world"
+     */
     substr(start?: number, length?: number): string;
+    /**
+     * Returns the number of characters in the string.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/length) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
+     *
+     * @example
+     * var str = "Hello";
+     * Write(str.length); // 5
+     */
     readonly length: number;
 }
 
 interface Number {
     /**
      * Returns a string representing the number in fixed-point notation with the given number of decimal places.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
      *
      * @param fractionDigits - Number of digits after the decimal point (0–20, default 0)
      * @example
@@ -4062,6 +4350,8 @@ interface Number {
     /**
      * Returns a string representing the number in exponential notation. If fractionDigits is omitted, enough digits are included to uniquely identify the value.
      *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toExponential) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
+     *
      * @param fractionDigits - Digits after the decimal point in the significand (0–20)
      * @example
      * Write((123456).toExponential(2)); // "1.23e+5"
@@ -4069,6 +4359,8 @@ interface Number {
     toExponential(fractionDigits?: number): string;
     /**
      * Returns a string representing the number to the specified number of significant digits.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toPrecision) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
      *
      * @param precision - Number of significant digits (1–21)
      * @example
@@ -4081,6 +4373,8 @@ interface Object {
     /**
      * Returns true if the object has the specified property as its own (not inherited) property. Commonly used to safely iterate for...in loops.
      *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/object-methods/)
+     *
      * @param v - Property name to test
      * @example
      * var obj = {a: 1};
@@ -4091,24 +4385,11 @@ interface Object {
     hasOwnProperty(v?: string): boolean;
 }
 
-declare namespace Object {
-    /**
-     * Defines a new property on an object, or modifies an existing one, with the given descriptor.
-     *
-     * @param obj - The object on which to define the property
-     * @param prop - The name of the property to define
-     * @param descriptor - Property descriptor (value, enumerable, writable, configurable, get, set)
-     * @example
-     * var o = {};
-     * Object.defineProperty(o, "x", { value: 42, enumerable: true });
-     * Write(o.x); // 42
-     */
-    function defineProperty(obj?: object, prop?: string, descriptor?: object): object;
-}
-
 interface Date {
     /**
      * Returns the four-digit year of the date according to local time.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getFullYear) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
      * @example
      * var d = new Date();
@@ -4118,6 +4399,8 @@ interface Date {
     /**
      * Returns the minutes (0–59) of the date according to local time.
      *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getMinutes) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
      * @example
      * var d = new Date();
      * Write(d.getMinutes());
@@ -4125,6 +4408,8 @@ interface Date {
     getMinutes(): number;
     /**
      * Returns the seconds (0–59) of the date according to local time.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getSeconds) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
      * @example
      * var d = new Date();
@@ -4134,6 +4419,8 @@ interface Date {
     /**
      * Returns the day of the week (0 = Sunday … 6 = Saturday) according to local time.
      *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getDay) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
      * @example
      * var d = new Date();
      * Write(d.getDay()); // 0–6
@@ -4141,6 +4428,8 @@ interface Date {
     getDay(): number;
     /**
      * Returns the milliseconds (0–999) of the date according to local time.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getMilliseconds) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
      * @example
      * var d = new Date();
@@ -4150,6 +4439,8 @@ interface Date {
     /**
      * Returns a human-readable string representing the date.
      *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
      * @example
      * var d = new Date(0);
      * Write(d.toString());
@@ -4157,6 +4448,8 @@ interface Date {
     toString(): string;
     /**
      * Returns the date portion of the date as a human-readable string.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toDateString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
      * @example
      * var d = new Date(0);
@@ -4166,6 +4459,8 @@ interface Date {
     /**
      * Returns the date as a string using the UTC time zone.
      *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toUTCString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
      * @example
      * var d = new Date(0);
      * Write(d.toUTCString()); // "Thu, 01 Jan 1970 00:00:00 UTC"
@@ -4174,6 +4469,8 @@ interface Date {
     /**
      * Returns the primitive value of the date as the number of milliseconds since the Unix epoch.
      *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/valueOf) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
      * @example
      * var d = new Date(0);
      * Write(d.valueOf()); // 0
@@ -4181,55 +4478,268 @@ interface Date {
     valueOf(): number;
 }
 
-declare namespace Date {
-    /**
-     * Returns the number of milliseconds since the Unix epoch for the given UTC date components.
-     *
-     * @param year - Full year
-     * @param month - Month (0–11)
-     * @param day - Day of the month (1–31)
-     * @param hours - Hours (0–23)
-     * @param minutes - Minutes (0–59)
-     * @param seconds - Seconds (0–59)
-     * @param milliseconds - Milliseconds (0–999)
-     * @example
-     * Write(Date.UTC(1970, 0, 1)); // 0
-     */
-    function UTC(year?: number, month?: number, day?: number, hours?: number, minutes?: number, seconds?: number, milliseconds?: number): number;
-}
-
 declare namespace Math {
+    /**
+     * Returns the absolute value of a number.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/abs) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @param x - A number
+     * @example
+     * Write(Math.abs(-5)); // 5
+     */
     function abs(x?: number): number;
+    /**
+     * Rounds a number up to the next integer.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/ceil) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @param x - A number
+     * @example
+     * Write(Math.ceil(4.1)); // 5
+     */
     function ceil(x?: number): number;
+    /**
+     * Rounds a number down to the nearest integer.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/floor) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @param x - A number
+     * @example
+     * Write(Math.floor(4.9)); // 4
+     */
     function floor(x?: number): number;
+    /**
+     * Returns the largest of the supplied numbers.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/max) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @param values - Numbers to compare (variadic)
+     * @example
+     * Write(Math.max(1, 5, 3)); // 5
+     */
     function max(...values: number[]): number;
+    /**
+     * Returns the smallest of the supplied numbers.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/min) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @param values - Numbers to compare (variadic)
+     * @example
+     * Write(Math.min(1, 5, 3)); // 1
+     */
     function min(...values: number[]): number;
+    /**
+     * Returns the base raised to the exponent power.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/pow) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @param base - The base number
+     * @param exponent - The exponent
+     * @example
+     * Write(Math.pow(2, 10)); // 1024
+     */
     function pow(base?: number, exponent?: number): number;
+    /**
+     * Returns a pseudo-random floating-point number in [0, 1).
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @example
+     * var r = Math.random();
+     * Write(Math.floor(r * 100)); // random 0–99
+     */
     function random(): number;
+    /**
+     * Rounds a number to the nearest integer.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/round) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @param x - A number
+     * @example
+     * Write(Math.round(4.5)); // 5
+     */
     function round(x?: number): number;
+    /**
+     * Returns the square root of a number.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/sqrt) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @param x - A non-negative number
+     * @example
+     * Write(Math.sqrt(16)); // 4
+     */
     function sqrt(x?: number): number;
+    /**
+     * Returns the sine of an angle given in radians.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/sin) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @param x - Angle in radians
+     * @example
+     * Write(Math.sin(Math.PI / 2)); // 1
+     */
     function sin(x?: number): number;
+    /**
+     * Returns the cosine of an angle given in radians.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/cos) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @param x - Angle in radians
+     * @example
+     * Write(Math.cos(0)); // 1
+     */
     function cos(x?: number): number;
+    /**
+     * Returns the tangent of an angle given in radians.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/tan) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @param x - Angle in radians
+     * @example
+     * Write(Math.tan(Math.PI / 4)); // ~1
+     */
     function tan(x?: number): number;
+    /**
+     * Returns the arc sine (in radians) of a number in the range [-1, 1].
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/asin) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @param x - A number between -1 and 1
+     * @example
+     * Write(Math.asin(1)); // ~1.5708 (π/2)
+     */
     function asin(x?: number): number;
+    /**
+     * Returns the arc cosine (in radians) of a number in the range [-1, 1].
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/acos) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @param x - A number between -1 and 1
+     * @example
+     * Write(Math.acos(1)); // 0
+     */
     function acos(x?: number): number;
+    /**
+     * Returns the arc tangent (in radians) of a number.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/atan) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @param x - A number
+     * @example
+     * Write(Math.atan(1)); // ~0.7854 (π/4)
+     */
     function atan(x?: number): number;
+    /**
+     * Returns the angle (in radians) from the positive x-axis to the point (x, y). Unlike atan, atan2 correctly handles all quadrants.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/atan2) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @param y - Y coordinate
+     * @param x - X coordinate
+     * @example
+     * Write(Math.atan2(1, 1)); // ~0.7854 (π/4)
+     */
     function atan2(y?: number, x?: number): number;
+    /**
+     * Returns e raised to the power of x (e^x).
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/exp) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @param x - The exponent
+     * @example
+     * Write(Math.exp(1)); // ~2.71828 (e)
+     */
     function exp(x?: number): number;
+    /**
+     * Returns the natural logarithm (base e) of a number.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/log) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @param x - A positive number
+     * @example
+     * Write(Math.log(Math.E)); // 1
+     */
     function log(x?: number): number;
+    /**
+     * The ratio of a circle's circumference to its diameter (~3.14159).
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/PI) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @example
+     * var area = Math.PI * r * r;
+     */
     const PI: number;
+    /**
+     * Euler's number, the base of the natural logarithm (~2.71828).
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/E) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @example
+     * Write(Math.E); // ~2.71828
+     */
     const E: number;
+    /**
+     * The natural logarithm of 2 (~0.69315).
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/LN2) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @example
+     * Write(Math.LN2); // ~0.693
+     */
     const LN2: number;
+    /**
+     * The natural logarithm of 10 (~2.30259).
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/LN10) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @example
+     * Write(Math.LN10); // ~2.303
+     */
     const LN10: number;
+    /**
+     * The base-2 logarithm of e (~1.44270).
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/LOG2E) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @example
+     * Write(Math.LOG2E); // ~1.443
+     */
     const LOG2E: number;
+    /**
+     * The base-10 logarithm of e (~0.43429).
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/LOG10E) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @example
+     * Write(Math.LOG10E); // ~0.434
+     */
     const LOG10E: number;
+    /**
+     * The square root of 2 (~1.41421).
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/SQRT2) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @example
+     * Write(Math.SQRT2); // ~1.414
+     */
     const SQRT2: number;
+    /**
+     * The square root of 1/2 (~0.70711); equivalent to 1/Math.SQRT2.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/SQRT1_2) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
+     *
+     * @example
+     * Write(Math.SQRT1_2); // ~0.707
+     */
     const SQRT1_2: number;
 }
 
 interface RegExp {
     /**
      * Tests whether the string matches the pattern. Returns true if the pattern is found, false otherwise. When the g flag is set, successive calls advance lastIndex.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/test) / [ssjs.guide reference](https://ssjs.guide/language/regular-expressions/)
      *
      * @param string - The string to test against the regular expression
      * @example
@@ -4241,6 +4751,8 @@ interface RegExp {
     test(string: string): boolean;
     /**
      * Executes a search for a match in the string. Returns an array with the full match at index 0 and any capture groups at subsequent indices, or null if no match is found. The array also has index and input properties. When the g flag is set, successive calls advance lastIndex.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec) / [ssjs.guide reference](https://ssjs.guide/language/regular-expressions/)
      *
      * @param string - The string to search
      * @example
@@ -4255,6 +4767,8 @@ interface RegExp {
     /**
      * The text of the pattern, excluding the enclosing slashes and any flags.
      *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/source) / [ssjs.guide reference](https://ssjs.guide/language/regular-expressions/)
+     *
      * @example
      * var re = /hello/gi;
      * Write(re.source); // "hello"
@@ -4262,6 +4776,8 @@ interface RegExp {
     readonly source: string;
     /**
      * True if the g (global) flag was specified when creating the regular expression.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/global) / [ssjs.guide reference](https://ssjs.guide/language/regular-expressions/)
      *
      * @example
      * var re = /hello/g;
@@ -4271,6 +4787,8 @@ interface RegExp {
     /**
      * True if the i (case-insensitive) flag was specified.
      *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/ignoreCase) / [ssjs.guide reference](https://ssjs.guide/language/regular-expressions/)
+     *
      * @example
      * var re = /hello/i;
      * Write(re.ignoreCase); // true
@@ -4279,6 +4797,8 @@ interface RegExp {
     /**
      * True if the m (multiline) flag was specified.
      *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/multiline) / [ssjs.guide reference](https://ssjs.guide/language/regular-expressions/)
+     *
      * @example
      * var re = /^hello/m;
      * Write(re.multiline); // true
@@ -4286,6 +4806,8 @@ interface RegExp {
     readonly multiline: boolean;
     /**
      * The index at which to start the next match. Only relevant when the g or y flag is set. Automatically updated by exec() and test().
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/lastIndex) / [ssjs.guide reference](https://ssjs.guide/language/regular-expressions/)
      *
      * @example
      * var re = /\d+/g;
@@ -4296,8 +4818,138 @@ interface RegExp {
 }
 
 // Global ECMAScript functions
+/**
+ * Parses a string and returns an integer in the specified radix (base). Leading whitespace is ignored. Returns NaN if no valid integer is found. Always specify a radix to avoid octal/hex ambiguity.
+ *
+ * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt)
+ *
+ * @param string - The string to parse
+ * @param radix - Base of the numeral system (2–36); use 10 for decimal
+ * @example
+ * Write(parseInt("42", 10)); // 42
+ * Write(parseInt("0xFF", 16)); // 255
+ * Write(parseInt("abc", 10)); // NaN
+ */
 declare function parseInt(string?: string, radix?: number): number;
+/**
+ * Parses a string and returns a floating-point number. Stops parsing at the first character that is not part of a valid number. Returns NaN if no valid number is found.
+ *
+ * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseFloat)
+ *
+ * @param string - The string to parse
+ * @example
+ * Write(parseFloat("3.14")); // 3.14
+ * Write(parseFloat("3.14abc")); // 3.14
+ * Write(parseFloat("abc")); // NaN
+ */
 declare function parseFloat(string?: string): number;
+/**
+ * Returns true if the value is NaN (Not-a-Number) after applying ToNumber conversion. Use this to guard against failed parseInt/parseFloat calls.
+ *
+ * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/isNaN)
+ *
+ * @param value - Value to test
+ * @example
+ * Write(isNaN(NaN)); // true
+ * Write(isNaN(parseInt("abc", 10))); // true
+ * Write(isNaN(42)); // false
+ */
 declare function isNaN(value?: any): boolean;
+/**
+ * Returns true if the value is a finite number (not NaN, +Infinity, or -Infinity) after applying ToNumber conversion.
+ *
+ * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/isFinite)
+ *
+ * @param value - Value to test
+ * @example
+ * Write(isFinite(42)); // true
+ * Write(isFinite(1 / 0)); // false (Infinity)
+ * Write(isFinite(NaN)); // false
+ */
 declare function isFinite(value?: any): boolean;
-declare function RegExp(pattern: string, flags?: string): RegExp;
+
+// ── Constructible built-ins (value + constructor declarations) ───────────────
+interface Error {
+    message: string;
+    name: string;
+}
+interface ErrorConstructor {
+    new (message?: string): Error;
+    (message?: string): Error;
+    readonly prototype: Error;
+}
+declare var Error: ErrorConstructor;
+
+interface StringConstructor {
+    new (value?: any): String;
+    (value?: any): string;
+    fromCharCode(code: number, ...args: number[]): string;
+    readonly prototype: String;
+}
+declare var String: StringConstructor;
+
+interface ArrayConstructor {
+    new (arrayLength?: number): any[];
+    (arrayLength?: number): any[];
+    isArray(arg: any): boolean;
+    readonly prototype: any[];
+}
+declare var Array: ArrayConstructor;
+
+interface NumberConstructor {
+    new (value?: any): Number;
+    (value?: any): number;
+    readonly prototype: Number;
+}
+declare var Number: NumberConstructor;
+
+interface ObjectConstructor {
+    new (value?: any): Object;
+    (value?: any): object;
+    /**
+     * Defines a new property on an object, or modifies an existing one, with the given descriptor.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/object-methods/)
+     *
+     * @param obj - The object on which to define the property
+     * @param prop - The name of the property to define
+     * @param descriptor - Property descriptor (value, enumerable, writable, configurable, get, set)
+     * @example
+     * var o = {};
+     * Object.defineProperty(o, "x", { value: 42, enumerable: true });
+     * Write(o.x); // 42
+     */
+    defineProperty(obj?: object, prop?: string, descriptor?: object): object;
+    readonly prototype: Object;
+}
+declare var Object: ObjectConstructor;
+
+interface DateConstructor {
+    new (valueOrYear?: any, month?: number, day?: number, hours?: number, minutes?: number, seconds?: number, milliseconds?: number): Date;
+    (): string;
+    /**
+     * Returns the number of milliseconds since the Unix epoch for the given UTC date components.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/UTC) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
+     * @param year - Full year
+     * @param month - Month (0–11)
+     * @param day - Day of the month (1–31)
+     * @param hours - Hours (0–23)
+     * @param minutes - Minutes (0–59)
+     * @param seconds - Seconds (0–59)
+     * @param milliseconds - Milliseconds (0–999)
+     * @example
+     * Write(Date.UTC(1970, 0, 1)); // 0
+     */
+    UTC(year?: number, month?: number, day?: number, hours?: number, minutes?: number, seconds?: number, milliseconds?: number): number;
+    readonly prototype: Date;
+}
+declare var Date: DateConstructor;
+
+interface RegExpConstructor {
+    new (pattern: string, flags?: string): RegExp;
+    (pattern: string, flags?: string): RegExp;
+    readonly prototype: RegExp;
+}
+declare var RegExp: RegExpConstructor;
