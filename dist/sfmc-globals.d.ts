@@ -4817,6 +4817,33 @@ interface RegExp {
     readonly lastIndex: number;
 }
 
+interface Function {
+    /**
+     * Calls the function with a given `this` value and arguments provided individually.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/function-methods/)
+     *
+     * @param thisArg - The value to use as `this` when calling the function
+     * @param arg - Argument passed to the function (repeat for multiple)
+     * @example
+     * function greet(greeting) { return greeting + ", " + this.name; }
+     * var r = greet.call({ name: "Sam" }, "Hi"); // "Hi, Sam"
+     */
+    call(thisArg: any, ...args: any[]): any;
+    /**
+     * Calls the function with a given `this` value and arguments provided as an array.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/function-methods/)
+     *
+     * @param thisArg - The value to use as `this` when calling the function
+     * @param argsArray - Array of arguments to pass to the function
+     * @example
+     * function sum(a, b) { return a + b; }
+     * var r = sum.apply(null, [2, 3]); // 5
+     */
+    apply(thisArg: any, argsArray?: any[]): any;
+}
+
 // Global ECMAScript functions
 /**
  * Parses a string and returns an integer in the specified radix (base). Leading whitespace is ignored. Returns NaN if no valid integer is found. Always specify a radix to avoid octal/hex ambiguity.
@@ -4891,7 +4918,6 @@ declare var String: StringConstructor;
 interface ArrayConstructor {
     new (arrayLength?: number): any[];
     (arrayLength?: number): any[];
-    isArray(arg: any): boolean;
     readonly prototype: any[];
 }
 declare var Array: ArrayConstructor;

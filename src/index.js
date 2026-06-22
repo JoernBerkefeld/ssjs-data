@@ -7795,6 +7795,59 @@ export const ECMASCRIPT_BUILTINS = [
         example:
             'var o = {};\nObject.defineProperty(o, "x", { value: 42, enumerable: true });\nWrite(o.x); // 42',
     },
+    // ── Function.prototype ─────────────────────────────────────────────────────
+    // call() and apply() are ES3 and confirmed working in SFMC SSJS (verified on a
+    // CloudPage). bind() is ES5 and is NOT available — and Function.prototype is sealed,
+    // so it cannot be installed. Use a standalone helper instead (see POLYFILLABLE_METHODS).
+    {
+        name: 'call',
+        owner: 'Function.prototype',
+        esVersion: 3,
+        minArgs: 1,
+        description:
+            'Calls the function with a given `this` value and arguments provided individually.',
+        params: [
+            {
+                name: 'thisArg',
+                description: 'The value to use as `this` when calling the function',
+                type: 'any',
+            },
+            {
+                name: 'arg',
+                description: 'Argument passed to the function (repeat for multiple)',
+                type: 'any',
+                optional: true,
+            },
+        ],
+        returnType: 'any',
+        syntax: 'fn.call(thisArg[, arg1[, arg2[, ...]]])',
+        example:
+            'function greet(greeting) { return greeting + ", " + this.name; }\nvar r = greet.call({ name: "Sam" }, "Hi"); // "Hi, Sam"',
+    },
+    {
+        name: 'apply',
+        owner: 'Function.prototype',
+        esVersion: 3,
+        minArgs: 1,
+        description:
+            'Calls the function with a given `this` value and arguments provided as an array.',
+        params: [
+            {
+                name: 'thisArg',
+                description: 'The value to use as `this` when calling the function',
+                type: 'any',
+            },
+            {
+                name: 'argsArray',
+                description: 'Array of arguments to pass to the function',
+                type: 'array',
+                optional: true,
+            },
+        ],
+        returnType: 'any',
+        syntax: 'fn.apply(thisArg[, argsArray])',
+        example: 'function sum(a, b) { return a + b; }\nvar r = sum.apply(null, [2, 3]); // 5',
+    },
 ];
 
 // ── Constructible ECMAScript built-ins ───────────────────────────────────────
@@ -7857,7 +7910,8 @@ export const CONSTRUCTIBLE_BUILTINS = [
             returns: 'any[]',
         },
         prototype: 'any[]',
-        statics: [{ name: 'isArray', params: [{ name: 'arg', type: 'any' }], returns: 'boolean' }],
+        // Array.isArray is NOT available in SFMC SSJS — it is a polyfillable static
+        // (see POLYFILLABLE_METHODS). Do not declare it as a native static here.
     },
     {
         name: 'Number',
@@ -8430,11 +8484,44 @@ export const POLYFILLABLE_METHODS = [
         category: 'unavailable',
         ambiguousWithString: false,
         description: 'String.prototype.endsWith is not available in SFMC SSJS.',
+        // NOTE: the second parameter must NOT be named `length`. A function parameter named
+        // `length` collides with the SSJS engine's internal length intrinsic and throws
+        // "invalid length" at runtime (verified on a CloudPage). It is renamed to
+        // `endPosition` here. An empty search string is short-circuited to `true` because
+        // `substring(len, len)` does not reliably yield an empty string on this engine.
         polyfill:
-            'String.prototype.endsWith = function (search, length) {\n' +
-            '    var len = (length === undefined || length > this.length) ? this.length : length;\n' +
-            '    return this.substring(len - search.length, len) === search;\n' +
+            'String.prototype.endsWith = function (searchString, endPosition) {\n' +
+            '    var str = String(this);\n' +
+            '    var search = String(searchString);\n' +
+            '    if (search.length === 0) { return true; }\n' +
+            '    var strLen = str.length;\n' +
+            '    var end = (endPosition === undefined || endPosition > strLen) ? strLen : Number(endPosition);\n' +
+            '    if (end < 0) { end = 0; }\n' +
+            '    var start = end - search.length;\n' +
+            '    if (start < 0) { return false; }\n' +
+            '    return str.substring(start, end) === search;\n' +
             '};',
+    },
+    {
+        method: 'bind',
+        owner: 'Function.prototype',
+        esVersion: 5,
+        isStatic: false,
+        category: 'unavailable',
+        ambiguousWithString: false,
+        description:
+            'Function.prototype.bind is not available in SFMC SSJS, and Function.prototype is sealed so it cannot be installed on the prototype. Use the standalone bindFn helper instead: bindFn(fn, thisArg[, ...preArgs]) returns a new function with `this` and any leading arguments pre-bound. (call() and apply() are available natively.)',
+        polyfill:
+            'function bindFn(fn, thisArg) {\n' +
+            '    var preArgs = [];\n' +
+            '    for (var i = 2; i < arguments.length; i++) { preArgs.push(arguments[i]); }\n' +
+            '    return function () {\n' +
+            '        var callArgs = [];\n' +
+            '        for (var a = 0; a < preArgs.length; a++) { callArgs.push(preArgs[a]); }\n' +
+            '        for (var b = 0; b < arguments.length; b++) { callArgs.push(arguments[b]); }\n' +
+            '        return fn.apply(thisArg, callArgs);\n' +
+            '    };\n' +
+            '}',
     },
     {
         method: 'getPrototypeOf',

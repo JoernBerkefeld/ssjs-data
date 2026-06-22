@@ -1245,6 +1245,27 @@ const constructibleStatics = new Map();
         line('');
     }
 
+    // Function.prototype → interface Function (call/apply are native; bind is not — see
+    // POLYFILLABLE_METHODS for the standalone bindFn helper). Required under noLib:true so
+    // that `fn.call(...)` / `fn.apply(...)` type-check.
+    const functionMembers = byOwner.get('Function.prototype') ?? [];
+    if (functionMembers.length > 0) {
+        const functionGuideUrl = ecmaGuideUrl('Function.prototype');
+        line('interface Function {');
+        for (const m of functionMembers) {
+            line(
+                emitIfaceMember(
+                    m,
+                    '    ',
+                    functionGuideUrl,
+                    mdnBuiltinUrl('Function.prototype', m.name),
+                ),
+            );
+        }
+        line('}');
+        line('');
+    }
+
     // Global → top-level declare function
     // Names handled by the constructible-built-ins block (emitted as
     // `declare var X: XConstructor`, e.g. RegExp) must NOT also be emitted here as
@@ -1273,6 +1294,7 @@ const constructibleStatics = new Map();
         'Date',
         'Math',
         'RegExp',
+        'Function.prototype',
         'Global',
     ]);
     for (const [owner, members] of byOwner) {

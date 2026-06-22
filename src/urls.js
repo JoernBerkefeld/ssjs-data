@@ -206,6 +206,7 @@ export const ECMASCRIPT_URLS = {
     'Number.prototype': '/ecmascript-builtins/number-methods/',
     'Object.prototype': '/ecmascript-builtins/object-methods/',
     Object: '/ecmascript-builtins/object-methods/',
+    'Function.prototype': '/ecmascript-builtins/function-methods/',
     'Date.prototype': '/ecmascript-builtins/date-methods/',
     Date: '/ecmascript-builtins/date-methods/',
     RegExp: '/language/regular-expressions/',
