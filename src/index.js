@@ -6951,7 +6951,7 @@ export const ECMASCRIPT_BUILTINS = [
         owner: 'String.prototype',
         esVersion: 3,
         description: 'Searches for a match and returns the index of the first match, or -1.',
-        caveat: 'In the SFMC engine a no-match returns 0 instead of the spec-mandated -1, so a 0 result is ambiguous (could be a match at index 0 or no match). Use String.match or RegExp.test to detect "no match" reliably.',
+        caveat: 'String.search is unreliable in the SFMC engine: a no-match returns 0 instead of the spec-mandated -1, and some real matches return the wrong index (observed returning 0 or -1 where the match is elsewhere). Use String.match or RegExp.test to detect a match, or apply the search polyfill.',
         params: [
             { name: 'regexp', description: 'Regular expression to search for', type: 'RegExp' },
         ],
