@@ -3444,7 +3444,7 @@ declare namespace HTTP {
      * var body = HTTP.Get("https://api.example.com/data");
      * var obj = Platform.Function.ParseJSON(String(body));
      */
-    function Get(url: string, headerNames?: any[], headerValues?: any[]): object;
+    function Get(url: string, headerNames?: any[], headerValues?: any[]): { Status: number, Content: string };
     /**
      * Performs an HTTP POST request with a content type and payload. Pass empty arrays for `headerNames` and `headerValues` if no custom headers are needed.
      *
@@ -3461,7 +3461,7 @@ declare namespace HTTP {
      * var payload = Stringify({ email: "jane@example.com" });
      * var response = HTTP.Post("https://api.example.com/items", "application/json", payload);
      */
-    function Post(url: string, contentType: string, payload: string, headerNames: string[], headerValues: any[]): object;
+    function Post(url: string, contentType: string, payload: string, headerNames: string[], headerValues: any[]): { StatusCode: string, Response: string };
 }
 
 declare namespace HTTPHeader {
@@ -4845,6 +4845,7 @@ interface RegExp {
 }
 
 interface Function {
+    (...args: any[]): any;
     /**
      * Calls the function with a given `this` value and arguments provided individually.
      *

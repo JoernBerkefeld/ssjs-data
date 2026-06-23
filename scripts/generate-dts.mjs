@@ -155,6 +155,10 @@ function toTsType(s) {
     if (s === 'RegExp') {
         return 'RegExp';
     }
+    // Inline object-literal types like "{ Status: number, Content: string }" pass through verbatim.
+    if (s.startsWith('{') && s.endsWith('}')) {
+        return s;
+    }
     // Union types like "string|number"
     if (s.includes('|')) {
         return s
@@ -1257,6 +1261,15 @@ const constructibleStatics = new Map();
     if (functionMembers.length > 0) {
         const functionGuideUrl = ecmaGuideUrl('Function.prototype');
         line('interface Function {');
+        // Call signature so a value typed `Function` (e.g. a JSDoc
+        // `@param {Function} callback`) is callable. Without it, calling such a
+        // value raises ts2349 ("Type 'never' has no call signatures") — which broke
+        // inserted polyfills like Array.prototype.forEach whose body invokes the
+        // callback. Do NOT add a `new (...)` construct signature here: it would force
+        // every value assigned to a `Function` param to be constructable, so a plain
+        // function/arrow expression (`function (x) { return x; }`) would fail to match
+        // and raise ts2769 ("provides no match for the signature new (...)").
+        line('    (...args: any[]): any;');
         for (const m of functionMembers) {
             line(
                 emitIfaceMember(

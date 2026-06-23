@@ -5361,7 +5361,7 @@ export const HTTP_METHODS = [
                 optional: true,
             },
         ],
-        returnType: 'object',
+        returnType: '{ Status: number, Content: string }',
         syntax: 'HTTP.Get(url[, headerNames, headerValues])',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -5391,7 +5391,7 @@ export const HTTP_METHODS = [
                 type: 'array',
             },
         ],
-        returnType: 'object',
+        returnType: '{ StatusCode: string, Response: string }',
         syntax: 'HTTP.Post(url, contentType, payload, headerNames, headerValues)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -8965,11 +8965,15 @@ for (const entry of POLYFILLABLE_METHODS) {
 // `category`:
 //   'unavailable' — the member does not exist (calling/reading it throws or is undefined)
 //   'broken'      — the member exists but returns wrong results in all/most forms
-// `hasPolyfill` — true when a polyfill is feasible (Step 3 may add one to
-//   POLYFILLABLE_METHODS); false when no ES3-safe polyfill can fully reproduce it.
+// `hasPolyfill` — true ONLY when a verified polyfill source for this member
+//   actually exists in POLYFILLABLE_METHODS (so consumers can offer an
+//   "insert polyfill" quick-fix). false when there is no polyfill source —
+//   the member is left to TypeScript's native diagnostics (and, for some,
+//   a "replace with Platform.Function.*" suggestion). Do NOT set true merely
+//   because a polyfill is theoretically feasible.
 // `suggestion` — short guidance shown to the user.
 
-/** @type {{member: string, owner: string, esVersion: 3 | 5 | 6, isStatic: boolean, isProperty?: boolean, category: 'unavailable' | 'broken', hasPolyfill: boolean, suggestion: string}[]} */
+/** @type {{member: string, owner: string, esVersion: 3 | 5 | 6, isStatic: boolean, isProperty?: boolean, category: 'unavailable' | 'broken', hasPolyfill: boolean, suggestion: string, replacement?: string}[]} */
 export const KNOWN_UNSUPPORTED = [
     // ── Confirmed-missing properties/constants ───────────────────────────────
     {
@@ -8979,7 +8983,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         isProperty: true,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion: 'Math.LOG10E is undefined in SFMC. Use the literal 0.4342944819032518.',
     },
     {
@@ -9011,7 +9015,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 5,
         isStatic: false,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion:
             'Date.prototype.toISOString is unavailable in SFMC. Build the ISO string manually from the get* methods, or use Platform.Function.SystemDateToLocalDate / FormatDate.',
     },
@@ -9025,6 +9029,7 @@ export const KNOWN_UNSUPPORTED = [
         hasPolyfill: false,
         suggestion:
             'JSON is undefined in SFMC SSJS. Use Platform.Function.ParseJSON(string) instead of JSON.parse.',
+        replacement: 'Platform.Function.ParseJSON',
     },
     {
         member: 'stringify',
@@ -9035,6 +9040,7 @@ export const KNOWN_UNSUPPORTED = [
         hasPolyfill: false,
         suggestion:
             'JSON is undefined in SFMC SSJS. Use Platform.Function.Stringify(value) instead of JSON.stringify.',
+        replacement: 'Platform.Function.Stringify',
     },
     // ── Object statics (ES5/ES6) confirmed missing ───────────────────────────
     {
@@ -9043,7 +9049,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 5,
         isStatic: true,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion: 'Object.keys is unavailable in SFMC. Use a for...in loop with hasOwnProperty.',
     },
     {
@@ -9052,7 +9058,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion:
             'Object.assign is unavailable in SFMC. Copy properties with a for...in loop and hasOwnProperty.',
     },
@@ -9062,7 +9068,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 5,
         isStatic: true,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion:
             'Object.create is unavailable in SFMC. Use a constructor function with a prototype instead.',
     },
@@ -9082,7 +9088,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 5,
         isStatic: true,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion:
             'Object.getOwnPropertyNames is unavailable in SFMC. Use a for...in loop with hasOwnProperty (enumerable own keys only).',
     },
@@ -9093,7 +9099,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion: String.raw`String.prototype.trimStart is unavailable in SFMC. Use a /^\s+/ replace.`,
     },
     {
@@ -9102,7 +9108,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion: String.raw`String.prototype.trimEnd is unavailable in SFMC. Use a /\s+$/ replace.`,
     },
     {
@@ -9111,7 +9117,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion:
             'String.prototype.padStart is unavailable in SFMC. Prepend pad characters in a loop.',
     },
@@ -9121,7 +9127,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion:
             'String.prototype.padEnd is unavailable in SFMC. Append pad characters in a loop.',
     },
@@ -9131,7 +9137,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion:
             'String.prototype.repeat is unavailable in SFMC. Concatenate in a loop, or use Platform.Function.* helpers.',
     },
@@ -9141,7 +9147,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion: 'String.prototype.includes is unavailable in SFMC. Use indexOf(substr) !== -1.',
     },
     {
@@ -9150,7 +9156,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion:
             'String.prototype.codePointAt is unavailable in SFMC. Use charCodeAt for BMP characters.',
     },
@@ -9161,7 +9167,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion:
             'Array.prototype.flat is unavailable in SFMC. Concatenate nested arrays manually in a loop.',
     },
@@ -9171,7 +9177,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion:
             'Array.prototype.flatMap is unavailable in SFMC. Build the result with a for loop and push.',
     },
@@ -9181,7 +9187,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion:
             'Array.prototype.findLast is unavailable in SFMC. Iterate from the end with a for loop.',
     },
@@ -9191,7 +9197,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion:
             'Array.prototype.at is unavailable in SFMC. Use arr[i] (and arr[arr.length + i] for negative i).',
     },
@@ -9201,7 +9207,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion: 'Array.prototype.keys is unavailable in SFMC. Use a standard index for loop.',
     },
     {
@@ -9210,7 +9216,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion: 'Array.prototype.values is unavailable in SFMC. Use a standard index for loop.',
     },
     {
@@ -9219,7 +9225,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion:
             'Array.from is unavailable in SFMC. Build the array with a for loop over the source.',
     },
@@ -9230,7 +9236,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion:
             'Number.isInteger is unavailable in SFMC. Use typeof n === "number" && Math.floor(n) === n.',
     },
@@ -9240,7 +9246,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion: 'Number.isNaN is unavailable in SFMC. Use the global isNaN(value).',
     },
     {
@@ -9249,7 +9255,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion: 'Number.isFinite is unavailable in SFMC. Use the global isFinite(value).',
     },
     {
@@ -9258,7 +9264,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion: 'Number.parseInt is unavailable in SFMC. Use the global parseInt(string, 10).',
     },
     {
@@ -9268,7 +9274,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         isProperty: true,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion:
             'Number.MAX_SAFE_INTEGER is undefined in SFMC. Use the literal 9007199254740991.',
     },
@@ -9279,7 +9285,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion: 'Math.trunc is unavailable in SFMC. Use x < 0 ? Math.ceil(x) : Math.floor(x).',
     },
     {
@@ -9288,7 +9294,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion: 'Math.sign is unavailable in SFMC. Use x > 0 ? 1 : x < 0 ? -1 : 0.',
     },
     {
@@ -9297,7 +9303,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion: 'Math.cbrt is unavailable in SFMC. Use Math.pow(x, 1 / 3) for non-negative x.',
     },
     {
@@ -9306,7 +9312,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion: 'Math.log2 is unavailable in SFMC. Use Math.log(x) / Math.LN2.',
     },
     {
@@ -9315,7 +9321,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion: 'Math.log10 is unavailable in SFMC. Use Math.log(x) / Math.LN10.',
     },
     {
@@ -9324,7 +9330,7 @@ export const KNOWN_UNSUPPORTED = [
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
-        hasPolyfill: true,
+        hasPolyfill: false,
         suggestion: 'Math.hypot is unavailable in SFMC. Use Math.sqrt(a * a + b * b).',
     },
 ];
