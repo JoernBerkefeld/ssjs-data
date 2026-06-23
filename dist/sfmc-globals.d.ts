@@ -4101,6 +4101,7 @@ interface Array<T> {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
      *
+     * @remarks ⚠️ The no-argument form arr.slice() throws in the SFMC engine. Always pass at least a start index, e.g. arr.slice(0), to copy the whole array.
      * @param start - Start index (0-based, negative counts from end)
      * @param end - End index (exclusive)
      * @example
@@ -4113,6 +4114,7 @@ interface Array<T> {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
      *
+     * @remarks ⚠️ The no-argument form arr.sort() throws in the SFMC engine. Always pass an explicit compare function, e.g. arr.sort(function (a, b) { return a < b ? -1 : a > b ? 1 : 0; }).
      * @param compareFn - Optional comparison function (a, b) returning negative, 0, or positive
      * @example
      * var arr = [3, 1, 2];
@@ -4227,6 +4229,7 @@ interface String {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/search) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
+     * @remarks ⚠️ String.search is unreliable in the SFMC engine: a no-match returns 0 instead of the spec-mandated -1, and some real matches return the wrong index (observed returning 0 or -1 where the match is elsewhere). Use String.match or RegExp.test to detect a match, or apply the search polyfill.
      * @param regexp - Regular expression to search for
      * @example
      * var str = "foo123bar";
@@ -4250,6 +4253,7 @@ interface String {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
+     * @remarks ⚠️ The empty-separator form str.split("") does NOT split into characters in the SFMC engine (it returns the whole string as a single element). To get characters, loop with charAt.
      * @param separator - String or RegExp to split on
      * @param limit - Maximum number of substrings to return
      * @example
@@ -4479,6 +4483,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getMilliseconds) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ⚠️ In the SFMC engine this is frequently off by one (e.g. a date constructed with 123 ms reports 122). Do not rely on millisecond precision; round or avoid sub-second comparisons.
      * @example
      * var d = new Date();
      * Write(d.getMilliseconds()); // may be off by one in SFMC
@@ -4562,6 +4567,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/max) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ⚠️ The variadic form throws in the SFMC engine when passed 3+ arguments, and the no-argument Math.max() returns 0 instead of -Infinity. Compare two values at a time, e.g. Math.max(Math.max(a, b), c), or fold with a loop.
      * @param values - Numbers to compare (variadic)
      * @example
      * Write(Math.max(1, 5)); // 5
@@ -4572,6 +4578,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/min) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ⚠️ The variadic form throws in the SFMC engine when passed 3+ arguments, and the no-argument Math.min() returns 0 instead of +Infinity. Compare two values at a time, e.g. Math.min(Math.min(a, b), c), or fold with a loop.
      * @param values - Numbers to compare (variadic)
      * @example
      * Write(Math.min(1, 5)); // 1
@@ -4793,6 +4800,7 @@ interface RegExp {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec) / [ssjs.guide reference](https://ssjs.guide/language/regular-expressions/)
      *
+     * @remarks ⚠️ In the SFMC engine capture groups are broken: result[0] (the full match) works, but result[1], result[2], … are undefined. Likewise the g-flag lastIndex does not advance between calls. Use the full match plus String.split/substring to extract sub-parts instead of capture groups.
      * @param string - The string to search
      * @example
      * var re = /\d{4}-\d{2}-\d{2}/;
@@ -4827,6 +4835,7 @@ interface RegExp {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/lastIndex) / [ssjs.guide reference](https://ssjs.guide/language/regular-expressions/)
      *
+     * @remarks ⚠️ In the SFMC engine lastIndex does NOT advance after exec()/test() with the g flag, so it cannot be used to iterate matches. Use String.match(/.../g) to get all matches at once instead.
      * @example
      * var re = /\d+/g;
      * re.exec("abc 123 def 456");
@@ -4868,6 +4877,7 @@ interface Function {
  *
  * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt)
  *
+ * @remarks ⚠️ Unlike the spec, the SFMC engine returns NaN when the string has trailing non-numeric characters (e.g. parseInt("10px", 10) is NaN, not 10). Strip non-digits before parsing.
  * @param string - The string to parse
  * @param radix - Base of the numeral system (2–36); use 10 for decimal
  * @example
@@ -4881,6 +4891,7 @@ declare function parseInt(string?: string, radix?: number): number;
  *
  * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseFloat)
  *
+ * @remarks ⚠️ Unlike the spec, the SFMC engine returns NaN when the string has trailing non-numeric characters (e.g. parseFloat("1.5kg") is NaN, not 1.5). Also note the returned value uses 32-bit float precision (parseFloat("3.14") === 3.14 is false); compare with a tolerance.
  * @param string - The string to parse
  * @example
  * Write(parseFloat("3.14")); // 3.14 (32-bit precision)

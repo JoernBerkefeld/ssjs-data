@@ -8226,6 +8226,13 @@ export const POLYFILLABLE_METHODS = [
         ambiguousWithString: false,
         description: 'Array.prototype.copyWithin is not available in SFMC SSJS.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Array.prototype.copyWithin (SFMC SSJS).\n' +
+            ' * @param {number} targetIndex - index to copy the sequence to\n' +
+            ' * @param {number} [startIndex] - index to start copying from\n' +
+            ' * @param {number} [count] - number of elements to copy\n' +
+            ' * @returns {Array} the modified array\n' +
+            ' */\n' +
             'Array.prototype.copyWithin = function (targetIndex, startIndex, count) {\n' +
             '    var n = count || 1;\n' +
             '    for (var i = 0; i < n; i++) {\n' +
@@ -8243,6 +8250,10 @@ export const POLYFILLABLE_METHODS = [
         ambiguousWithString: false,
         description: 'Array.prototype.entries is not available in SFMC SSJS.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Array.prototype.entries (SFMC SSJS).\n' +
+            ' * @returns {object} an iterator of [index, value] pairs\n' +
+            ' */\n' +
             'Array.prototype.entries = function () {\n' +
             '    var index = 0;\n' +
             '    var arr = this;\n' +
@@ -8265,6 +8276,13 @@ export const POLYFILLABLE_METHODS = [
         ambiguousWithString: false,
         description: 'Array.prototype.fill is not available in SFMC SSJS.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Array.prototype.fill (SFMC SSJS).\n' +
+            ' * @param {*} value - value to fill the array with\n' +
+            ' * @param {number} [startIndex] - index to start filling at (default 0)\n' +
+            ' * @param {number} [endIndex] - index to stop filling at (default array length)\n' +
+            ' * @returns {Array} the modified array\n' +
+            ' */\n' +
             'Array.prototype.fill = function (value, startIndex, endIndex) {\n' +
             '    var start = startIndex || 0;\n' +
             '    var end = (!endIndex || endIndex > this.length) ? this.length : endIndex;\n' +
@@ -8283,6 +8301,11 @@ export const POLYFILLABLE_METHODS = [
         ambiguousWithString: false,
         description: 'Array.prototype.filter is not available in SFMC SSJS.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Array.prototype.filter (SFMC SSJS).\n' +
+            ' * @param {Function} predicate - test called with (element, index, array)\n' +
+            ' * @returns {Array} a new array of elements that passed the test\n' +
+            ' */\n' +
             'Array.prototype.filter = function (predicate) {\n' +
             "    if (typeof predicate !== 'function') { return []; }\n" +
             '    var result = [];\n' +
@@ -8301,6 +8324,11 @@ export const POLYFILLABLE_METHODS = [
         ambiguousWithString: false,
         description: 'Array.prototype.find is not available in SFMC SSJS.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Array.prototype.find (SFMC SSJS).\n' +
+            ' * @param {Function} predicate - test called with (element, index, array)\n' +
+            ' * @returns {*} the first matching element, or undefined\n' +
+            ' */\n' +
             'Array.prototype.find = function (predicate) {\n' +
             "    if (typeof predicate !== 'function') { return undefined; }\n" +
             '    for (var i = 0; i < this.length; i++) {\n' +
@@ -8318,6 +8346,11 @@ export const POLYFILLABLE_METHODS = [
         ambiguousWithString: false,
         description: 'Array.prototype.findIndex is not available in SFMC SSJS.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Array.prototype.findIndex (SFMC SSJS).\n' +
+            ' * @param {Function} predicate - test called with (element, index, array)\n' +
+            ' * @returns {number} the index of the first match, or -1\n' +
+            ' */\n' +
             'Array.prototype.findIndex = function (predicate) {\n' +
             "    if (typeof predicate !== 'function') { return -1; }\n" +
             '    for (var i = 0; i < this.length; i++) {\n' +
@@ -8335,6 +8368,11 @@ export const POLYFILLABLE_METHODS = [
         ambiguousWithString: false,
         description: 'Array.prototype.forEach is not available in SFMC SSJS.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Array.prototype.forEach (SFMC SSJS).\n' +
+            ' * @param {Function} callback - called with (element, index, array)\n' +
+            ' * @returns {void}\n' +
+            ' */\n' +
             'Array.prototype.forEach = function (callback) {\n' +
             "    if (typeof callback !== 'function') { return; }\n" +
             '    for (var i = 0; i < this.length; i++) {\n' +
@@ -8351,6 +8389,11 @@ export const POLYFILLABLE_METHODS = [
         ambiguousWithString: false,
         description: 'Array.prototype.includes is not available in SFMC SSJS.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Array.prototype.includes (SFMC SSJS).\n' +
+            ' * @param {*} searchValue - value to search for\n' +
+            ' * @returns {boolean} true when the value is found\n' +
+            ' */\n' +
             'Array.prototype.includes = function (searchValue) {\n' +
             '    for (var i = 0; i < this.length; i++) {\n' +
             '        if (this[i] === searchValue) { return true; }\n' +
@@ -8367,6 +8410,12 @@ export const POLYFILLABLE_METHODS = [
         ambiguousWithString: true,
         description: 'Array.prototype.indexOf is not available in SFMC SSJS.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Array.prototype.indexOf (SFMC SSJS).\n' +
+            ' * @param {*} searchValue - value to search for\n' +
+            ' * @param {number} [fromIndex] - index to start searching from (default 0)\n' +
+            ' * @returns {number} the first matching index, or -1\n' +
+            ' */\n' +
             'Array.prototype.indexOf = function (searchValue, fromIndex) {\n' +
             '    var start = fromIndex || 0;\n' +
             '    for (var i = start; i < this.length; i++) {\n' +
@@ -8385,6 +8434,12 @@ export const POLYFILLABLE_METHODS = [
         description:
             'Array.prototype.lastIndexOf exists in SFMC SSJS but always returns -1. A polyfill is needed for correct results.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Array.prototype.lastIndexOf (SFMC SSJS).\n' +
+            ' * @param {*} searchValue - value to search for\n' +
+            ' * @param {number} [fromIndex] - index to start searching backwards from (default last index)\n' +
+            ' * @returns {number} the last matching index, or -1\n' +
+            ' */\n' +
             'Array.prototype.lastIndexOf = function (searchValue, fromIndex) {\n' +
             '    var start = (fromIndex !== undefined) ? fromIndex : this.length - 1;\n' +
             '    for (var i = start; i >= 0; i--) {\n' +
@@ -8402,6 +8457,11 @@ export const POLYFILLABLE_METHODS = [
         ambiguousWithString: false,
         description: 'Array.prototype.map is not available in SFMC SSJS.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Array.prototype.map (SFMC SSJS).\n' +
+            ' * @param {Function} callback - called with (element, index, array); its return value becomes the new element\n' +
+            ' * @returns {Array} a new array of the callback results\n' +
+            ' */\n' +
             'Array.prototype.map = function (callback) {\n' +
             "    if (typeof callback !== 'function') { return []; }\n" +
             '    var result = [];\n' +
@@ -8420,6 +8480,12 @@ export const POLYFILLABLE_METHODS = [
         ambiguousWithString: false,
         description: 'Array.prototype.reduce is not available in SFMC SSJS.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Array.prototype.reduce (SFMC SSJS).\n' +
+            ' * @param {Function} callback - called with (accumulator, element, index, array)\n' +
+            ' * @param {*} [initialValue] - initial accumulator value; defaults to the first element\n' +
+            ' * @returns {*} the final accumulated value\n' +
+            ' */\n' +
             'Array.prototype.reduce = function (callback, initialValue) {\n' +
             "    if (typeof callback !== 'function') { return initialValue; }\n" +
             '    var accumulator = (arguments.length > 1) ? initialValue : this[0];\n' +
@@ -8439,6 +8505,12 @@ export const POLYFILLABLE_METHODS = [
         ambiguousWithString: false,
         description: 'Array.prototype.reduceRight is not available in SFMC SSJS.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Array.prototype.reduceRight (SFMC SSJS).\n' +
+            ' * @param {Function} callback - called with (accumulator, element, index, array), iterating right to left\n' +
+            ' * @param {*} [initialValue] - initial accumulator value; defaults to the last element\n' +
+            ' * @returns {*} the final accumulated value\n' +
+            ' */\n' +
             'Array.prototype.reduceRight = function (callback, initialValue) {\n' +
             "    if (typeof callback !== 'function') { return initialValue; }\n" +
             '    var accumulator = (arguments.length > 1) ? initialValue : this[this.length - 1];\n' +
@@ -8458,6 +8530,11 @@ export const POLYFILLABLE_METHODS = [
         ambiguousWithString: false,
         description: 'Array.prototype.some is not available in SFMC SSJS.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Array.prototype.some (SFMC SSJS).\n' +
+            ' * @param {Function} predicate - test called with (element, index, array)\n' +
+            ' * @returns {boolean} true when the predicate passes for any element\n' +
+            ' */\n' +
             'Array.prototype.some = function (predicate) {\n' +
             "    if (typeof predicate !== 'function') { return false; }\n" +
             '    for (var i = 0; i < this.length; i++) {\n' +
@@ -8476,6 +8553,13 @@ export const POLYFILLABLE_METHODS = [
         description:
             'Array.prototype.splice(start, deleteCount, item1, …, itemN) works correctly in SFMC SSJS for the delete-only form (splice(start) and splice(start, deleteCount)). The bug surfaces only when inserting items: as soon as a third argument (item1) is passed, the engine ignores start and deleteCount and just overwrites from the left with the items to insert. A polyfill is needed only if you insert items; it also accepts unlimited additional items.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Array.prototype.splice (SFMC SSJS).\n' +
+            ' * @param {number} start - index at which to start changing the array\n' +
+            ' * @param {number} [deleteCount] - number of elements to remove (default: all from start)\n' +
+            ' * @param {...*} [items] - elements to insert at start\n' +
+            ' * @returns {Array} an array of the removed elements\n' +
+            ' */\n' +
             'Array.prototype.splice = function (start, deleteCount) {\n' +
             '    var arr = this;\n' +
             '    var len = arr.length;\n' +
@@ -8512,6 +8596,10 @@ export const POLYFILLABLE_METHODS = [
         ambiguousWithString: false,
         description: 'String.prototype.trim is not available in SFMC SSJS.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for String.prototype.trim (SFMC SSJS).\n' +
+            ' * @returns {string} the string with leading and trailing whitespace removed\n' +
+            ' */\n' +
             'String.prototype.trim = function () {\n' +
             "    return this.replace(/^[\\s\\uFEFF\\xA0]+|[\\s\\uFEFF\\xA0]+$/g, '');\n" +
             '};',
@@ -8525,6 +8613,12 @@ export const POLYFILLABLE_METHODS = [
         ambiguousWithString: false,
         description: 'String.prototype.startsWith is not available in SFMC SSJS.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for String.prototype.startsWith (SFMC SSJS).\n' +
+            ' * @param {string} searchString - characters to search for at the start\n' +
+            ' * @param {number} [position] - position to start searching from (default 0)\n' +
+            ' * @returns {boolean} true when the string starts with searchString\n' +
+            ' */\n' +
             'String.prototype.startsWith = function (searchString, position) {\n' +
             '    position = position || 0;\n' +
             '    return this.indexOf(searchString, position) === position;\n' +
@@ -8544,6 +8638,12 @@ export const POLYFILLABLE_METHODS = [
         // `endPosition` here. An empty search string is short-circuited to `true` because
         // `substring(len, len)` does not reliably yield an empty string on this engine.
         polyfill:
+            '/**\n' +
+            ' * Polyfill for String.prototype.endsWith (SFMC SSJS).\n' +
+            ' * @param {string} searchString - characters to search for at the end\n' +
+            ' * @param {number} [endPosition] - position treated as the end of the string (default string length)\n' +
+            ' * @returns {boolean} true when the string ends with searchString\n' +
+            ' */\n' +
             'String.prototype.endsWith = function (searchString, endPosition) {\n' +
             '    var str = String(this);\n' +
             '    var search = String(searchString);\n' +
@@ -8566,6 +8666,13 @@ export const POLYFILLABLE_METHODS = [
         description:
             'Function.prototype.bind is not available in SFMC SSJS, and Function.prototype is sealed so it cannot be installed on the prototype. Use the standalone bindFn helper instead: bindFn(fn, thisArg[, ...preArgs]) returns a new function with `this` and any leading arguments pre-bound. (call() and apply() are available natively.)',
         polyfill:
+            '/**\n' +
+            ' * Standalone replacement for the sealed Function.prototype bind method (SFMC SSJS).\n' +
+            ' * @param {Function} fn - the function to bind\n' +
+            ' * @param {*} thisArg - the value to use as `this` when calling fn\n' +
+            ' * @param {...*} [preArgs] - arguments to prepend to every call\n' +
+            ' * @returns {Function} a new function with `this` and leading arguments pre-bound\n' +
+            ' */\n' +
             'function bindFn(fn, thisArg) {\n' +
             '    var preArgs = [];\n' +
             '    for (var i = 2; i < arguments.length; i++) { preArgs.push(arguments[i]); }\n' +
@@ -8587,6 +8694,11 @@ export const POLYFILLABLE_METHODS = [
         description:
             'Object.getPrototypeOf exists in SFMC SSJS but throws at runtime, so it cannot be used. Access the constructor prototype directly or use a known reference instead.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Object.getPrototypeOf (SFMC SSJS).\n' +
+            ' * @param {object} obj - the object whose prototype to return\n' +
+            ' * @returns {object|null} the prototype, or null\n' +
+            ' */\n' +
             'Object.getPrototypeOf = function (obj) {\n' +
             '    if (obj === null || obj === undefined) { return null; }\n' +
             '    return obj.constructor ? obj.constructor.prototype : null;\n' +
@@ -8601,6 +8713,11 @@ export const POLYFILLABLE_METHODS = [
         ambiguousWithString: false,
         description: 'Array.isArray is not available in SFMC SSJS.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Array.isArray (SFMC SSJS).\n' +
+            ' * @param {*} value - the value to test\n' +
+            ' * @returns {boolean} true when the value is an Array\n' +
+            ' */\n' +
             'Array.isArray = function (value) {\n' +
             "    return Object.prototype.toString.call(value) === '[object Array]';\n" +
             '};',
@@ -8614,6 +8731,11 @@ export const POLYFILLABLE_METHODS = [
         ambiguousWithString: false,
         description: 'Array.of is not available in SFMC SSJS.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Array.of (SFMC SSJS).\n' +
+            ' * @param {...*} [items] - elements to place in the new array\n' +
+            ' * @returns {Array} a new array containing the arguments\n' +
+            ' */\n' +
             'Array.of = function () {\n' +
             '    var result = [];\n' +
             '    for (var i = 0; i < arguments.length; i++) {\n' +
@@ -8633,6 +8755,12 @@ export const POLYFILLABLE_METHODS = [
             'String.prototype.substr is not available in SFMC SSJS (calling it throws). ' +
             'Use substring() or this polyfill that maps (start, length) onto substring().',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for String.prototype.substr (SFMC SSJS).\n' +
+            ' * @param {number} start - index to start extracting from (negative counts from the end)\n' +
+            ' * @param {number} [length] - number of characters to extract (default: to the end)\n' +
+            ' * @returns {string} the extracted substring\n' +
+            ' */\n' +
             'String.prototype.substr = function (start, length) {\n' +
             '    var len = this.length;\n' +
             '    var from = start < 0 ? Math.max(len + start, 0) : Math.min(start, len);\n' +
@@ -8650,6 +8778,12 @@ export const POLYFILLABLE_METHODS = [
         description:
             'Array.prototype.slice exists in SFMC SSJS but the no-argument form throws and negative indices throw "Arithmetic operation resulted in an overflow." This polyfill reimplements slice in pure JS (avoiding the bitwise coercion that overflows on negatives) so slice(), slice(-2), and slice(1, -1) all work. Verified on a CloudPage.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Array.prototype.slice (SFMC SSJS).\n' +
+            ' * @param {number} [start] - index to start extracting from (default 0; negative counts from the end)\n' +
+            ' * @param {number} [end] - index to stop before (default array length; negative counts from the end)\n' +
+            ' * @returns {Array} a new array with the extracted elements\n' +
+            ' */\n' +
             'Array.prototype.slice = function (start, end) {\n' +
             '    var len = this.length;\n' +
             '    var s = (start === undefined) ? 0 : Number(start);\n' +
@@ -8673,6 +8807,11 @@ export const POLYFILLABLE_METHODS = [
         description:
             'Array.prototype.sort works in SFMC SSJS when called with a compare function (arr.sort(fn)), but the no-argument form arr.sort() throws, and the native sort cannot be re-invoked via a captured reference. This polyfill is a pure-JS in-place insertion sort so arr.sort() (default lexicographic order) and arr.sort(compareFn) both work. Verified on a CloudPage.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Array.prototype.sort (SFMC SSJS).\n' +
+            ' * @param {Function} [compareFn] - comparator returning <0, 0, or >0; defaults to lexicographic order\n' +
+            ' * @returns {Array} the array sorted in place\n' +
+            ' */\n' +
             'Array.prototype.sort = function (compareFn) {\n' +
             "    var cmp = (typeof compareFn === 'function')\n" +
             '        ? compareFn\n' +
@@ -8704,6 +8843,11 @@ export const POLYFILLABLE_METHODS = [
         description:
             'String.prototype.search exists in SFMC SSJS but always returns -1 (or 0) regardless of the match. This polyfill delegates to String.match (passing the regex straight through, since "regexp instanceof RegExp" returns false here and reconstructing via new RegExp() breaks matching) and returns the index via indexOf of the matched text, or -1 on no match. Verified on a CloudPage.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for String.prototype.search (SFMC SSJS).\n' +
+            ' * @param {RegExp} regexp - the pattern to search for\n' +
+            ' * @returns {number} the index of the first match, or -1\n' +
+            ' */\n' +
             'String.prototype.search = function (regexp) {\n' +
             '    var str = "" + this;\n' +
             '    var m = str.match(regexp);\n' +
@@ -8721,6 +8865,12 @@ export const POLYFILLABLE_METHODS = [
         description:
             'String.prototype.split works in SFMC SSJS for normal separators, but the empty-string separator ("") does NOT split into individual characters as the spec requires. This polyfill handles the "" case with a manual character loop (honouring an optional limit) and delegates all other separators to the native split. Verified on a CloudPage.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for String.prototype.split (SFMC SSJS) — fixes the empty-string separator.\n' +
+            ' * @param {string|RegExp} separator - the separator to split on\n' +
+            ' * @param {number} [limit] - maximum number of splits to include\n' +
+            ' * @returns {Array} the array of substrings\n' +
+            ' */\n' +
             'String.prototype.split = (function () {\n' +
             '    var nativeSplit = String.prototype.split;\n' +
             '    return function (separator, limit) {\n' +
@@ -8748,6 +8898,11 @@ export const POLYFILLABLE_METHODS = [
         description:
             'Math.max in SFMC SSJS throws when given three or more arguments and returns 0 (not -Infinity) with no arguments. This polyfill is a pure-JS variadic fold that handles any argument count and propagates NaN per spec. Note: the no-argument result is Number.NEGATIVE_INFINITY; the engine mis-renders the sign of Infinity when stringified, but the numeric value is correct. Verified on a CloudPage.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Math.max (SFMC SSJS) — handles any argument count.\n' +
+            ' * @param {...number} [values] - numbers to compare\n' +
+            ' * @returns {number} the largest value, or NaN if any value is NaN\n' +
+            ' */\n' +
             'Math.max = function () {\n' +
             '    if (arguments.length === 0) { return Number.NEGATIVE_INFINITY; }\n' +
             '    var best = Number(arguments[0]);\n' +
@@ -8770,6 +8925,11 @@ export const POLYFILLABLE_METHODS = [
         description:
             'Math.min in SFMC SSJS throws when given three or more arguments and returns 0 (not Infinity) with no arguments. This polyfill is a pure-JS variadic fold that handles any argument count and propagates NaN per spec. Note: the no-argument result is Number.POSITIVE_INFINITY; the engine mis-renders the sign of Infinity when stringified, but the numeric value is correct. Verified on a CloudPage.',
         polyfill:
+            '/**\n' +
+            ' * Polyfill for Math.min (SFMC SSJS) — handles any argument count.\n' +
+            ' * @param {...number} [values] - numbers to compare\n' +
+            ' * @returns {number} the smallest value, or NaN if any value is NaN\n' +
+            ' */\n' +
             'Math.min = function () {\n' +
             '    if (arguments.length === 0) { return Number.POSITIVE_INFINITY; }\n' +
             '    var best = Number(arguments[0]);\n' +

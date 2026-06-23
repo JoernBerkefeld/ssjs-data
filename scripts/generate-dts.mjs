@@ -247,7 +247,7 @@ const PLATFORM_NAMESPACE_MAP = {
 
 /**
  * Build a JSDoc block comment for a method entry.
- * Emits: description, ssjs.guide link, \@deprecated, \@remarks, \@param, \@returns, \@example.
+ * Emits: description, ssjs.guide link, \@deprecated, \@remarks (incl. caveat), \@param, \@returns, \@example.
  * Returns an empty string when there is nothing to say.
  *
  * @param {object} m - ssjs-data method entry
@@ -289,6 +289,11 @@ function buildJsDocComment(m, indent = '    ', guideUrl = null, mdnUrl = null) {
     }
     if (m.requiresCoreLoad) {
         lines.push(`${indent} * @remarks Requires \`Platform.Load("Core", "1")\` before use.`);
+    }
+    // SFMC-specific caveat (e.g. an engine bug or unreliable behaviour). Emitted as
+    // a @remarks line so editors surface it in hover below the description.
+    if (m.caveat) {
+        lines.push(`${indent} * @remarks ⚠️ ${m.caveat}`);
     }
 
     // ── @param ────────────────────────────────────────────────────────────────
