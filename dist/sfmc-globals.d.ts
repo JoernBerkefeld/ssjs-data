@@ -4311,17 +4311,15 @@ interface String {
      */
     concat(...strings: string[]): string;
     /**
-     * Returns a substring starting at start and running for length characters. If start is negative it is treated as (stringLength + start). Note: prefer substring() for portability; substr is defined in ES3 Annex B.
+     * Compares this string with another and returns a negative number if it sorts before, a positive number if it sorts after, or 0 if they are equivalent.
      *
-     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substr) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
-     * @param start - Start index (negative counts from end of string)
-     * @param length - Number of characters to extract (omit to extract to end)
+     * @param compareString - The string to compare against
      * @example
-     * var str = "Hello, world!";
-     * Write(str.substr(7, 5)); // "world"
+     * Write('a'.localeCompare('b')); // -1
      */
-    substr(start?: number, length?: number): string;
+    localeCompare(compareString?: string): number;
     /**
      * Returns the number of characters in the string.
      *
@@ -4397,6 +4395,56 @@ interface Date {
      */
     getFullYear(): number;
     /**
+     * Returns the month (0 = January … 11 = December) of the date according to local time.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getMonth) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
+     * @example
+     * var d = new Date(2026, 5, 1);
+     * Write(d.getMonth()); // 5 (June, 0-based)
+     */
+    getMonth(): number;
+    /**
+     * Returns the day of the month (1–31) of the date according to local time.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getDate) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
+     * @example
+     * var d = new Date(2026, 0, 15);
+     * Write(d.getDate()); // 15
+     */
+    getDate(): number;
+    /**
+     * Returns the hour (0–23) of the date according to local time.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getHours) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
+     * @example
+     * var d = new Date(2026, 0, 1, 13);
+     * Write(d.getHours()); // 13
+     */
+    getHours(): number;
+    /**
+     * Returns the numeric timestamp (milliseconds since 1970-01-01T00:00:00 UTC) for the date.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getTime) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
+     * @example
+     * var d = new Date(2021, 0, 1);
+     * Write(d.getTime()); // milliseconds since epoch
+     */
+    getTime(): number;
+    /**
+     * Returns the difference, in minutes, between this date evaluated in UTC and in the host local time zone.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getTimezoneOffset) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
+     * @example
+     * var d = new Date();
+     * Write(d.getTimezoneOffset()); // minutes offset from UTC
+     */
+    getTimezoneOffset(): number;
+    /**
      * Returns the minutes (0–59) of the date according to local time.
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getMinutes) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
@@ -4433,7 +4481,7 @@ interface Date {
      *
      * @example
      * var d = new Date();
-     * Write(d.getMilliseconds());
+     * Write(d.getMilliseconds()); // may be off by one in SFMC
      */
     getMilliseconds(): number;
     /**
@@ -4516,7 +4564,7 @@ declare namespace Math {
      *
      * @param values - Numbers to compare (variadic)
      * @example
-     * Write(Math.max(1, 5, 3)); // 5
+     * Write(Math.max(1, 5)); // 5
      */
     function max(...values: number[]): number;
     /**
@@ -4526,7 +4574,7 @@ declare namespace Math {
      *
      * @param values - Numbers to compare (variadic)
      * @example
-     * Write(Math.min(1, 5, 3)); // 1
+     * Write(Math.min(1, 5)); // 1
      */
     function min(...values: number[]): number;
     /**
@@ -4707,15 +4755,6 @@ declare namespace Math {
      */
     const LOG2E: number;
     /**
-     * The base-10 logarithm of e (~0.43429).
-     *
-     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/LOG10E) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
-     *
-     * @example
-     * Write(Math.LOG10E); // ~0.434
-     */
-    const LOG10E: number;
-    /**
      * The square root of 2 (~1.41421).
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/SQRT2) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
@@ -4756,11 +4795,10 @@ interface RegExp {
      *
      * @param string - The string to search
      * @example
-     * var re = /(\d{4})-(\d{2})-(\d{2})/;
+     * var re = /\d{4}-\d{2}-\d{2}/;
      * var result = re.exec("Order placed on 2026-01-15");
      * if (result) {
-     *     Write("Year: " + result[1]); // "2026"
-     *     Write("Month: " + result[2]); // "01"
+     *     Write("Match: " + result[0]); // "2026-01-15" (capture groups result[1]+ are broken)
      * }
      */
     exec(string: string): any[];
@@ -4785,26 +4823,6 @@ interface RegExp {
      */
     readonly global: boolean;
     /**
-     * True if the i (case-insensitive) flag was specified.
-     *
-     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/ignoreCase) / [ssjs.guide reference](https://ssjs.guide/language/regular-expressions/)
-     *
-     * @example
-     * var re = /hello/i;
-     * Write(re.ignoreCase); // true
-     */
-    readonly ignoreCase: boolean;
-    /**
-     * True if the m (multiline) flag was specified.
-     *
-     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/multiline) / [ssjs.guide reference](https://ssjs.guide/language/regular-expressions/)
-     *
-     * @example
-     * var re = /^hello/m;
-     * Write(re.multiline); // true
-     */
-    readonly multiline: boolean;
-    /**
      * The index at which to start the next match. Only relevant when the g or y flag is set. Automatically updated by exec() and test().
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/lastIndex) / [ssjs.guide reference](https://ssjs.guide/language/regular-expressions/)
@@ -4812,7 +4830,7 @@ interface RegExp {
      * @example
      * var re = /\d+/g;
      * re.exec("abc 123 def 456");
-     * Write(re.lastIndex); // 7 (after first match)
+     * Write(re.lastIndex); // does not advance in SFMC
      */
     readonly lastIndex: number;
 }
@@ -4854,8 +4872,8 @@ interface Function {
  * @param radix - Base of the numeral system (2–36); use 10 for decimal
  * @example
  * Write(parseInt("42", 10)); // 42
- * Write(parseInt("0xFF", 16)); // 255
  * Write(parseInt("abc", 10)); // NaN
+ * Write(parseInt("10px", 10)); // NaN in SFMC (spec would give 10)
  */
 declare function parseInt(string?: string, radix?: number): number;
 /**
@@ -4865,9 +4883,9 @@ declare function parseInt(string?: string, radix?: number): number;
  *
  * @param string - The string to parse
  * @example
- * Write(parseFloat("3.14")); // 3.14
- * Write(parseFloat("3.14abc")); // 3.14
+ * Write(parseFloat("3.14")); // 3.14 (32-bit precision)
  * Write(parseFloat("abc")); // NaN
+ * Write(parseFloat("1.5kg")); // NaN in SFMC (spec would give 1.5)
  */
 declare function parseFloat(string?: string): number;
 /**
@@ -4969,6 +4987,25 @@ interface DateConstructor {
      * Write(Date.UTC(1970, 0, 1)); // 0
      */
     UTC(year?: number, month?: number, day?: number, hours?: number, minutes?: number, seconds?: number, milliseconds?: number): number;
+    /**
+     * Parses a date string and returns the numeric timestamp (milliseconds since the Unix epoch), or NaN if the string cannot be parsed.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
+     * @param dateString - A date string (ISO 8601 is the most portable form)
+     * @example
+     * Write(Date.parse('2021-01-01T00:00:00Z')); // 1609459200000
+     */
+    parse(dateString?: string): number;
+    /**
+     * Returns the current time as the numeric timestamp (milliseconds since the Unix epoch).
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
+     * @example
+     * var ms = Date.now(); // current epoch milliseconds
+     */
+    now(): number;
     readonly prototype: Date;
 }
 declare var Date: DateConstructor;
