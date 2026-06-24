@@ -32,6 +32,7 @@ import {
     PLATFORM_OBJECT_URLS,
     CORE_LIBRARY_URLS,
     ECMASCRIPT_URLS,
+    ecmascriptAnchor,
     GUIDE_URLS,
     PLATFORM_FUNCTION_GLOBAL_ALIAS,
 } from '../src/urls.js';
@@ -84,6 +85,7 @@ import {
     PORTFOLIO_METHODS,
     ECMASCRIPT_BUILTINS,
     POLYFILLABLE_METHODS,
+    KNOWN_UNSUPPORTED,
     CORE_LIBRARY_OBJECTS,
     SSJS_GLOBALS,
 } from '../src/index.js';
@@ -399,6 +401,9 @@ for (const obj of CORE_LIBRARY_OBJECTS) {
 }
 
 // ── ECMAScript builtins ────────────────────────────────────────────────────
+// Each member is deep-linked to its own H3 anchor on the owner page, e.g.
+// /ecmascript-builtins/array-methods/#splice — matching the per-method headings
+// rendered on those pages and the deep-link pattern used for proprietary methods.
 for (const fn of ECMASCRIPT_BUILTINS) {
     const url = ECMASCRIPT_URLS[fn.owner];
     if (!url) {
@@ -408,7 +413,7 @@ for (const fn of ECMASCRIPT_BUILTINS) {
     index.push(
         record(
             `${ownerShort}.${fn.name}`,
-            url,
+            `${url}#${ecmascriptAnchor(fn.name)}`,
             'ECMAScript Builtins',
             fn.isProperty ? 'property' : 'method',
             fn,
@@ -426,7 +431,35 @@ for (const fn of POLYFILLABLE_METHODS) {
         continue;
     }
     const ownerShort = fn.owner.replace('.prototype', '');
-    index.push(record(`${ownerShort}.${fn.method}`, url, 'ECMAScript Builtins', 'method', fn));
+    index.push(
+        record(
+            `${ownerShort}.${fn.method}`,
+            `${url}#${ecmascriptAnchor(fn.method)}`,
+            'ECMAScript Builtins',
+            'method',
+            fn,
+        ),
+    );
+}
+
+// ── ECMAScript members confirmed unsupported (no native behavior, no polyfill) ─
+// Surfaced so searchers can FIND that a method is missing and see the suggested
+// workaround. Documented as a ❌ Missing H3 on the owner page; deep-linked to it.
+for (const fn of KNOWN_UNSUPPORTED) {
+    const url = ECMASCRIPT_URLS[fn.owner];
+    if (!url) {
+        continue;
+    }
+    const ownerShort = fn.owner.replace('.prototype', '');
+    index.push(
+        record(
+            `${ownerShort}.${fn.member}`,
+            `${url}#${ecmascriptAnchor(fn.member)}`,
+            'ECMAScript Builtins',
+            fn.isProperty ? 'property' : 'method',
+            { description: fn.suggestion },
+        ),
+    );
 }
 
 // ── SSJS Globals ───────────────────────────────────────────────────────────
@@ -495,7 +528,9 @@ function collectGuideUrls(guideRoot) {
 
 if (existsSync(GUIDE)) {
     const knownUrls = collectGuideUrls(GUIDE);
-    const missingEntries = index.filter((entry) => !knownUrls.has(entry.url));
+    // Validate the page portion only — deep-link entries carry a `#anchor`
+    // fragment that is not part of the page URL set.
+    const missingEntries = index.filter((entry) => !knownUrls.has(entry.url.split('#')[0]));
     if (missingEntries.length > 0) {
         const byUrl = new Map();
         for (const entry of missingEntries) {

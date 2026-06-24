@@ -4785,7 +4785,7 @@ interface RegExp {
     /**
      * Tests whether the string matches the pattern. Returns true if the pattern is found, false otherwise. When the g flag is set, successive calls advance lastIndex.
      *
-     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/test) / [ssjs.guide reference](https://ssjs.guide/language/regular-expressions/)
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/test) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/regular-expressions/)
      *
      * @param string - The string to test against the regular expression
      * @example
@@ -4798,7 +4798,7 @@ interface RegExp {
     /**
      * Executes a search for a match in the string. Returns an array with the full match at index 0 and any capture groups at subsequent indices, or null if no match is found. The array also has index and input properties. When the g flag is set, successive calls advance lastIndex.
      *
-     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec) / [ssjs.guide reference](https://ssjs.guide/language/regular-expressions/)
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/regular-expressions/)
      *
      * @remarks ⚠️ In the SFMC engine capture groups are broken: result[0] (the full match) works, but result[1], result[2], … are undefined. Likewise the g-flag lastIndex does not advance between calls. Use the full match plus String.split/substring to extract sub-parts instead of capture groups.
      * @param string - The string to search
@@ -4813,7 +4813,7 @@ interface RegExp {
     /**
      * The text of the pattern, excluding the enclosing slashes and any flags.
      *
-     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/source) / [ssjs.guide reference](https://ssjs.guide/language/regular-expressions/)
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/source) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/regular-expressions/)
      *
      * @example
      * var re = /hello/gi;
@@ -4823,7 +4823,7 @@ interface RegExp {
     /**
      * True if the g (global) flag was specified when creating the regular expression.
      *
-     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/global) / [ssjs.guide reference](https://ssjs.guide/language/regular-expressions/)
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/global) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/regular-expressions/)
      *
      * @example
      * var re = /hello/g;
@@ -4833,7 +4833,7 @@ interface RegExp {
     /**
      * The index at which to start the next match. Only relevant when the g or y flag is set. Automatically updated by exec() and test().
      *
-     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/lastIndex) / [ssjs.guide reference](https://ssjs.guide/language/regular-expressions/)
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/lastIndex) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/regular-expressions/)
      *
      * @remarks ⚠️ In the SFMC engine lastIndex does NOT advance after exec()/test() with the g flag, so it cannot be used to iterate matches. Use String.match(/.../g) to get all matches at once instead.
      * @example

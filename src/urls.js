@@ -204,13 +204,29 @@ export const ECMASCRIPT_URLS = {
     'String.prototype': '/ecmascript-builtins/string-methods/',
     Math: '/ecmascript-builtins/math/',
     'Number.prototype': '/ecmascript-builtins/number-methods/',
+    Number: '/ecmascript-builtins/number-methods/',
     'Object.prototype': '/ecmascript-builtins/object-methods/',
     Object: '/ecmascript-builtins/object-methods/',
     'Function.prototype': '/ecmascript-builtins/function-methods/',
     'Date.prototype': '/ecmascript-builtins/date-methods/',
     Date: '/ecmascript-builtins/date-methods/',
-    RegExp: '/language/regular-expressions/',
+    RegExp: '/ecmascript-builtins/regular-expressions/',
+    JSON: '/ecmascript-builtins/json/',
 };
+
+/**
+ * Derive the in-page anchor for an ECMAScript built-in member on its
+ * ecmascript-builtins section page.
+ *
+ * Each builtin page (array-methods, string-methods, math, …) renders one H3 per
+ * member with an explicit `{#anchor}` ID equal to the lowercased member name.
+ * Array and String live on separate pages, so member names are unique per page
+ * and no owner qualifier is needed.
+ *
+ * @param {string} member - The method/property/constant name (e.g. 'splice', 'PI', 'toISOString')
+ * @returns {string} Lowercased anchor slug (no leading '#')
+ */
+export const ecmascriptAnchor = (member) => String(member).toLowerCase();
 
 /**
  * Standalone URL constants for pages not covered by the function-per-page patterns above.
