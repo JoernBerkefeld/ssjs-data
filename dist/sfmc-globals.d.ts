@@ -4164,7 +4164,7 @@ interface String {
      * var str = "Hello";
      * Write(str.charAt(1)); // "e"
      */
-    charAt(index?: number): string;
+    charAt(index: number): string;
     /**
      * Returns the UTF-16 code unit at the specified index.
      *
@@ -4175,7 +4175,7 @@ interface String {
      * var str = "A";
      * Write(str.charCodeAt(0)); // 65
      */
-    charCodeAt(index?: number): number;
+    charCodeAt(index: number): number;
     /**
      * Returns the index of the first occurrence of a substring, or -1 if not found.
      *
@@ -4187,7 +4187,7 @@ interface String {
      * var str = "Hello, world!";
      * Write(str.indexOf("world")); // 7
      */
-    indexOf(searchValue?: string, fromIndex?: number): number;
+    indexOf(searchValue: string, fromIndex?: number): number;
     /**
      * Returns the index of the last occurrence of a substring, or -1 if not found.
      *
@@ -4199,7 +4199,7 @@ interface String {
      * var str = "abcabc";
      * Write(str.lastIndexOf("b")); // 4
      */
-    lastIndexOf(searchValue?: string, fromIndex?: number): number;
+    lastIndexOf(searchValue: string, fromIndex?: number): number;
     /**
      * Matches a string against a regular expression and returns the matches array.
      *
@@ -4211,7 +4211,7 @@ interface String {
      * var matches = str.match(/[\w.]+@[\w.]+/);
      * if (matches) { Write(matches[0]); }
      */
-    match(regexp?: RegExp): any[];
+    match(regexp: RegExp): any[];
     /**
      * Returns a new string with matches replaced by a replacement string or function.
      *
@@ -4223,7 +4223,7 @@ interface String {
      * var str = "Hello, world!";
      * Write(str.replace("world", "SSJS")); // "Hello, SSJS!"
      */
-    replace(searchValue?: any, replaceValue?: string): string;
+    replace(searchValue: any, replaceValue: string): string;
     /**
      * Searches for a match and returns the index of the first match, or -1.
      *
@@ -4235,7 +4235,7 @@ interface String {
      * var str = "foo123bar";
      * Write(str.search(/\d+/)); // 3
      */
-    search(regexp?: RegExp): number;
+    search(regexp: RegExp): number;
     /**
      * Extracts a section of a string and returns it as a new string.
      *
@@ -4247,7 +4247,7 @@ interface String {
      * var str = "Hello, world!";
      * Write(str.slice(7, 12)); // "world"
      */
-    slice(start?: number, end?: number): string;
+    slice(start: number, end?: number): string;
     /**
      * Splits a string into an array of substrings using a separator.
      *
@@ -4260,7 +4260,7 @@ interface String {
      * var str = "a,b,c";
      * var parts = str.split(","); // ["a", "b", "c"]
      */
-    split(separator?: any, limit?: number): any[];
+    split(separator: any, limit?: number): any[];
     /**
      * Returns the characters between two indices of a string.
      *
@@ -4272,7 +4272,7 @@ interface String {
      * var str = "Hello, world!";
      * Write(str.substring(7, 12)); // "world"
      */
-    substring(start?: number, end?: number): string;
+    substring(start: number, end?: number): string;
     /**
      * Returns the string converted to lowercase.
      *
@@ -4323,7 +4323,7 @@ interface String {
      * @example
      * Write('a'.localeCompare('b')); // -1
      */
-    localeCompare(compareString?: string): number;
+    localeCompare(compareString: string): number;
     /**
      * Returns the number of characters in the string.
      *
@@ -4384,7 +4384,7 @@ interface Object {
      *     if (obj.hasOwnProperty(key)) { Write(key); }
      * }
      */
-    hasOwnProperty(v?: string): boolean;
+    hasOwnProperty(v: string): boolean;
 }
 
 interface Date {
@@ -4541,7 +4541,7 @@ declare namespace Math {
      * @example
      * Write(Math.abs(-5)); // 5
      */
-    function abs(x?: number): number;
+    function abs(x: number): number;
     /**
      * Rounds a number up to the next integer.
      *
@@ -4551,7 +4551,7 @@ declare namespace Math {
      * @example
      * Write(Math.ceil(4.1)); // 5
      */
-    function ceil(x?: number): number;
+    function ceil(x: number): number;
     /**
      * Rounds a number down to the nearest integer.
      *
@@ -4561,7 +4561,7 @@ declare namespace Math {
      * @example
      * Write(Math.floor(4.9)); // 4
      */
-    function floor(x?: number): number;
+    function floor(x: number): number;
     /**
      * Returns the largest of the supplied numbers.
      *
@@ -4594,7 +4594,7 @@ declare namespace Math {
      * @example
      * Write(Math.pow(2, 10)); // 1024
      */
-    function pow(base?: number, exponent?: number): number;
+    function pow(base: number, exponent: number): number;
     /**
      * Returns a pseudo-random floating-point number in [0, 1).
      *
@@ -4614,7 +4614,7 @@ declare namespace Math {
      * @example
      * Write(Math.round(4.5)); // 5
      */
-    function round(x?: number): number;
+    function round(x: number): number;
     /**
      * Returns the square root of a number.
      *
@@ -4624,7 +4624,7 @@ declare namespace Math {
      * @example
      * Write(Math.sqrt(16)); // 4
      */
-    function sqrt(x?: number): number;
+    function sqrt(x: number): number;
     /**
      * Returns the sine of an angle given in radians.
      *
@@ -4634,7 +4634,7 @@ declare namespace Math {
      * @example
      * Write(Math.sin(Math.PI / 2)); // 1
      */
-    function sin(x?: number): number;
+    function sin(x: number): number;
     /**
      * Returns the cosine of an angle given in radians.
      *
@@ -4644,7 +4644,7 @@ declare namespace Math {
      * @example
      * Write(Math.cos(0)); // 1
      */
-    function cos(x?: number): number;
+    function cos(x: number): number;
     /**
      * Returns the tangent of an angle given in radians.
      *
@@ -4654,7 +4654,7 @@ declare namespace Math {
      * @example
      * Write(Math.tan(Math.PI / 4)); // ~1
      */
-    function tan(x?: number): number;
+    function tan(x: number): number;
     /**
      * Returns the arc sine (in radians) of a number in the range [-1, 1].
      *
@@ -4664,7 +4664,7 @@ declare namespace Math {
      * @example
      * Write(Math.asin(1)); // ~1.5708 (π/2)
      */
-    function asin(x?: number): number;
+    function asin(x: number): number;
     /**
      * Returns the arc cosine (in radians) of a number in the range [-1, 1].
      *
@@ -4674,7 +4674,7 @@ declare namespace Math {
      * @example
      * Write(Math.acos(1)); // 0
      */
-    function acos(x?: number): number;
+    function acos(x: number): number;
     /**
      * Returns the arc tangent (in radians) of a number.
      *
@@ -4684,7 +4684,7 @@ declare namespace Math {
      * @example
      * Write(Math.atan(1)); // ~0.7854 (π/4)
      */
-    function atan(x?: number): number;
+    function atan(x: number): number;
     /**
      * Returns the angle (in radians) from the positive x-axis to the point (x, y). Unlike atan, atan2 correctly handles all quadrants.
      *
@@ -4695,7 +4695,7 @@ declare namespace Math {
      * @example
      * Write(Math.atan2(1, 1)); // ~0.7854 (π/4)
      */
-    function atan2(y?: number, x?: number): number;
+    function atan2(y: number, x: number): number;
     /**
      * Returns e raised to the power of x (e^x).
      *
@@ -4705,7 +4705,7 @@ declare namespace Math {
      * @example
      * Write(Math.exp(1)); // ~2.71828 (e)
      */
-    function exp(x?: number): number;
+    function exp(x: number): number;
     /**
      * Returns the natural logarithm (base e) of a number.
      *
@@ -4715,7 +4715,7 @@ declare namespace Math {
      * @example
      * Write(Math.log(Math.E)); // 1
      */
-    function log(x?: number): number;
+    function log(x: number): number;
     /**
      * The ratio of a circle's circumference to its diameter (~3.14159).
      *
@@ -4886,7 +4886,7 @@ interface Function {
  * Write(parseInt("abc", 10)); // NaN
  * Write(parseInt("10px", 10)); // NaN in SFMC (spec would give 10)
  */
-declare function parseInt(string?: string, radix?: number): number;
+declare function parseInt(string: string, radix?: number): number;
 /**
  * Parses a string and returns a floating-point number. Stops parsing at the first character that is not part of a valid number. Returns NaN if no valid number is found.
  *
@@ -4899,7 +4899,7 @@ declare function parseInt(string?: string, radix?: number): number;
  * Write(parseFloat("abc")); // NaN
  * Write(parseFloat("1.5kg")); // NaN in SFMC (spec would give 1.5)
  */
-declare function parseFloat(string?: string): number;
+declare function parseFloat(string: string): number;
 /**
  * Returns true if the value is NaN (Not-a-Number) after applying ToNumber conversion. Use this to guard against failed parseInt/parseFloat calls.
  *
@@ -4911,7 +4911,7 @@ declare function parseFloat(string?: string): number;
  * Write(isNaN(parseInt("abc", 10))); // true
  * Write(isNaN(42)); // false
  */
-declare function isNaN(value?: any): boolean;
+declare function isNaN(value: any): boolean;
 /**
  * Returns true if the value is a finite number (not NaN, +Infinity, or -Infinity) after applying ToNumber conversion.
  *
@@ -4923,7 +4923,7 @@ declare function isNaN(value?: any): boolean;
  * Write(isFinite(1 / 0)); // false (Infinity)
  * Write(isFinite(NaN)); // false
  */
-declare function isFinite(value?: any): boolean;
+declare function isFinite(value: any): boolean;
 
 // ── Constructible built-ins (value + constructor declarations) ───────────────
 interface Error {
@@ -4975,7 +4975,7 @@ interface ObjectConstructor {
      * Object.defineProperty(o, "x", { value: 42, enumerable: true });
      * Write(o.x); // 42
      */
-    defineProperty(obj?: object, prop?: string, descriptor?: object): object;
+    defineProperty(obj: object, prop: string, descriptor: object): object;
     readonly prototype: Object;
 }
 declare var Object: ObjectConstructor;
@@ -4998,7 +4998,7 @@ interface DateConstructor {
      * @example
      * Write(Date.UTC(1970, 0, 1)); // 0
      */
-    UTC(year?: number, month?: number, day?: number, hours?: number, minutes?: number, seconds?: number, milliseconds?: number): number;
+    UTC(year: number, month?: number, day?: number, hours?: number, minutes?: number, seconds?: number, milliseconds?: number): number;
     /**
      * Parses a date string and returns the numeric timestamp (milliseconds since the Unix epoch), or NaN if the string cannot be parsed.
      *
@@ -5008,7 +5008,7 @@ interface DateConstructor {
      * @example
      * Write(Date.parse('2021-01-01T00:00:00Z')); // 1609459200000
      */
-    parse(dateString?: string): number;
+    parse(dateString: string): number;
     /**
      * Returns the current time as the numeric timestamp (milliseconds since the Unix epoch).
      *

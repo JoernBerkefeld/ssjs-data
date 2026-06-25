@@ -202,6 +202,50 @@ function isVariadicMethod(m) {
 }
 
 /**
+ * Resolve the minimum required argument count for an ECMAScript builtin entry.
+ *
+ * ECMASCRIPT_BUILTINS entries do not carry minArgs/maxArgs. Optionality is
+ * encoded in the `syntax` string: parameters before the first `[` are
+ * required, everything from `[` onward is optional. Falling back to 0 would
+ * (incorrectly) mark every parameter optional in the generated .d.ts — e.g.
+ * `Date.parse(dateString)` would become `parse(dateString?: string)`.
+ *
+ * Per-param `optional` flags still take precedence in buildParamStr; this only
+ * supplies the inference baseline for params with no explicit flag.
+ *
+ * @param {object} m - ssjs-data ECMASCRIPT_BUILTINS entry
+ * @returns {number} Number of leading required parameters
+ */
+function ecmaBuiltinMinArgs(m) {
+    if (typeof m.minArgs === 'number') {
+        return m.minArgs;
+    }
+    if (!m.params || m.params.length === 0) {
+        return 0;
+    }
+    if (typeof m.syntax !== 'string') {
+        // No syntax to infer from — treat all declared params as required.
+        return m.params.length;
+    }
+    const open = m.syntax.indexOf('[');
+    if (open === -1) {
+        // No optional bracket — every declared param is required.
+        return m.params.length;
+    }
+    // Count comma-separated args in the required (pre-bracket) portion of the
+    // arg list. e.g. "Math.pow(base, exponent)" → 2; "Date.parse(dateString)" → 1.
+    const lparen = m.syntax.indexOf('(');
+    const required = m.syntax
+        .slice(lparen + 1, open)
+        .trim()
+        .replace(/,\s*$/, '');
+    if (required === '') {
+        return 0;
+    }
+    return required.split(',').filter((s) => s.trim() !== '').length;
+}
+
+/**
  * Build a TypeScript parameter list string.
  *
  * @param {Array} params - parameter entries from ssjs-data
@@ -379,9 +423,13 @@ function emitIfaceMember(m, indent = '    ', guideUrl = null, mdnUrl = null) {
         const restName = last.name.endsWith('s') ? last.name : `${last.name}s`;
         const overrideLast = { ...last, name: restName };
         const allParams = [...m.params.slice(0, -1), overrideLast];
-        paramStr = buildParamStr(allParams, m.minArgs ?? 0, restType === 'any' ? 'any' : restType);
+        paramStr = buildParamStr(
+            allParams,
+            ecmaBuiltinMinArgs(m),
+            restType === 'any' ? 'any' : restType,
+        );
     } else {
-        paramStr = buildParamStr(m.params, m.minArgs ?? 0);
+        paramStr = buildParamStr(m.params, ecmaBuiltinMinArgs(m));
     }
     return `${comment}${indent}${m.name}(${paramStr}): ${retType};`;
 }
@@ -466,7 +514,7 @@ function emitArrayMember(m, indent = '    ') {
     let paramStr;
     if (isVariadicMethod(m)) {
         // Last param becomes rest
-        const lead = buildParamStr(m.params.slice(0, -1), m.minArgs ?? 0);
+        const lead = buildParamStr(m.params.slice(0, -1), ecmaBuiltinMinArgs(m));
         const last = m.params.at(-1);
         const restElem = useT ? 'T' : toTsType(last.type);
         const rest = `...${last.name}s: ${restElem}[]`;
@@ -478,7 +526,7 @@ function emitArrayMember(m, indent = '    ') {
             }
             return p;
         });
-        paramStr = buildParamStr(adjusted, m.minArgs ?? 0).replaceAll('T_PLACEHOLDER', 'T');
+        paramStr = buildParamStr(adjusted, ecmaBuiltinMinArgs(m)).replaceAll('T_PLACEHOLDER', 'T');
     }
     // splice has 3 declared params but item should be rest
     if (m.name === 'splice') {
@@ -561,7 +609,7 @@ function emitConstructibleBuiltin(c, extraStatics = []) {
         : null;
     for (const m of extraStatics) {
         const comment = buildJsDocComment(m, '    ', staticGuideUrl, mdnBuiltinUrl(c.name, m.name));
-        const paramStr = buildParamStr(m.params, m.minArgs ?? 0);
+        const paramStr = buildParamStr(m.params, ecmaBuiltinMinArgs(m));
         line(`${comment}    ${m.name}(${paramStr}): ${toTsType(m.returnType)};`);
     }
     line(`    readonly prototype: ${protoType};`);
@@ -1135,11 +1183,11 @@ const constructibleStatics = new Map();
                 const restName = last.name.endsWith('s') ? last.name : `${last.name}s`;
                 paramStr = buildParamStr(
                     [...m.params.slice(0, -1), { ...last, name: restName }],
-                    m.minArgs ?? 0,
+                    ecmaBuiltinMinArgs(m),
                     'string',
                 );
             } else {
-                paramStr = buildParamStr(m.params, m.minArgs ?? 0);
+                paramStr = buildParamStr(m.params, ecmaBuiltinMinArgs(m));
             }
             line(`${comment}    ${m.name}(${paramStr}): ${retType};`);
         }
@@ -1229,11 +1277,11 @@ const constructibleStatics = new Map();
                     const restName = last.name.endsWith('s') ? last.name : `${last.name}s`;
                     paramStr = buildParamStr(
                         [...m.params.slice(0, -1), { ...last, name: restName }],
-                        m.minArgs ?? 0,
+                        ecmaBuiltinMinArgs(m),
                         'number',
                     );
                 } else {
-                    paramStr = buildParamStr(m.params, m.minArgs ?? 0);
+                    paramStr = buildParamStr(m.params, ecmaBuiltinMinArgs(m));
                 }
                 line(`${comment}    function ${m.name}(${paramStr}): ${retType};`);
             }
@@ -1295,7 +1343,7 @@ const constructibleStatics = new Map();
         for (const m of emittedGlobals) {
             const comment = buildJsDocComment(m, '', null, mdnBuiltinUrl('Global', m.name));
             const retType = toTsType(m.returnType);
-            const paramStr = buildParamStr(m.params, m.minArgs ?? 0);
+            const paramStr = buildParamStr(m.params, ecmaBuiltinMinArgs(m));
             line(`${comment}declare function ${m.name}(${paramStr}): ${retType};`);
         }
         line('');
