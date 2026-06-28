@@ -8233,7 +8233,7 @@ export const POLYFILLABLE_METHODS = [
             ' * @param {number} [count] - number of elements to copy\n' +
             ' * @returns {Array} the modified array\n' +
             ' */\n' +
-            'Array.prototype.copyWithin = function (targetIndex, startIndex, count) {\n' +
+            'Array.prototype.copyWithin = Array.prototype.copyWithin || function (targetIndex, startIndex, count) {\n' +
             '    var n = count || 1;\n' +
             '    for (var i = 0; i < n; i++) {\n' +
             '        this[targetIndex + i] = this[startIndex + i];\n' +
@@ -8254,7 +8254,7 @@ export const POLYFILLABLE_METHODS = [
             ' * Polyfill for Array.prototype.entries (SFMC SSJS).\n' +
             ' * @returns {object} an iterator of [index, value] pairs\n' +
             ' */\n' +
-            'Array.prototype.entries = function () {\n' +
+            'Array.prototype.entries = Array.prototype.entries || function () {\n' +
             '    var index = 0;\n' +
             '    var arr = this;\n' +
             '    return {\n' +
@@ -8283,7 +8283,7 @@ export const POLYFILLABLE_METHODS = [
             ' * @param {number} [endIndex] - index to stop filling at (default array length)\n' +
             ' * @returns {Array} the modified array\n' +
             ' */\n' +
-            'Array.prototype.fill = function (value, startIndex, endIndex) {\n' +
+            'Array.prototype.fill = Array.prototype.fill || function (value, startIndex, endIndex) {\n' +
             '    var start = startIndex || 0;\n' +
             '    var end = (!endIndex || endIndex > this.length) ? this.length : endIndex;\n' +
             '    for (var i = start; i < end; i++) {\n' +
@@ -8306,7 +8306,7 @@ export const POLYFILLABLE_METHODS = [
             ' * @param {Function} predicate - test called with (element, index, array)\n' +
             ' * @returns {Array} a new array of elements that passed the test\n' +
             ' */\n' +
-            'Array.prototype.filter = function (predicate) {\n' +
+            'Array.prototype.filter = Array.prototype.filter || function (predicate) {\n' +
             "    if (typeof predicate !== 'function') { return []; }\n" +
             '    var result = [];\n' +
             '    for (var i = 0; i < this.length; i++) {\n' +
@@ -8329,7 +8329,7 @@ export const POLYFILLABLE_METHODS = [
             ' * @param {Function} predicate - test called with (element, index, array)\n' +
             ' * @returns {*} the first matching element, or undefined\n' +
             ' */\n' +
-            'Array.prototype.find = function (predicate) {\n' +
+            'Array.prototype.find = Array.prototype.find || function (predicate) {\n' +
             "    if (typeof predicate !== 'function') { return undefined; }\n" +
             '    for (var i = 0; i < this.length; i++) {\n' +
             '        if (predicate(this[i], i, this)) { return this[i]; }\n' +
@@ -8351,7 +8351,7 @@ export const POLYFILLABLE_METHODS = [
             ' * @param {Function} predicate - test called with (element, index, array)\n' +
             ' * @returns {number} the index of the first match, or -1\n' +
             ' */\n' +
-            'Array.prototype.findIndex = function (predicate) {\n' +
+            'Array.prototype.findIndex = Array.prototype.findIndex || function (predicate) {\n' +
             "    if (typeof predicate !== 'function') { return -1; }\n" +
             '    for (var i = 0; i < this.length; i++) {\n' +
             '        if (predicate(this[i], i, this)) { return i; }\n' +
@@ -8373,7 +8373,7 @@ export const POLYFILLABLE_METHODS = [
             ' * @param {Function} callback - called with (element, index, array)\n' +
             ' * @returns {void}\n' +
             ' */\n' +
-            'Array.prototype.forEach = function (callback) {\n' +
+            'Array.prototype.forEach = Array.prototype.forEach || function (callback) {\n' +
             "    if (typeof callback !== 'function') { return; }\n" +
             '    for (var i = 0; i < this.length; i++) {\n' +
             '        callback(this[i], i, this);\n' +
@@ -8394,7 +8394,7 @@ export const POLYFILLABLE_METHODS = [
             ' * @param {*} searchValue - value to search for\n' +
             ' * @returns {boolean} true when the value is found\n' +
             ' */\n' +
-            'Array.prototype.includes = function (searchValue) {\n' +
+            'Array.prototype.includes = Array.prototype.includes || function (searchValue) {\n' +
             '    for (var i = 0; i < this.length; i++) {\n' +
             '        if (this[i] === searchValue) { return true; }\n' +
             '    }\n' +
@@ -8416,7 +8416,7 @@ export const POLYFILLABLE_METHODS = [
             ' * @param {number} [fromIndex] - index to start searching from (default 0)\n' +
             ' * @returns {number} the first matching index, or -1\n' +
             ' */\n' +
-            'Array.prototype.indexOf = function (searchValue, fromIndex) {\n' +
+            'Array.prototype.indexOf = Array.prototype.indexOf || function (searchValue, fromIndex) {\n' +
             '    var start = fromIndex || 0;\n' +
             '    for (var i = start; i < this.length; i++) {\n' +
             '        if (this[i] === searchValue) { return i; }\n' +
@@ -8462,7 +8462,7 @@ export const POLYFILLABLE_METHODS = [
             ' * @param {Function} callback - called with (element, index, array); its return value becomes the new element\n' +
             ' * @returns {Array} a new array of the callback results\n' +
             ' */\n' +
-            'Array.prototype.map = function (callback) {\n' +
+            'Array.prototype.map = Array.prototype.map || function (callback) {\n' +
             "    if (typeof callback !== 'function') { return []; }\n" +
             '    var result = [];\n' +
             '    for (var i = 0; i < this.length; i++) {\n' +
@@ -8486,7 +8486,7 @@ export const POLYFILLABLE_METHODS = [
             ' * @param {*} [initialValue] - initial accumulator value; defaults to the first element\n' +
             ' * @returns {*} the final accumulated value\n' +
             ' */\n' +
-            'Array.prototype.reduce = function (callback, initialValue) {\n' +
+            'Array.prototype.reduce = Array.prototype.reduce || function (callback, initialValue) {\n' +
             "    if (typeof callback !== 'function') { return initialValue; }\n" +
             '    var accumulator = (arguments.length > 1) ? initialValue : this[0];\n' +
             '    var startIndex = (arguments.length > 1) ? 0 : 1;\n' +
@@ -8511,7 +8511,7 @@ export const POLYFILLABLE_METHODS = [
             ' * @param {*} [initialValue] - initial accumulator value; defaults to the last element\n' +
             ' * @returns {*} the final accumulated value\n' +
             ' */\n' +
-            'Array.prototype.reduceRight = function (callback, initialValue) {\n' +
+            'Array.prototype.reduceRight = Array.prototype.reduceRight || function (callback, initialValue) {\n' +
             "    if (typeof callback !== 'function') { return initialValue; }\n" +
             '    var accumulator = (arguments.length > 1) ? initialValue : this[this.length - 1];\n' +
             '    var startIndex = (arguments.length > 1) ? this.length - 1 : this.length - 2;\n' +
@@ -8535,12 +8535,34 @@ export const POLYFILLABLE_METHODS = [
             ' * @param {Function} predicate - test called with (element, index, array)\n' +
             ' * @returns {boolean} true when the predicate passes for any element\n' +
             ' */\n' +
-            'Array.prototype.some = function (predicate) {\n' +
+            'Array.prototype.some = Array.prototype.some || function (predicate) {\n' +
             "    if (typeof predicate !== 'function') { return false; }\n" +
             '    for (var i = 0; i < this.length; i++) {\n' +
             '        if (predicate(this[i], i, this)) { return true; }\n' +
             '    }\n' +
             '    return false;\n' +
+            '};',
+    },
+    {
+        method: 'every',
+        owner: 'Array.prototype',
+        esVersion: 5,
+        isStatic: false,
+        category: 'unavailable',
+        ambiguousWithString: false,
+        description: 'Array.prototype.every is not available in SFMC SSJS.',
+        polyfill:
+            '/**\n' +
+            ' * Polyfill for Array.prototype.every (SFMC SSJS).\n' +
+            ' * @param {Function} predicate - test called with (element, index, array)\n' +
+            ' * @returns {boolean} true when the predicate passes for every element\n' +
+            ' */\n' +
+            'Array.prototype.every = Array.prototype.every || function (predicate) {\n' +
+            "    if (typeof predicate !== 'function') { return true; }\n" +
+            '    for (var i = 0; i < this.length; i++) {\n' +
+            '        if (!predicate(this[i], i, this)) { return false; }\n' +
+            '    }\n' +
+            '    return true;\n' +
             '};',
     },
     {
@@ -8600,7 +8622,7 @@ export const POLYFILLABLE_METHODS = [
             ' * Polyfill for String.prototype.trim (SFMC SSJS).\n' +
             ' * @returns {string} the string with leading and trailing whitespace removed\n' +
             ' */\n' +
-            'String.prototype.trim = function () {\n' +
+            'String.prototype.trim = String.prototype.trim || function () {\n' +
             "    return this.replace(/^[\\s\\uFEFF\\xA0]+|[\\s\\uFEFF\\xA0]+$/g, '');\n" +
             '};',
     },
@@ -8619,7 +8641,7 @@ export const POLYFILLABLE_METHODS = [
             ' * @param {number} [position] - position to start searching from (default 0)\n' +
             ' * @returns {boolean} true when the string starts with searchString\n' +
             ' */\n' +
-            'String.prototype.startsWith = function (searchString, position) {\n' +
+            'String.prototype.startsWith = String.prototype.startsWith || function (searchString, position) {\n' +
             '    position = position || 0;\n' +
             '    return this.indexOf(searchString, position) === position;\n' +
             '};',
@@ -8644,7 +8666,7 @@ export const POLYFILLABLE_METHODS = [
             ' * @param {number} [endPosition] - position treated as the end of the string (default string length)\n' +
             ' * @returns {boolean} true when the string ends with searchString\n' +
             ' */\n' +
-            'String.prototype.endsWith = function (searchString, endPosition) {\n' +
+            'String.prototype.endsWith = String.prototype.endsWith || function (searchString, endPosition) {\n' +
             '    var str = String(this);\n' +
             '    var search = String(searchString);\n' +
             '    if (search.length === 0) { return true; }\n' +
@@ -8718,7 +8740,7 @@ export const POLYFILLABLE_METHODS = [
             ' * @param {*} value - the value to test\n' +
             ' * @returns {boolean} true when the value is an Array\n' +
             ' */\n' +
-            'Array.isArray = function (value) {\n' +
+            'Array.isArray = Array.isArray || function (value) {\n' +
             "    return Object.prototype.toString.call(value) === '[object Array]';\n" +
             '};',
     },
@@ -8736,7 +8758,7 @@ export const POLYFILLABLE_METHODS = [
             ' * @param {...*} [items] - elements to place in the new array\n' +
             ' * @returns {Array} a new array containing the arguments\n' +
             ' */\n' +
-            'Array.of = function () {\n' +
+            'Array.of = Array.of || function () {\n' +
             '    var result = [];\n' +
             '    for (var i = 0; i < arguments.length; i++) {\n' +
             '        result.push(arguments[i]);\n' +
@@ -8761,7 +8783,7 @@ export const POLYFILLABLE_METHODS = [
             ' * @param {number} [length] - number of characters to extract (default: to the end)\n' +
             ' * @returns {string} the extracted substring\n' +
             ' */\n' +
-            'String.prototype.substr = function (start, length) {\n' +
+            'String.prototype.substr = String.prototype.substr || function (start, length) {\n' +
             '    var len = this.length;\n' +
             '    var from = start < 0 ? Math.max(len + start, 0) : Math.min(start, len);\n' +
             '    var to = length === undefined ? len : from + (length < 0 ? 0 : length);\n' +
