@@ -69,6 +69,9 @@ export default [
             'unicorn/prefer-spread': 'off',
             'unicorn/prefer-string-replace-all': 'error',
             'unicorn/prevent-abbreviations': 'off',
+            // name-replacements is kept off to match the existing curated ruleset
+            // (prevent-abbreviations is already off).
+            'unicorn/name-replacements': 'off',
             'arrow-body-style': ['error', 'as-needed'],
             curly: 'error',
             'no-console': 'warn',

@@ -265,8 +265,8 @@ const coreGroups = [
 
 for (const [prefix, methods, instanceVar] of coreGroups) {
     for (const m of methods) {
-        const staticCall = m.isStatic === false;
-        const receiver = staticCall ? instanceVar : prefix;
+        const isStaticCall = m.isStatic === false;
+        const receiver = isStaticCall ? instanceVar : prefix;
         add(`${prefix}.${m.name}`, 'Core Library', m, methodCall(receiver, m), isProperty(m));
     }
 }
@@ -275,69 +275,57 @@ for (const m of EVENT_METHODS) {
     add(`${m.owner}.${m.name}`, 'Events', m, methodCall(m.owner, m));
 }
 
-for (const m of ECMASCRIPT_BUILTINS) {
+/**
+ * Build the JS expression used to exercise an ECMAScript builtin in the coverage stub.
+ *
+ * @param {object} m - ECMAScript builtin catalog entry
+ * @returns {string} Expression that references the builtin
+ */
+function ecmaCallExpr(m) {
     const owner = m.owner;
-    let callExpr;
     switch (owner) {
         case 'Array.prototype': {
-            callExpr = isProperty(m) ? '_arr.length' : `_arr.${m.name}(${stubArgs(m)})`;
-
-            break;
+            return isProperty(m) ? '_arr.length' : `_arr.${m.name}(${stubArgs(m)})`;
         }
         case 'String.prototype': {
-            callExpr = isProperty(m) ? '_str.length' : `_str.${m.name}(${stubArgs(m)})`;
-
-            break;
+            return isProperty(m) ? '_str.length' : `_str.${m.name}(${stubArgs(m)})`;
         }
         case 'Number.prototype': {
-            callExpr = `_num.${m.name}(${stubArgs(m)})`;
-
-            break;
+            return `_num.${m.name}(${stubArgs(m)})`;
         }
         case 'Date.prototype': {
             // Instance methods are exercised on a Date instance stub, mirroring how
             // Array/String/Number prototype methods use _arr/_str/_num.
-            callExpr = isProperty(m) ? `_date.${m.name}` : `_date.${m.name}(${stubArgs(m)})`;
-
-            break;
+            return isProperty(m) ? `_date.${m.name}` : `_date.${m.name}(${stubArgs(m)})`;
         }
         case 'Date': {
             // Statics such as Date.UTC live on the Date namespace/constructor.
-            callExpr = isProperty(m) ? `Date.${m.name}` : `Date.${m.name}(${stubArgs(m)})`;
-
-            break;
+            return isProperty(m) ? `Date.${m.name}` : `Date.${m.name}(${stubArgs(m)})`;
         }
         case 'Object': {
             // Statics such as Object.defineProperty live on the Object namespace.
-            callExpr = isProperty(m) ? `Object.${m.name}` : `Object.${m.name}(${stubArgs(m)})`;
-
-            break;
+            return isProperty(m) ? `Object.${m.name}` : `Object.${m.name}(${stubArgs(m)})`;
         }
         case 'Object.prototype': {
-            callExpr = `_obj.${m.name}(${stubArgs(m)})`;
-
-            break;
+            return `_obj.${m.name}(${stubArgs(m)})`;
         }
         case 'Math': {
-            callExpr = isProperty(m) ? `Math.${m.name}` : `Math.${m.name}(${stubArgs(m)})`;
-
-            break;
+            return isProperty(m) ? `Math.${m.name}` : `Math.${m.name}(${stubArgs(m)})`;
         }
         case 'Global': {
-            callExpr = isProperty(m) ? m.name : `${m.name}(${stubArgs(m)})`;
-
-            break;
+            return isProperty(m) ? m.name : `${m.name}(${stubArgs(m)})`;
         }
         case 'RegExp': {
-            callExpr = isProperty(m) ? `_re.${m.name}` : `_re.${m.name}(${stubArgs(m)})`;
-
-            break;
+            return isProperty(m) ? `_re.${m.name}` : `_re.${m.name}(${stubArgs(m)})`;
         }
         default: {
-            callExpr = `${owner}.${m.name}(${stubArgs(m)})`;
+            return `${owner}.${m.name}(${stubArgs(m)})`;
         }
     }
-    add(`${owner}.${m.name}`, 'ECMAScript', m, callExpr, isProperty(m));
+}
+
+for (const m of ECMASCRIPT_BUILTINS) {
+    add(`${m.owner}.${m.name}`, 'ECMAScript', m, ecmaCallExpr(m), isProperty(m));
 }
 
 for (const g of SSJS_GLOBALS) {
@@ -379,15 +367,15 @@ function inDts(item) {
         return dts.includes(`function ${name}(`) && dts.includes('namespace Function');
     }
     if (id.startsWith('Platform.')) {
-        const sub = id.split('.')[1];
+        const sub = id.split('.', 2)[1];
         if (sub === 'Function') {
             return false;
         }
-        const ns = sub === 'Load' ? 'Platform' : `Platform.${sub}`;
         if (item.isProperty) {
             return new RegExp(String.raw`(?:var|const|readonly)\s+${name}\b`).test(dts);
         }
-        return dts.includes(`${ns}`) && new RegExp(String.raw`function\s+${name}\b`).test(dts);
+        const ns = sub === 'Load' ? 'Platform' : `Platform.${sub}`;
+        return dts.includes(ns) && new RegExp(String.raw`function\s+${name}\b`).test(dts);
     }
     if (id.startsWith('HTTP.')) {
         return (
@@ -415,7 +403,7 @@ function inDts(item) {
     if (item.category === 'Core Library' || item.category === 'Events') {
         const prefix = id.split('.').slice(0, -1).join('.');
         if (item.entry.isStatic === false) {
-            const instIface = prefix.includes('.') ? null : `${prefix.split('.')[0]}Instance`;
+            const instIface = prefix.includes('.') ? null : `${prefix.split('.', 1)[0]}Instance`;
             if (instIface && dts.includes(`interface ${instIface}`)) {
                 return new RegExp(String.raw`\b${name}\b`).test(
                     dts.slice(dts.indexOf(`interface ${instIface}`)),
@@ -460,7 +448,7 @@ function inDts(item) {
         return new RegExp(String.raw`\b${name}\b`).test(dts);
     }
     if (item.category === 'SSJS Global' || item.category === 'SSJS Global Alias') {
-        const bare = id.split(' ')[0];
+        const bare = id.split(' ', 1)[0];
         // Constructible globals (String, Error, RegExp, …) are emitted as
         // `declare var X: XConstructor`; plain globals as `declare function X`.
         return new RegExp(String.raw`declare (?:function|var) ${bare}\b`).test(dts);
@@ -592,7 +580,7 @@ for (const [prefix, methods, iface, propPath] of NESTED_INSTANCE_GROUPS) {
 const dtsMissing = [
     ...catalog.filter((c) => !inDts(c)),
     ...nestedDtsMissing
-        .filter((n) => !catalog.some((c) => c.id === n.id))
+        .filter((n) => catalog.every((c) => c.id !== n.id))
         .map((n) => ({
             id: n.id,
             category: 'Nested instance (d.ts gap)',
@@ -603,20 +591,16 @@ const dtsMissing = [
 ];
 const dtsCovered = catalog.filter((c) => inDts(c));
 
-const catalogIds = new Set(catalog.map((c) => c.id.split(' ')[0]));
+const catalogIds = new Set(catalog.map((c) => c.id.split(' ', 1)[0]));
 
 /** @type {{ id: string, source: string, note: string, inSsjsData: boolean }[]} */
-const guideOnly = [];
-
-for (const item of GUIDE_ONLY_CANDIDATES) {
-    guideOnly.push({
-        id: item.id,
-        source: item.source,
-        note: item.note,
-        inSsjsData:
-            catalogIds.has(item.id) || catalog.some((c) => c.id.includes(item.id.split('.')[0])),
-    });
-}
+const guideOnly = Array.from(GUIDE_ONLY_CANDIDATES, (item) => ({
+    id: item.id,
+    source: item.source,
+    note: item.note,
+    inSsjsData:
+        catalogIds.has(item.id) || catalog.some((c) => c.id.includes(item.id.split('.', 1)[0])),
+}));
 
 // RegExp specific check
 const hasRegexpInData = catalog.some((c) => c.entry.owner === 'RegExp' || c.id.includes('RegExp'));
@@ -705,12 +689,7 @@ for (const item of catalog) {
         currentCategory = item.category;
         lines.push('', `// ── ${currentCategory} ──`);
     }
-    lines.push(`// ${item.id}`);
-    if (item.isProperty) {
-        lines.push(`void (${item.callExpr});`);
-    } else {
-        lines.push(`void (${item.callExpr});`);
-    }
+    lines.push(`// ${item.id}`, `void (${item.callExpr});`);
 }
 
 lines.push(

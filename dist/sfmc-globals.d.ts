@@ -653,11 +653,11 @@ declare namespace Platform {
          * @param url - The complete URL to encode
          * @param encodeReservedKeywords - When true, encodes all reserved characters; spaces become +. When false (default), only spaces are encoded as %20.
          * @example
-         * var baseURL = "http://www.example.com?value=12+3 12;3";
+         * var baseURL = "https://www.example.com?value=12+3 12;3";
          * var encoded = Platform.Function.UrlEncode(baseURL);
-         * Write(encoded); // "http://www.example.com?value=12+3%2012;3"
+         * Write(encoded); // "https://www.example.com?value=12+3%2012;3"
          * var encodedFull = Platform.Function.UrlEncode(baseURL, true);
-         * Write(encodedFull); // "http://www.example.com?value%3d12%2b3+12%3b3"
+         * Write(encodedFull); // "https://www.example.com?value%3d12%2b3+12%3b3"
          */
         function UrlEncode(url: string, encodeReservedKeywords?: boolean): string;
         /**
@@ -1893,7 +1893,7 @@ declare namespace Portfolio {
      *     CustomerKey: "myPortfolioCK",
      *     CategoryID: 12345,
      *     FileName: "logo.png",
-     *     FileLocation: "http://www.example.com/Portals/0/images/global/logo_main.png"
+     *     FileLocation: "https://www.example.com/Portals/0/images/global/logo_main.png"
      * };
      * var status = Portfolio.Add(newPortfolio);
      */

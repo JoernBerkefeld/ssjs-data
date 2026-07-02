@@ -256,7 +256,7 @@ export const SSJS_GLOBALS = [
         returnDescription: 'Rendered content from the Content Area.',
         syntax: 'ContentAreaByName(name[, regionName, errorMsg, fallbackContent])',
         example:
-            String.raw`Platform.Load("core", "1.1.5");` +
+            'Platform.Load("core", "1.1.5");' +
             '\n' +
             String.raw`var content = ContentAreaByName("My Content\\myContentArea", "impressionRegion", "fallback error msg", "defaultContentHere");`,
     },
@@ -1626,11 +1626,11 @@ export const PLATFORM_FUNCTIONS = [
         returnType: 'string',
         syntax: 'Platform.Function.UrlEncode(url[, encodeReservedKeywords])',
         example:
-            'var baseURL = "http://www.example.com?value=12+3 12;3";\n' +
+            'var baseURL = "https://www.example.com?value=12+3 12;3";\n' +
             'var encoded = Platform.Function.UrlEncode(baseURL);\n' +
-            'Write(encoded); // "http://www.example.com?value=12+3%2012;3"\n' +
+            'Write(encoded); // "https://www.example.com?value=12+3%2012;3"\n' +
             'var encodedFull = Platform.Function.UrlEncode(baseURL, true);\n' +
-            'Write(encodedFull); // "http://www.example.com?value%3d12%2b3+12%3b3"',
+            'Write(encodedFull); // "https://www.example.com?value%3d12%2b3+12%3b3"',
     },
     {
         name: 'Base64Encode',
@@ -2137,8 +2137,7 @@ export const ACCOUNT_METHODS = [
         returnType: 'AccountInstance',
         returnDescription: 'An initialized Account bound to the specified external key.',
         syntax: 'Account.Init(key)',
-        example:
-            'Platform.Load("core", "1.1.5");\n' + 'var myAccount = Account.Init("MyCustomerKey");',
+        example: 'Platform.Load("core", "1.1.5");\nvar myAccount = Account.Init("MyCustomerKey");',
     },
     {
         name: 'Retrieve',
@@ -2363,8 +2362,7 @@ export const PORTFOLIO_METHODS = [
         returnType: 'PortfolioInstance',
         returnDescription: 'An initialized Portfolio bound to the specified external key.',
         syntax: 'Portfolio.Init(key)',
-        example:
-            'Platform.Load("core", "1.1.5");\n' + 'var portObj = Portfolio.Init("myPortfolioCK");',
+        example: 'Platform.Load("core", "1.1.5");\nvar portObj = Portfolio.Init("myPortfolioCK");',
     },
     {
         name: 'Add',
@@ -2392,7 +2390,7 @@ export const PORTFOLIO_METHODS = [
             '    CustomerKey: "myPortfolioCK",\n' +
             '    CategoryID: 12345,\n' +
             '    FileName: "logo.png",\n' +
-            '    FileLocation: "http://www.example.com/Portals/0/images/global/logo_main.png"\n' +
+            '    FileLocation: "https://www.example.com/Portals/0/images/global/logo_main.png"\n' +
             '};\n' +
             'var status = Portfolio.Add(newPortfolio);',
     },
@@ -2476,7 +2474,7 @@ export const CONTENT_AREA_OBJ_METHODS = [
         returnType: 'ContentAreaObjInstance',
         returnDescription: 'An initialized ContentAreaObj bound to the specified external key.',
         syntax: 'ContentAreaObj.Init(key)',
-        example: 'Platform.Load("core", "1.1.5");\n' + 'var area = ContentAreaObj.Init("myCA");',
+        example: 'Platform.Load("core", "1.1.5");\nvar area = ContentAreaObj.Init("myCA");',
     },
     {
         name: 'Add',
@@ -2758,7 +2756,7 @@ export const TEMPLATE_METHODS = [
         returnType: 'TemplateInstance',
         returnDescription: 'An initialized Template bound to the specified external key.',
         syntax: 'Template.Init(key)',
-        example: 'Platform.Load("core", "1");\n' + 'var t = Template.Init("myTemplate");',
+        example: 'Platform.Load("core", "1");\nvar t = Template.Init("myTemplate");',
     },
     {
         name: 'Add',
@@ -3166,7 +3164,7 @@ export const FILTER_DEFINITION_METHODS = [
         returnType: 'FilterDefinitionInstance',
         returnDescription: 'An initialized FilterDefinition bound to the specified external key.',
         syntax: 'FilterDefinition.Init(key)',
-        example: 'Platform.Load("core", "1");\n' + 'var fd = FilterDefinition.Init("myFilterDef");',
+        example: 'Platform.Load("core", "1");\nvar fd = FilterDefinition.Init("myFilterDef");',
     },
     {
         name: 'Add',
@@ -3282,7 +3280,7 @@ export const QUERY_DEFINITION_METHODS = [
         returnType: 'QueryDefinitionInstance',
         returnDescription: 'An initialized QueryDefinition bound to the specified external key.',
         syntax: 'QueryDefinition.Init(key)',
-        example: 'Platform.Load("core", "1");\n' + 'var qd = QueryDefinition.Init("myQueryDef");',
+        example: 'Platform.Load("core", "1");\nvar qd = QueryDefinition.Init("myQueryDef");',
     },
     {
         name: 'Add',
@@ -3433,7 +3431,7 @@ export const LIST_METHODS = [
         returnType: 'ListInstance',
         returnDescription: 'An initialized List bound to the specified external key.',
         syntax: 'List.Init(key)',
-        example: 'Platform.Load("core", "1");\n' + 'var myList = List.Init("myList");',
+        example: 'Platform.Load("core", "1");\nvar myList = List.Init("myList");',
     },
     {
         name: 'Add',
@@ -3681,7 +3679,7 @@ export const SUBSCRIBER_METHODS = [
         returnType: 'SubscriberInstance',
         returnDescription: 'An initialized Subscriber bound to the specified key.',
         syntax: 'Subscriber.Init(key)',
-        example: 'Platform.Load("core", "1");\n' + 'var sub = Subscriber.Init("mySubscriber");',
+        example: 'Platform.Load("core", "1");\nvar sub = Subscriber.Init("mySubscriber");',
     },
     {
         name: 'Add',
@@ -3901,7 +3899,7 @@ export const EMAIL_METHODS = [
         returnType: 'EmailInstance',
         returnDescription: 'An initialized Email bound to the specified external key.',
         syntax: 'Email.Init(key)',
-        example: 'Platform.Load("core", "1");\n' + 'var myEmail = Email.Init("myEmail");',
+        example: 'Platform.Load("core", "1");\nvar myEmail = Email.Init("myEmail");',
     },
     {
         name: 'Add',
@@ -4058,7 +4056,7 @@ export const SEND_METHODS = [
         returnType: 'SendInstance',
         returnDescription: 'An initialized Send bound to the specified send ID.',
         syntax: 'Send.Init(id)',
-        example: 'Platform.Load("core", "1");\n' + 'var s = Send.Init(12345);',
+        example: 'Platform.Load("core", "1");\nvar s = Send.Init(12345);',
     },
     {
         name: 'Add',
@@ -4152,8 +4150,7 @@ export const SEND_METHODS = [
         returnEnum: ['OK'],
         returnDescription: 'Returns "OK" on success or throws on failure.',
         syntax: '<SendInstance>.Remove()',
-        example:
-            'Platform.Load("core", "1.1.5");\n' + 'var s = Send.Init(12345);\n' + 's.Remove();',
+        example: 'Platform.Load("core", "1.1.5");\nvar s = Send.Init(12345);\ns.Remove();',
     },
     {
         name: 'CancelSend',
@@ -4273,7 +4270,7 @@ export const SEND_DEFINITION_METHODS = [
         returnType: 'SendDefinitionInstance',
         returnDescription: 'An initialized SendDefinition bound to the specified external key.',
         syntax: 'Send.Definition.Init(key)',
-        example: 'Platform.Load("core", "1.1.5");\n' + 'var esd = Send.Definition.Init("myESD");',
+        example: 'Platform.Load("core", "1.1.5");\nvar esd = Send.Definition.Init("myESD");',
     },
     {
         name: 'Add',
@@ -4504,8 +4501,7 @@ export const TRIGGERED_SEND_METHODS = [
         returnType: 'TriggeredSendInstance',
         returnDescription: 'An initialized TriggeredSend bound to the specified external key.',
         syntax: 'TriggeredSend.Init(key)',
-        example:
-            'Platform.Load("core", "1");\n' + 'var triggeredSend = TriggeredSend.Init("support");',
+        example: 'Platform.Load("core", "1");\nvar triggeredSend = TriggeredSend.Init("support");',
     },
     {
         name: 'Add',
@@ -5842,8 +5838,7 @@ export const HTTPHEADER_METHODS = [
         ],
         returnType: 'void',
         syntax: 'HTTPHeader.SetValue(name, value)',
-        example:
-            'Platform.Load("core", "1");\n' + 'HTTPHeader.SetValue("From", "aruiz@example.com");',
+        example: 'Platform.Load("core", "1");\nHTTPHeader.SetValue("From", "aruiz@example.com");',
     },
     {
         name: 'Remove',

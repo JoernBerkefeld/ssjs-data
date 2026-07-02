@@ -103,7 +103,7 @@ function firstSentence(text) {
         return '';
     }
     const match = text.match(/^[^.!?]+[.!?]/);
-    return match ? match[0].trim() : text.split('\n')[0].trim();
+    return match ? match[0].trim() : text.split('\n', 1)[0].trim();
 }
 
 /**
@@ -489,7 +489,8 @@ function collectGuideUrls(guideRoot) {
      * @param {string} dir - directory to walk
      */
     function walk(dir) {
-        for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const entries = readdirSync(dir, { withFileTypes: true });
+        for (const entry of entries) {
             const fullPath = join(dir, entry.name);
             if (entry.isDirectory()) {
                 if (
@@ -530,7 +531,7 @@ if (existsSync(GUIDE)) {
     const knownUrls = collectGuideUrls(GUIDE);
     // Validate the page portion only — deep-link entries carry a `#anchor`
     // fragment that is not part of the page URL set.
-    const missingEntries = index.filter((entry) => !knownUrls.has(entry.url.split('#')[0]));
+    const missingEntries = index.filter((entry) => !knownUrls.has(entry.url.split('#', 1)[0]));
     if (missingEntries.length > 0) {
         const byUrl = new Map();
         for (const entry of missingEntries) {

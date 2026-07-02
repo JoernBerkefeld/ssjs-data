@@ -125,8 +125,9 @@ function toTsType(s) {
     if (!s || s === 'any') {
         return 'any';
     }
-    if (INSTANCE_TYPE_MAP[s]) {
-        return INSTANCE_TYPE_MAP[s];
+    const mapped = INSTANCE_TYPE_MAP[s];
+    if (mapped) {
+        return mapped;
     }
     if (s === 'void') {
         return 'void';
@@ -260,12 +261,12 @@ function buildParamStr(params, minArgs, restParamType = null) {
     const parts = [];
     const restIdx = restParamType == null ? -1 : params.length - 1;
     for (const [i, p] of params.entries()) {
-        const optional = p.optional === true || (p.optional === undefined && i >= minArgs);
+        const isOptional = p.optional === true || (p.optional === undefined && i >= minArgs);
         if (i === restIdx) {
             parts.push(`...${p.name}: ${restParamType}[]`);
         } else {
             const tsType = toTsType(p.type);
-            parts.push(`${p.name}${optional ? '?' : ''}: ${tsType}`);
+            parts.push(`${p.name}${isOptional ? '?' : ''}: ${tsType}`);
         }
     }
     return parts.join(', ');
@@ -304,7 +305,7 @@ const PLATFORM_NAMESPACE_MAP = {
  * @param {string|null} mdnUrl - optional MDN reference URL
  * @returns {string} JSDoc comment string (including trailing newline) or empty string
  */
-function buildJsDocComment(m, indent = '    ', guideUrl = null, mdnUrl = null) {
+function buildJsDocComment(m, indent = ' '.repeat(4), guideUrl = null, mdnUrl = null) {
     const lines = [];
 
     // ── Description + guide / MDN links ───────────────────────────────────────
@@ -345,7 +346,8 @@ function buildJsDocComment(m, indent = '    ', guideUrl = null, mdnUrl = null) {
     }
 
     // ── @param ────────────────────────────────────────────────────────────────
-    for (const p of m.params ?? []) {
+    const params = m.params ?? [];
+    for (const p of params) {
         const descPart = p.description ? ` - ${p.description}` : '';
         lines.push(`${indent} * @param ${p.name}${descPart}`);
     }
@@ -378,7 +380,7 @@ function buildJsDocComment(m, indent = '    ', guideUrl = null, mdnUrl = null) {
  * @param {string|null} guideUrl - optional ssjs.guide reference URL
  * @returns {string} TypeScript declaration line(s)
  */
-function emitNsMember(m, indent = '    ', guideUrl = null) {
+function emitNsMember(m, indent = ' '.repeat(4), guideUrl = null) {
     const comment = buildJsDocComment(m, indent, guideUrl);
     const retType = toTsType(m.returnType);
     if (isPropertyEntry(m)) {
@@ -410,7 +412,7 @@ function emitNsMember(m, indent = '    ', guideUrl = null) {
  * @param {string|null} mdnUrl - optional MDN reference URL
  * @returns {string} TypeScript declaration line(s)
  */
-function emitIfaceMember(m, indent = '    ', guideUrl = null, mdnUrl = null) {
+function emitIfaceMember(m, indent = ' '.repeat(4), guideUrl = null, mdnUrl = null) {
     const comment = buildJsDocComment(m, indent, guideUrl, mdnUrl);
     const retType = toTsType(m.returnType);
     if (isPropertyEntry(m)) {
@@ -442,7 +444,7 @@ function emitIfaceMember(m, indent = '    ', guideUrl = null, mdnUrl = null) {
  * @param {string|null} guideUrl - optional ssjs.guide reference URL forwarded to each member
  * @returns {string} Newline-joined TypeScript declaration lines
  */
-function emitIfaceBlock(methods, indent = '    ', guideUrl = null) {
+function emitIfaceBlock(methods, indent = ' '.repeat(4), guideUrl = null) {
     return methods.map((m) => emitIfaceMember(m, indent, guideUrl)).join('\n');
 }
 
@@ -500,7 +502,7 @@ const ARRAY_T_ELEMENT_METHODS = new Set(['push', 'unshift', 'concat', 'splice'])
  * @param {string} indent - indentation string to prepend
  * @returns {string} TypeScript declaration line with generic T substitutions
  */
-function emitArrayMember(m, indent = '    ') {
+function emitArrayMember(m, indent = ' '.repeat(4)) {
     if (isPropertyEntry(m)) {
         return `${indent}readonly ${m.name}: number;`;
     }
@@ -510,18 +512,18 @@ function emitArrayMember(m, indent = '    ') {
     if (!m.params || m.params.length === 0) {
         return `${indent}${m.name}(): ${retType};`;
     }
-    const useT = ARRAY_T_ELEMENT_METHODS.has(m.name);
+    const isUseT = ARRAY_T_ELEMENT_METHODS.has(m.name);
     let paramStr;
     if (isVariadicMethod(m)) {
         // Last param becomes rest
         const lead = buildParamStr(m.params.slice(0, -1), ecmaBuiltinMinArgs(m));
         const last = m.params.at(-1);
-        const restElem = useT ? 'T' : toTsType(last.type);
+        const restElem = isUseT ? 'T' : toTsType(last.type);
         const rest = `...${last.name}s: ${restElem}[]`;
         paramStr = lead ? `${lead}, ${rest}` : rest;
     } else {
         const adjusted = m.params.map((p) => {
-            if (useT && (p.type === 'any' || p.type === 'array')) {
+            if (isUseT && (p.type === 'any' || p.type === 'array')) {
                 return { ...p, type: 'T_PLACEHOLDER' };
             }
             return p;
@@ -597,18 +599,23 @@ function emitConstructibleBuiltin(c, extraStatics = []) {
         const p = buildExplicitParamStr(c.call.params, c.call.rest);
         line(`    (${p}): ${resolveBuiltinRef(c.call.returns, ifaceType)};`);
     }
-    for (const s of c.statics ?? []) {
+    const statics = c.statics ?? [];
+    for (const s of statics) {
         const p = buildExplicitParamStr(s.params, s.rest);
         line(`    ${s.name}(${p}): ${resolveBuiltinRef(s.returns, ifaceType)};`);
     }
     // ECMASCRIPT_BUILTINS statics (e.g. Date.UTC, Object.defineProperty) live on the
     // constructor interface — not a separate namespace — so `new Date()` keeps its
     // construct signature.
-    const staticGuideUrl = ECMASCRIPT_URLS[c.name]
-        ? GUIDE_BASE_URL + ECMASCRIPT_URLS[c.name]
-        : null;
+    const cGuidePath = ECMASCRIPT_URLS[c.name];
+    const staticGuideUrl = cGuidePath ? GUIDE_BASE_URL + cGuidePath : null;
     for (const m of extraStatics) {
-        const comment = buildJsDocComment(m, '    ', staticGuideUrl, mdnBuiltinUrl(c.name, m.name));
+        const comment = buildJsDocComment(
+            m,
+            ' '.repeat(4),
+            staticGuideUrl,
+            mdnBuiltinUrl(c.name, m.name),
+        );
         const paramStr = buildParamStr(m.params, ecmaBuiltinMinArgs(m));
         line(`${comment}    ${m.name}(${paramStr}): ${toTsType(m.returnType)};`);
     }
@@ -639,31 +646,35 @@ line('// ── Platform ──────────────────�
 line('declare namespace Platform {');
 // Platform.Load (and any other PLATFORM_METHODS)
 for (const m of PLATFORM_METHODS) {
-    line(emitNsMember(m, '    ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS.Platform));
+    line(emitNsMember(m, ' '.repeat(4), GUIDE_BASE_URL + PLATFORM_OBJECT_URLS.Platform));
 }
 // Platform.Function
 line(
-    `${buildJsDocComment({ description: 'SFMC Platform function API.' }, '    ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Function'])}    namespace Function {`,
+    `${buildJsDocComment({ description: 'SFMC Platform function API.' }, ' '.repeat(4), GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Function'])}    namespace Function {`,
 );
 for (const m of PLATFORM_FUNCTIONS) {
     const lower = m.name.toLowerCase();
-    const fnUrl = PLATFORM_FUNCTION_GLOBAL_ALIAS.has(lower)
-        ? GUIDE_BASE_URL + globalFunctionUrl(m.name)
-        : GUIDE_BASE_URL + platformFunctionUrl(m.name);
-    line(emitNsMember(m, '        ', fnUrl));
+    const fnUrl =
+        GUIDE_BASE_URL +
+        (PLATFORM_FUNCTION_GLOBAL_ALIAS.has(lower)
+            ? globalFunctionUrl(m.name)
+            : platformFunctionUrl(m.name));
+    line(emitNsMember(m, ' '.repeat(8), fnUrl));
 }
 line('    }');
 // Platform.Variable
 line(
-    `${buildJsDocComment({ description: 'SSJS variable declaration and retrieval methods.' }, '    ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Variable'])}    namespace Variable {`,
+    `${buildJsDocComment({ description: 'SSJS variable declaration and retrieval methods.' }, ' '.repeat(4), GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Variable'])}    namespace Variable {`,
 );
 for (const m of PLATFORM_VARIABLE_METHODS) {
-    line(emitNsMember(m, '        ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Variable']));
+    line(
+        emitNsMember(m, ' '.repeat(8), GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Variable']),
+    );
 }
 line('    }');
 // Platform.Response
 line(
-    `${buildJsDocComment({ description: 'HTTP response manipulation methods.' }, '    ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Response'])}    namespace Response {`,
+    `${buildJsDocComment({ description: 'HTTP response manipulation methods.' }, ' '.repeat(4), GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Response'])}    namespace Response {`,
 );
 for (const m of PLATFORM_RESPONSE_METHODS) {
     if (isPropertyEntry(m)) {
@@ -671,14 +682,18 @@ for (const m of PLATFORM_RESPONSE_METHODS) {
         line(`        var ${m.name}: ${toTsType(m.returnType)};`);
     } else {
         line(
-            emitNsMember(m, '        ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Response']),
+            emitNsMember(
+                m,
+                ' '.repeat(8),
+                GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Response'],
+            ),
         );
     }
 }
 line('    }');
 // Platform.Request
 line(
-    `${buildJsDocComment({ description: 'HTTP request reading methods and properties.' }, '    ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Request'])}    namespace Request {`,
+    `${buildJsDocComment({ description: 'HTTP request reading methods and properties.' }, ' '.repeat(4), GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Request'])}    namespace Request {`,
 );
 for (const m of PLATFORM_REQUEST_METHODS) {
     if (isPropertyEntry(m)) {
@@ -686,17 +701,23 @@ for (const m of PLATFORM_REQUEST_METHODS) {
         line(`        const ${m.name}: ${toTsType(m.returnType)};`);
     } else {
         line(
-            emitNsMember(m, '        ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Request']),
+            emitNsMember(
+                m,
+                ' '.repeat(8),
+                GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Request'],
+            ),
         );
     }
 }
 line('    }');
 // Platform.Recipient
 line(
-    `${buildJsDocComment({ description: 'Methods to access subscriber and recipient data.' }, '    ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Recipient'])}    namespace Recipient {`,
+    `${buildJsDocComment({ description: 'Methods to access subscriber and recipient data.' }, ' '.repeat(4), GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Recipient'])}    namespace Recipient {`,
 );
 for (const m of PLATFORM_RECIPIENT_METHODS) {
-    line(emitNsMember(m, '        ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Recipient']));
+    line(
+        emitNsMember(m, ' '.repeat(8), GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Recipient']),
+    );
 }
 line('    }');
 line('}');
@@ -717,7 +738,7 @@ for (const g of SSJS_GLOBALS) {
         if (ns) {
             line(`declare namespace ${g.name} {`);
             for (const m of ns.methods) {
-                line(emitNsMember(m, '    ', ns.url));
+                line(emitNsMember(m, ' '.repeat(4), ns.url));
             }
             line('}');
             line('');
@@ -799,7 +820,7 @@ line('interface DataExtensionFields {');
 line(
     emitIfaceBlock(
         DATA_EXTENSION_FIELDS_METHODS,
-        '    ',
+        ' '.repeat(4),
         GUIDE_BASE_URL + CORE_LIBRARY_URLS['DataExtension.Fields'],
     ),
 );
@@ -808,7 +829,7 @@ line('interface DataExtensionRows {');
 line(
     emitIfaceBlock(
         DATA_EXTENSION_ROWS_METHODS,
-        '    ',
+        ' '.repeat(4),
         GUIDE_BASE_URL + CORE_LIBRARY_URLS['DataExtension.Rows'],
     ),
 );
@@ -953,7 +974,7 @@ for (const [ifaceName, methods, guideUrl, subProps] of SUB_NS_IFACE_DEFS) {
     }
     line(`interface ${ifaceName} {`);
     for (const m of instanceMethods) {
-        line(emitIfaceMember(m, '    ', guideUrl));
+        line(emitIfaceMember(m, ' '.repeat(4), guideUrl));
     }
     for (const { prop, type } of subProps) {
         line(`    readonly ${prop}: ${type};`);
@@ -975,7 +996,7 @@ for (const [nsName, methods, guideUrl] of CORE_CLASS_MAP) {
     if (staticMethods.length > 0) {
         line(`declare namespace ${nsName} {`);
         for (const m of staticMethods) {
-            line(emitNsMember(m, '    ', guideUrl));
+            line(emitNsMember(m, ' '.repeat(4), guideUrl));
         }
         line('}');
     }
@@ -989,7 +1010,7 @@ for (const [nsName, methods, guideUrl] of CORE_CLASS_MAP) {
         if (instanceMethods.length > 0 || subProps.length > 0) {
             line(`interface ${nsName}Instance {`);
             for (const m of instanceMethods) {
-                line(emitIfaceMember(m, '    ', guideUrl));
+                line(emitIfaceMember(m, ' '.repeat(4), guideUrl));
             }
             for (const { prop, type } of subProps) {
                 line(`    readonly ${prop}: ${type};`);
@@ -1004,14 +1025,14 @@ line('');
 line('// ── Standalone Core Library globals ──────────────────────────────────────────');
 line('declare namespace Attribute {');
 for (const m of ATTRIBUTE_METHODS) {
-    line(emitNsMember(m, '    ', GUIDE_BASE_URL + GUIDE_URLS.attribute));
+    line(emitNsMember(m, ' '.repeat(4), GUIDE_BASE_URL + GUIDE_URLS.attribute));
 }
 line('}');
 line('');
 
 line('declare namespace ErrorUtil {');
 for (const m of ERROR_UTIL_METHODS) {
-    line(emitNsMember(m, '    ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS.ErrorUtil));
+    line(emitNsMember(m, ' '.repeat(4), GUIDE_BASE_URL + PLATFORM_OBJECT_URLS.ErrorUtil));
 }
 line('}');
 line('');
@@ -1041,14 +1062,14 @@ line('');
 line('// ── HTTP / HTTPHeader ────────────────────────────────────────────────────────');
 line('declare namespace HTTP {');
 for (const m of HTTP_METHODS) {
-    line(emitNsMember(m, '    ', GUIDE_BASE_URL + httpMethodUrl(m.name)));
+    line(emitNsMember(m, ' '.repeat(4), GUIDE_BASE_URL + httpMethodUrl(m.name)));
 }
 line('}');
 line('');
 
 line('declare namespace HTTPHeader {');
 for (const m of HTTPHEADER_METHODS) {
-    line(emitNsMember(m, '    ', GUIDE_BASE_URL + PLATFORM_OBJECT_URLS.HTTPHeader));
+    line(emitNsMember(m, ' '.repeat(4), GUIDE_BASE_URL + PLATFORM_OBJECT_URLS.HTTPHeader));
 }
 line('}');
 line('');
@@ -1059,26 +1080,27 @@ line('declare namespace Script {');
 line('    namespace Util {');
 for (const ctor of SCRIPT_UTIL_CONSTRUCTORS) {
     const ctorParamStr = buildParamStr(ctor.params, ctor.minArgs ?? 0);
-    const ctorGuideUrl =
+    const ctorGuidePath =
         ctor.name === 'WSProxy'
-            ? GUIDE_BASE_URL + GUIDE_URLS.wsproxy
+            ? GUIDE_URLS.wsproxy
             : ctor.name === 'HttpRequest'
-              ? GUIDE_BASE_URL + GUIDE_URLS.scriptUtilHttpRequest
-              : GUIDE_BASE_URL + GUIDE_URLS.scriptUtilHttpGet;
-    line(`${buildJsDocComment(ctor, '        ', ctorGuideUrl)}        class ${ctor.name} {`);
+              ? GUIDE_URLS.scriptUtilHttpRequest
+              : GUIDE_URLS.scriptUtilHttpGet;
+    const ctorGuideUrl = GUIDE_BASE_URL + ctorGuidePath;
+    line(`${buildJsDocComment(ctor, ' '.repeat(8), ctorGuideUrl)}        class ${ctor.name} {`);
     line(
-        `${buildJsDocComment(ctor, '            ', ctorGuideUrl)}            constructor(${ctorParamStr});`,
+        `${buildJsDocComment(ctor, ' '.repeat(12), ctorGuideUrl)}            constructor(${ctorParamStr});`,
     );
     // Instance methods: WSProxy gets WSPROXY_METHODS; Http* gets SCRIPT_UTIL_REQUEST_METHODS
     if (ctor.name === 'WSProxy') {
         for (const m of WSPROXY_METHODS) {
-            line(emitIfaceMember(m, '            ', GUIDE_BASE_URL + wsproxyMethodUrl(m.name)));
+            line(emitIfaceMember(m, ' '.repeat(12), GUIDE_BASE_URL + wsproxyMethodUrl(m.name)));
         }
     } else {
         // HttpRequest and HttpGet share the same request instance methods
         for (const m of SCRIPT_UTIL_REQUEST_METHODS) {
             line(
-                emitIfaceMember(m, '            ', GUIDE_BASE_URL + GUIDE_URLS.httpRequestMethods),
+                emitIfaceMember(m, ' '.repeat(12), GUIDE_BASE_URL + GUIDE_URLS.httpRequestMethods),
             );
         }
         // Writable instance properties differ between HttpRequest and HttpGet
@@ -1134,8 +1156,10 @@ const constructibleStatics = new Map();
      * @param {string} owner - the member's `owner` (e.g. 'Array.prototype', 'Math', 'Global')
      * @returns {string|null} fully-qualified ssjs.guide URL, or null when unmapped
      */
-    const ecmaGuideUrl = (owner) =>
-        ECMASCRIPT_URLS[owner] ? GUIDE_BASE_URL + ECMASCRIPT_URLS[owner] : null;
+    const ecmaGuideUrl = (owner) => {
+        const path = ECMASCRIPT_URLS[owner];
+        return path ? GUIDE_BASE_URL + path : null;
+    };
 
     // Group ECMASCRIPT_BUILTINS entries by their `owner` field
     const byOwner = new Map();
@@ -1153,7 +1177,7 @@ const constructibleStatics = new Map();
     for (const m of arrayMembers) {
         const comment = buildJsDocComment(
             m,
-            '    ',
+            ' '.repeat(4),
             arrayGuideUrl,
             mdnBuiltinUrl('Array.prototype', m.name),
         );
@@ -1169,7 +1193,7 @@ const constructibleStatics = new Map();
     for (const m of stringMembers) {
         const comment = buildJsDocComment(
             m,
-            '    ',
+            ' '.repeat(4),
             stringGuideUrl,
             mdnBuiltinUrl('String.prototype', m.name),
         );
@@ -1204,7 +1228,7 @@ const constructibleStatics = new Map();
             line(
                 emitIfaceMember(
                     m,
-                    '    ',
+                    ' '.repeat(4),
                     numberGuideUrl,
                     mdnBuiltinUrl('Number.prototype', m.name),
                 ),
@@ -1223,7 +1247,7 @@ const constructibleStatics = new Map();
             line(
                 emitIfaceMember(
                     m,
-                    '    ',
+                    ' '.repeat(4),
                     objectGuideUrl,
                     mdnBuiltinUrl('Object.prototype', m.name),
                 ),
@@ -1244,7 +1268,14 @@ const constructibleStatics = new Map();
         const dateGuideUrl = ecmaGuideUrl('Date.prototype');
         line('interface Date {');
         for (const m of dateMembers) {
-            line(emitIfaceMember(m, '    ', dateGuideUrl, mdnBuiltinUrl('Date.prototype', m.name)));
+            line(
+                emitIfaceMember(
+                    m,
+                    ' '.repeat(4),
+                    dateGuideUrl,
+                    mdnBuiltinUrl('Date.prototype', m.name),
+                ),
+            );
         }
         line('}');
         line('');
@@ -1263,7 +1294,7 @@ const constructibleStatics = new Map();
         for (const m of mathMembers) {
             const comment = buildJsDocComment(
                 m,
-                '    ',
+                ' '.repeat(4),
                 mathGuideUrl,
                 mdnBuiltinUrl('Math', m.name),
             );
@@ -1296,7 +1327,9 @@ const constructibleStatics = new Map();
         const regexpGuideUrl = ecmaGuideUrl('RegExp');
         line('interface RegExp {');
         for (const m of regexpMembers) {
-            line(emitIfaceMember(m, '    ', regexpGuideUrl, mdnBuiltinUrl('RegExp', m.name)));
+            line(
+                emitIfaceMember(m, ' '.repeat(4), regexpGuideUrl, mdnBuiltinUrl('RegExp', m.name)),
+            );
         }
         line('}');
         line('');
@@ -1322,7 +1355,7 @@ const constructibleStatics = new Map();
             line(
                 emitIfaceMember(
                     m,
-                    '    ',
+                    ' '.repeat(4),
                     functionGuideUrl,
                     mdnBuiltinUrl('Function.prototype', m.name),
                 ),
