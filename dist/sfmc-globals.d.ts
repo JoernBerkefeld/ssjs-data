@@ -3797,6 +3797,7 @@ declare namespace Script {
          *
          * [ssjs.guide reference](https://ssjs.guide/http/script-util-httprequest/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param url - The destination URL for the request
          * @example
          * var url = "https://api.example.com/items/123";
@@ -3817,6 +3818,7 @@ declare namespace Script {
              *
              * [ssjs.guide reference](https://ssjs.guide/http/script-util-httprequest/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param url - The destination URL for the request
              * @example
              * var url = "https://api.example.com/items/123";
@@ -3837,6 +3839,7 @@ declare namespace Script {
              *
              * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
              * @example
              * var req = new Script.Util.HttpRequest("https://api.example.com/data");
              * req.method = "GET";
@@ -3852,6 +3855,7 @@ declare namespace Script {
              *
              * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param name - Header name (e.g. "Authorization", "Content-Type")
              * @param value - Header value
              * @example
@@ -3866,6 +3870,7 @@ declare namespace Script {
              *
              * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
              * @example
              * var req = new Script.Util.HttpRequest("https://api.example.com/data");
              * req.setHeader("Authorization", "Bearer " + accessToken);
@@ -3878,6 +3883,7 @@ declare namespace Script {
              *
              * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param name - Name of the header to remove
              * @example
              * var req = new Script.Util.HttpRequest("https://api.example.com/data");
@@ -3887,21 +3893,55 @@ declare namespace Script {
              * var resp = req.send();
              */
             removeHeader(name: string): void;
-            /** HTTP method (GET, POST, PUT, PATCH, DELETE). */
+            /**
+             * HTTP method (GET, POST, PUT, PATCH, DELETE).
+             *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             */
             method: string;
-            /** Content-Type header for the request body, e.g. "application/json". */
+            /**
+             * Content-Type header for the request body, e.g. "application/json".
+             *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             */
             contentType: string;
-            /** Character encoding (default "UTF-8"). */
+            /**
+             * Character encoding (default "UTF-8").
+             *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             */
             encoding: string;
-            /** Timeout in milliseconds (default 30000). */
+            /**
+             * Timeout in milliseconds (default 30000).
+             *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             * @remarks ⚠️ Differs from the official Salesforce docs. Not listed as a configuration property in the official docs (which only mention that send() times out after 30 seconds), but the property exists and is applied at runtime.
+             */
             timeout: number;
-            /** Request body for POST/PUT/PATCH requests. */
+            /**
+             * Request body for POST/PUT/PATCH requests.
+             *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             */
             postData: string;
-            /** If false, throws when no content is returned; if true, continues without throwing. */
-            emptyContentHandling: boolean;
-            /** Number of times to retry the request before throwing (default 1). */
+            /**
+             * What to do when the request returns no content: 0 = continue, 1 = stop, 2 = continue to next subscriber (email sends only).
+             *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type this as a boolean, but the runtime accepts only a numeric value (0/1/2) and rejects true/false — identical to Script.Util.HttpGet.
+             */
+            emptyContentHandling: number;
+            /**
+             * Number of times to retry the request before throwing (default 1).
+             *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             */
             retries: number;
-            /** If true, continues after a non-fatal error instead of throwing. */
+            /**
+             * If true, continues after a non-fatal error instead of throwing.
+             *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             */
             continueOnError: boolean;
         }
         /**
@@ -3909,6 +3949,7 @@ declare namespace Script {
          *
          * [ssjs.guide reference](https://ssjs.guide/http/script-util-httpget/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param url - The URL to retrieve content from
          * @example
          * var req = new Script.Util.HttpGet("https://api.example.com/data");
@@ -3927,6 +3968,7 @@ declare namespace Script {
              *
              * [ssjs.guide reference](https://ssjs.guide/http/script-util-httpget/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param url - The URL to retrieve content from
              * @example
              * var req = new Script.Util.HttpGet("https://api.example.com/data");
@@ -3945,6 +3987,7 @@ declare namespace Script {
              *
              * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
              * @example
              * var req = new Script.Util.HttpRequest("https://api.example.com/data");
              * req.method = "GET";
@@ -3960,6 +4003,7 @@ declare namespace Script {
              *
              * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param name - Header name (e.g. "Authorization", "Content-Type")
              * @param value - Header value
              * @example
@@ -3974,6 +4018,7 @@ declare namespace Script {
              *
              * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
              * @example
              * var req = new Script.Util.HttpRequest("https://api.example.com/data");
              * req.setHeader("Authorization", "Bearer " + accessToken);
@@ -3986,6 +4031,7 @@ declare namespace Script {
              *
              * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param name - Name of the header to remove
              * @example
              * var req = new Script.Util.HttpRequest("https://api.example.com/data");
@@ -3995,29 +4041,73 @@ declare namespace Script {
              * var resp = req.send();
              */
             removeHeader(name: string): void;
-            /** Number of retry attempts on failure (default 1). */
+            /**
+             * Number of retry attempts on failure (default 1).
+             *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             */
             retries: number;
-            /** If true, does not throw on an HTTP error status. */
+            /**
+             * If true, does not throw on an HTTP error status.
+             *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             */
             continueOnError: boolean;
-            /** What to do when the GET returns no content: 0 = continue, 1 = stop, 2 = continue to next subscriber (email sends only). */
+            /**
+             * What to do when the GET returns no content: 0 = continue, 1 = stop, 2 = continue to next subscriber (email sends only).
+             *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             */
             emptyContentHandling: number;
+            /**
+             * Timeout in milliseconds (default 30000).
+             *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             * @remarks ⚠️ Differs from the official Salesforce docs. Not listed in the official docs, but the property exists and is applied end-to-end at runtime (same behaviour as on Script.Util.HttpRequest).
+             */
+            timeout: number;
         }
     }
 }
 
 // ── Script.Util HTTP response instance ──────────────────────────────────────
 interface HttpResponseInstance {
-    /** Response body as a CLR string — wrap with String() before use. */
+    /**
+     * Response body as a CLR string — wrap with String() before use.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     */
     readonly content: any;
-    /** Content type returned in the response. */
+    /**
+     * Content type returned in the response.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     */
     readonly contentType: string;
-    /** Encoding type returned in the response. */
+    /**
+     * Encoding type returned in the response.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     */
     readonly encoding: string;
-    /** Response headers. */
+    /**
+     * Response headers as a CLR object. Direct access (headers["X"], .Get(), .Item(), String(headers[key])) throws "Use of CLR is not allowed". To read values, enumerate with for..in: each key is the string "Name, Value" (wrapped in [ ]) — strip the brackets and split on the first ", " to build a plain header map.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The official example reads a single header via headers["..."], but that access throws at runtime. Individual values are only readable by parsing the for..in enumeration keys (shaped "[Name, Value]"), not by indexing.
+     */
     readonly headers: object;
-    /** Status value: 0 = OK, 1 = empty URL, 2 = call failed, 3 = succeeded with empty content. */
+    /**
+     * Status value: 0 = OK, 1 = empty URL, 2 = call failed, 3 = succeeded with empty content.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     */
     readonly returnStatus: number;
-    /** HTTP status code. */
+    /**
+     * HTTP status code.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     */
     readonly statusCode: number;
 }
 

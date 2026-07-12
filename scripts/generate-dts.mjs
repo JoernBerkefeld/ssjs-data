@@ -344,6 +344,16 @@ function buildJsDocComment(m, indent = ' '.repeat(4), guideUrl = null, mdnUrl = 
     if (m.caveat) {
         lines.push(`${indent} * @remarks ⚠️ ${m.caveat}`);
     }
+    // Runtime-verification status: `isConfirmed` means the type/behaviour was validated
+    // with a live CloudPage test; `differsFromOfficialDocs` flags a validated contradiction
+    // of the official Salesforce docs (explained by `officialDocsNote`).
+    if (m.isConfirmed) {
+        lines.push(`${indent} * @remarks ✅ Runtime-verified in a live SFMC test.`);
+    }
+    if (m.differsFromOfficialDocs) {
+        const note = m.officialDocsNote ? ` ${m.officialDocsNote}` : '';
+        lines.push(`${indent} * @remarks ⚠️ Differs from the official Salesforce docs.${note}`);
+    }
 
     // ── @param ────────────────────────────────────────────────────────────────
     const params = m.params ?? [];
@@ -1125,8 +1135,9 @@ for (const ctor of SCRIPT_UTIL_CONSTRUCTORS) {
                 ? SCRIPT_UTIL_HTTPGET_PROPERTIES
                 : SCRIPT_UTIL_REQUEST_PROPERTIES;
         for (const p of props) {
-            line(`            /** ${p.description} */`);
-            line(`            ${p.name}: ${toTsType(p.type)};`);
+            line(
+                `${buildJsDocComment(p, ' '.repeat(12))}            ${p.name}: ${toTsType(p.type)};`,
+            );
         }
     }
     line('        }');
@@ -1139,8 +1150,7 @@ line('');
 line('// ── Script.Util HTTP response instance ──────────────────────────────────────');
 line('interface HttpResponseInstance {');
 for (const p of SCRIPT_UTIL_RESPONSE_PROPERTIES) {
-    line(`    /** ${p.description} */`);
-    line(`    readonly ${p.name}: ${toTsType(p.type)};`);
+    line(`${buildJsDocComment(p, ' '.repeat(4))}    readonly ${p.name}: ${toTsType(p.type)};`);
 }
 line('}');
 line('');

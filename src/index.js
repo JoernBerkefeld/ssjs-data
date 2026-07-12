@@ -6436,6 +6436,7 @@ export const SCRIPT_UTIL_CONSTRUCTORS = [
         name: 'HttpRequest',
         minArgs: 1,
         maxArgs: 1,
+        isConfirmed: true,
         description:
             'Creates an HTTP request handler that supports any HTTP method (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS). ' +
             'Unlike Platform.Function.HTTPGet/HTTPPost, this handler supports custom methods and headers. ' +
@@ -6462,6 +6463,7 @@ export const SCRIPT_UTIL_CONSTRUCTORS = [
         name: 'HttpGet',
         minArgs: 1,
         maxArgs: 1,
+        isConfirmed: true,
         description:
             'Creates an HTTP GET request handler. Unlike Platform.Function.HTTPGet, this handler caches content for use in mail sends and supports custom headers. ' +
             'Only works with HTTP on port 80 and HTTPS on port 443. ' +
@@ -6492,6 +6494,7 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
         name: 'send',
         minArgs: 0,
         maxArgs: 0,
+        isConfirmed: true,
         description:
             'Executes the HTTP request and returns a Script.Util.HttpResponse object. ' +
             'The response object has a `statusCode` property and a `content` property. ' +
@@ -6512,6 +6515,7 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
         name: 'setHeader',
         minArgs: 2,
         maxArgs: 2,
+        isConfirmed: true,
         description:
             'Sets a request header on the Script.Util HTTP request. ' +
             'Note: setting a custom header disables content caching for Script.Util.HttpGet.',
@@ -6535,6 +6539,7 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
         name: 'clearHeaders',
         minArgs: 0,
         maxArgs: 0,
+        isConfirmed: true,
         description: 'Removes all custom headers previously set on the request.',
         params: [],
         returnType: 'void',
@@ -6549,6 +6554,7 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
         name: 'removeHeader',
         minArgs: 1,
         maxArgs: 1,
+        isConfirmed: true,
         description: 'Removes a specific header from the request by name.',
         params: [{ name: 'name', description: 'Name of the header to remove', type: 'string' }],
         returnType: 'void',
@@ -6568,36 +6574,71 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
 // These are writable (req.method = "POST"), so the generator emits them as plain
 // (non-readonly) class members.
 
-/** @type {{name: string, type: string, description: string}[]} */
+/**
+ * Writable config properties on the object returned by `new Script.Util.HttpRequest(url)`.
+ *
+ * `isConfirmed` marks a property whose runtime type/behaviour was validated with a
+ * live CloudPage test (see docs/joern/http-introspection-*). `differsFromOfficialDocs`
+ * flags an entry that contradicts the official Salesforce docs; `officialDocsNote`
+ * describes that discrepancy in one sentence for rendering on ssjs.guide.
+ *
+ * @type {{name: string, type: string, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string}[]}
+ */
 export const SCRIPT_UTIL_REQUEST_PROPERTIES = [
-    { name: 'method', type: 'string', description: 'HTTP method (GET, POST, PUT, PATCH, DELETE).' },
+    {
+        name: 'method',
+        type: 'string',
+        description: 'HTTP method (GET, POST, PUT, PATCH, DELETE).',
+        isConfirmed: true,
+    },
     {
         name: 'contentType',
         type: 'string',
         description: 'Content-Type header for the request body, e.g. "application/json".',
+        isConfirmed: true,
     },
-    { name: 'encoding', type: 'string', description: 'Character encoding (default "UTF-8").' },
-    { name: 'timeout', type: 'number', description: 'Timeout in milliseconds (default 30000).' },
+    {
+        name: 'encoding',
+        type: 'string',
+        description: 'Character encoding (default "UTF-8").',
+        isConfirmed: true,
+    },
+    {
+        name: 'timeout',
+        type: 'number',
+        description: 'Timeout in milliseconds (default 30000).',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Not listed as a configuration property in the official docs (which only mention that send() times out after 30 seconds), but the property exists and is applied at runtime.',
+    },
     {
         name: 'postData',
         type: 'string',
         description: 'Request body for POST/PUT/PATCH requests.',
+        isConfirmed: true,
     },
     {
         name: 'emptyContentHandling',
-        type: 'boolean',
+        type: 'number',
         description:
-            'If false, throws when no content is returned; if true, continues without throwing.',
+            'What to do when the request returns no content: 0 = continue, 1 = stop, 2 = continue to next subscriber (email sends only).',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs type this as a boolean, but the runtime accepts only a numeric value (0/1/2) and rejects true/false — identical to Script.Util.HttpGet.',
     },
     {
         name: 'retries',
         type: 'number',
         description: 'Number of times to retry the request before throwing (default 1).',
+        isConfirmed: true,
     },
     {
         name: 'continueOnError',
         type: 'boolean',
         description: 'If true, continues after a non-fatal error instead of throwing.',
+        isConfirmed: true,
     },
 ];
 
@@ -6607,23 +6648,35 @@ export const SCRIPT_UTIL_REQUEST_PROPERTIES = [
 // HttpGet exposes a smaller property set than HttpRequest, and its
 // `emptyContentHandling` is a numeric mode (0/1/2) rather than a boolean.
 
-/** @type {{name: string, type: string, description: string}[]} */
+/** @type {{name: string, type: string, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string}[]} */
 export const SCRIPT_UTIL_HTTPGET_PROPERTIES = [
     {
         name: 'retries',
         type: 'number',
         description: 'Number of retry attempts on failure (default 1).',
+        isConfirmed: true,
     },
     {
         name: 'continueOnError',
         type: 'boolean',
         description: 'If true, does not throw on an HTTP error status.',
+        isConfirmed: true,
     },
     {
         name: 'emptyContentHandling',
         type: 'number',
         description:
             'What to do when the GET returns no content: 0 = continue, 1 = stop, 2 = continue to next subscriber (email sends only).',
+        isConfirmed: true,
+    },
+    {
+        name: 'timeout',
+        type: 'number',
+        description: 'Timeout in milliseconds (default 30000).',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Not listed in the official docs, but the property exists and is applied end-to-end at runtime (same behaviour as on Script.Util.HttpRequest).',
     },
 ];
 
@@ -6631,23 +6684,44 @@ export const SCRIPT_UTIL_HTTPGET_PROPERTIES = [
 // Read-only properties on the object returned by `<HttpRequestInstance>.send()`.
 // Identical for HttpRequest and HttpGet. Source: ssjs.guide HttpResponseInstance.
 
-/** @type {{name: string, type: string, description: string}[]} */
+/** @type {{name: string, type: string, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string}[]} */
 export const SCRIPT_UTIL_RESPONSE_PROPERTIES = [
     {
         name: 'content',
         type: 'any',
         description: 'Response body as a CLR string — wrap with String() before use.',
+        isConfirmed: true,
     },
-    { name: 'contentType', type: 'string', description: 'Content type returned in the response.' },
-    { name: 'encoding', type: 'string', description: 'Encoding type returned in the response.' },
-    { name: 'headers', type: 'object', description: 'Response headers.' },
+    {
+        name: 'contentType',
+        type: 'string',
+        description: 'Content type returned in the response.',
+        isConfirmed: true,
+    },
+    {
+        name: 'encoding',
+        type: 'string',
+        description: 'Encoding type returned in the response.',
+        isConfirmed: true,
+    },
+    {
+        name: 'headers',
+        type: 'object',
+        description:
+            'Response headers as a CLR object. Direct access (headers["X"], .Get(), .Item(), String(headers[key])) throws "Use of CLR is not allowed". To read values, enumerate with for..in: each key is the string "Name, Value" (wrapped in [ ]) — strip the brackets and split on the first ", " to build a plain header map.',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official example reads a single header via headers["..."], but that access throws at runtime. Individual values are only readable by parsing the for..in enumeration keys (shaped "[Name, Value]"), not by indexing.',
+    },
     {
         name: 'returnStatus',
         type: 'number',
         description:
             'Status value: 0 = OK, 1 = empty URL, 2 = call failed, 3 = succeeded with empty content.',
+        isConfirmed: true,
     },
-    { name: 'statusCode', type: 'number', description: 'HTTP status code.' },
+    { name: 'statusCode', type: 'number', description: 'HTTP status code.', isConfirmed: true },
 ];
 
 // ── WSProxy result object shape ─────────────────────────────────────────────
