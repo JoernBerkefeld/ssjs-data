@@ -3,6 +3,14 @@
 // Ambient declarations for the complete SFMC SSJS global API surface.
 // Designed for use with TypeScript's noLib:true (no lib.es5.d.ts).
 
+// ── Runtime built-ins ────────────────────────────────────────────────────────
+interface IArguments {
+    [index: number]: any;
+    length: number;
+    callee: Function;
+}
+declare var arguments: IArguments;
+
 // ── Platform ────────────────────────────────────────────────────────────────
 declare namespace Platform {
     /**

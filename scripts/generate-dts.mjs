@@ -641,6 +641,20 @@ line('// Ambient declarations for the complete SFMC SSJS global API surface.');
 line("// Designed for use with TypeScript's noLib:true (no lib.es5.d.ts).");
 line('');
 
+// ── Runtime built-in objects (noLib:true replacements for lib.es5.d.ts) ────────
+// Under noLib:true there is no lib.es5.d.ts, so the `arguments` object every
+// non-arrow function exposes has no type. Declare a minimal IArguments interface
+// and ambient `arguments` so `arguments.length` / `arguments[i]` type-check in
+// SSJS bodies (SFMC's engine is ES3-era but does expose `arguments`).
+line('// ── Runtime built-ins ────────────────────────────────────────────────────────');
+line('interface IArguments {');
+line('    [index: number]: any;');
+line('    length: number;');
+line('    callee: Function;');
+line('}');
+line('declare var arguments: IArguments;');
+line('');
+
 // ── Platform namespace ────────────────────────────────────────────────────────
 line('// ── Platform ────────────────────────────────────────────────────────────────');
 line('declare namespace Platform {');
