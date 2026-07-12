@@ -336,11 +336,14 @@ for (const g of SSJS_GLOBALS) {
         continue;
     }
     if (g.params) {
-        const expr = isProperty(g)
-            ? g.name
-            : g.syntax?.startsWith('new ')
-              ? `new ${g.name.replace(/^new\s+/, '').replace(/\(.*$/, '')}(${stubArgs(g)})`
-              : `${g.name}(${stubArgs(g)})`;
+        let expr;
+        if (isProperty(g)) {
+            expr = g.name;
+        } else if (g.syntax?.startsWith('new ')) {
+            expr = `new ${g.name.replace(/^new\s+/, '').replace(/\(.*$/, '')}(${stubArgs(g)})`;
+        } else {
+            expr = `${g.name}(${stubArgs(g)})`;
+        }
         add(g.name, 'SSJS Global', g, expr, isProperty(g));
     } else if (g.aliasOf) {
         // Resolve the alias target so the generated call uses the real signature

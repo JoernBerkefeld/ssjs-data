@@ -49,28 +49,15 @@ export default [
         },
         rules: {
             'logical-assignment-operators': ['error', 'always'],
-            'unicorn/better-regex': 'off',
-            'unicorn/catch-error-name': ['error', { name: 'ex' }],
-            'unicorn/explicit-length-check': 'off',
-            'unicorn/filename-case': 'off',
-            'unicorn/no-array-callback-reference': 'off',
-            'unicorn/no-array-reduce': 'off',
-            'unicorn/no-await-expression-member': 'off',
-            'unicorn/no-empty-file': 'off',
-            'unicorn/no-hex-escape': 'off',
-            'unicorn/no-nested-ternary': 'off',
+            // Kept off: the exported catalog uses `null` for fields like
+            // `ampscriptEquivalent` (null = SSJS-only, no AMP equivalent). This is a
+            // hard contract with sfmc-language-lsp / mcp-server-sfmc conversion maps
+            // (see mcp-conversion-rules-sync.mdc) — switching to `undefined` would
+            // change the exported data shape and break those consumers.
             'unicorn/no-null': 'off',
-            'unicorn/no-static-only-class': 'off',
-            'unicorn/no-unused-properties': 'warn',
-            'unicorn/numeric-separators-style': 'off',
-            'unicorn/prefer-array-some': 'off',
-            'unicorn/prefer-module': 'off',
-            'unicorn/prefer-set-has': 'off',
-            'unicorn/prefer-spread': 'off',
-            'unicorn/prefer-string-replace-all': 'error',
-            'unicorn/prevent-abbreviations': 'off',
-            // name-replacements is kept off to match the existing curated ruleset
-            // (prevent-abbreviations is already off).
+            // Kept off: re-enabling forces purely-cosmetic renames of abbreviated
+            // identifiers (dir→directory, params→parameters, fn→function_, …) across
+            // the generator scripts with no runtime/contract benefit.
             'unicorn/name-replacements': 'off',
             'arrow-body-style': ['error', 'as-needed'],
             curly: 'error',

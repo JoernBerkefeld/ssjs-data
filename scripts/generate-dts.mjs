@@ -1094,12 +1094,14 @@ line('declare namespace Script {');
 line('    namespace Util {');
 for (const ctor of SCRIPT_UTIL_CONSTRUCTORS) {
     const ctorParamStr = buildParamStr(ctor.params, ctor.minArgs ?? 0);
-    const ctorGuidePath =
-        ctor.name === 'WSProxy'
-            ? GUIDE_URLS.wsproxy
-            : ctor.name === 'HttpRequest'
-              ? GUIDE_URLS.scriptUtilHttpRequest
-              : GUIDE_URLS.scriptUtilHttpGet;
+    let ctorGuidePath;
+    if (ctor.name === 'WSProxy') {
+        ctorGuidePath = GUIDE_URLS.wsproxy;
+    } else if (ctor.name === 'HttpRequest') {
+        ctorGuidePath = GUIDE_URLS.scriptUtilHttpRequest;
+    } else {
+        ctorGuidePath = GUIDE_URLS.scriptUtilHttpGet;
+    }
     const ctorGuideUrl = GUIDE_BASE_URL + ctorGuidePath;
     line(`${buildJsDocComment(ctor, ' '.repeat(8), ctorGuideUrl)}        class ${ctor.name} {`);
     line(

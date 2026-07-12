@@ -132,7 +132,7 @@ function record(name, url, section, type, entry, opts = {}) {
     if (entry) {
         rec.description = firstSentence(entry.description);
         const params = paramNames(entry);
-        if (params.length) {
+        if (params.length > 0) {
             rec.params = params;
         }
         if (entry.returnType) {
