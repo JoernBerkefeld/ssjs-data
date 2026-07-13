@@ -21,6 +21,7 @@ import {
     PLATFORM_OBJECT_URLS,
     CORE_LIBRARY_URLS,
     GUIDE_URLS,
+    httpRequestMethodUrl,
     GLOBAL_FUNCTION_PAGES,
     PLATFORM_FUNCTION_GLOBAL_ALIAS,
     ECMASCRIPT_URLS,
@@ -629,6 +630,16 @@ function emitConstructibleBuiltin(c, extraStatics = []) {
         const paramStr = buildParamStr(m.params, ecmaBuiltinMinArgs(m));
         line(`${comment}    ${m.name}(${paramStr}): ${toTsType(m.returnType)};`);
     }
+    // The Number constructor exposes ES numeric constants in the SFMC engine.
+    // These are referenced by the shipped Math.max/Math.min polyfills, so declare
+    // them to avoid spurious ts2339 "Property does not exist on NumberConstructor".
+    if (c.name === 'Number') {
+        line('    readonly MAX_VALUE: number;');
+        line('    readonly MIN_VALUE: number;');
+        line('    readonly NaN: number;');
+        line('    readonly NEGATIVE_INFINITY: number;');
+        line('    readonly POSITIVE_INFINITY: number;');
+    }
     line(`    readonly prototype: ${protoType};`);
     line('}');
     line(`declare var ${c.name}: ${ctorName};`);
@@ -663,6 +674,13 @@ line('    length: number;');
 line('    callee: Function;');
 line('}');
 line('declare var arguments: IArguments;');
+line('');
+// Under noLib:true there is no lib.es5.d.ts, so the ES1 numeric globals `NaN`
+// and `Infinity` are undeclared. The SFMC engine exposes both, and the shipped
+// Math.max/Math.min polyfills reference `NaN`, so declare them here to avoid
+// spurious "Cannot find name" (ts2304) diagnostics.
+line('declare const NaN: number;');
+line('declare const Infinity: number;');
 line('');
 
 // ── Platform namespace ────────────────────────────────────────────────────────
@@ -1125,9 +1143,7 @@ for (const ctor of SCRIPT_UTIL_CONSTRUCTORS) {
     } else {
         // HttpRequest and HttpGet share the same request instance methods
         for (const m of SCRIPT_UTIL_REQUEST_METHODS) {
-            line(
-                emitIfaceMember(m, ' '.repeat(12), GUIDE_BASE_URL + GUIDE_URLS.httpRequestMethods),
-            );
+            line(emitIfaceMember(m, ' '.repeat(12), GUIDE_BASE_URL + httpRequestMethodUrl(m.name)));
         }
         // Writable instance properties differ between HttpRequest and HttpGet
         const props =

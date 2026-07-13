@@ -34,6 +34,7 @@ import {
     ECMASCRIPT_URLS,
     ecmascriptAnchor,
     GUIDE_URLS,
+    httpRequestMethodUrl,
     PLATFORM_FUNCTION_GLOBAL_ALIAS,
 } from '../src/urls.js';
 
@@ -192,7 +193,7 @@ for (const fn of SCRIPT_UTIL_REQUEST_METHODS) {
     index.push(
         record(
             `<HttpRequestInstance>.${fn.name}`,
-            GUIDE_URLS.httpRequestMethods,
+            httpRequestMethodUrl(fn.name),
             'HTTP & REST',
             'method',
             fn,

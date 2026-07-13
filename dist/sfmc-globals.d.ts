@@ -11,6 +11,9 @@ interface IArguments {
 }
 declare var arguments: IArguments;
 
+declare const NaN: number;
+declare const Infinity: number;
+
 // ── Platform ────────────────────────────────────────────────────────────────
 declare namespace Platform {
     /**
@@ -3837,7 +3840,7 @@ declare namespace Script {
             /**
              * Executes the HTTP request and returns a Script.Util.HttpResponse object. The response object has a `statusCode` property and a `content` property. Use String(resp.content) to convert the CLR content to a JavaScript string before parsing with Platform.Function.ParseJSON().
              *
-             * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
+             * [ssjs.guide reference](https://ssjs.guide/http/script-util-httprequest/#send)
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
              * @example
@@ -3853,7 +3856,7 @@ declare namespace Script {
             /**
              * Sets a request header on the Script.Util HTTP request. Note: setting a custom header disables content caching for Script.Util.HttpGet.
              *
-             * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
+             * [ssjs.guide reference](https://ssjs.guide/http/script-util-httprequest/#setheader)
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param name - Header name (e.g. "Authorization", "Content-Type")
@@ -3868,7 +3871,7 @@ declare namespace Script {
             /**
              * Removes all custom headers previously set on the request.
              *
-             * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
+             * [ssjs.guide reference](https://ssjs.guide/http/script-util-httprequest/#clearheaders)
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
              * @example
@@ -3881,7 +3884,7 @@ declare namespace Script {
             /**
              * Removes a specific header from the request by name.
              *
-             * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
+             * [ssjs.guide reference](https://ssjs.guide/http/script-util-httprequest/#removeheader)
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param name - Name of the header to remove
@@ -3985,7 +3988,7 @@ declare namespace Script {
             /**
              * Executes the HTTP request and returns a Script.Util.HttpResponse object. The response object has a `statusCode` property and a `content` property. Use String(resp.content) to convert the CLR content to a JavaScript string before parsing with Platform.Function.ParseJSON().
              *
-             * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
+             * [ssjs.guide reference](https://ssjs.guide/http/script-util-httprequest/#send)
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
              * @example
@@ -4001,7 +4004,7 @@ declare namespace Script {
             /**
              * Sets a request header on the Script.Util HTTP request. Note: setting a custom header disables content caching for Script.Util.HttpGet.
              *
-             * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
+             * [ssjs.guide reference](https://ssjs.guide/http/script-util-httprequest/#setheader)
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param name - Header name (e.g. "Authorization", "Content-Type")
@@ -4016,7 +4019,7 @@ declare namespace Script {
             /**
              * Removes all custom headers previously set on the request.
              *
-             * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
+             * [ssjs.guide reference](https://ssjs.guide/http/script-util-httprequest/#clearheaders)
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
              * @example
@@ -4029,7 +4032,7 @@ declare namespace Script {
             /**
              * Removes a specific header from the request by name.
              *
-             * [ssjs.guide reference](https://ssjs.guide/http/request-methods/)
+             * [ssjs.guide reference](https://ssjs.guide/http/script-util-httprequest/#removeheader)
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param name - Name of the header to remove
@@ -5053,6 +5056,11 @@ declare var Array: ArrayConstructor;
 interface NumberConstructor {
     new (value?: any): Number;
     (value?: any): number;
+    readonly MAX_VALUE: number;
+    readonly MIN_VALUE: number;
+    readonly NaN: number;
+    readonly NEGATIVE_INFINITY: number;
+    readonly POSITIVE_INFINITY: number;
     readonly prototype: Number;
 }
 declare var Number: NumberConstructor;

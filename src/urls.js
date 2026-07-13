@@ -236,8 +236,12 @@ export const ecmascriptAnchor = (member) => String(member).toLowerCase();
 export const GUIDE_URLS = {
     /** Attribute global-function page (lives under /global-functions/, not /platform-objects/). */
     attribute: '/global-functions/attribute/',
-    /** Shared page for all Script.Util.HttpRequest / HttpGet instance methods. */
-    httpRequestMethods: '/http/request-methods/',
+    /**
+     * Shared page for all Script.Util.HttpRequest / HttpGet instance methods.
+     * These methods are documented on the Script.Util.HttpRequest page; use
+     * {@link httpRequestMethodUrl} to link to a specific method's anchor.
+     */
+    httpRequestMethods: '/http/script-util-httprequest/',
     /** Script.Util.HttpRequest constructor overview page. */
     scriptUtilHttpRequest: '/http/script-util-httprequest/',
     /** Script.Util.HttpGet constructor overview page. */
@@ -245,6 +249,18 @@ export const GUIDE_URLS = {
     /** WSProxy constructor and overview page. */
     wsproxy: '/wsproxy/',
 };
+
+/**
+ * Builds the URL for a specific Script.Util.HttpRequest / HttpGet instance method,
+ * pointing at its anchor on the Script.Util.HttpRequest page. The anchor is the
+ * lowercased method name (e.g. `send` -> `#send`, `setHeader` -> `#setheader`),
+ * matching the explicit `{#...}` anchors in script-util-httprequest.md.
+ *
+ * @param {string} methodName - instance method name (e.g. "send", "setHeader")
+ * @returns {string} guide URL with the method anchor
+ */
+export const httpRequestMethodUrl = (methodName) =>
+    `${GUIDE_URLS.httpRequestMethods}#${String(methodName).toLowerCase()}`;
 
 /**
  * Names of SSJS global functions that have a dedicated ssjs.guide page at
