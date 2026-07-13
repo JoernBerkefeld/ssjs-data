@@ -572,16 +572,18 @@ declare namespace Platform {
          */
         function InvokeSchedule(apiObject: object, action: string, schedule: object, statusArray?: any[], options?: object): string;
         /**
-         * Performs an HTTP GET request and returns the response body. Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds.
+         * Performs an HTTP GET request and returns the response body as a string. The numeric status is written into the statusVariable out-parameter (statusVariable[0]). Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. All six arguments are required; pass null for unused header arrays.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/httpget/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs are wrong on two counts. (1) They state this returns a numeric status, but it actually returns the response body as a string; the numeric status is written to the statusVariable out-parameter (statusVariable[0]). (2) They list emptyContentHandling, headerNames, headerValues, and statusVariable as optional, but runtime testing shows all six arguments are required — the call throws a security-descriptor error otherwise. Pass null for unused header arrays.
          * @param url - URL to request
          * @param continueOnError - When true, the request terminates if an error occurs. When false, the request continues on error.
-         * @param emptyContentHandling - How to handle a URL that returns empty content: 0 = allow empty, 1 = return error, 2 = skip subscriber
-         * @param headerNames - Array of header names to include in the GET request
-         * @param headerValues - Array of header values corresponding to headerNames
-         * @param statusVariable - Array that receives the status code: 0 = success, -1 = URL not found, -2 = HTTP error, -3 = success but no content
+         * @param emptyContentHandling - How to handle a URL that returns empty content: 0 = allow empty, 1 = return error, 2 = skip subscriber.
+         * @param headerNames - Array of header names to include in the GET request (pass null when none).
+         * @param headerValues - Array of header values corresponding to headerNames (pass null when none).
+         * @param statusVariable - Array that receives the status code: 0 = success, -1 = URL not found, -2 = HTTP error, -3 = success but no content.
          * @example
          * var status = [0];
          * var content = Platform.Function.HTTPGet(
@@ -596,31 +598,26 @@ declare namespace Platform {
          *     var obj = Platform.Function.ParseJSON(content);
          * }
          */
-        function HTTPGet(url: string, continueOnError: boolean, emptyContentHandling?: number, headerNames?: string[], headerValues?: string[], statusVariable?: number[]): string;
+        function HTTPGet(url: string, continueOnError: boolean, emptyContentHandling: number, headerNames: string[], headerValues: string[], statusVariable: number[]): string;
         /**
-         * Performs an HTTP POST request with a content type and payload. Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. Returns the HTTP status code (e.g. 200 for success).
+         * Performs an HTTP POST request with a content type and payload. Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. Returns the HTTP status code as a number (e.g. 200 for success). The optional response out-parameter is unreliable — in runtime tests it stayed empty even for successful requests, so read the status code from the return value and use HTTP.Post / a WSProxy call when you need the response body.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/httppost/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param url - URL to post to
          * @param contentType - MIME type of the request body
          * @param payload - Request body content
-         * @param headerNames - Array of header names
-         * @param headerValues - Array of header values corresponding to headerNames
-         * @param response - Array that receives the response body from the POST request
+         * @param headerNames - Array of header names (co-required with headerValues)
+         * @param headerValues - Array of header values corresponding to headerNames (co-required)
+         * @param response - Array intended to receive the response body. Unreliable — observed empty even on successful (200) responses; do not depend on it.
          * @example
-         * var headerNames = ["Authorization"];
-         * var headerValues = ["Bearer " + accessToken];
-         * var response;
          * var statusCode = Platform.Function.HTTPPost(
          *     "https://api.example.com/items",
          *     "application/json",
-         *     Stringify({ name: "Jane", status: "active" }),
-         *     headerNames,
-         *     headerValues,
-         *     response
+         *     Stringify({ name: "Jane", status: "active" })
          * );
-         * if (statusCode == 200) { Write(response[0]); }
+         * if (statusCode == 200) { Write("posted"); }
          */
         function HTTPPost(url: string, contentType: string, payload: string, headerNames?: string[], headerValues?: string[], response?: any[]): number;
         /**
@@ -3447,6 +3444,7 @@ declare namespace HTTP {
      * [ssjs.guide reference](https://ssjs.guide/http/get/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param url - URL to request.
      * @param headerNames - Array of header names (co-required with headerValues).
      * @param headerValues - Array of header values, one per entry in headerNames (co-required).
@@ -3457,22 +3455,24 @@ declare namespace HTTP {
      */
     function Get(url: string, headerNames?: any[], headerValues?: any[]): { Status: number, Content: string };
     /**
-     * Performs an HTTP POST request with a content type and payload. Pass empty arrays for `headerNames` and `headerValues` if no custom headers are needed.
+     * Performs an HTTP POST request with a content type and payload. Returns an object whose `StatusCode` is a number and whose `Response` is an array-like whose first element (`Response[0]`) is the response body string. Custom headers are optional; when supplied, `headerNames` and `headerValues` must be paired (equal length) — passing only one of the two throws a mismatch error.
      *
      * [ssjs.guide reference](https://ssjs.guide/http/post/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param url - URL to post to.
      * @param contentType - MIME type of the request body.
      * @param payload - Request body content.
-     * @param headerNames - Array of header names to include in the request.
-     * @param headerValues - Array of header values, one per entry in headerNames.
+     * @param headerNames - Array of header names to include in the request (co-required with headerValues).
+     * @param headerValues - Array of header values, one per entry in headerNames (co-required).
      * @example
      * Platform.Load("core", "1.1.5");
      * var payload = Stringify({ email: "jane@example.com" });
      * var response = HTTP.Post("https://api.example.com/items", "application/json", payload);
+     * if (response.StatusCode == 200) { var body = response.Response[0]; }
      */
-    function Post(url: string, contentType: string, payload: string, headerNames: string[], headerValues: any[]): { StatusCode: string, Response: string };
+    function Post(url: string, contentType: string, payload: string, headerNames?: string[], headerValues?: any[]): { StatusCode: number, Response: string[] };
 }
 
 declare namespace HTTPHeader {

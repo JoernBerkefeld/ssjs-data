@@ -1447,11 +1447,17 @@ export const PLATFORM_FUNCTIONS = [
     {
         name: 'HTTPGet',
         ampscriptEquivalent: 'HTTPGet',
-        minArgs: 2,
+        minArgs: 6,
         maxArgs: 6,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs are wrong on two counts. (1) They state this returns a numeric status, but it actually returns the response body as a string; the numeric status is written to the statusVariable out-parameter (statusVariable[0]). (2) They list emptyContentHandling, headerNames, headerValues, and statusVariable as optional, but runtime testing shows all six arguments are required — the call throws a security-descriptor error otherwise. Pass null for unused header arrays.',
         description:
-            'Performs an HTTP GET request and returns the response body. ' +
-            'Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds.',
+            'Performs an HTTP GET request and returns the response body as a string. ' +
+            'The numeric status is written into the statusVariable out-parameter (statusVariable[0]). ' +
+            'Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. ' +
+            'All six arguments are required; pass null for unused header arrays.',
         params: [
             { name: 'url', description: 'URL to request', type: 'string' },
             {
@@ -1463,32 +1469,30 @@ export const PLATFORM_FUNCTIONS = [
             {
                 name: 'emptyContentHandling',
                 description:
-                    'How to handle a URL that returns empty content: 0 = allow empty, 1 = return error, 2 = skip subscriber',
+                    'How to handle a URL that returns empty content: 0 = allow empty, 1 = return error, 2 = skip subscriber.',
                 type: 'number',
-                optional: true,
             },
             {
                 name: 'headerNames',
-                description: 'Array of header names to include in the GET request',
+                description:
+                    'Array of header names to include in the GET request (pass null when none).',
                 type: 'string[]',
-                optional: true,
             },
             {
                 name: 'headerValues',
-                description: 'Array of header values corresponding to headerNames',
+                description:
+                    'Array of header values corresponding to headerNames (pass null when none).',
                 type: 'string[]',
-                optional: true,
             },
             {
                 name: 'statusVariable',
                 description:
-                    'Array that receives the status code: 0 = success, -1 = URL not found, -2 = HTTP error, -3 = success but no content',
+                    'Array that receives the status code: 0 = success, -1 = URL not found, -2 = HTTP error, -3 = success but no content.',
                 type: 'number[]',
-                optional: true,
             },
         ],
         returnType: 'string',
-        syntax: 'Platform.Function.HTTPGet(url, continueOnError[, emptyContentHandling, headerNames, headerValues, statusVariable])',
+        syntax: 'Platform.Function.HTTPGet(url, continueOnError, emptyContentHandling, headerNames, headerValues, statusVariable)',
         example:
             'var status = [0];\n' +
             'var content = Platform.Function.HTTPGet(\n' +
@@ -1508,29 +1512,32 @@ export const PLATFORM_FUNCTIONS = [
         ampscriptEquivalent: 'HTTPPost',
         minArgs: 3,
         maxArgs: 6,
+        isConfirmed: true,
         description:
             'Performs an HTTP POST request with a content type and payload. ' +
             'Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. ' +
-            'Returns the HTTP status code (e.g. 200 for success).',
+            'Returns the HTTP status code as a number (e.g. 200 for success). ' +
+            'The optional response out-parameter is unreliable — in runtime tests it stayed empty even for successful requests, so read the status code from the return value and use HTTP.Post / a WSProxy call when you need the response body.',
         params: [
             { name: 'url', description: 'URL to post to', type: 'string' },
             { name: 'contentType', description: 'MIME type of the request body', type: 'string' },
             { name: 'payload', description: 'Request body content', type: 'string' },
             {
                 name: 'headerNames',
-                description: 'Array of header names',
+                description: 'Array of header names (co-required with headerValues)',
                 type: 'string[]',
                 optional: true,
             },
             {
                 name: 'headerValues',
-                description: 'Array of header values corresponding to headerNames',
+                description: 'Array of header values corresponding to headerNames (co-required)',
                 type: 'string[]',
                 optional: true,
             },
             {
                 name: 'response',
-                description: 'Array that receives the response body from the POST request',
+                description:
+                    'Array intended to receive the response body. Unreliable — observed empty even on successful (200) responses; do not depend on it.',
                 type: 'array',
                 optional: true,
             },
@@ -1538,18 +1545,12 @@ export const PLATFORM_FUNCTIONS = [
         returnType: 'number',
         syntax: 'Platform.Function.HTTPPost(url, contentType, payload[, headerNames, headerValues, response])',
         example:
-            'var headerNames = ["Authorization"];\n' +
-            'var headerValues = ["Bearer " + accessToken];\n' +
-            'var response;\n' +
             'var statusCode = Platform.Function.HTTPPost(\n' +
             '    "https://api.example.com/items",\n' +
             '    "application/json",\n' +
-            '    Stringify({ name: "Jane", status: "active" }),\n' +
-            '    headerNames,\n' +
-            '    headerValues,\n' +
-            '    response\n' +
+            '    Stringify({ name: "Jane", status: "active" })\n' +
             ');\n' +
-            'if (statusCode == 200) { Write(response[0]); }',
+            'if (statusCode == 200) { Write("posted"); }',
     },
     {
         name: 'ParseJSON',
@@ -5339,6 +5340,7 @@ export const HTTP_METHODS = [
         minArgs: 1,
         maxArgs: 3,
         requiresCoreLoad: true,
+        isConfirmed: true,
         description:
             'Performs an HTTP GET request and returns the response body. ' +
             'When supplying `headerNames` and `headerValues`, both arrays must have equal length and parallel ordering.',
@@ -5366,33 +5368,39 @@ export const HTTP_METHODS = [
     },
     {
         name: 'Post',
-        minArgs: 5,
+        minArgs: 3,
         maxArgs: 5,
         requiresCoreLoad: true,
+        isConfirmed: true,
         description:
             'Performs an HTTP POST request with a content type and payload. ' +
-            'Pass empty arrays for `headerNames` and `headerValues` if no custom headers are needed.',
+            'Returns an object whose `StatusCode` is a number and whose `Response` is an array-like whose first element (`Response[0]`) is the response body string. ' +
+            'Custom headers are optional; when supplied, `headerNames` and `headerValues` must be paired (equal length) — passing only one of the two throws a mismatch error.',
         params: [
             { name: 'url', description: 'URL to post to.', type: 'string' },
             { name: 'contentType', description: 'MIME type of the request body.', type: 'string' },
             { name: 'payload', description: 'Request body content.', type: 'string' },
             {
                 name: 'headerNames',
-                description: 'Array of header names to include in the request.',
+                description:
+                    'Array of header names to include in the request (co-required with headerValues).',
                 type: 'string[]',
+                optional: true,
             },
             {
                 name: 'headerValues',
-                description: 'Array of header values, one per entry in headerNames.',
+                description: 'Array of header values, one per entry in headerNames (co-required).',
                 type: 'array',
+                optional: true,
             },
         ],
-        returnType: '{ StatusCode: string, Response: string }',
-        syntax: 'HTTP.Post(url, contentType, payload, headerNames, headerValues)',
+        returnType: '{ StatusCode: number, Response: string[] }',
+        syntax: 'HTTP.Post(url, contentType, payload[, headerNames, headerValues])',
         example:
             'Platform.Load("core", "1.1.5");\n' +
             'var payload = Stringify({ email: "jane@example.com" });\n' +
-            'var response = HTTP.Post("https://api.example.com/items", "application/json", payload);',
+            'var response = HTTP.Post("https://api.example.com/items", "application/json", payload);\n' +
+            'if (response.StatusCode == 200) { var body = response.Response[0]; }',
     },
 ];
 
@@ -6582,7 +6590,13 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
  * flags an entry that contradicts the official Salesforce docs; `officialDocsNote`
  * describes that discrepancy in one sentence for rendering on ssjs.guide.
  *
- * @type {{name: string, type: string, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string}[]}
+ * `valueConstraint` (optional) describes the allowed literal values for the property so
+ * tooling (LSP diagnostics, eslint-plugin-sfmc) can flag invalid assignments. Shapes:
+ * `{ enum: [...] }` — value must be one of the listed literals (case-sensitive strings);
+ * `{ numeric: 'integer' | 'number', min?: number }` — value must be a number of that kind
+ * (integer = whole number), optionally >= `min`.
+ *
+ * @type {{name: string, type: string, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string, valueConstraint?: {enum?: (string|number)[], numeric?: 'integer'|'number', min?: number}}[]}
  */
 export const SCRIPT_UTIL_REQUEST_PROPERTIES = [
     {
@@ -6590,6 +6604,7 @@ export const SCRIPT_UTIL_REQUEST_PROPERTIES = [
         type: 'string',
         description: 'HTTP method (GET, POST, PUT, PATCH, DELETE).',
         isConfirmed: true,
+        valueConstraint: { enum: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] },
     },
     {
         name: 'contentType',
@@ -6611,6 +6626,7 @@ export const SCRIPT_UTIL_REQUEST_PROPERTIES = [
         differsFromOfficialDocs: true,
         officialDocsNote:
             'Not listed as a configuration property in the official docs (which only mention that send() times out after 30 seconds), but the property exists and is applied at runtime.',
+        valueConstraint: { numeric: 'integer', min: 0 },
     },
     {
         name: 'postData',
@@ -6627,12 +6643,14 @@ export const SCRIPT_UTIL_REQUEST_PROPERTIES = [
         differsFromOfficialDocs: true,
         officialDocsNote:
             'The official docs type this as a boolean, but the runtime accepts only a numeric value (0/1/2) and rejects true/false — identical to Script.Util.HttpGet.',
+        valueConstraint: { enum: [0, 1, 2] },
     },
     {
         name: 'retries',
         type: 'number',
         description: 'Number of times to retry the request before throwing (default 1).',
         isConfirmed: true,
+        valueConstraint: { numeric: 'integer', min: 0 },
     },
     {
         name: 'continueOnError',
@@ -6648,13 +6666,14 @@ export const SCRIPT_UTIL_REQUEST_PROPERTIES = [
 // HttpGet exposes a smaller property set than HttpRequest, and its
 // `emptyContentHandling` is a numeric mode (0/1/2) rather than a boolean.
 
-/** @type {{name: string, type: string, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string}[]} */
+/** @type {{name: string, type: string, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string, valueConstraint?: {enum?: (string|number)[], numeric?: 'integer'|'number', min?: number}}[]} */
 export const SCRIPT_UTIL_HTTPGET_PROPERTIES = [
     {
         name: 'retries',
         type: 'number',
         description: 'Number of retry attempts on failure (default 1).',
         isConfirmed: true,
+        valueConstraint: { numeric: 'integer', min: 0 },
     },
     {
         name: 'continueOnError',
@@ -6668,6 +6687,7 @@ export const SCRIPT_UTIL_HTTPGET_PROPERTIES = [
         description:
             'What to do when the GET returns no content: 0 = continue, 1 = stop, 2 = continue to next subscriber (email sends only).',
         isConfirmed: true,
+        valueConstraint: { enum: [0, 1, 2] },
     },
     {
         name: 'timeout',
@@ -6677,6 +6697,7 @@ export const SCRIPT_UTIL_HTTPGET_PROPERTIES = [
         differsFromOfficialDocs: true,
         officialDocsNote:
             'Not listed in the official docs, but the property exists and is applied end-to-end at runtime (same behaviour as on Script.Util.HttpRequest).',
+        valueConstraint: { numeric: 'integer', min: 0 },
     },
 ];
 
