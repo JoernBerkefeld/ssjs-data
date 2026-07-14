@@ -6594,9 +6594,10 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
  * tooling (LSP diagnostics, eslint-plugin-sfmc) can flag invalid assignments. Shapes:
  * `{ enum: [...] }` — value must be one of the listed literals (case-sensitive strings);
  * `{ numeric: 'integer' | 'number', min?: number }` — value must be a number of that kind
- * (integer = whole number), optionally >= `min`.
+ * (integer = whole number), optionally >= `min`. `enumLabels` (optional) maps each enum
+ * value to a short human-readable meaning used in quick-fix titles (e.g. `0` -> "continue").
  *
- * @type {{name: string, type: string, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string, valueConstraint?: {enum?: (string|number)[], numeric?: 'integer'|'number', min?: number}}[]}
+ * @type {{name: string, type: string, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string, valueConstraint?: {enum?: (string|number)[], enumLabels?: Object.<string, string>, numeric?: 'integer'|'number', min?: number}}[]}
  */
 export const SCRIPT_UTIL_REQUEST_PROPERTIES = [
     {
@@ -6643,7 +6644,14 @@ export const SCRIPT_UTIL_REQUEST_PROPERTIES = [
         differsFromOfficialDocs: true,
         officialDocsNote:
             'The official docs type this as a boolean, but the runtime accepts only a numeric value (0/1/2) and rejects true/false — identical to Script.Util.HttpGet.',
-        valueConstraint: { enum: [0, 1, 2] },
+        valueConstraint: {
+            enum: [0, 1, 2],
+            enumLabels: {
+                0: 'continue',
+                1: 'stop',
+                2: 'continue to next subscriber - email sends only',
+            },
+        },
     },
     {
         name: 'retries',
@@ -6666,7 +6674,7 @@ export const SCRIPT_UTIL_REQUEST_PROPERTIES = [
 // HttpGet exposes a smaller property set than HttpRequest, and its
 // `emptyContentHandling` is a numeric mode (0/1/2) rather than a boolean.
 
-/** @type {{name: string, type: string, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string, valueConstraint?: {enum?: (string|number)[], numeric?: 'integer'|'number', min?: number}}[]} */
+/** @type {{name: string, type: string, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string, valueConstraint?: {enum?: (string|number)[], enumLabels?: Object.<string, string>, numeric?: 'integer'|'number', min?: number}}[]} */
 export const SCRIPT_UTIL_HTTPGET_PROPERTIES = [
     {
         name: 'retries',
@@ -6687,7 +6695,14 @@ export const SCRIPT_UTIL_HTTPGET_PROPERTIES = [
         description:
             'What to do when the GET returns no content: 0 = continue, 1 = stop, 2 = continue to next subscriber (email sends only).',
         isConfirmed: true,
-        valueConstraint: { enum: [0, 1, 2] },
+        valueConstraint: {
+            enum: [0, 1, 2],
+            enumLabels: {
+                0: 'continue',
+                1: 'stop',
+                2: 'continue to next subscriber - email sends only',
+            },
+        },
     },
     {
         name: 'timeout',
