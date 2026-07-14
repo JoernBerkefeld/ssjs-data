@@ -784,7 +784,7 @@ for (const g of SSJS_GLOBALS) {
     if (g.type === 'object' && (g.aliasOf || g.namespaceMethodsOf)) {
         const ns = PLATFORM_NAMESPACE_MAP[g.aliasOf ?? g.namespaceMethodsOf];
         if (ns) {
-            // When the bare-name global has its own dedicated /global-functions/ page,
+            // When the bare-name global has its own dedicated page (see globalFunctionUrl),
             // link members to that page instead of the shared Platform.* namespace page.
             const gn = g.name.toLowerCase();
             const memberUrl = GLOBAL_FUNCTION_PAGES.has(gn)

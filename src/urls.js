@@ -113,12 +113,44 @@ export const httpMethodUrl = (name) => `/http/${name.toLowerCase()}/`;
 export const wsproxyMethodUrl = (name) => `/wsproxy/${name.toLowerCase()}/`;
 
 /**
- * URL for a global-function page.
+ * Bare-name globals whose ssjs.guide page lives under /ecmascript-builtins/
+ * because they are native ECMAScript constructors, not Core-library injections.
+ * String() is documented on the string-methods page (constructor section).
+ *
+ * @type {Record<string, string>}
+ */
+const ECMASCRIPT_GLOBAL_URLS = {
+    string: '/ecmascript-builtins/string-methods/#string-constructor',
+    error: '/ecmascript-builtins/error/',
+};
+
+/**
+ * URL for a bare-name global's dedicated page.
+ *
+ * Former /global-functions/ pages were relocated: ECMAScript constructors
+ * (String, Error) live under /ecmascript-builtins/, everything else — the
+ * Core-library-injected bare names (Write, Stringify, Format, …) — under
+ * /core-library/. Old /global-functions/ URLs redirect via redirect_from.
  *
  * @param {string} name - Function name (any case)
  * @returns {string} Site-relative URL
  */
-export const globalFunctionUrl = (name) => `/global-functions/${name.toLowerCase()}/`;
+export const globalFunctionUrl = (name) => {
+    const lower = name.toLowerCase();
+    return ECMASCRIPT_GLOBAL_URLS[lower] ?? `/core-library/${lower}/`;
+};
+
+/**
+ * Site-index / navigation category for a bare-name global, matching where its
+ * page lives (see globalFunctionUrl).
+ *
+ * @param {string} name - Function name (any case)
+ * @returns {string} Category label
+ */
+export const globalFunctionCategory = (name) =>
+    Object.hasOwn(ECMASCRIPT_GLOBAL_URLS, name.toLowerCase())
+        ? 'ECMAScript Builtins'
+        : 'Core Library';
 
 // ── Group-page URL maps ──────────────────────────────────────────────────────
 // All methods on a class share one documentation page.
@@ -236,8 +268,8 @@ export const ecmascriptAnchor = (member) => String(member).toLowerCase();
  * @type {Record<string, string>}
  */
 export const GUIDE_URLS = {
-    /** Attribute global-function page (lives under /global-functions/, not /platform-objects/). */
-    attribute: '/global-functions/attribute/',
+    /** Attribute bare-name global page (lives under /core-library/, not /platform-objects/). */
+    attribute: '/core-library/attribute/',
     /**
      * Shared page for all Script.Util.HttpRequest / HttpGet instance methods.
      * These methods are documented on the Script.Util.HttpRequest page; use
@@ -265,9 +297,10 @@ export const httpRequestMethodUrl = (methodName) =>
     `${GUIDE_URLS.httpRequestMethods}#${String(methodName).toLowerCase()}`;
 
 /**
- * Names of SSJS global functions that have a dedicated ssjs.guide page at
- * /global-functions/<name>/. All other globals fall back to the URL of their
- * aliased Platform.Function page.
+ * Names of SSJS bare-name globals that have a dedicated ssjs.guide page
+ * (resolved via globalFunctionUrl — /core-library/<name>/ or an
+ * /ecmascript-builtins/ location). All other globals fall back to the URL of
+ * their aliased Platform.Function page.
  *
  * @type {Set.<string>}
  */
@@ -288,10 +321,11 @@ export const GLOBAL_FUNCTION_PAGES = new Set([
 ]);
 
 /**
- * Platform.Function names (all lowercase) whose ssjs.guide page lives under
- * /global-functions/ rather than /platform-functions/ because the function's
- * primary documentation entry point is the shorter global alias.
- * Use globalFunctionUrl() for these in the site-index.
+ * Platform.Function names (all lowercase) whose ssjs.guide page lives at the
+ * bare-name global's page (see globalFunctionUrl) rather than
+ * /platform-functions/ because the function's primary documentation entry
+ * point is the shorter global alias. Use globalFunctionUrl() for these in the
+ * site-index.
  *
  * @type {Set.<string>}
  */

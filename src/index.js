@@ -40,8 +40,19 @@ export const SSJS_GLOBALS = [
     {
         name: 'Variable',
         type: 'object',
-        aliasOf: 'Platform.Variable',
-        description: 'Bare-name access to Platform.Variable.* methods.',
+        aliasOf: 'Platform.Variable', // provenance
+        // Standalone bare-name object that DOES work at runtime. Shares the Platform.Variable member set.
+        namespaceMethodsOf: 'Platform.Variable',
+        isConfirmed: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the bare-name global `Variable` is `undefined` BEFORE ' +
+            '`Platform.Load("core", ...)` and becomes a usable object AFTER it. `Variable.SetValue(key, val)` / ' +
+            '`Variable.GetValue(key)` work; `GetValue` on a variable that was set to `""` returns `""`, and on a ' +
+            'never-set variable returns `""` (empty string), not `null`.',
+        description:
+            'Bare-name access to Platform.Variable.* methods (`Variable.SetValue`, `Variable.GetValue`). ' +
+            'Requires `Platform.Load("core", "1.1.5")` before use.',
+        requiresCoreLoad: true,
     },
     {
         name: 'Request',
@@ -83,6 +94,12 @@ export const SSJS_GLOBALS = [
     {
         name: 'Attribute',
         type: 'object',
+        isConfirmed: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): available as an object after `Platform.Load("core", "1.1.5")` ' +
+            '(before load `typeof Attribute` is `undefined`). `Attribute.GetValue(name)` returns a string; ' +
+            'in a CloudPage (no subscriber send context) it returns `""` for both real and unknown attribute ' +
+            'names, so treat an empty string as "no value in this context" rather than proof the attribute is absent.',
         description:
             'Namespace for reading subscriber attribute values. ' +
             'Call `Attribute.GetValue(name)` to retrieve an attribute for the current recipient. ' +
@@ -119,13 +136,16 @@ export const SSJS_GLOBALS = [
     {
         name: 'String',
         type: 'function',
-        minArgs: 1,
+        minArgs: 0,
         maxArgs: 1,
+        isConfirmed: true,
         description:
             'Native JavaScript function that converts any value to its string representation. ' +
             'Essential in SSJS for converting the CLR response object returned by Script.Util.HttpRequest.send().content ' +
             'into a JavaScript string that can be passed to Platform.Function.ParseJSON(). ' +
-            'Unlike Stringify(), String() works on CLR/.NET objects and does not produce JSON output.',
+            'Unlike Stringify(), String() works on CLR/.NET objects and does not produce JSON output. ' +
+            'Runtime-verified (CloudPage): available with no Platform.Load; `String()` with no argument returns `""`, ' +
+            '`String(null)` returns `"null"`.',
         params: [
             {
                 name: 'value',
@@ -191,16 +211,25 @@ export const SSJS_GLOBALS = [
         minArgs: 1,
         maxArgs: 1,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the bare-name `Base64Encode` works after `Platform.Load("core", ...)` ' +
+            'and returns the encoded string (e.g. Base64Encode("hi") -> "aGk="). IMPORTANT SCOPE RULE: bare-name ' +
+            'Core globals are injected ONLY into the scope where Platform.Load runs — they are NOT visible inside ' +
+            'nested helper-function bodies or eval(). Call them at the same scope as Platform.Load, or use the ' +
+            'always-available `Platform.Function.Base64Encode(string[, charset])` form (which also allows charset control).',
         description:
             'Encodes plain text to a Base64 encoded string. ' +
-            'Requires `Platform.Load("core", "1.1.5")` before use. ' +
-            'For charset control, use `Platform.Function.Base64Encode(string, charset)` instead.',
+            'Requires `Platform.Load("core", "1.1.5")` before use, and must be called in the same scope as ' +
+            '`Platform.Load` (bare-name Core globals are not visible inside nested helper functions). ' +
+            'For charset control or scope-independent use, use `Platform.Function.Base64Encode(string, charset)` instead.',
         params: [{ name: 'string', description: 'Text to encode', type: 'string' }],
         returnType: 'string',
         syntax: 'Base64Encode(string)',
         example:
-            "var decoded = 'Convert to Base64';\n" +
-            'var encoded = Base64Encode(decoded); // "Q29udmVydCB0byBCYXNlNjQ="',
+            'Platform.Load("core", "1.1.5");\n' +
+            'var encoded = Base64Encode(\'Convert to Base64\'); // "Q29udmVydCB0byBCYXNlNjQ="',
     },
     {
         name: 'Base64Decode',
@@ -208,10 +237,19 @@ export const SSJS_GLOBALS = [
         minArgs: 1,
         maxArgs: 1,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the bare-name `Base64Decode` works after `Platform.Load("core", ...)` ' +
+            '(e.g. Base64Decode("aGk=") -> "hi"). IMPORTANT SCOPE RULE: bare-name Core globals are injected ONLY ' +
+            'into the scope where Platform.Load runs — they are NOT visible inside nested helper-function bodies ' +
+            'or eval(). Call them at the same scope as Platform.Load, or use the always-available ' +
+            '`Platform.Function.Base64Decode(encodedString[, charset])` form.',
         description:
             'Decodes a Base64 encoded string to plain text. ' +
-            'Requires `Platform.Load("core", "1.1.5")` before use. ' +
-            'For charset control, use `Platform.Function.Base64Decode(encodedString, charset)` instead.',
+            'Requires `Platform.Load("core", "1.1.5")` before use, and must be called in the same scope as ' +
+            '`Platform.Load` (bare-name Core globals are not visible inside nested helper functions). ' +
+            'For charset control or scope-independent use, use `Platform.Function.Base64Decode(encodedString, charset)` instead.',
         params: [
             {
                 name: 'encodedString',
@@ -222,8 +260,8 @@ export const SSJS_GLOBALS = [
         returnType: 'string',
         syntax: 'Base64Decode(encodedString)',
         example:
-            "var encoded = 'VGhpcyB3YXMgYSBCYXNlNjQgZW5jb2RlZCBzdHJpbmcu';\n" +
-            'var decoded = Base64Decode(encoded); // "This was a Base64 encoded string."',
+            'Platform.Load("core", "1.1.5");\n' +
+            'var decoded = Base64Decode(\'VGhpcyB3YXMgYSBCYXNlNjQgZW5jb2RlZCBzdHJpbmcu\'); // "This was a Base64 encoded string."',
     },
     // ── Bare-name aliases for Platform.Function.* (dual-call rule) ───────────
     // Every Platform.Function.X() is also callable as X(). The canonical
@@ -235,9 +273,17 @@ export const SSJS_GLOBALS = [
         maxArgs: 4,
         deprecated: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the bare-name `ContentArea` IS defined as a function after ' +
+            '`Platform.Load("core", ...)` (called in the same scope — bare-name Core globals are not visible ' +
+            'inside nested helper functions). It throws only because Content Areas are deprecated and the target ' +
+            'area no longer resolves on current SFMC infrastructure, not because the global is missing. ' +
+            'The Platform.Function.ContentArea() variant does not require Platform.Load.',
         description:
             'Retrieves content from a classic Content Area by numeric ID. ' +
             'Deprecated — Content Areas are no longer supported on current SFMC infrastructure. ' +
+            'Requires `Platform.Load("core", "1.1.5")` (in the same scope) before use. ' +
             'Note: the Platform.Function.ContentArea() variant does not require Platform.Load and ' +
             'accepts a boolean stopOnError parameter instead of a string errorMsg.',
         params: [
@@ -274,9 +320,17 @@ export const SSJS_GLOBALS = [
         maxArgs: 4,
         deprecated: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the bare-name `ContentAreaByName` IS defined as a function after ' +
+            '`Platform.Load("core", ...)` (called in the same scope — bare-name Core globals are not visible ' +
+            'inside nested helper functions). It throws only because Content Areas are deprecated and the target ' +
+            'area no longer resolves on current SFMC infrastructure, not because the global is missing. ' +
+            'The Platform.Function.ContentAreaByName() variant does not require Platform.Load.',
         description:
             'Retrieves content from a classic Content Area by name. ' +
             'Deprecated — Content Areas are no longer supported on current SFMC infrastructure. ' +
+            'Requires `Platform.Load("core", "1.1.5")` (in the same scope) before use. ' +
             'Note: the Platform.Function.ContentAreaByName() variant does not require Platform.Load and ' +
             'accepts a boolean stopOnError parameter instead of a string errorMsg.',
         params: [
@@ -335,22 +389,20 @@ export const SSJS_GLOBALS = [
         requiresCoreLoad: true,
         minArgs: 2,
         maxArgs: 2,
-        // notDefinedAtRuntime: officially documented but proven NOT to exist in the SSJS engine.
-        // Kept in ssjs-data (and ssjs.guide) so the documented-but-broken method stays discoverable,
-        // but excluded from the generated .d.ts so VS Code never offers it, and flagged by ESLint as
-        // "does not exist at runtime". See officialDocsNote for the runtime evidence.
-        notDefinedAtRuntime: true,
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the bare-name global `Redirect` is `undefined` under EVERY Core ' +
-            'version tested ("1", "1.1.1", "1.1.5") — it is not injected by Platform.Load at all, contrary to ' +
-            'the official example. Calling it throws a ReferenceError. Use ' +
-            '`Platform.Response.Redirect(url, movedPermanently)` instead, which is always available.',
+            'Runtime-verified (CloudPage): the bare-name `Redirect` IS defined as a function after ' +
+            '`Platform.Load("core", ...)` and actually performs the redirect. IMPORTANT SCOPE RULE: bare-name ' +
+            'Core globals are injected ONLY into the scope where Platform.Load runs — they are NOT visible inside ' +
+            'nested helper-function bodies or eval(). Call Redirect at the same scope as Platform.Load, or use ' +
+            'the always-available `Platform.Response.Redirect(url, movedPermanently)` (which needs no Platform.Load). ' +
+            'Meaningful only in CloudPage context.',
         description:
             'Redirects the browser to another address. ' +
-            'DOES NOT EXIST AT RUNTIME: the bare-name `Redirect` global is not defined in CloudPages ' +
-            '(calling it throws a ReferenceError) — use `Platform.Response.Redirect(url, movedPermanently)` instead. ' +
+            'Requires `Platform.Load("core", "1.1.5")` and must be called in the same scope as `Platform.Load` ' +
+            '(bare-name Core globals are not visible inside nested helper functions). ' +
+            'For scope-independent use that needs no Platform.Load, use `Platform.Response.Redirect(url, movedPermanently)`. ' +
             'Meaningful only in CloudPage context.',
         params: [
             {
@@ -368,8 +420,8 @@ export const SSJS_GLOBALS = [
         returnType: 'void',
         syntax: 'Redirect(url, movedPermanently)',
         example:
-            '// The bare-name Redirect global is undefined at runtime — use Platform.Response.Redirect instead:\n' +
-            'Platform.Response.Redirect("https://www.example.com", false);',
+            'Platform.Load("core", "1.1.5");\n' +
+            'Redirect("https://www.example.com", false); // or, scope-independent: Platform.Response.Redirect("https://www.example.com", false);',
     },
     { name: 'GUID', aliasOf: 'Platform.Function.GUID', requiresCoreLoad: true },
     {
@@ -382,8 +434,60 @@ export const SSJS_GLOBALS = [
         aliasOf: 'Platform.Function.IsPhoneNumber',
         requiresCoreLoad: true,
     },
-    { name: 'Write', aliasOf: 'Platform.Response.Write' },
-    { name: 'Stringify', aliasOf: 'Platform.Function.Stringify', requiresCoreLoad: true },
+    {
+        name: 'Write',
+        type: 'function',
+        aliasOf: 'Platform.Response.Write', // provenance
+        minArgs: 1,
+        maxArgs: 1,
+        requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the bare-name `Write` works after `Platform.Load("core", ...)` and ' +
+            'outputs to the response. IMPORTANT SCOPE RULE: bare-name Core globals are injected ONLY into the ' +
+            'scope where Platform.Load runs — they are NOT visible inside nested helper-function bodies or eval(). ' +
+            'If you output from inside a helper function, use the always-available `Platform.Response.Write(text)` ' +
+            'instead (which needs no Platform.Load and works in any scope).',
+        description:
+            'Writes text to the HTTP response output. ' +
+            'Requires `Platform.Load("core", "1.1.5")` and must be called in the same scope as `Platform.Load` ' +
+            '(bare-name Core globals are not visible inside nested helper functions). ' +
+            'For scope-independent output that needs no Platform.Load, use `Platform.Response.Write(text)` instead.',
+        params: [{ name: 'text', description: 'Text to write to the response.', type: 'string' }],
+        returnType: 'void',
+        syntax: 'Write(text)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'Write("Hello world"); // or, scope-independent: Platform.Response.Write("Hello world");',
+    },
+    {
+        name: 'Stringify',
+        type: 'function',
+        aliasOf: 'Platform.Function.Stringify', // provenance
+        minArgs: 1,
+        maxArgs: 1,
+        requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the bare-name `Stringify` works after `Platform.Load("core", ...)` ' +
+            '(e.g. Stringify({a:1,b:"x"}) -> \'{"a":1,"b":"x"}\'). IMPORTANT SCOPE RULE: bare-name Core globals ' +
+            'are injected ONLY into the scope where Platform.Load runs — they are NOT visible inside nested ' +
+            'helper-function bodies or eval(). Call Stringify at the same scope as Platform.Load, or use the ' +
+            'always-available `Platform.Function.Stringify(value)` form.',
+        description:
+            'Serializes a value to a JSON string. ' +
+            'Requires `Platform.Load("core", "1.1.5")` before use, and must be called in the same scope as ' +
+            '`Platform.Load` (bare-name Core globals are not visible inside nested helper functions). ' +
+            'For scope-independent use, use `Platform.Function.Stringify(value)` instead.',
+        params: [{ name: 'value', description: 'Value to serialize to JSON.', type: 'any' }],
+        returnType: 'string',
+        syntax: 'Stringify(value)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var json = Stringify({ a: 1, b: "x" }); // \'{"a":1,"b":"x"}\'',
+    },
     // ── Core-library namespace markers ───────────────────────────────────────
     {
         name: 'DateTime',
@@ -423,8 +527,19 @@ export const SSJS_GLOBALS = [
         minArgs: 2,
         maxArgs: 2,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the bare-name `Format` works after `Platform.Load("core", ...)` ' +
+            '(e.g. Format(4213.65, "C2") -> "$4,213.65"). IMPORTANT SCOPE RULE: bare-name Core globals are ' +
+            'injected ONLY into the scope where Platform.Load runs — they are NOT visible inside nested ' +
+            'helper-function bodies or eval(). Call Format at the same scope as Platform.Load. (Curiously, in a ' +
+            'bare CloudPage the prefixed `Platform.Function.Format` can throw "Unable to retrieve security ' +
+            'descriptor for this frame" while the bare-name form succeeds.)',
         description:
             'Applies a formatting rule to a string or numeric value. ' +
+            'Requires `Platform.Load("core", "1.1.5")` before use, and must be called in the same scope as ' +
+            '`Platform.Load` (bare-name Core globals are not visible inside nested helper functions). ' +
             'Use format codes such as `C` (currency), `D` (decimal), `N` (number with separators), ' +
             '`P` (percentage), `O` (ISO 8601 date), `s` (sortable date), `d` (short date), `t` (12-hour time), etc. ' +
             'Append a digit to control decimal places, e.g. `C2` for two decimal places.',

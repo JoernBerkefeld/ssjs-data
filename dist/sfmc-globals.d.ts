@@ -997,7 +997,7 @@ declare namespace Variable {
     /**
      * Retrieves the value of an AMPscript variable from the SSJS context.
      *
-     * [ssjs.guide reference](https://ssjs.guide/global-functions/variable/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/variable/)
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): when the variable was NEVER SET it returns `null` (typeof "object"), NOT an empty string. A variable explicitly set to "" returns `""`. The leading `@` is optional — GetValue("v") and GetValue("@v") return the same value.
@@ -1011,7 +1011,7 @@ declare namespace Variable {
     /**
      * Assigns a value to an AMPscript variable from the SSJS context.
      *
-     * [ssjs.guide reference](https://ssjs.guide/global-functions/variable/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/variable/)
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param variableName - Name of the AMPscript variable
@@ -1028,7 +1028,7 @@ declare namespace Request {
     /**
      * Retrieves the value of a URL query string parameter.
      *
-     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage GET): for an ABSENT parameter it returns `null` (typeof "object"), NOT an empty string. A present parameter returns its string value. Guard reads with a truthiness / `!= null` check.
@@ -1042,7 +1042,7 @@ declare namespace Request {
     /**
      * Retrieves data from a named form field, including values sent via POST.
      *
-     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): for an ABSENT field it returns `null` (typeof "object"), NOT an empty string.
@@ -1055,7 +1055,7 @@ declare namespace Request {
     /**
      * Returns the raw body of the HTTP POST request. CAVEAT: Only returns data on the FIRST call per request; subsequent calls return nothing. Store the result in a variable if you need it multiple times.
      *
-     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param encoding - Character encoding for the post data.
@@ -1068,7 +1068,7 @@ declare namespace Request {
     /**
      * Retrieves the value of a named cookie from the HTTP request sent by the client browser.
      *
-     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): for an ABSENT cookie it returns `null` (typeof "object"), NOT an empty string.
@@ -1081,7 +1081,7 @@ declare namespace Request {
     /**
      * Returns the language preferences of the client browser as specified in the HTTP Accept-Language request header.
      *
-     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): THROWS "Unable to retrieve security descriptor for this frame." in a plain CloudPage GET context. Wrap in try/catch or avoid; may only work in specific contexts.
@@ -1093,7 +1093,7 @@ declare namespace Request {
     /**
      * Returns the value of the named HTTP request header, or null if not present.
      *
-     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param headerName - Name of the HTTP request header to retrieve.
@@ -1105,7 +1105,7 @@ declare namespace Request {
     /**
      * Returns an object describing the client browser.
      *
-     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
      * @example
      * var browser = Platform.Request.Browser;
@@ -1115,7 +1115,7 @@ declare namespace Request {
     /**
      * Returns the IP address of the client.
      *
-     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
      * @example
      * Write(Platform.Request.ClientIP);
@@ -1124,7 +1124,7 @@ declare namespace Request {
     /**
      * Returns true if the current request was made over HTTPS.
      *
-     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
      * @example
      * if (Platform.Request.HasSSL) {
@@ -1137,7 +1137,7 @@ declare namespace Request {
     /**
      * Returns true if the current request was made over HTTPS (alias of HasSSL).
      *
-     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
      * @example
      * Write(Platform.Request.IsSSL);
@@ -1146,7 +1146,7 @@ declare namespace Request {
     /**
      * Returns the HTTP method (GET, POST, etc.) of the current request.
      *
-     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
      * @example
      * var method = Platform.Request.Method;
@@ -1159,7 +1159,7 @@ declare namespace Request {
     /**
      * Returns the full query string of the current request URL.
      *
-     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
      * @example
      * Write(Platform.Request.QueryString);
@@ -1168,7 +1168,7 @@ declare namespace Request {
     /**
      * Returns the referrer URL from the HTTP Referer header.
      *
-     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
      * @example
      * Write(Platform.Request.ReferrerURL);
@@ -1177,7 +1177,7 @@ declare namespace Request {
     /**
      * Returns the full URL of the current page request.
      *
-     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
      * @example
      * Write("Current page: " + Platform.Request.RequestURL);
@@ -1186,7 +1186,7 @@ declare namespace Request {
     /**
      * Returns the user-agent string from the HTTP request.
      *
-     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
      * @example
      * Write(Platform.Request.UserAgent);
@@ -1195,36 +1195,41 @@ declare namespace Request {
 }
 
 /**
- * Encodes plain text to a Base64 encoded string. Requires `Platform.Load("core", "1.1.5")` before use. For charset control, use `Platform.Function.Base64Encode(string, charset)` instead.
+ * Encodes plain text to a Base64 encoded string. Requires `Platform.Load("core", "1.1.5")` before use, and must be called in the same scope as `Platform.Load` (bare-name Core globals are not visible inside nested helper functions). For charset control or scope-independent use, use `Platform.Function.Base64Encode(string, charset)` instead.
  *
- * [ssjs.guide reference](https://ssjs.guide/global-functions/base64encode/)
+ * [ssjs.guide reference](https://ssjs.guide/core-library/base64encode/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @remarks ✅ Runtime-verified in a live SFMC test.
+ * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `Base64Encode` works after `Platform.Load("core", ...)` and returns the encoded string (e.g. Base64Encode("hi") -> "aGk="). IMPORTANT SCOPE RULE: bare-name Core globals are injected ONLY into the scope where Platform.Load runs — they are NOT visible inside nested helper-function bodies or eval(). Call them at the same scope as Platform.Load, or use the always-available `Platform.Function.Base64Encode(string[, charset])` form (which also allows charset control).
  * @param string - Text to encode
  * @example
- * var decoded = 'Convert to Base64';
- * var encoded = Base64Encode(decoded); // "Q29udmVydCB0byBCYXNlNjQ="
+ * Platform.Load("core", "1.1.5");
+ * var encoded = Base64Encode('Convert to Base64'); // "Q29udmVydCB0byBCYXNlNjQ="
  */
 declare function Base64Encode(string: string): string;
 /**
- * Decodes a Base64 encoded string to plain text. Requires `Platform.Load("core", "1.1.5")` before use. For charset control, use `Platform.Function.Base64Decode(encodedString, charset)` instead.
+ * Decodes a Base64 encoded string to plain text. Requires `Platform.Load("core", "1.1.5")` before use, and must be called in the same scope as `Platform.Load` (bare-name Core globals are not visible inside nested helper functions). For charset control or scope-independent use, use `Platform.Function.Base64Decode(encodedString, charset)` instead.
  *
- * [ssjs.guide reference](https://ssjs.guide/global-functions/base64decode/)
+ * [ssjs.guide reference](https://ssjs.guide/core-library/base64decode/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @remarks ✅ Runtime-verified in a live SFMC test.
+ * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `Base64Decode` works after `Platform.Load("core", ...)` (e.g. Base64Decode("aGk=") -> "hi"). IMPORTANT SCOPE RULE: bare-name Core globals are injected ONLY into the scope where Platform.Load runs — they are NOT visible inside nested helper-function bodies or eval(). Call them at the same scope as Platform.Load, or use the always-available `Platform.Function.Base64Decode(encodedString[, charset])` form.
  * @param encodedString - Base64 encoded string to decode
  * @example
- * var encoded = 'VGhpcyB3YXMgYSBCYXNlNjQgZW5jb2RlZCBzdHJpbmcu';
- * var decoded = Base64Decode(encoded); // "This was a Base64 encoded string."
+ * Platform.Load("core", "1.1.5");
+ * var decoded = Base64Decode('VGhpcyB3YXMgYSBCYXNlNjQgZW5jb2RlZCBzdHJpbmcu'); // "This was a Base64 encoded string."
  */
 declare function Base64Decode(encodedString: string): string;
 /**
- * Retrieves content from a classic Content Area by numeric ID. Deprecated — Content Areas are no longer supported on current SFMC infrastructure. Note: the Platform.Function.ContentArea() variant does not require Platform.Load and accepts a boolean stopOnError parameter instead of a string errorMsg.
+ * Retrieves content from a classic Content Area by numeric ID. Deprecated — Content Areas are no longer supported on current SFMC infrastructure. Requires `Platform.Load("core", "1.1.5")` (in the same scope) before use. Note: the Platform.Function.ContentArea() variant does not require Platform.Load and accepts a boolean stopOnError parameter instead of a string errorMsg.
  *
- * [ssjs.guide reference](https://ssjs.guide/global-functions/contentarea/)
+ * [ssjs.guide reference](https://ssjs.guide/core-library/contentarea/)
  *
  * @deprecated
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @remarks ✅ Runtime-verified in a live SFMC test.
  * @param id - Numeric ID of the Content Area.
  * @param regionName - Impression region for content.
  * @param errorMsg - Error message string returned on failure.
@@ -1236,12 +1241,13 @@ declare function Base64Decode(encodedString: string): string;
  */
 declare function ContentArea(id: number, regionName?: string, errorMsg?: string, fallbackContent?: string): string;
 /**
- * Retrieves content from a classic Content Area by name. Deprecated — Content Areas are no longer supported on current SFMC infrastructure. Note: the Platform.Function.ContentAreaByName() variant does not require Platform.Load and accepts a boolean stopOnError parameter instead of a string errorMsg.
+ * Retrieves content from a classic Content Area by name. Deprecated — Content Areas are no longer supported on current SFMC infrastructure. Requires `Platform.Load("core", "1.1.5")` (in the same scope) before use. Note: the Platform.Function.ContentAreaByName() variant does not require Platform.Load and accepts a boolean stopOnError parameter instead of a string errorMsg.
  *
- * [ssjs.guide reference](https://ssjs.guide/global-functions/contentareabyname/)
+ * [ssjs.guide reference](https://ssjs.guide/core-library/contentareabyname/)
  *
  * @deprecated
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @remarks ✅ Runtime-verified in a live SFMC test.
  * @param name - Name of the Content Area.
  * @param regionName - Impression region for content.
  * @param errorMsg - Error message string returned on failure.
@@ -1294,6 +1300,21 @@ declare function EndImpressionRegion(closeAll?: boolean): void;
  */
 declare function Now(useContextTime?: boolean): string;
 /**
+ * Redirects the browser to another address. Requires `Platform.Load("core", "1.1.5")` and must be called in the same scope as `Platform.Load` (bare-name Core globals are not visible inside nested helper functions). For scope-independent use that needs no Platform.Load, use `Platform.Response.Redirect(url, movedPermanently)`. Meaningful only in CloudPage context.
+ *
+ * [ssjs.guide reference](https://ssjs.guide/core-library/redirect/)
+ *
+ * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @remarks ✅ Runtime-verified in a live SFMC test.
+ * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `Redirect` IS defined as a function after `Platform.Load("core", ...)` and actually performs the redirect. IMPORTANT SCOPE RULE: bare-name Core globals are injected ONLY into the scope where Platform.Load runs — they are NOT visible inside nested helper-function bodies or eval(). Call Redirect at the same scope as Platform.Load, or use the always-available `Platform.Response.Redirect(url, movedPermanently)` (which needs no Platform.Load). Meaningful only in CloudPage context.
+ * @param url - The address to send the browser to.
+ * @param movedPermanently - Pass `true` for an HTTP 301 (permanent) redirect or `false` for a 302 (temporary) redirect.
+ * @example
+ * Platform.Load("core", "1.1.5");
+ * Redirect("https://www.example.com", false); // or, scope-independent: Platform.Response.Redirect("https://www.example.com", false);
+ */
+declare function Redirect(url: string, movedPermanently: boolean): void;
+/**
  * Generates a new globally unique identifier string.
  *
  * [ssjs.guide reference](https://ssjs.guide/platform-functions/guid/)
@@ -1335,36 +1356,42 @@ declare function IsEmailAddress(value: string): boolean;
  */
 declare function IsPhoneNumber(value: string): boolean;
 /**
- * Writes content to the HTTP response output. Distinct from the bare-name `Write()``, which write to the rendered page output.
+ * Writes text to the HTTP response output. Requires `Platform.Load("core", "1.1.5")` and must be called in the same scope as `Platform.Load` (bare-name Core globals are not visible inside nested helper functions). For scope-independent output that needs no Platform.Load, use `Platform.Response.Write(text)` instead.
  *
- * [ssjs.guide reference](https://ssjs.guide/global-functions/write/)
+ * [ssjs.guide reference](https://ssjs.guide/core-library/write/)
  *
+ * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @param content - Content string to write to the response.
+ * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `Write` works after `Platform.Load("core", ...)` and outputs to the response. IMPORTANT SCOPE RULE: bare-name Core globals are injected ONLY into the scope where Platform.Load runs — they are NOT visible inside nested helper-function bodies or eval(). If you output from inside a helper function, use the always-available `Platform.Response.Write(text)` instead (which needs no Platform.Load and works in any scope).
+ * @param text - Text to write to the response.
  * @example
- * var data = { name: "Jane", status: "active" };
- * Platform.Response.Write(Stringify(data));
+ * Platform.Load("core", "1.1.5");
+ * Write("Hello world"); // or, scope-independent: Platform.Response.Write("Hello world");
  */
 declare function Write(content: string): void;
 /**
- * Converts a JavaScript object into its JSON string representation. Works only with known JSON-serializable types. Not to be confused with `String()`, which converts CLR response objects to plain strings. The bare-name Stringify() global is equivalent but requires Platform.Load("core","1.1.5"); this Platform.Function form works without it.
+ * Serializes a value to a JSON string. Requires `Platform.Load("core", "1.1.5")` before use, and must be called in the same scope as `Platform.Load` (bare-name Core globals are not visible inside nested helper functions). For scope-independent use, use `Platform.Function.Stringify(value)` instead.
  *
- * [ssjs.guide reference](https://ssjs.guide/global-functions/stringify/)
+ * [ssjs.guide reference](https://ssjs.guide/core-library/stringify/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
- * @param value - Value to serialize to JSON. Accepts objects, arrays, strings, numbers, and booleans.
+ * @remarks ✅ Runtime-verified in a live SFMC test.
+ * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `Stringify` works after `Platform.Load("core", ...)` (e.g. Stringify({a:1,b:"x"}) -> '{"a":1,"b":"x"}'). IMPORTANT SCOPE RULE: bare-name Core globals are injected ONLY into the scope where Platform.Load runs — they are NOT visible inside nested helper-function bodies or eval(). Call Stringify at the same scope as Platform.Load, or use the always-available `Platform.Function.Stringify(value)` form.
+ * @param value - Value to serialize to JSON.
  * @returns JSON string representation of the value.
  * @example
- * var json = Platform.Function.Stringify({ name: "Jane", age: 30 });
- * Platform.Function.Write(json);
+ * Platform.Load("core", "1.1.5");
+ * var json = Stringify({ a: 1, b: "x" }); // '{"a":1,"b":"x"}'
  */
 declare function Stringify(value: any): string;
 /**
- * Applies a formatting rule to a string or numeric value. Use format codes such as `C` (currency), `D` (decimal), `N` (number with separators), `P` (percentage), `O` (ISO 8601 date), `s` (sortable date), `d` (short date), `t` (12-hour time), etc. Append a digit to control decimal places, e.g. `C2` for two decimal places.
+ * Applies a formatting rule to a string or numeric value. Requires `Platform.Load("core", "1.1.5")` before use, and must be called in the same scope as `Platform.Load` (bare-name Core globals are not visible inside nested helper functions). Use format codes such as `C` (currency), `D` (decimal), `N` (number with separators), `P` (percentage), `O` (ISO 8601 date), `s` (sortable date), `d` (short date), `t` (12-hour time), etc. Append a digit to control decimal places, e.g. `C2` for two decimal places.
  *
- * [ssjs.guide reference](https://ssjs.guide/global-functions/format/)
+ * [ssjs.guide reference](https://ssjs.guide/core-library/format/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @remarks ✅ Runtime-verified in a live SFMC test.
+ * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `Format` works after `Platform.Load("core", ...)` (e.g. Format(4213.65, "C2") -> "$4,213.65"). IMPORTANT SCOPE RULE: bare-name Core globals are injected ONLY into the scope where Platform.Load runs — they are NOT visible inside nested helper-function bodies or eval(). Call Format at the same scope as Platform.Load. (Curiously, in a bare CloudPage the prefixed `Platform.Function.Format` can throw "Unable to retrieve security descriptor for this frame" while the bare-name form succeeds.)
  * @param textToFormat - The string or number to apply a formatting rule to.
  * @param formatCode - A format code to apply. Numeric: C, D, E, F, G, N, P (append digit for decimal places). Date/time: d, M, f, g, O, r, s, t, T, or a custom pattern.
  * @example
@@ -3284,7 +3311,7 @@ declare namespace Attribute {
     /**
      * Returns the value of the specified subscriber attribute or sendable data extension field for the current recipient. Preferred over Platform.Recipient.GetAttributeValue() — both methods are equivalent. Available in CloudPages after Platform.Load("Core", ...); returns an empty string when no recipient/attribute context is present.
      *
-     * [ssjs.guide reference](https://ssjs.guide/global-functions/attribute/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/attribute/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.

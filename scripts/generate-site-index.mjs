@@ -29,6 +29,7 @@ import {
     httpMethodUrl,
     wsproxyMethodUrl,
     globalFunctionUrl,
+    globalFunctionCategory,
     PLATFORM_OBJECT_URLS,
     CORE_LIBRARY_URLS,
     ECMASCRIPT_URLS,
@@ -153,7 +154,7 @@ const index = [];
 
 // ── Platform Functions ─────────────────────────────────────────────────────
 // Each function has its own page at /platform-functions/<name.toLowerCase()>/
-// Exceptions: functions whose primary page is under /global-functions/ use that URL instead;
+// Exceptions: functions whose primary page is the bare-name global's page use that URL instead;
 // deprecated functions with no ssjs.guide page are omitted.
 for (const fn of PLATFORM_FUNCTIONS) {
     const lower = fn.name.toLowerCase();
@@ -255,7 +256,7 @@ const PLATFORM_OBJECT_GROUPS = [
         array: ATTRIBUTE_METHODS,
         prefix: 'Attribute',
         url: GUIDE_URLS.attribute,
-        category: 'Global Functions',
+        category: 'Core Library',
     },
 ];
 
@@ -482,24 +483,27 @@ for (const fn of KNOWN_UNSUPPORTED) {
     );
 }
 
-// ── SSJS Globals ───────────────────────────────────────────────────────────
-// Functions with dedicated pages under /global-functions/
+// ── SSJS bare-name globals ─────────────────────────────────────────────────
+// Functions with dedicated pages under /core-library/ (Core-injected bare
+// names) or /ecmascript-builtins/ (native constructors) — see globalFunctionUrl.
 for (const g of SSJS_GLOBALS) {
     if (g.type !== 'function') {
         continue;
     }
-    index.push(record(g.name, globalFunctionUrl(g.name), 'Global Functions', 'function', g));
+    index.push(
+        record(g.name, globalFunctionUrl(g.name), globalFunctionCategory(g.name), 'function', g),
+    );
 }
 
 // Request is a bare-name global object (type: 'object') with a dedicated
-// /global-functions/request/ page, so it is not covered by the function loop above.
+// /core-library/request/ page, so it is not covered by the function loop above.
 const requestGlobal = SSJS_GLOBALS.find((x) => x.name === 'Request');
 if (requestGlobal) {
     index.push(
         record(
             requestGlobal.name,
             globalFunctionUrl(requestGlobal.name),
-            'Global Functions',
+            globalFunctionCategory(requestGlobal.name),
             'object',
             requestGlobal,
         ),
