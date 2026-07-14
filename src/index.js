@@ -457,7 +457,10 @@ export const SSJS_GLOBALS = [
  * Keys are identifiers; values are "readonly" or "writable".
  */
 export const SSJS_GLOBALS_MAP = Object.fromEntries([
-    ...SSJS_GLOBALS.map((g) => [g.name, 'readonly']),
+    // Exclude notDefinedAtRuntime entries (e.g. Redirect): they are documented but
+    // do not exist in the SSJS engine, so they must NOT be treated as valid globals
+    // by ESLint's no-undef — the dedicated ssjs-no-nonexistent-global rule flags them.
+    ...SSJS_GLOBALS.filter((g) => !g.notDefinedAtRuntime).map((g) => [g.name, 'readonly']),
     ['HTTP', 'readonly'],
 
     ['Script', 'readonly'],
@@ -490,6 +493,25 @@ export const SSJS_GLOBALS_MAP = Object.fromEntries([
     ['SurveyEvent', 'readonly'],
     ['UnsubEvent', 'readonly'],
 ]);
+
+/**
+ * Lowercased names of SSJS globals that are officially documented but proven NOT
+ * to exist at runtime (calling them throws a ReferenceError), e.g. `Redirect`.
+ * Consumed by the `ssjs-no-nonexistent-global` ESLint rule and the LSP validator
+ * to flag these phantom globals instead of treating them as valid.
+ */
+export const notDefinedAtRuntimeGlobalNames = new Set(
+    SSJS_GLOBALS.filter((g) => g.notDefinedAtRuntime).map((g) => g.name.toLowerCase()),
+);
+
+/**
+ * Lookup map (lowercased name → global entry) for SSJS globals flagged
+ * `notDefinedAtRuntime`. Lets consumers surface the runtime-safe replacement
+ * (from the entry's `officialDocsNote` / `description`) when reporting the global.
+ */
+export const notDefinedAtRuntimeGlobalLookup = new Map(
+    SSJS_GLOBALS.filter((g) => g.notDefinedAtRuntime).map((g) => [g.name.toLowerCase(), g]),
+);
 
 // ── Top-level Platform methods ───────────────────────────────────────────────
 // Direct methods on the Platform object (e.g. Platform.Load).
