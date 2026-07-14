@@ -1278,19 +1278,6 @@ declare function EndImpressionRegion(closeAll?: boolean): void;
  */
 declare function Now(useContextTime?: boolean): string;
 /**
- * Redirects the browser to another address. Redirect(url, movedPermanently) sends the browser to another URL; pass `true` for an HTTP 301 (permanent) or `false` for a 302 (temporary) redirect. Meaningful only in CloudPage context. Requires `Platform.Load("core", "1.1.5")` before use. Behaves like Platform.Response.Redirect. Known bug: a redirect placed inside a try block triggers the catch block.
- *
- * [ssjs.guide reference](https://ssjs.guide/global-functions/redirect/)
- *
- * @remarks Requires `Platform.Load("Core", "1")` before use.
- * @param url - The address to send the browser to.
- * @param movedPermanently - Pass `true` for an HTTP 301 (permanent) redirect or `false` for a 302 (temporary) redirect.
- * @example
- * Platform.Load("Core", "1.1.5");
- * Redirect("https://www.example.com", false);
- */
-declare function Redirect(url: string, movedPermanently: boolean): void;
-/**
  * Generates a new globally unique identifier string.
  *
  * [ssjs.guide reference](https://ssjs.guide/platform-functions/guid/)
@@ -3296,14 +3283,18 @@ declare namespace Attribute {
 
 declare namespace ErrorUtil {
     /**
-     * Inspects a WSProxy result object and throws an exception when its `Status` property starts with `"Error:"`. WSProxy methods never raise exceptions on SOAP-level errors — instead they return a result object whose `Status` field signals the outcome. Wrap WSProxy calls in a `try`/`catch` block and call this function immediately after each call to convert non-OK results into catchable exceptions.
+     * Inspects a WSProxy result object and throws when its `Status` property indicates an error. WSProxy methods never raise exceptions on SOAP-level errors — instead they return a result object whose `Status` field signals the outcome. DEPRECATED: only available under `Platform.Load("Core", "1")`; unavailable in newer Core versions. Prefer checking `result.Status` and throwing `new Error(...)` yourself.
      *
      * [ssjs.guide reference](https://ssjs.guide/wsproxy/errorutil/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): `ErrorUtil` (and its only member `ThrowWSProxyError`) is provided ONLY by `Platform.Load("Core", "1")`. Under any newer Core version ("1.1.1", "1.1.5", …) `ErrorUtil` is `undefined`, so this call throws a ReferenceError — it is effectively deprecated in Core > 1. A preceding `new Script.Util.WSProxy()` is NOT required to make ErrorUtil available (disproven at runtime). When it does throw on a real WSProxy error result, it throws a plain STRING (e.g. "Error: Data extension does not exist: …") — not an Error object — so the caught value has no `.message`/`.description` (both `undefined`); read the string itself via `String(ex)`. Recommended replacement (works on any Core version): inspect `result.Status` and `throw new Error(...)` (or handle inline) instead of calling ErrorUtil.ThrowWSProxyError.
      * @param result - Result object returned by any WSProxy method. Minimum shape: `{ Status: string, RequestID: string, Results: object[] }`. Retrieve and perform variants may include additional fields.
      * @example
-     * Platform.Load("core", "1.1.5");
+     * // Only works under Platform.Load("Core", "1"); prefer the result.Status check below.
+     * Platform.Load("Core", "1");
      * var api = new Script.Util.WSProxy();
      * var customerKey = "0b744ffa-bab5-458d-9e7d-fb05a7873380";
      * try {
@@ -3311,10 +3302,13 @@ declare namespace ErrorUtil {
      *         "DataExtensionObject[" + customerKey + "]",
      *         ["FirstName", "LastName", "EmailAddress"]
      *     );
-     *     ErrorUtil.ThrowWSProxyError(result);
+     *     // Preferred, version-independent replacement:
+     *     if (String(result.Status).indexOf("Error") === 0) {
+     *         throw new Error(String(result.Status));
+     *     }
      *     // process successful results
      * } catch (ex) {
-     *     // custom error-handling logic
+     *     Write(String(ex));
      * }
      */
     function ThrowWSProxyError(result: object): void;
@@ -3480,24 +3474,27 @@ declare namespace HTTP {
 
 declare namespace HTTPHeader {
     /**
-     * Retrieves the value of the specified HTTP request header.
+     * Retrieves the value of the specified INBOUND HTTP request header (e.g. Host, User-Agent). Returns `null` for headers that are not present on the request.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/httpheader/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): reads INBOUND request headers (e.g. `Host`, `User-Agent`) and returns their string value. It does NOT read back a header you set earlier with `HTTPHeader.SetValue(...)` — GetValue for a just-set custom header returns `null`. Treat GetValue and SetValue as operating on separate (inbound vs outbound) header collections.
      * @param name - Name of the HTTP header to read
      * @example
      * Platform.Load("core", "1");
-     * var from = HTTPHeader.GetValue("From");
-     * Write(from);
+     * var host = HTTPHeader.GetValue("Host");
+     * Write(host);
      */
     function GetValue(name: string): string;
     /**
-     * Sets the value of the specified HTTP header. The host and content-length headers cannot be changed.
+     * Sets the value of the specified OUTBOUND HTTP header. The host and content-length headers cannot be changed. Note: values set here are not readable via `HTTPHeader.GetValue`, which reads inbound headers.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/httpheader/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param name - Name of the header to set
      * @param value - Value to assign to the header
      * @example
@@ -3506,17 +3503,19 @@ declare namespace HTTPHeader {
      */
     function SetValue(name: string, value: string): void;
     /**
-     * Removes the specified entry from the HTTP header.
+     * Removes the specified entry from the HTTP header. Returns `undefined`.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/httpheader/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): returns `undefined` (typeof "undefined"), NOT the `"OK"` string implied by some docs. Do not rely on the return value; call it for its side effect only.
      * @param headerName - Name of the header to remove
      * @example
      * Platform.Load("core", "1");
-     * var result = HTTPHeader.Remove("From"); // returns "OK"
+     * HTTPHeader.Remove("X-Custom-Header"); // no useful return value
      */
-    function Remove(headerName: string): string;
+    function Remove(headerName: string): void;
 }
 
 // ── Script.Util ──────────────────────────────────────────────────────────────

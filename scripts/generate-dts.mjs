@@ -774,6 +774,11 @@ for (const g of SSJS_GLOBALS) {
     if (CONSTRUCTIBLE_NAMES.has(g.name)) {
         continue;
     }
+    // notDefinedAtRuntime: officially documented but proven not to exist in the engine.
+    // Do NOT emit a declaration so editors never offer it as a real global.
+    if (g.notDefinedAtRuntime) {
+        continue;
+    }
     // Namespace object (e.g. Variable alias of Platform.Variable, or Request which
     // reuses Platform.Request's members via namespaceMethodsOf) — emit declare namespace
     if (g.type === 'object' && (g.aliasOf || g.namespaceMethodsOf)) {

@@ -12,6 +12,11 @@
  *       Used by mcp-server-sfmc conversion tools. (PLATFORM_FUNCTIONS only)
  *   - isStatic?: boolean      — true for namespace-level calls (Class.Method()), false for instance calls
  *   - deprecated?: boolean    — true for entries that resolve at runtime but should not be used in new code
+ *   - notDefinedAtRuntime?: boolean — true for entries that are officially documented but proven (via live
+ *       CloudPage test) NOT to exist in the SSJS engine; calling them throws a ReferenceError. Kept in
+ *       ssjs-data (and ssjs.guide) for discoverability, but EXCLUDED from the generated .d.ts so editors
+ *       never offer them, and flagged by ESLint as "does not exist at runtime". Pair with officialDocsNote
+ *       (runtime evidence) and a "use X instead" pointer.
  *   - isProperty?: boolean    — true for entries accessed without parentheses (e.g. Platform.Request.HasSSL)
  *   - requiresCoreLoad?: boolean — true when the call site requires a preceding Platform.Load("core", "<version>").
  *       RUNTIME NOTE: the bare-name globals injected by Platform.Load (Write, Stringify, Base64Encode,
@@ -44,11 +49,20 @@ export const SSJS_GLOBALS = [
         // Standalone bare-name object (not an alias). Shares the same member set as
         // Platform.Request; the generators reuse PLATFORM_REQUEST_METHODS via namespaceMethodsOf.
         namespaceMethodsOf: 'Platform.Request',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage, Platform.Load("core","1.1.5")): the bare-name global `Request` works ' +
+            'and is actually more reliable than `Platform.Request` for `.URL()` — `Request.URL()` returns the ' +
+            'full request URL as a string, whereas `Platform.Request.URL()` throws ' +
+            '"Unable to retrieve security descriptor for this frame." in CloudPages. Other members ' +
+            '(PagePath, Method, ApplicationID, PackageID, ApplicationBaseURL) return CLR values (empty in a ' +
+            'plain CloudPage GET, with Method="GET"). Prefer the bare-name `Request` in CloudPages.',
         description:
             'Object for reading incoming request values in CloudPage context. ' +
             'Members include `Request.URL()`, `Request.PagePath()`, `Request.Method()`, ' +
-            '`Request.ApplicationID()`, `Request.PackageID()`, and `Request.ApplicationBaseURL()`, ' +
-            'each returning a string. Behaves like Platform.Request. ' +
+            '`Request.ApplicationID()`, `Request.PackageID()`, and `Request.ApplicationBaseURL()`. ' +
+            'Behaves like Platform.Request but `Request.URL()` works where `Platform.Request.URL()` throws. ' +
             'Requires `Platform.Load("core", "1.1.5")` before use.',
         requiresCoreLoad: true,
     },
@@ -70,6 +84,12 @@ export const SSJS_GLOBALS = [
     {
         name: 'HTTPHeader',
         type: 'object',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): available after Platform.Load("core", ...). `GetValue` reads INBOUND ' +
+            'request headers and returns `null` for a header you set via `SetValue` (separate inbound/outbound ' +
+            'collections). `Remove` returns `undefined`, not `"OK"`.',
         description:
             'Object that provides access to HTTP request headers in SSJS CloudPage context. ' +
             'Requires `Platform.Load("core", "1.1.5")` before use.',
@@ -307,13 +327,23 @@ export const SSJS_GLOBALS = [
         requiresCoreLoad: true,
         minArgs: 2,
         maxArgs: 2,
+        // notDefinedAtRuntime: officially documented but proven NOT to exist in the SSJS engine.
+        // Kept in ssjs-data (and ssjs.guide) so the documented-but-broken method stays discoverable,
+        // but excluded from the generated .d.ts so VS Code never offers it, and flagged by ESLint as
+        // "does not exist at runtime". See officialDocsNote for the runtime evidence.
+        notDefinedAtRuntime: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the bare-name global `Redirect` is `undefined` under EVERY Core ' +
+            'version tested ("1", "1.1.1", "1.1.5") — it is not injected by Platform.Load at all, contrary to ' +
+            'the official example. Calling it throws a ReferenceError. Use ' +
+            '`Platform.Response.Redirect(url, movedPermanently)` instead, which is always available.',
         description:
             'Redirects the browser to another address. ' +
-            'Redirect(url, movedPermanently) sends the browser to another URL; ' +
-            'pass `true` for an HTTP 301 (permanent) or `false` for a 302 (temporary) redirect. ' +
-            'Meaningful only in CloudPage context. Requires `Platform.Load("core", "1.1.5")` before use. ' +
-            'Behaves like Platform.Response.Redirect. ' +
-            'Known bug: a redirect placed inside a try block triggers the catch block.',
+            'DOES NOT EXIST AT RUNTIME: the bare-name `Redirect` global is not defined in CloudPages ' +
+            '(calling it throws a ReferenceError) — use `Platform.Response.Redirect(url, movedPermanently)` instead. ' +
+            'Meaningful only in CloudPage context.',
         params: [
             {
                 name: 'url',
@@ -329,7 +359,9 @@ export const SSJS_GLOBALS = [
         ],
         returnType: 'void',
         syntax: 'Redirect(url, movedPermanently)',
-        example: 'Platform.Load("Core", "1.1.5");\nRedirect("https://www.example.com", false);',
+        example:
+            '// The bare-name Redirect global is undefined at runtime — use Platform.Response.Redirect instead:\n' +
+            'Platform.Response.Redirect("https://www.example.com", false);',
     },
     { name: 'GUID', aliasOf: 'Platform.Function.GUID', requiresCoreLoad: true },
     {
@@ -348,6 +380,13 @@ export const SSJS_GLOBALS = [
     {
         name: 'DateTime',
         type: 'object',
+        isConfirmed: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage, Platform.Load("core","1.1.5")): available. ' +
+            '`SystemDateToLocalDate` / `LocalDateToSystemDate` return CLR DateTime objects (typeof "object"), ' +
+            'which coerce transparently to strings via `"" + value`, `String(value)`, or `Write(value)` — so ' +
+            'treating them as strings is fine in practice. `DateTime.TimeZone.Retrieve(filter)` returns CLR rows ' +
+            'that `Stringify()` cannot serialize (throws "Object expected"); enumerate fields with `for..in` instead.',
         description:
             'Namespace for time zone and date utilities. ' +
             'Requires `Platform.Load("core", "1.1.5")` before use. ' +
@@ -357,9 +396,17 @@ export const SSJS_GLOBALS = [
     {
         name: 'ErrorUtil',
         type: 'object',
+        deprecated: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): `ErrorUtil` is provided ONLY by `Platform.Load("Core", "1")`. ' +
+            'Under newer Core versions ("1.1.1", "1.1.5", …) it is `undefined`. Effectively deprecated in Core > 1. ' +
+            'Prefer checking `result.Status` and throwing `new Error(...)` instead of ErrorUtil.ThrowWSProxyError.',
         description:
             'Utility namespace for WSProxy error handling. ' +
-            'Call `ErrorUtil.ThrowWSProxyError(result)` to convert WSProxy error-status results into thrown exceptions.',
+            'Call `ErrorUtil.ThrowWSProxyError(result)` to convert WSProxy error-status results into thrown exceptions. ' +
+            'DEPRECATED: only available under `Platform.Load("Core", "1")`; unavailable in newer Core versions.',
         requiresCoreLoad: true,
     },
     {
@@ -5871,14 +5918,23 @@ export const HTTPHEADER_METHODS = [
         maxArgs: 1,
         isStatic: false,
         requiresCoreLoad: true,
-        description: 'Retrieves the value of the specified HTTP request header.',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): reads INBOUND request headers (e.g. `Host`, `User-Agent`) and ' +
+            'returns their string value. It does NOT read back a header you set earlier with ' +
+            '`HTTPHeader.SetValue(...)` — GetValue for a just-set custom header returns `null`. ' +
+            'Treat GetValue and SetValue as operating on separate (inbound vs outbound) header collections.',
+        description:
+            'Retrieves the value of the specified INBOUND HTTP request header (e.g. Host, User-Agent). ' +
+            'Returns `null` for headers that are not present on the request.',
         params: [{ name: 'name', description: 'Name of the HTTP header to read', type: 'string' }],
         returnType: 'string',
         syntax: 'HTTPHeader.GetValue(name)',
         example:
             'Platform.Load("core", "1");\n' +
-            'var from = HTTPHeader.GetValue("From");\n' +
-            'Write(from);',
+            'var host = HTTPHeader.GetValue("Host");\n' +
+            'Write(host);',
     },
     {
         name: 'SetValue',
@@ -5886,9 +5942,11 @@ export const HTTPHEADER_METHODS = [
         maxArgs: 2,
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         description:
-            'Sets the value of the specified HTTP header. ' +
-            'The host and content-length headers cannot be changed.',
+            'Sets the value of the specified OUTBOUND HTTP header. ' +
+            'The host and content-length headers cannot be changed. ' +
+            'Note: values set here are not readable via `HTTPHeader.GetValue`, which reads inbound headers.',
         params: [
             { name: 'name', description: 'Name of the header to set', type: 'string' },
             { name: 'value', description: 'Value to assign to the header', type: 'string' },
@@ -5903,16 +5961,20 @@ export const HTTPHEADER_METHODS = [
         maxArgs: 1,
         isStatic: false,
         requiresCoreLoad: true,
-        description: 'Removes the specified entry from the HTTP header.',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): returns `undefined` (typeof "undefined"), NOT the `"OK"` string ' +
+            'implied by some docs. Do not rely on the return value; call it for its side effect only.',
+        description: 'Removes the specified entry from the HTTP header. Returns `undefined`.',
         params: [
             { name: 'headerName', description: 'Name of the header to remove', type: 'string' },
         ],
-        returnType: 'string',
-        returnEnum: ['OK'],
+        returnType: 'void',
         syntax: 'HTTPHeader.Remove(headerName)',
         example:
             'Platform.Load("core", "1");\n' +
-            'var result = HTTPHeader.Remove("From"); // returns "OK"',
+            'HTTPHeader.Remove("X-Custom-Header"); // no useful return value',
     },
 ];
 
@@ -6434,12 +6496,25 @@ export const ERROR_UTIL_METHODS = [
         maxArgs: 1,
         isStatic: true,
         requiresCoreLoad: true,
+        deprecated: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): `ErrorUtil` (and its only member `ThrowWSProxyError`) is provided ' +
+            'ONLY by `Platform.Load("Core", "1")`. Under any newer Core version ("1.1.1", "1.1.5", …) `ErrorUtil` ' +
+            'is `undefined`, so this call throws a ReferenceError — it is effectively deprecated in Core > 1. ' +
+            'A preceding `new Script.Util.WSProxy()` is NOT required to make ErrorUtil available (disproven at runtime). ' +
+            'When it does throw on a real WSProxy error result, it throws a plain STRING (e.g. ' +
+            '"Error: Data extension does not exist: …") — not an Error object — so the caught value has no ' +
+            '`.message`/`.description` (both `undefined`); read the string itself via `String(ex)`. ' +
+            'Recommended replacement (works on any Core version): inspect `result.Status` and ' +
+            '`throw new Error(...)` (or handle inline) instead of calling ErrorUtil.ThrowWSProxyError.',
         description:
-            'Inspects a WSProxy result object and throws an exception when its `Status` property ' +
-            'starts with `"Error:"`. WSProxy methods never raise exceptions on SOAP-level errors — ' +
-            'instead they return a result object whose `Status` field signals the outcome. ' +
-            'Wrap WSProxy calls in a `try`/`catch` block and call this function immediately after ' +
-            'each call to convert non-OK results into catchable exceptions.',
+            'Inspects a WSProxy result object and throws when its `Status` property indicates an error. ' +
+            'WSProxy methods never raise exceptions on SOAP-level errors — instead they return a result ' +
+            'object whose `Status` field signals the outcome. ' +
+            'DEPRECATED: only available under `Platform.Load("Core", "1")`; unavailable in newer Core versions. ' +
+            'Prefer checking `result.Status` and throwing `new Error(...)` yourself.',
         params: [
             {
                 name: 'result',
@@ -6453,7 +6528,8 @@ export const ERROR_UTIL_METHODS = [
         returnType: 'void',
         syntax: 'ErrorUtil.ThrowWSProxyError(result)',
         example:
-            'Platform.Load("core", "1.1.5");\n' +
+            '// Only works under Platform.Load("Core", "1"); prefer the result.Status check below.\n' +
+            'Platform.Load("Core", "1");\n' +
             'var api = new Script.Util.WSProxy();\n' +
             'var customerKey = "0b744ffa-bab5-458d-9e7d-fb05a7873380";\n' +
             'try {\n' +
@@ -6461,10 +6537,13 @@ export const ERROR_UTIL_METHODS = [
             '        "DataExtensionObject[" + customerKey + "]",\n' +
             '        ["FirstName", "LastName", "EmailAddress"]\n' +
             '    );\n' +
-            '    ErrorUtil.ThrowWSProxyError(result);\n' +
+            '    // Preferred, version-independent replacement:\n' +
+            '    if (String(result.Status).indexOf("Error") === 0) {\n' +
+            '        throw new Error(String(result.Status));\n' +
+            '    }\n' +
             '    // process successful results\n' +
             '} catch (ex) {\n' +
-            '    // custom error-handling logic\n' +
+            '    Write(String(ex));\n' +
             '}',
     },
 ];
