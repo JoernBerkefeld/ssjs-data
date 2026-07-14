@@ -6030,10 +6030,9 @@ export const PLATFORM_VARIABLE_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): available WITHOUT Platform.Load. When the variable was NEVER SET it ' +
+            'Runtime-verified (CloudPage): when the variable was NEVER SET it ' +
             'returns `null` (typeof "object"), NOT an empty string. A variable explicitly set to "" returns ' +
-            '`""`. The leading `@` is optional — GetValue("v") and GetValue("@v") return the same value. ' +
-            '(The bare-name `Variable` alias only exists AFTER Platform.Load("core", ...).)',
+            '`""`. The leading `@` is optional — GetValue("v") and GetValue("@v") return the same value.',
         syntax: 'Platform.Variable.GetValue(variableName)',
         example:
             'var sk = Platform.Variable.GetValue("SubscriberKey");\n' +
@@ -6052,9 +6051,8 @@ export const PLATFORM_VARIABLE_METHODS = [
         returnType: 'void',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): available WITHOUT Platform.Load. The leading `@` is optional — ' +
-            'SetValue("v", x) and SetValue("@v", x) both write the same AMPscript variable. (The bare-name ' +
-            '`Variable` alias only exists AFTER Platform.Load("core", ...).)',
+            'Runtime-verified (CloudPage): the leading `@` is optional — ' +
+            'SetValue("v", x) and SetValue("@v", x) both write the same AMPscript variable.',
         syntax: 'Platform.Variable.SetValue(variableName, value)',
         example:
             'Platform.Variable.SetValue("greeting", "Hello from SSJS");\n' +
@@ -6167,8 +6165,7 @@ export const PLATFORM_RESPONSE_METHODS = [
         returnType: 'void',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): available WITHOUT Platform.Load (typeof Platform.Response = "clr"). ' +
-            'Writes directly to the HTTP response body regardless of whether Core is loaded.',
+            'Runtime-verified (CloudPage): writes directly to the HTTP response body.',
         syntax: 'Platform.Response.Write(content)',
         example:
             'var data = { name: "Jane", status: "active" };\nPlatform.Response.Write(Stringify(data));',
@@ -6215,9 +6212,9 @@ export const PLATFORM_REQUEST_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage GET): available WITHOUT Platform.Load (typeof Platform.Request = "clr"). ' +
-            'For an ABSENT parameter it returns `null` (typeof "object"), NOT an empty string. A present ' +
-            'parameter returns its string value. Guard reads with a truthiness / `!= null` check.',
+            'Runtime-verified (CloudPage GET): for an ABSENT parameter it returns `null` (typeof "object"), ' +
+            'NOT an empty string. A present parameter returns its string value. Guard reads with a ' +
+            'truthiness / `!= null` check.',
         syntax: 'Platform.Request.GetQueryStringParameter(parameterName)',
         example:
             '// Page URL: /mypage?email=jane@example.com\nvar email = Platform.Request.GetQueryStringParameter("email");\nWrite(email);',
@@ -6234,7 +6231,7 @@ export const PLATFORM_REQUEST_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): available WITHOUT Platform.Load. For an ABSENT field it returns ' +
+            'Runtime-verified (CloudPage): for an ABSENT field it returns ' +
             '`null` (typeof "object"), NOT an empty string.',
         syntax: 'Platform.Request.GetFormField(name)',
         example: 'var email = Platform.Request.GetFormField("emailAddress");\nWrite(email);',
@@ -6258,7 +6255,7 @@ export const PLATFORM_REQUEST_METHODS = [
         returnType: 'string',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): available WITHOUT Platform.Load. On a GET request it returns `""` ' +
+            'Runtime-verified (CloudPage): on a GET request it returns `""` ' +
             '(empty string), not null. First call per request returns the body; subsequent calls return `""`.',
         syntax: 'Platform.Request.GetPostData([encoding])',
         example:
@@ -6277,7 +6274,7 @@ export const PLATFORM_REQUEST_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): available WITHOUT Platform.Load. For an ABSENT cookie it returns ' +
+            'Runtime-verified (CloudPage): for an ABSENT cookie it returns ' +
             '`null` (typeof "object"), NOT an empty string.',
         syntax: 'Platform.Request.GetCookieValue(cookieName)',
         example:
@@ -6315,7 +6312,7 @@ export const PLATFORM_REQUEST_METHODS = [
         returnType: 'string',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): available WITHOUT Platform.Load. For an ABSENT header it returns ' +
+            'Runtime-verified (CloudPage): for an ABSENT header it returns ' +
             '`null` (typeof "object") — consistent with the official docs.',
         syntax: 'Platform.Request.GetRequestHeader(headerName)',
         example:
@@ -6447,7 +6444,7 @@ export const PLATFORM_RECIPIENT_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): available WITHOUT Platform.Load and does NOT throw outside a send ' +
+            'Runtime-verified (CloudPage): does NOT throw outside a send ' +
             'context — in a plain CloudPage it returns `""` (empty string, typeof "string") for any attribute ' +
             'because no recipient is bound. The bare-name `Recipient` alias is NOT available even after ' +
             'Platform.Load; use `Platform.Recipient.GetAttributeValue(...)` (or `Attribute.GetValue(...)` after load).',
