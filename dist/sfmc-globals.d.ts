@@ -466,12 +466,14 @@ declare namespace Platform {
          */
         function AddObjectArrayItem(apiObject: object, propertyName: string, value: any): void;
         /**
-         * Executes a SOAP API Create call on an API object.
+         * Executes a SOAP API Create call on an API object and returns the OverallStatus message as a string.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokecreate/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return value as an object, but at runtime the call returns the OverallStatus message as a string ("OK" / "Error: ..."); the request ID is written to status[1] and the error code (a number) is written into the status array.
          * @param apiObject - SOAP API object instance
-         * @param status - Array that receives the status and request ID of the API call (e.g. [0, 0])
+         * @param status - Array that receives the status message and request ID of the API call (e.g. [0, 0]); status[0] is the message string, status[1] the request ID
          * @param options - API configure options to include in the call. Can contain a null value.
          * @example
          * var StatusAndRequestID = [0, 0];
@@ -479,14 +481,16 @@ declare namespace Platform {
          * var status = StatusAndRequestID[0];
          * var requestID = StatusAndRequestID[1];
          */
-        function InvokeCreate(apiObject: object, status: any[], options: object): object;
+        function InvokeCreate(apiObject: object, status: any[], options: object): string;
         /**
-         * Executes a SOAP API Update call on an API object.
+         * Executes a SOAP API Update call on an API object and returns the OverallStatus message as a string.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeupdate/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return value as an object, but at runtime the call returns the OverallStatus message as a string ("OK" / "Error: ..."); the request ID is written to status[1] and the error code (a number) is written into the status array.
          * @param apiObject - SOAP API object instance
-         * @param status - Array that receives the status and request ID of the API call (e.g. [0, 0])
+         * @param status - Array that receives the status message and request ID of the API call (e.g. [0, 0]); status[0] is the message string, status[1] the request ID
          * @param options - API configure options to include in the call. Can contain a null value.
          * @example
          * var StatusAndRequestID = [0, 0];
@@ -494,14 +498,16 @@ declare namespace Platform {
          * var status = StatusAndRequestID[0];
          * var requestID = StatusAndRequestID[1];
          */
-        function InvokeUpdate(apiObject: object, status: any[], options: object): object;
+        function InvokeUpdate(apiObject: object, status: any[], options: object): string;
         /**
-         * Executes a SOAP API Delete call on an API object.
+         * Executes a SOAP API Delete call on an API object and returns the OverallStatus message as a string.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokedelete/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return value as an object, but at runtime the call returns the OverallStatus message as a string ("OK" / "Error: ..."); the request ID is written to status[1] and the error code (a number) is written into the status array.
          * @param apiObject - SOAP API object instance
-         * @param status - Array that receives the status and request ID of the API call (e.g. [0, 0])
+         * @param status - Array that receives the status message and request ID of the API call (e.g. [0, 0]); status[0] is the message string, status[1] the request ID
          * @param options - API configure options to include in the call. Can contain a null value.
          * @example
          * var StatusAndRequestID = [0, 0];
@@ -509,14 +515,16 @@ declare namespace Platform {
          * var status = StatusAndRequestID[0];
          * var requestID = StatusAndRequestID[1];
          */
-        function InvokeDelete(apiObject: object, status: any[], options: object): object;
+        function InvokeDelete(apiObject: object, status: any[], options: object): string;
         /**
-         * Executes a SOAP API Retrieve call.
+         * Executes a SOAP API Retrieve call, returning an array of result objects when records match or null on error / no match.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeretrieve/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs do not mention the null return: at runtime the call returns an array of result objects when records match, but returns null on error or when no records match. The call takes exactly two arguments — passing a third throws a security-descriptor error.
          * @param apiObject - SOAP API RetrieveRequest object instance
-         * @param status - Array that receives the status and request ID of the API call (e.g. [0, 0])
+         * @param status - Array that receives the status message and request ID of the API call (e.g. [0, 0]); status[0] is the message string ("OK" / "Error: ..."), status[1] the request ID (GUID string)
          * @example
          * var RetrieveRequest = Platform.Function.CreateObject("RetrieveRequest");
          * Platform.Function.SetObjectProperty(RetrieveRequest, "ObjectType", "Email");
@@ -524,12 +532,14 @@ declare namespace Platform {
          * var StatusAndRequestID = [0, 0];
          * var Emails = Platform.Function.InvokeRetrieve(RetrieveRequest, StatusAndRequestID);
          */
-        function InvokeRetrieve(apiObject: object, status: any[]): object;
+        function InvokeRetrieve(apiObject: object, status: any[]): object[] | null;
         /**
-         * Executes a SOAP API Perform action on an API object.
+         * Executes a SOAP API Perform action on an API object and returns the OverallStatus message as a string.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeperform/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return value as an object, but the SOAP Perform contract returns the OverallStatus message as a string; the error code and perform response are written into the status array.
          * @param apiObject - SOAP API object instance
          * @param method - Method to perform on the object
          * @param status - Array that receives the status, error code, and perform response of the API call (e.g. [0, 0, 0])
@@ -541,12 +551,14 @@ declare namespace Platform {
          * var errorCode = StatusAndRequestID[1];
          * var performResponse = StatusAndRequestID[2];
          */
-        function InvokePerform(apiObject: object, method: string, status: any[], options: object): object;
+        function InvokePerform(apiObject: object, method: string, status: any[], options: object): string;
         /**
-         * Executes a SOAP API Configure call on an API object.
+         * Executes a SOAP API Configure call on an API object and returns the OverallStatus message as a string.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeconfigure/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return value as an object, but the SOAP Configure contract returns the OverallStatus message as a string; the request ID is written into the status array.
          * @param apiObject - SOAP API object instance
          * @param method - Method to perform on the object
          * @param status - Array that receives the status and request ID of the API call (e.g. [0, 0])
@@ -555,41 +567,45 @@ declare namespace Platform {
          * var StatusAndRequestID = [0, 0];
          * var result = Platform.Function.InvokeConfigure(ConfigureObject, "create", StatusAndRequestID, null);
          */
-        function InvokeConfigure(apiObject: object, method: string, status: any[], options: object): object;
+        function InvokeConfigure(apiObject: object, method: string, status: any[], options: object): string;
         /**
-         * Executes a SOAP API Execute call on an API object.
+         * Executes a SOAP API Execute call on an API object and returns an array of result objects. Takes exactly two arguments.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeexecute/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs list three arguments (including an options object) and type the return value as an object, but at runtime the call takes exactly two arguments (apiObject, status) — passing a third throws a security-descriptor error — and returns an array of result objects.
          * @param apiObject - SOAP API object instance
          * @param status - Array that receives the status and request ID of the API call (e.g. [0, 0])
-         * @param options - API configure options to include in the call. Can contain a null value.
          * @example
          * var StatusAndRequestID = [0, 0];
-         * var result = Platform.Function.InvokeExecute(ExecuteRequest, StatusAndRequestID, null);
+         * var result = Platform.Function.InvokeExecute(ExecuteRequest, StatusAndRequestID);
          * var status = StatusAndRequestID[0];
          * var requestID = StatusAndRequestID[1];
          */
-        function InvokeExecute(apiObject: object, status: any[], options: object): object;
+        function InvokeExecute(apiObject: object, status: any[]): object[];
         /**
-         * Invokes the Extract SOAP API method on the specified object.
+         * Invokes the Extract SOAP API method on the specified object and returns the OverallStatus message as a string.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeextract/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs list a third options argument and type the return value as an object, but at runtime the call takes exactly two arguments (apiObject, statusArray) and returns the OverallStatus message as a string.
          * @param apiObject - SOAP API object on which to invoke Extract
          * @param statusArray - Array that receives the status and RequestID of the API call
-         * @param options - Additional API options; may be null
          * @example
          * var statusArr = [];
          * var result = Platform.Function.InvokeExtract(extractObj, statusArr);
          * Write(result);
          */
-        function InvokeExtract(apiObject: object, statusArray: any[], options?: object): string;
+        function InvokeExtract(apiObject: object, statusArray: any[]): string;
         /**
-         * Invokes the Schedule SOAP API method on the specified object.
+         * Invokes the Schedule SOAP API method on the specified object and returns the OverallStatus message as a string.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeschedule/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return value as an object, but at runtime the call returns the OverallStatus message as a string; the statusArray argument is required (minimum four arguments), with the trailing options argument optional.
          * @param apiObject - SOAP API object on which to invoke Schedule
          * @param action - Action to perform on the object
          * @param schedule - Schedule definition object
@@ -600,7 +616,7 @@ declare namespace Platform {
          * var result = Platform.Function.InvokeSchedule(sendDef, "start", scheduleDef, statusArr);
          * Write(result);
          */
-        function InvokeSchedule(apiObject: object, action: string, schedule: object, statusArray?: any[], options?: object): string;
+        function InvokeSchedule(apiObject: object, action: string, schedule: object, statusArray: any[], options?: object): string;
         /**
          * Performs an HTTP GET request and returns the response body as a string. The numeric status is written into the statusVariable out-parameter (statusVariable[0]). Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. All six arguments are required; pass null for unused header arrays.
          *

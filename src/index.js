@@ -1535,13 +1535,18 @@ export const PLATFORM_FUNCTIONS = [
         ampscriptEquivalent: 'InvokeCreate',
         minArgs: 3,
         maxArgs: 3,
-        description: 'Executes a SOAP API Create call on an API object.',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs type the return value as an object, but at runtime the call returns the OverallStatus message as a string ("OK" / "Error: ..."); the request ID is written to status[1] and the error code (a number) is written into the status array.',
+        description:
+            'Executes a SOAP API Create call on an API object and returns the OverallStatus message as a string.',
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
             {
                 name: 'status',
                 description:
-                    'Array that receives the status and request ID of the API call (e.g. [0, 0])',
+                    'Array that receives the status message and request ID of the API call (e.g. [0, 0]); status[0] is the message string, status[1] the request ID',
                 type: 'array',
             },
             {
@@ -1551,7 +1556,7 @@ export const PLATFORM_FUNCTIONS = [
                 type: 'object',
             },
         ],
-        returnType: 'object',
+        returnType: 'string',
         syntax: 'Platform.Function.InvokeCreate(apiObject, status, options)',
         example:
             'var StatusAndRequestID = [0, 0];\n' +
@@ -1564,13 +1569,18 @@ export const PLATFORM_FUNCTIONS = [
         ampscriptEquivalent: 'InvokeUpdate',
         minArgs: 3,
         maxArgs: 3,
-        description: 'Executes a SOAP API Update call on an API object.',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs type the return value as an object, but at runtime the call returns the OverallStatus message as a string ("OK" / "Error: ..."); the request ID is written to status[1] and the error code (a number) is written into the status array.',
+        description:
+            'Executes a SOAP API Update call on an API object and returns the OverallStatus message as a string.',
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
             {
                 name: 'status',
                 description:
-                    'Array that receives the status and request ID of the API call (e.g. [0, 0])',
+                    'Array that receives the status message and request ID of the API call (e.g. [0, 0]); status[0] is the message string, status[1] the request ID',
                 type: 'array',
             },
             {
@@ -1580,7 +1590,7 @@ export const PLATFORM_FUNCTIONS = [
                 type: 'object',
             },
         ],
-        returnType: 'object',
+        returnType: 'string',
         syntax: 'Platform.Function.InvokeUpdate(apiObject, status, options)',
         example:
             'var StatusAndRequestID = [0, 0];\n' +
@@ -1593,13 +1603,18 @@ export const PLATFORM_FUNCTIONS = [
         ampscriptEquivalent: 'InvokeDelete',
         minArgs: 3,
         maxArgs: 3,
-        description: 'Executes a SOAP API Delete call on an API object.',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs type the return value as an object, but at runtime the call returns the OverallStatus message as a string ("OK" / "Error: ..."); the request ID is written to status[1] and the error code (a number) is written into the status array.',
+        description:
+            'Executes a SOAP API Delete call on an API object and returns the OverallStatus message as a string.',
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
             {
                 name: 'status',
                 description:
-                    'Array that receives the status and request ID of the API call (e.g. [0, 0])',
+                    'Array that receives the status message and request ID of the API call (e.g. [0, 0]); status[0] is the message string, status[1] the request ID',
                 type: 'array',
             },
             {
@@ -1609,7 +1624,7 @@ export const PLATFORM_FUNCTIONS = [
                 type: 'object',
             },
         ],
-        returnType: 'object',
+        returnType: 'string',
         syntax: 'Platform.Function.InvokeDelete(apiObject, status, options)',
         example:
             'var StatusAndRequestID = [0, 0];\n' +
@@ -1622,7 +1637,12 @@ export const PLATFORM_FUNCTIONS = [
         ampscriptEquivalent: 'InvokeRetrieve',
         minArgs: 2,
         maxArgs: 2,
-        description: 'Executes a SOAP API Retrieve call.',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs do not mention the null return: at runtime the call returns an array of result objects when records match, but returns null on error or when no records match. The call takes exactly two arguments — passing a third throws a security-descriptor error.',
+        description:
+            'Executes a SOAP API Retrieve call, returning an array of result objects when records match or null on error / no match.',
         params: [
             {
                 name: 'apiObject',
@@ -1632,11 +1652,11 @@ export const PLATFORM_FUNCTIONS = [
             {
                 name: 'status',
                 description:
-                    'Array that receives the status and request ID of the API call (e.g. [0, 0])',
+                    'Array that receives the status message and request ID of the API call (e.g. [0, 0]); status[0] is the message string ("OK" / "Error: ..."), status[1] the request ID (GUID string)',
                 type: 'array',
             },
         ],
-        returnType: 'object',
+        returnType: 'object[]|null',
         syntax: 'Platform.Function.InvokeRetrieve(apiObject, status)',
         example:
             'var RetrieveRequest = Platform.Function.CreateObject("RetrieveRequest");\n' +
@@ -1650,7 +1670,12 @@ export const PLATFORM_FUNCTIONS = [
         ampscriptEquivalent: 'InvokePerform',
         minArgs: 4,
         maxArgs: 4,
-        description: 'Executes a SOAP API Perform action on an API object.',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs type the return value as an object, but the SOAP Perform contract returns the OverallStatus message as a string; the error code and perform response are written into the status array.',
+        description:
+            'Executes a SOAP API Perform action on an API object and returns the OverallStatus message as a string.',
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
             { name: 'method', description: 'Method to perform on the object', type: 'string' },
@@ -1667,7 +1692,7 @@ export const PLATFORM_FUNCTIONS = [
                 type: 'object',
             },
         ],
-        returnType: 'object',
+        returnType: 'string',
         syntax: 'Platform.Function.InvokePerform(apiObject, method, status, options)',
         example:
             'var StatusAndRequestID = [0, 0, 0];\n' +
@@ -1681,7 +1706,12 @@ export const PLATFORM_FUNCTIONS = [
         ampscriptEquivalent: null,
         minArgs: 4,
         maxArgs: 4,
-        description: 'Executes a SOAP API Configure call on an API object.',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs type the return value as an object, but the SOAP Configure contract returns the OverallStatus message as a string; the request ID is written into the status array.',
+        description:
+            'Executes a SOAP API Configure call on an API object and returns the OverallStatus message as a string.',
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
             { name: 'method', description: 'Method to perform on the object', type: 'string' },
@@ -1698,7 +1728,7 @@ export const PLATFORM_FUNCTIONS = [
                 type: 'object',
             },
         ],
-        returnType: 'object',
+        returnType: 'string',
         syntax: 'Platform.Function.InvokeConfigure(apiObject, method, status, options)',
         example:
             'var StatusAndRequestID = [0, 0];\n' +
@@ -1707,9 +1737,14 @@ export const PLATFORM_FUNCTIONS = [
     {
         name: 'InvokeExecute',
         ampscriptEquivalent: 'InvokeExecute',
-        minArgs: 3,
-        maxArgs: 3,
-        description: 'Executes a SOAP API Execute call on an API object.',
+        minArgs: 2,
+        maxArgs: 2,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs list three arguments (including an options object) and type the return value as an object, but at runtime the call takes exactly two arguments (apiObject, status) — passing a third throws a security-descriptor error — and returns an array of result objects.',
+        description:
+            'Executes a SOAP API Execute call on an API object and returns an array of result objects. Takes exactly two arguments.',
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
             {
@@ -1718,18 +1753,12 @@ export const PLATFORM_FUNCTIONS = [
                     'Array that receives the status and request ID of the API call (e.g. [0, 0])',
                 type: 'array',
             },
-            {
-                name: 'options',
-                description:
-                    'API configure options to include in the call. Can contain a null value.',
-                type: 'object',
-            },
         ],
-        returnType: 'object',
-        syntax: 'Platform.Function.InvokeExecute(apiObject, status, options)',
+        returnType: 'object[]',
+        syntax: 'Platform.Function.InvokeExecute(apiObject, status)',
         example:
             'var StatusAndRequestID = [0, 0];\n' +
-            'var result = Platform.Function.InvokeExecute(ExecuteRequest, StatusAndRequestID, null);\n' +
+            'var result = Platform.Function.InvokeExecute(ExecuteRequest, StatusAndRequestID);\n' +
             'var status = StatusAndRequestID[0];\n' +
             'var requestID = StatusAndRequestID[1];',
     },
@@ -1737,8 +1766,13 @@ export const PLATFORM_FUNCTIONS = [
         name: 'InvokeExtract',
         ampscriptEquivalent: null,
         minArgs: 2,
-        maxArgs: 3,
-        description: 'Invokes the Extract SOAP API method on the specified object.',
+        maxArgs: 2,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs list a third options argument and type the return value as an object, but at runtime the call takes exactly two arguments (apiObject, statusArray) and returns the OverallStatus message as a string.',
+        description:
+            'Invokes the Extract SOAP API method on the specified object and returns the OverallStatus message as a string.',
         params: [
             {
                 name: 'apiObject',
@@ -1750,24 +1784,23 @@ export const PLATFORM_FUNCTIONS = [
                 description: 'Array that receives the status and RequestID of the API call',
                 type: 'array',
             },
-            {
-                name: 'options',
-                description: 'Additional API options; may be null',
-                type: 'object',
-                optional: true,
-            },
         ],
         returnType: 'string',
-        syntax: 'Platform.Function.InvokeExtract(apiObject, statusArray[, options])',
+        syntax: 'Platform.Function.InvokeExtract(apiObject, statusArray)',
         example:
             'var statusArr = [];\nvar result = Platform.Function.InvokeExtract(extractObj, statusArr);\nWrite(result);',
     },
     {
         name: 'InvokeSchedule',
         ampscriptEquivalent: null,
-        minArgs: 3,
+        minArgs: 4,
         maxArgs: 5,
-        description: 'Invokes the Schedule SOAP API method on the specified object.',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs type the return value as an object, but at runtime the call returns the OverallStatus message as a string; the statusArray argument is required (minimum four arguments), with the trailing options argument optional.',
+        description:
+            'Invokes the Schedule SOAP API method on the specified object and returns the OverallStatus message as a string.',
         params: [
             {
                 name: 'apiObject',
@@ -1780,7 +1813,6 @@ export const PLATFORM_FUNCTIONS = [
                 name: 'statusArray',
                 description: 'Array that receives the status and RequestID of the API call',
                 type: 'array',
-                optional: true,
             },
             {
                 name: 'options',
@@ -1790,7 +1822,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        syntax: 'Platform.Function.InvokeSchedule(apiObject, action, schedule[, statusArray, options])',
+        syntax: 'Platform.Function.InvokeSchedule(apiObject, action, schedule, statusArray[, options])',
         example:
             'var statusArr = [];\nvar result = Platform.Function.InvokeSchedule(sendDef, "start", scheduleDef, statusArr);\nWrite(result);',
     },
