@@ -664,10 +664,20 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 4,
         maxArgs: 4,
         description:
-            'Retrieves a single field value from a Data Extension row matching filter criteria. ' +
+            'Retrieves a single field value from the first Data Extension row matching filter criteria. ' +
+            "The returned value keeps the column's native runtime type (Text/EmailAddress become string, Number/Decimal become number, Boolean becomes boolean, Date becomes a real Date object). " +
+            'Three distinct empty-ish returns: when no row matches it returns a genuine JavaScript null (=== null is true); when a row exists but the field is empty/NULL it returns a CLR null whose typeof is "clr" (=== null is FALSE) and which stringifies to ""; otherwise the populated native value. ' +
             'To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs type the return as a string, but at runtime Lookup returns the column\'s native type (number, boolean, or a real Date object). No-match returns a genuine JavaScript null. A row with an empty/NULL field returns a CLR null (typeof "clr", not === null) that stringifies to "" — so guard empty fields with a loose == null or a String() coercion, not a strict === null check.',
         params: [
-            { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
+            {
+                name: 'deName',
+                description: 'Data Extension name (resolved by Name, not external key)',
+                type: 'string',
+            },
             { name: 'returnField', description: 'Name of the field to return', type: 'string' },
             {
                 name: 'whereFieldNames',
@@ -682,7 +692,7 @@ export const PLATFORM_FUNCTIONS = [
                 type: 'string|array',
             },
         ],
-        returnType: 'string',
+        returnType: 'string|number|boolean|object|null',
         syntax: 'Platform.Function.Lookup(deName, returnField, whereFieldNames, whereFieldValues)',
         example:
             '// Single filter:\n' +
@@ -696,10 +706,20 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 3,
         maxArgs: 3,
         description:
-            'Returns a result set of rows from a Data Extension matching filter criteria. ' +
-            'Returns up to 2,000 rows. To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).',
+            'Returns an array of row objects from a Data Extension matching filter criteria (up to 2,000 rows). ' +
+            'Each row object also carries the system fields _CustomObjectKey (number) and _CreatedDate (string). ' +
+            'Returns null (not an empty array) when no row matches. ' +
+            'To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs do not mention that no-match returns null (rather than an empty array) or that each row object includes the system fields _CustomObjectKey and _CreatedDate. Runtime testing confirms the return value is a genuine JavaScript Array (Array.isArray is true; .push/.slice/.sort work), so the return type is object[]; note that instanceof Array is unreliable in the SFMC engine, so use the Array.isArray polyfill to test it.',
         params: [
-            { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
+            {
+                name: 'deName',
+                description: 'Data Extension name (resolved by Name, not external key)',
+                type: 'string',
+            },
             {
                 name: 'whereFieldNames',
                 description:
@@ -713,7 +733,7 @@ export const PLATFORM_FUNCTIONS = [
                 type: 'string|array',
             },
         ],
-        returnType: 'object',
+        returnType: 'object[]|null',
         syntax: 'Platform.Function.LookupRows(deName, whereFieldNames, whereFieldValues)',
         example:
             '// Single filter:\n' +
@@ -728,12 +748,21 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 5,
         maxArgs: 5,
         description:
-            'Returns an ordered result set from a Data Extension. ' +
+            'Returns an ordered array of row objects from a Data Extension. ' +
             'The sort expression is a single string in the format "ColumnName ASC" or "ColumnName DESC". ' +
             'Multiple columns can be separated by commas. Returns up to 2,000 rows; values below 1 for count default to 2,000. ' +
+            'Each row object also carries the system fields _CustomObjectKey (number) and _CreatedDate (string). ' +
             'To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs do not mention that each returned row object includes the system fields _CustomObjectKey and _CreatedDate. Runtime testing confirms the return value is a genuine JavaScript Array (Array.isArray is true; .push/.slice/.sort work), so the return type is object[]; note that instanceof Array is unreliable in the SFMC engine, so use the Array.isArray polyfill to test it.',
         params: [
-            { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
+            {
+                name: 'deName',
+                description: 'Data Extension name (resolved by Name, not external key)',
+                type: 'string',
+            },
             {
                 name: 'count',
                 description: 'Maximum number of rows to return; values below 1 return up to 2,000',
@@ -758,7 +787,7 @@ export const PLATFORM_FUNCTIONS = [
                 type: 'string|array',
             },
         ],
-        returnType: 'object',
+        returnType: 'object[]|null',
         syntax: 'Platform.Function.LookupOrderedRows(deName, count, orderBy, whereFieldNames, whereFieldValues)',
         example:
             '// Single filter, sorted by LastName ASC:\n' +
@@ -773,11 +802,15 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 3,
         maxArgs: 3,
         description:
-            'Adds a new row to a Data Extension. ' +
-            'Use this function in CloudPages, landing pages, microsites, and SMS messages. ' +
-            'Use InsertDE() for email contexts.',
+            'Adds a new row to a Data Extension and returns the number of rows inserted. ' +
+            'Recommended for non-sending contexts (CloudPages, landing pages, microsites, and SMS messages), but the *DE variants also run and commit there — see InsertDE().',
+        isConfirmed: true,
         params: [
-            { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
+            {
+                name: 'deName',
+                description: 'Data Extension name (resolved by Name, not external key)',
+                type: 'string',
+            },
             {
                 name: 'fieldNames',
                 description: 'Array of column names to populate',
@@ -800,11 +833,19 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 3,
         maxArgs: 3,
         description:
-            'Adds a new row to a Data Extension. ' +
-            'Use this function in email contexts. ' +
-            'Use InsertData() for CloudPages, landing pages, microsites, and SMS messages.',
+            'Adds a new row to a Data Extension. Returns null (no value). ' +
+            'The official docs describe this as an email-context function, but it was proven to run and commit on a CloudPage as well. ' +
+            'InsertData() is still preferred outside email because it returns the affected-row count.',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs restrict InsertDE to email contexts, but at runtime it executes and commits its insert on a CloudPage too; it returns null rather than a row count.',
         params: [
-            { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
+            {
+                name: 'deName',
+                description: 'Data Extension name (resolved by Name, not external key)',
+                type: 'string',
+            },
             {
                 name: 'fieldNames',
                 description: 'Array of column names to populate',
@@ -816,7 +857,7 @@ export const PLATFORM_FUNCTIONS = [
                 type: 'array',
             },
         ],
-        returnType: 'void',
+        returnType: 'null',
         syntax: 'Platform.Function.InsertDE(deName, fieldNames, fieldValues)',
         example:
             'Platform.Function.InsertDE("MyDE", ["Email", "Name"], ["jane@example.com", "Jane"]);',
@@ -827,11 +868,15 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 5,
         maxArgs: 5,
         description:
-            'Modifies existing rows in a Data Extension matching filter criteria. ' +
-            'Use this function in CloudPages, landing pages, microsites, and SMS messages. ' +
-            'Use UpdateDE() for email contexts.',
+            'Modifies existing rows in a Data Extension matching filter criteria and returns the number of rows updated. ' +
+            'Recommended for non-sending contexts (CloudPages, landing pages, microsites, and SMS messages), but the *DE variants also run and commit there — see UpdateDE().',
+        isConfirmed: true,
         params: [
-            { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
+            {
+                name: 'deName',
+                description: 'Data Extension name (resolved by Name, not external key)',
+                type: 'string',
+            },
             {
                 name: 'whereFieldNames',
                 description:
@@ -866,11 +911,19 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 5,
         maxArgs: 5,
         description:
-            'Modifies existing rows in a Data Extension matching filter criteria. ' +
-            'Use this function in email contexts. ' +
-            'Use UpdateData() for CloudPages, landing pages, microsites, and SMS messages.',
+            'Modifies existing rows in a Data Extension matching filter criteria. Returns null (no value). ' +
+            'The official docs describe this as an email-context function, but it was proven to run and commit on a CloudPage as well. ' +
+            'UpdateData() is still preferred outside email because it returns the affected-row count.',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs restrict UpdateDE to email contexts, but at runtime it executes and commits its update on a CloudPage too; it returns null rather than a row count.',
         params: [
-            { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
+            {
+                name: 'deName',
+                description: 'Data Extension name (resolved by Name, not external key)',
+                type: 'string',
+            },
             {
                 name: 'whereFieldNames',
                 description:
@@ -894,7 +947,7 @@ export const PLATFORM_FUNCTIONS = [
                 type: 'array',
             },
         ],
-        returnType: 'number',
+        returnType: 'null',
         syntax: 'Platform.Function.UpdateDE(deName, whereFieldNames, whereFieldValues, fieldNames, fieldValues)',
         example:
             'var count = Platform.Function.UpdateDE("MyDE", ["Email"], ["jane@example.com"], ["Status"], ["inactive"]);',
@@ -905,10 +958,16 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 5,
         maxArgs: 5,
         description:
-            'Inserts a new row or updates an existing one in a Data Extension. ' +
-            'Use this function in non-sendable contexts such as CloudPages and landing pages.',
+            'Inserts a new row or updates an existing one in a Data Extension and returns the number of rows affected. ' +
+            'Takes array arguments for the where and field pairs — a flat/variadic argument form is not supported and throws at runtime. ' +
+            'Recommended for non-sending contexts (CloudPages, landing pages), but the *DE variants also run and commit there — see UpsertDE().',
+        isConfirmed: true,
         params: [
-            { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
+            {
+                name: 'deName',
+                description: 'Data Extension name (resolved by Name, not external key)',
+                type: 'string',
+            },
             {
                 name: 'whereFieldNames',
                 description:
@@ -943,10 +1002,19 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 5,
         maxArgs: 5,
         description:
-            'Inserts a new row or updates an existing one in a Data Extension. ' +
-            'Use this function in sendable contexts such as email messages.',
+            'Inserts a new row or updates an existing one in a Data Extension. Returns null (no value). ' +
+            'The official docs describe this as an email-context function, but it was proven to run and commit on a CloudPage as well. ' +
+            'UpsertData() is still preferred outside email because it returns the affected-row count.',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs restrict UpsertDE to email contexts, but at runtime it executes and commits its upsert on a CloudPage too; it returns null rather than a row count.',
         params: [
-            { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
+            {
+                name: 'deName',
+                description: 'Data Extension name (resolved by Name, not external key)',
+                type: 'string',
+            },
             {
                 name: 'whereFieldNames',
                 description:
@@ -970,10 +1038,10 @@ export const PLATFORM_FUNCTIONS = [
                 type: 'array',
             },
         ],
-        returnType: 'number',
+        returnType: 'null',
         syntax: 'Platform.Function.UpsertDE(deName, whereFieldNames, whereFieldValues, fieldNames, fieldValues)',
         example:
-            'var count = Platform.Function.UpsertDE("CustomerData", ["ID"], ["12345"], ["Company", "Country"], ["exampleCompany", "USA"]);',
+            'Platform.Function.UpsertDE("CustomerData", ["ID"], ["12345"], ["Company", "Country"], ["exampleCompany", "USA"]);',
     },
     {
         name: 'DeleteData',
@@ -981,11 +1049,15 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 3,
         maxArgs: 3,
         description:
-            'Removes rows from a Data Extension matching filter criteria. ' +
-            'Use this function in non-sendable contexts such as CloudPages and landing pages. ' +
-            'Use DeleteDE() for email contexts.',
+            'Removes rows from a Data Extension matching filter criteria and returns the number of rows deleted. ' +
+            'Recommended for non-sending contexts (CloudPages, landing pages, microsites, and SMS messages), but the *DE variants also run and commit there — see DeleteDE().',
+        isConfirmed: true,
         params: [
-            { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
+            {
+                name: 'deName',
+                description: 'Data Extension name (resolved by Name, not external key)',
+                type: 'string',
+            },
             {
                 name: 'whereFieldNames',
                 description: 'Array of column names to match for deletion',
@@ -1009,11 +1081,19 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 3,
         maxArgs: 3,
         description:
-            'Removes rows from a Data Extension matching filter criteria. ' +
-            'Use this function in email contexts. ' +
-            'Use DeleteData() for CloudPages, landing pages, microsites, and SMS messages.',
+            'Removes rows from a Data Extension matching filter criteria. Returns null (no value). ' +
+            'The official docs describe this as an email-context function, but it was proven to run and commit on a CloudPage as well. ' +
+            'DeleteData() is still preferred outside email because it returns the affected-row count.',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs restrict DeleteDE to email contexts, but at runtime it executes and commits its delete on a CloudPage too; it returns null rather than a row count.',
         params: [
-            { name: 'deName', description: 'Data Extension name or external key', type: 'string' },
+            {
+                name: 'deName',
+                description: 'Data Extension name (resolved by Name, not external key)',
+                type: 'string',
+            },
             {
                 name: 'whereFieldNames',
                 description: 'Array of column names to match for deletion',
@@ -1026,9 +1106,9 @@ export const PLATFORM_FUNCTIONS = [
                 type: 'array',
             },
         ],
-        returnType: 'number',
+        returnType: 'null',
         syntax: 'Platform.Function.DeleteDE(deName, whereFieldNames, whereFieldValues)',
-        example: 'var count = Platform.Function.DeleteDE("MyDE", ["Email"], ["jane@example.com"]);',
+        example: 'Platform.Function.DeleteDE("MyDE", ["Email"], ["jane@example.com"]);',
     },
     {
         name: 'ContentBlockByKey',

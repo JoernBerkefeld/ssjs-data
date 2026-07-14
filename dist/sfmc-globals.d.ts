@@ -38,11 +38,13 @@ declare namespace Platform {
      */
     namespace Function {
         /**
-         * Retrieves a single field value from a Data Extension row matching filter criteria. To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).
+         * Retrieves a single field value from the first Data Extension row matching filter criteria. The returned value keeps the column's native runtime type (Text/EmailAddress become string, Number/Decimal become number, Boolean becomes boolean, Date becomes a real Date object). Three distinct empty-ish returns: when no row matches it returns a genuine JavaScript null (=== null is true); when a row exists but the field is empty/NULL it returns a CLR null whose typeof is "clr" (=== null is FALSE) and which stringifies to ""; otherwise the populated native value. To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/lookup/)
          *
-         * @param deName - Data Extension name or external key
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return as a string, but at runtime Lookup returns the column's native type (number, boolean, or a real Date object). No-match returns a genuine JavaScript null. A row with an empty/NULL field returns a CLR null (typeof "clr", not === null) that stringifies to "" — so guard empty fields with a loose == null or a String() coercion, not a strict === null check.
+         * @param deName - Data Extension name (resolved by Name, not external key)
          * @param returnField - Name of the field to return
          * @param whereFieldNames - Filter field name, or an array of field names connected with AND logic
          * @param whereFieldValues - Filter field value matching whereFieldNames; must be an array of equal length when whereFieldNames is an array
@@ -53,13 +55,15 @@ declare namespace Platform {
          * // Multiple filters (AND logic):
          * var phone = Platform.Function.Lookup("CustomerData", "Phone", ["FirstName", "LastName"], ["Carolyn", "Baumgartner"]);
          */
-        function Lookup(deName: string, returnField: string, whereFieldNames: string | string[], whereFieldValues: string | any[]): string;
+        function Lookup(deName: string, returnField: string, whereFieldNames: string | string[], whereFieldValues: string | any[]): string | number | boolean | object | null;
         /**
-         * Returns a result set of rows from a Data Extension matching filter criteria. Returns up to 2,000 rows. To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).
+         * Returns an array of row objects from a Data Extension matching filter criteria (up to 2,000 rows). Each row object also carries the system fields _CustomObjectKey (number) and _CreatedDate (string). Returns null (not an empty array) when no row matches. To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/lookuprows/)
          *
-         * @param deName - Data Extension name or external key
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs do not mention that no-match returns null (rather than an empty array) or that each row object includes the system fields _CustomObjectKey and _CreatedDate. Runtime testing confirms the return value is a genuine JavaScript Array (Array.isArray is true; .push/.slice/.sort work), so the return type is object[]; note that instanceof Array is unreliable in the SFMC engine, so use the Array.isArray polyfill to test it.
+         * @param deName - Data Extension name (resolved by Name, not external key)
          * @param whereFieldNames - Filter field name, or an array of field names connected with AND logic
          * @param whereFieldValues - Filter field value matching whereFieldNames; must be an array of equal length when whereFieldNames is an array
          * @example
@@ -72,13 +76,15 @@ declare namespace Platform {
          * // Multiple filters (AND logic):
          * var rows2 = Platform.Function.LookupRows("CustomerData", ["PreferredLanguage", "RewardsTier"], ["English", "Gold"]);
          */
-        function LookupRows(deName: string, whereFieldNames: string | string[], whereFieldValues: string | any[]): object;
+        function LookupRows(deName: string, whereFieldNames: string | string[], whereFieldValues: string | any[]): object[] | null;
         /**
-         * Returns an ordered result set from a Data Extension. The sort expression is a single string in the format "ColumnName ASC" or "ColumnName DESC". Multiple columns can be separated by commas. Returns up to 2,000 rows; values below 1 for count default to 2,000. To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).
+         * Returns an ordered array of row objects from a Data Extension. The sort expression is a single string in the format "ColumnName ASC" or "ColumnName DESC". Multiple columns can be separated by commas. Returns up to 2,000 rows; values below 1 for count default to 2,000. Each row object also carries the system fields _CustomObjectKey (number) and _CreatedDate (string). To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/lookuporderedrows/)
          *
-         * @param deName - Data Extension name or external key
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs do not mention that each returned row object includes the system fields _CustomObjectKey and _CreatedDate. Runtime testing confirms the return value is a genuine JavaScript Array (Array.isArray is true; .push/.slice/.sort work), so the return type is object[]; note that instanceof Array is unreliable in the SFMC engine, so use the Array.isArray polyfill to test it.
+         * @param deName - Data Extension name (resolved by Name, not external key)
          * @param count - Maximum number of rows to return; values below 1 return up to 2,000
          * @param orderBy - Sort expression using "ColumnName ASC/DESC" syntax (e.g. "LastName ASC, FirstName ASC")
          * @param whereFieldNames - Filter field name, or an array of field names connected with AND logic
@@ -93,13 +99,14 @@ declare namespace Platform {
          * // Multiple filters (AND logic):
          * var rows2 = Platform.Function.LookupOrderedRows("CustomerData", 0, "LastName ASC", ["PreferredLanguage", "RewardsTier"], ["English", "Silver"]);
          */
-        function LookupOrderedRows(deName: string, count: number, orderBy: string, whereFieldNames: string | string[], whereFieldValues: string | any[]): object;
+        function LookupOrderedRows(deName: string, count: number, orderBy: string, whereFieldNames: string | string[], whereFieldValues: string | any[]): object[] | null;
         /**
-         * Adds a new row to a Data Extension. Use this function in CloudPages, landing pages, microsites, and SMS messages. Use InsertDE() for email contexts.
+         * Adds a new row to a Data Extension and returns the number of rows inserted. Recommended for non-sending contexts (CloudPages, landing pages, microsites, and SMS messages), but the *DE variants also run and commit there — see InsertDE().
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/insertdata/)
          *
-         * @param deName - Data Extension name or external key
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @param deName - Data Extension name (resolved by Name, not external key)
          * @param fieldNames - Array of column names to populate
          * @param fieldValues - Array of values aligned to fieldNames
          * @example
@@ -107,23 +114,26 @@ declare namespace Platform {
          */
         function InsertData(deName: string, fieldNames: string[], fieldValues: any[]): number;
         /**
-         * Adds a new row to a Data Extension. Use this function in email contexts. Use InsertData() for CloudPages, landing pages, microsites, and SMS messages.
+         * Adds a new row to a Data Extension. Returns null (no value). The official docs describe this as an email-context function, but it was proven to run and commit on a CloudPage as well. InsertData() is still preferred outside email because it returns the affected-row count.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/insertde/)
          *
-         * @param deName - Data Extension name or external key
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs restrict InsertDE to email contexts, but at runtime it executes and commits its insert on a CloudPage too; it returns null rather than a row count.
+         * @param deName - Data Extension name (resolved by Name, not external key)
          * @param fieldNames - Array of column names to populate
          * @param fieldValues - Array of values aligned to fieldNames
          * @example
          * Platform.Function.InsertDE("MyDE", ["Email", "Name"], ["jane@example.com", "Jane"]);
          */
-        function InsertDE(deName: string, fieldNames: string[], fieldValues: any[]): void;
+        function InsertDE(deName: string, fieldNames: string[], fieldValues: any[]): null;
         /**
-         * Modifies existing rows in a Data Extension matching filter criteria. Use this function in CloudPages, landing pages, microsites, and SMS messages. Use UpdateDE() for email contexts.
+         * Modifies existing rows in a Data Extension matching filter criteria and returns the number of rows updated. Recommended for non-sending contexts (CloudPages, landing pages, microsites, and SMS messages), but the *DE variants also run and commit there — see UpdateDE().
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/updatedata/)
          *
-         * @param deName - Data Extension name or external key
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @param deName - Data Extension name (resolved by Name, not external key)
          * @param whereFieldNames - Column name(s) to identify the rows to update; use an array for multiple columns (AND logic)
          * @param whereFieldValues - Value(s) to match in whereFieldNames; must be an array of equal length when whereFieldNames is an array
          * @param fieldNames - Array of column names to update
@@ -133,11 +143,13 @@ declare namespace Platform {
          */
         function UpdateData(deName: string, whereFieldNames: string | string[], whereFieldValues: string | any[], fieldNames: string[], fieldValues: any[]): number;
         /**
-         * Modifies existing rows in a Data Extension matching filter criteria. Use this function in email contexts. Use UpdateData() for CloudPages, landing pages, microsites, and SMS messages.
+         * Modifies existing rows in a Data Extension matching filter criteria. Returns null (no value). The official docs describe this as an email-context function, but it was proven to run and commit on a CloudPage as well. UpdateData() is still preferred outside email because it returns the affected-row count.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/updatede/)
          *
-         * @param deName - Data Extension name or external key
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs restrict UpdateDE to email contexts, but at runtime it executes and commits its update on a CloudPage too; it returns null rather than a row count.
+         * @param deName - Data Extension name (resolved by Name, not external key)
          * @param whereFieldNames - Column name(s) to identify the rows to update; use an array for multiple columns (AND logic)
          * @param whereFieldValues - Value(s) to match in whereFieldNames; must be an array of equal length when whereFieldNames is an array
          * @param fieldNames - Array of column names to update
@@ -145,13 +157,14 @@ declare namespace Platform {
          * @example
          * var count = Platform.Function.UpdateDE("MyDE", ["Email"], ["jane@example.com"], ["Status"], ["inactive"]);
          */
-        function UpdateDE(deName: string, whereFieldNames: string | string[], whereFieldValues: string | any[], fieldNames: string[], fieldValues: any[]): number;
+        function UpdateDE(deName: string, whereFieldNames: string | string[], whereFieldValues: string | any[], fieldNames: string[], fieldValues: any[]): null;
         /**
-         * Inserts a new row or updates an existing one in a Data Extension. Use this function in non-sendable contexts such as CloudPages and landing pages.
+         * Inserts a new row or updates an existing one in a Data Extension and returns the number of rows affected. Takes array arguments for the where and field pairs — a flat/variadic argument form is not supported and throws at runtime. Recommended for non-sending contexts (CloudPages, landing pages), but the *DE variants also run and commit there — see UpsertDE().
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/upsertdata/)
          *
-         * @param deName - Data Extension name or external key
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @param deName - Data Extension name (resolved by Name, not external key)
          * @param whereFieldNames - Column name(s) to identify an existing row; use an array for multiple columns (AND logic)
          * @param whereFieldValues - Value(s) to match in whereFieldNames; must be an array of equal length when whereFieldNames is an array
          * @param fieldNames - Array of column names to insert or update
@@ -161,25 +174,28 @@ declare namespace Platform {
          */
         function UpsertData(deName: string, whereFieldNames: string | string[], whereFieldValues: string | any[], fieldNames: string[], fieldValues: any[]): number;
         /**
-         * Inserts a new row or updates an existing one in a Data Extension. Use this function in sendable contexts such as email messages.
+         * Inserts a new row or updates an existing one in a Data Extension. Returns null (no value). The official docs describe this as an email-context function, but it was proven to run and commit on a CloudPage as well. UpsertData() is still preferred outside email because it returns the affected-row count.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/upsertde/)
          *
-         * @param deName - Data Extension name or external key
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs restrict UpsertDE to email contexts, but at runtime it executes and commits its upsert on a CloudPage too; it returns null rather than a row count.
+         * @param deName - Data Extension name (resolved by Name, not external key)
          * @param whereFieldNames - Column name(s) to identify an existing row; use an array for multiple columns (AND logic)
          * @param whereFieldValues - Value(s) to match in whereFieldNames; must be an array of equal length when whereFieldNames is an array
          * @param fieldNames - Array of column names to insert or update
          * @param fieldValues - Array of values aligned to fieldNames
          * @example
-         * var count = Platform.Function.UpsertDE("CustomerData", ["ID"], ["12345"], ["Company", "Country"], ["exampleCompany", "USA"]);
+         * Platform.Function.UpsertDE("CustomerData", ["ID"], ["12345"], ["Company", "Country"], ["exampleCompany", "USA"]);
          */
-        function UpsertDE(deName: string, whereFieldNames: string | string[], whereFieldValues: string | any[], fieldNames: string[], fieldValues: any[]): number;
+        function UpsertDE(deName: string, whereFieldNames: string | string[], whereFieldValues: string | any[], fieldNames: string[], fieldValues: any[]): null;
         /**
-         * Removes rows from a Data Extension matching filter criteria. Use this function in non-sendable contexts such as CloudPages and landing pages. Use DeleteDE() for email contexts.
+         * Removes rows from a Data Extension matching filter criteria and returns the number of rows deleted. Recommended for non-sending contexts (CloudPages, landing pages, microsites, and SMS messages), but the *DE variants also run and commit there — see DeleteDE().
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/deletedata/)
          *
-         * @param deName - Data Extension name or external key
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @param deName - Data Extension name (resolved by Name, not external key)
          * @param whereFieldNames - Array of column names to match for deletion
          * @param whereFieldValues - Array of values aligned to whereFieldNames that identify rows to delete
          * @example
@@ -187,17 +203,19 @@ declare namespace Platform {
          */
         function DeleteData(deName: string, whereFieldNames: string[], whereFieldValues: any[]): number;
         /**
-         * Removes rows from a Data Extension matching filter criteria. Use this function in email contexts. Use DeleteData() for CloudPages, landing pages, microsites, and SMS messages.
+         * Removes rows from a Data Extension matching filter criteria. Returns null (no value). The official docs describe this as an email-context function, but it was proven to run and commit on a CloudPage as well. DeleteData() is still preferred outside email because it returns the affected-row count.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/deletede/)
          *
-         * @param deName - Data Extension name or external key
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs restrict DeleteDE to email contexts, but at runtime it executes and commits its delete on a CloudPage too; it returns null rather than a row count.
+         * @param deName - Data Extension name (resolved by Name, not external key)
          * @param whereFieldNames - Array of column names to match for deletion
          * @param whereFieldValues - Array of values aligned to whereFieldNames that identify rows to delete
          * @example
-         * var count = Platform.Function.DeleteDE("MyDE", ["Email"], ["jane@example.com"]);
+         * Platform.Function.DeleteDE("MyDE", ["Email"], ["jane@example.com"]);
          */
-        function DeleteDE(deName: string, whereFieldNames: string[], whereFieldValues: any[]): number;
+        function DeleteDE(deName: string, whereFieldNames: string[], whereFieldValues: any[]): null;
         /**
          * Renders a Content Builder asset referenced by customer key. Runtime note: when optional arguments are supplied, every argument must be a compile-time literal — passing a variable in a multi-argument call throws a resolved-value error.
          *

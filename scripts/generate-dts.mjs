@@ -133,6 +133,9 @@ function toTsType(s) {
     if (s === 'void') {
         return 'void';
     }
+    if (s === 'null') {
+        return 'null';
+    }
     if (s === 'boolean') {
         return 'boolean';
     }
