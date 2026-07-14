@@ -41,8 +41,16 @@ export const SSJS_GLOBALS = [
     {
         name: 'Request',
         type: 'object',
-        aliasOf: 'Platform.Request',
-        description: 'Bare-name access to Platform.Request.* methods.',
+        // Standalone bare-name object (not an alias). Shares the same member set as
+        // Platform.Request; the generators reuse PLATFORM_REQUEST_METHODS via namespaceMethodsOf.
+        namespaceMethodsOf: 'Platform.Request',
+        description:
+            'Object for reading incoming request values in CloudPage context. ' +
+            'Members include `Request.URL()`, `Request.PagePath()`, `Request.Method()`, ' +
+            '`Request.ApplicationID()`, `Request.PackageID()`, and `Request.ApplicationBaseURL()`, ' +
+            'each returning a string. Behaves like Platform.Request. ' +
+            'Requires `Platform.Load("core", "1.1.5")` before use.',
+        requiresCoreLoad: true,
     },
     {
         name: 'Recipient',
@@ -293,7 +301,36 @@ export const SSJS_GLOBALS = [
         aliasOf: 'Platform.Function.LocalDateToSystemDate',
         requiresCoreLoad: true,
     },
-    { name: 'Redirect', aliasOf: 'Platform.Response.Redirect', requiresCoreLoad: true },
+    {
+        name: 'Redirect',
+        type: 'function',
+        requiresCoreLoad: true,
+        minArgs: 2,
+        maxArgs: 2,
+        description:
+            'Redirects the browser to another address. ' +
+            'Redirect(url, movedPermanently) sends the browser to another URL; ' +
+            'pass `true` for an HTTP 301 (permanent) or `false` for a 302 (temporary) redirect. ' +
+            'Meaningful only in CloudPage context. Requires `Platform.Load("core", "1.1.5")` before use. ' +
+            'Behaves like Platform.Response.Redirect. ' +
+            'Known bug: a redirect placed inside a try block triggers the catch block.',
+        params: [
+            {
+                name: 'url',
+                description: 'The address to send the browser to.',
+                type: 'string',
+            },
+            {
+                name: 'movedPermanently',
+                description:
+                    'Pass `true` for an HTTP 301 (permanent) redirect or `false` for a 302 (temporary) redirect.',
+                type: 'boolean',
+            },
+        ],
+        returnType: 'void',
+        syntax: 'Redirect(url, movedPermanently)',
+        example: 'Platform.Load("Core", "1.1.5");\nRedirect("https://www.example.com", false);',
+    },
     { name: 'GUID', aliasOf: 'Platform.Function.GUID', requiresCoreLoad: true },
     {
         name: 'IsEmailAddress',

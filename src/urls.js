@@ -137,10 +137,12 @@ export const PLATFORM_OBJECT_URLS = {
     'Platform.Response': '/platform-objects/platform-response/',
     'Platform.Request': '/platform-objects/platform-request/',
     'Platform.Recipient': '/platform-objects/platform-recipient/',
-    HTTPHeader: '/platform-objects/httpheader/',
-    DateTime: '/platform-objects/datetime/',
-    'DateTime.TimeZone': '/platform-objects/datetime/',
-    ErrorUtil: '/platform-objects/errorutil/',
+    // Moved out of platform-objects: HTTPHeader & DateTime now live under core-library
+    // (they require Platform.Load("core", ...)); ErrorUtil now lives under wsproxy.
+    HTTPHeader: '/core-library/httpheader/',
+    DateTime: '/core-library/datetime/',
+    'DateTime.TimeZone': '/core-library/datetime/',
+    ErrorUtil: '/wsproxy/errorutil/',
 };
 
 /**
@@ -279,6 +281,8 @@ export const GLOBAL_FUNCTION_PAGES = new Set([
     'error',
     'variable',
     'attribute',
+    'redirect',
+    'request',
     'contentarea',
     'contentareabyname',
 ]);

@@ -980,7 +980,7 @@ declare namespace Variable {
     /**
      * Retrieves the value of an AMPscript variable from the SSJS context.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-variable/)
+     * [ssjs.guide reference](https://ssjs.guide/global-functions/variable/)
      *
      * @param variableName - Name of the AMPscript variable
      * @example
@@ -992,7 +992,7 @@ declare namespace Variable {
     /**
      * Assigns a value to an AMPscript variable from the SSJS context.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-variable/)
+     * [ssjs.guide reference](https://ssjs.guide/global-functions/variable/)
      *
      * @param variableName - Name of the AMPscript variable
      * @param value - Value to assign
@@ -1008,7 +1008,7 @@ declare namespace Request {
     /**
      * Retrieves the value of a URL query string parameter.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
      * @param parameterName - Name of the query string parameter.
      * @example
@@ -1020,7 +1020,7 @@ declare namespace Request {
     /**
      * Retrieves data from a named form field, including values sent via POST.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
      * @param name - Name of the form field to retrieve.
      * @example
@@ -1031,7 +1031,7 @@ declare namespace Request {
     /**
      * Returns the raw body of the HTTP POST request. CAVEAT: Only returns data on the FIRST call per request; subsequent calls return nothing. Store the result in a variable if you need it multiple times.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
      * @param encoding - Character encoding for the post data.
      * @example
@@ -1043,7 +1043,7 @@ declare namespace Request {
     /**
      * Retrieves the value of a named cookie from the HTTP request sent by the client browser.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
      * @param cookieName - Name of the cookie to retrieve.
      * @example
@@ -1054,7 +1054,7 @@ declare namespace Request {
     /**
      * Returns the language preferences of the client browser as specified in the HTTP Accept-Language request header.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
      * @example
      * var lang = Platform.Request.GetUserLanguages();
@@ -1064,7 +1064,7 @@ declare namespace Request {
     /**
      * Returns the value of the named HTTP request header, or null if not present.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
      * @param headerName - Name of the HTTP request header to retrieve.
      * @example
@@ -1075,7 +1075,7 @@ declare namespace Request {
     /**
      * Returns an object describing the client browser.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
      * @example
      * var browser = Platform.Request.Browser;
@@ -1085,7 +1085,7 @@ declare namespace Request {
     /**
      * Returns the IP address of the client.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
      * @example
      * Write(Platform.Request.ClientIP);
@@ -1094,7 +1094,7 @@ declare namespace Request {
     /**
      * Returns true if the current request was made over HTTPS.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
      * @example
      * if (Platform.Request.HasSSL) {
@@ -1107,7 +1107,7 @@ declare namespace Request {
     /**
      * Returns true if the current request was made over HTTPS (alias of HasSSL).
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
      * @example
      * Write(Platform.Request.IsSSL);
@@ -1116,7 +1116,7 @@ declare namespace Request {
     /**
      * Returns the HTTP method (GET, POST, etc.) of the current request.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
      * @example
      * var method = Platform.Request.Method;
@@ -1129,7 +1129,7 @@ declare namespace Request {
     /**
      * Returns the full query string of the current request URL.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
      * @example
      * Write(Platform.Request.QueryString);
@@ -1138,7 +1138,7 @@ declare namespace Request {
     /**
      * Returns the referrer URL from the HTTP Referer header.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
      * @example
      * Write(Platform.Request.ReferrerURL);
@@ -1147,7 +1147,7 @@ declare namespace Request {
     /**
      * Returns the full URL of the current page request.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
      * @example
      * Write("Current page: " + Platform.Request.RequestURL);
@@ -1156,7 +1156,7 @@ declare namespace Request {
     /**
      * Returns the user-agent string from the HTTP request.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
+     * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
      * @example
      * Write(Platform.Request.UserAgent);
@@ -1278,15 +1278,16 @@ declare function EndImpressionRegion(closeAll?: boolean): void;
  */
 declare function Now(useContextTime?: boolean): string;
 /**
- * Redirects the current page to a new URL. Pass false for a 302 temporary redirect or true for a 301 permanent redirect. Do not use 301 if you want browsers to re-check the original URL later.
+ * Redirects the browser to another address. Redirect(url, movedPermanently) sends the browser to another URL; pass `true` for an HTTP 301 (permanent) or `false` for a 302 (temporary) redirect. Meaningful only in CloudPage context. Requires `Platform.Load("core", "1.1.5")` before use. Behaves like Platform.Response.Redirect. Known bug: a redirect placed inside a try block triggers the catch block.
  *
- * [ssjs.guide reference](https://ssjs.guide/platform-response/redirect/)
+ * [ssjs.guide reference](https://ssjs.guide/global-functions/redirect/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
- * @param url - URL to redirect to.
- * @param movedPermanently - True for 301 permanent redirect, false for 302 temporary.
+ * @param url - The address to send the browser to.
+ * @param movedPermanently - Pass `true` for an HTTP 301 (permanent) redirect or `false` for a 302 (temporary) redirect.
  * @example
- * Platform.Response.Redirect("https://pub.pages.example.com/thank-you", false);
+ * Platform.Load("Core", "1.1.5");
+ * Redirect("https://www.example.com", false);
  */
 declare function Redirect(url: string, movedPermanently: boolean): void;
 /**
@@ -3236,7 +3237,7 @@ declare namespace DateTime {
     /**
      * Converts a date-time value from Marketing Cloud system time (CST) to the local time of the account or user.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/datetime/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/datetime/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @param dateString - Date-time string in system time (CST)
@@ -3248,7 +3249,7 @@ declare namespace DateTime {
     /**
      * Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST).
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/datetime/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/datetime/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @param dateString - Date-time string in local account/user time
@@ -3262,7 +3263,7 @@ declare namespace DateTime.TimeZone {
     /**
      * Retrieves an array of time zones matching the specified filter criteria. If no filter is supplied the function returns all available time zones.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/datetime/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/datetime/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
@@ -3297,7 +3298,7 @@ declare namespace ErrorUtil {
     /**
      * Inspects a WSProxy result object and throws an exception when its `Status` property starts with `"Error:"`. WSProxy methods never raise exceptions on SOAP-level errors — instead they return a result object whose `Status` field signals the outcome. Wrap WSProxy calls in a `try`/`catch` block and call this function immediately after each call to convert non-OK results into catchable exceptions.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/errorutil/)
+     * [ssjs.guide reference](https://ssjs.guide/wsproxy/errorutil/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @param result - Result object returned by any WSProxy method. Minimum shape: `{ Status: string, RequestID: string, Results: object[] }`. Retrieve and perform variants may include additional fields.
@@ -3481,7 +3482,7 @@ declare namespace HTTPHeader {
     /**
      * Retrieves the value of the specified HTTP request header.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/httpheader/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/httpheader/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @param name - Name of the HTTP header to read
@@ -3494,7 +3495,7 @@ declare namespace HTTPHeader {
     /**
      * Sets the value of the specified HTTP header. The host and content-length headers cannot be changed.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/httpheader/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/httpheader/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @param name - Name of the header to set
@@ -3507,7 +3508,7 @@ declare namespace HTTPHeader {
     /**
      * Removes the specified entry from the HTTP header.
      *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/httpheader/)
+     * [ssjs.guide reference](https://ssjs.guide/core-library/httpheader/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @param headerName - Name of the header to remove

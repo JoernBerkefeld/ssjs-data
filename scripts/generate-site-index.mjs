@@ -225,28 +225,47 @@ const PLATFORM_OBJECT_GROUPS = [
         prefix: 'Platform.Recipient',
         url: PLATFORM_OBJECT_URLS['Platform.Recipient'],
     },
-    { array: HTTPHEADER_METHODS, prefix: 'HTTPHeader', url: PLATFORM_OBJECT_URLS.HTTPHeader },
+    // Moved to Core Library (require Platform.Load("core", ...)).
+    {
+        array: HTTPHEADER_METHODS,
+        prefix: 'HTTPHeader',
+        url: PLATFORM_OBJECT_URLS.HTTPHeader,
+        category: 'Core Library',
+    },
     {
         array: DATE_TIME_METHODS,
         prefix: 'DateTime',
         url: PLATFORM_OBJECT_URLS['DateTime'],
+        category: 'Core Library',
     },
     {
         array: DATE_TIME_TIMEZONE_METHODS,
         prefix: 'DateTime.TimeZone',
         url: PLATFORM_OBJECT_URLS['DateTime.TimeZone'],
+        category: 'Core Library',
     },
-    { array: ERROR_UTIL_METHODS, prefix: 'ErrorUtil', url: PLATFORM_OBJECT_URLS.ErrorUtil },
-    { array: ATTRIBUTE_METHODS, prefix: 'Attribute', url: GUIDE_URLS.attribute },
+    // Moved to WSProxy.
+    {
+        array: ERROR_UTIL_METHODS,
+        prefix: 'ErrorUtil',
+        url: PLATFORM_OBJECT_URLS.ErrorUtil,
+        category: 'WSProxy',
+    },
+    {
+        array: ATTRIBUTE_METHODS,
+        prefix: 'Attribute',
+        url: GUIDE_URLS.attribute,
+        category: 'Global Functions',
+    },
 ];
 
-for (const { array, prefix, url } of PLATFORM_OBJECT_GROUPS) {
+for (const { array, prefix, url, category } of PLATFORM_OBJECT_GROUPS) {
     for (const fn of array) {
         index.push(
             record(
                 `${prefix}.${fn.name}`,
                 url,
-                prefix === 'Attribute' ? 'Global Functions' : 'Platform Objects',
+                category ?? 'Platform Objects',
                 fn.isProperty ? 'property' : 'method',
                 fn,
             ),
@@ -470,6 +489,21 @@ for (const g of SSJS_GLOBALS) {
         continue;
     }
     index.push(record(g.name, globalFunctionUrl(g.name), 'Global Functions', 'function', g));
+}
+
+// Request is a bare-name global object (type: 'object') with a dedicated
+// /global-functions/request/ page, so it is not covered by the function loop above.
+const requestGlobal = SSJS_GLOBALS.find((x) => x.name === 'Request');
+if (requestGlobal) {
+    index.push(
+        record(
+            requestGlobal.name,
+            globalFunctionUrl(requestGlobal.name),
+            'Global Functions',
+            'object',
+            requestGlobal,
+        ),
+    );
 }
 
 // ── Validate URLs against ssjs.guide ──────────────────────────────────────

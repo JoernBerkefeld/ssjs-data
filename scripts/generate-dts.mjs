@@ -774,13 +774,20 @@ for (const g of SSJS_GLOBALS) {
     if (CONSTRUCTIBLE_NAMES.has(g.name)) {
         continue;
     }
-    // Namespace object alias (e.g. Variable → Platform.Variable) — emit declare namespace
-    if (g.type === 'object' && g.aliasOf) {
-        const ns = PLATFORM_NAMESPACE_MAP[g.aliasOf];
+    // Namespace object (e.g. Variable alias of Platform.Variable, or Request which
+    // reuses Platform.Request's members via namespaceMethodsOf) — emit declare namespace
+    if (g.type === 'object' && (g.aliasOf || g.namespaceMethodsOf)) {
+        const ns = PLATFORM_NAMESPACE_MAP[g.aliasOf ?? g.namespaceMethodsOf];
         if (ns) {
+            // When the bare-name global has its own dedicated /global-functions/ page,
+            // link members to that page instead of the shared Platform.* namespace page.
+            const gn = g.name.toLowerCase();
+            const memberUrl = GLOBAL_FUNCTION_PAGES.has(gn)
+                ? GUIDE_BASE_URL + globalFunctionUrl(gn)
+                : ns.url;
             line(`declare namespace ${g.name} {`);
             for (const m of ns.methods) {
-                line(emitNsMember(m, ' '.repeat(4), ns.url));
+                line(emitNsMember(m, ' '.repeat(4), memberUrl));
             }
             line('}');
             line('');
