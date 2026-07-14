@@ -199,10 +199,12 @@ declare namespace Platform {
          */
         function DeleteDE(deName: string, whereFieldNames: string[], whereFieldValues: any[]): number;
         /**
-         * Renders a Content Builder asset referenced by customer key.
+         * Renders a Content Builder asset referenced by customer key. Runtime note: when optional arguments are supplied, every argument must be a compile-time literal — passing a variable in a multi-argument call throws a resolved-value error.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentblockbykey/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs do not mention that supplying the optional arguments requires every argument to be a compile-time literal; variables are rejected at runtime once more than the key is passed.
          * @param customerKey - Customer key of the Content Builder asset
          * @param regionName - Impression region name for tracking
          * @param stopOnError - When true, returns an exception and terminates if content cannot be retrieved. When false, the call proceeds.
@@ -216,10 +218,11 @@ declare namespace Platform {
          */
         function ContentBlockByKey(customerKey: string, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
         /**
-         * Renders a Content Builder asset referenced by folder path and name. If the same name is used across multiple folders, supply the full path.
+         * Renders a Content Builder asset referenced by folder path and name. If the same name is used across multiple folders, supply the full path. Runtime note: when optional arguments are supplied, every argument must be a compile-time literal.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentblockbyname/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param name - Folder path and name of the Content Builder asset
          * @param regionName - Impression region name for tracking
          * @param stopOnError - When true, returns an error if the content area cannot be found or is invalid. When false, no error is returned.
@@ -231,10 +234,11 @@ declare namespace Platform {
          */
         function ContentBlockByName(name: string, regionName?: string, stopOnError?: boolean, fallbackContent?: string, statusVariable?: number): string;
         /**
-         * Renders a Content Builder asset by its numeric identifier.
+         * Renders a Content Builder asset by its numeric identifier. Runtime note: when optional arguments are supplied, every argument must be a compile-time literal.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentblockbyid/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param id - Numeric ID of the Content Builder asset
          * @param regionName - Impression region name for tracking
          * @param stopOnError - When true, returns an exception and terminates if content cannot be retrieved. When false, the call proceeds.
@@ -252,6 +256,7 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentimagebykey/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param key - External key of the Content Builder image
          * @param fallbackId - Numeric ID of a fallback image when the primary cannot be found
          * @example
@@ -264,6 +269,7 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentimagebyid/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param id - Numeric ID of the Content Builder image
          * @param fallbackId - Numeric ID of a fallback image when the primary cannot be found
          * @example
@@ -283,10 +289,12 @@ declare namespace Platform {
          */
         function TreatAsContent(content: string): string;
         /**
-         * Marks the start of a named impression tracking region within content.
+         * Marks the start of a named impression tracking region within content. Runtime note: the region name must be a compile-time literal — a variable is rejected with a resolved-value error.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/beginimpressionregion/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs do not mention that the region name must be a compile-time literal; a variable argument is rejected at runtime.
          * @param name - Name identifying the impression region
          * @example
          * Platform.Function.BeginImpressionRegion("hero-banner");
@@ -403,6 +411,7 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/createobject/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param objectType - SOAP API object type name
          * @example
          * var sub = Platform.Function.CreateObject("Subscriber");
@@ -428,6 +437,8 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/addobjectarrayitem/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs list a return value, but at runtime the call returns nothing (undefined); it mutates the passed object in place.
          * @param apiObject - SOAP API object instance
          * @param propertyName - Array property name
          * @param value - Item to append
@@ -670,10 +681,12 @@ declare namespace Platform {
          */
         function UrlEncode(url: string, encodeReservedKeywords?: boolean): string;
         /**
-         * Encodes any string value to Base64. Note: values encoded with this function can only be decoded using `Platform.Function.Base64Decode()` or `Base64Decode()` — not other Base64 decoders. For a simpler single-parameter form without charset control, see `Base64Encode()`.
+         * Encodes any string value to standard Base64. The optional charset controls the byte encoding. The result is interoperable standard Base64 and can be decoded by any Base64 decoder. For a simpler single-parameter form without charset control, see `Base64Encode()`.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/base64encode/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs claim output can only be decoded by the matching Base64Decode() function, but the runtime produces standard interoperable Base64 that any decoder accepts.
          * @param string - String to encode
          * @param charset - Character set to use when encoding, such as ASCII or UTF-8
          * @example
@@ -682,10 +695,12 @@ declare namespace Platform {
          */
         function Base64Encode(string: string, charset?: string): string;
         /**
-         * Decodes a Base64-encoded string. Only works with values encoded using `Platform.Function.Base64Encode()` or `Base64Encode()` — not arbitrary Base64 strings. For a simpler single-parameter form without charset control, see `Base64Decode()`.
+         * Decodes a standard Base64-encoded string. The optional charset controls how the decoded bytes are interpreted. It decodes any valid standard Base64 string, not only values produced by `Base64Encode()`.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/base64decode/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs imply it only decodes values created by the matching Base64Encode() function, but the runtime decodes any valid standard Base64 string.
          * @param encodedString - Base64 encoded string to decode
          * @param charset - Character set to use when decoding, such as ASCII or UTF-8
          * @example
@@ -723,6 +738,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentarea/)
          *
          * @deprecated
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param id - Numeric ID of the Content Area.
          * @param regionName - Impression region for content.
          * @param stopOnError - When true, throws on failure; when false the call proceeds.
@@ -738,6 +754,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentareabyname/)
          *
          * @deprecated
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param name - Name of the Content Area.
          * @param regionName - Impression region for content.
          * @param stopOnError - When true, throws on failure; when false the call proceeds.
@@ -1259,11 +1276,13 @@ declare function ContentArea(id: number, regionName?: string, errorMsg?: string,
  */
 declare function ContentAreaByName(name: string, regionName?: string, errorMsg?: string, fallbackContent?: string): string;
 /**
- * Marks the start of a named impression tracking region within content.
+ * Marks the start of a named impression tracking region within content. Runtime note: the region name must be a compile-time literal — a variable is rejected with a resolved-value error.
  *
  * [ssjs.guide reference](https://ssjs.guide/platform-functions/beginimpressionregion/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @remarks ✅ Runtime-verified in a live SFMC test.
+ * @remarks ⚠️ Differs from the official Salesforce docs. The official docs do not mention that the region name must be a compile-time literal; a variable argument is rejected at runtime.
  * @param name - Name identifying the impression region
  * @example
  * Platform.Function.BeginImpressionRegion("hero-banner");

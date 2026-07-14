@@ -1035,7 +1035,13 @@ export const PLATFORM_FUNCTIONS = [
         ampscriptEquivalent: 'ContentBlockByKey',
         minArgs: 1,
         maxArgs: 4,
-        description: 'Renders a Content Builder asset referenced by customer key.',
+        description:
+            'Renders a Content Builder asset referenced by customer key. ' +
+            'Runtime note: when optional arguments are supplied, every argument must be a compile-time literal — passing a variable in a multi-argument call throws a resolved-value error.',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs do not mention that supplying the optional arguments requires every argument to be a compile-time literal; variables are rejected at runtime once more than the key is passed.',
         params: [
             {
                 name: 'customerKey',
@@ -1076,7 +1082,9 @@ export const PLATFORM_FUNCTIONS = [
         maxArgs: 5,
         description:
             'Renders a Content Builder asset referenced by folder path and name. ' +
-            'If the same name is used across multiple folders, supply the full path.',
+            'If the same name is used across multiple folders, supply the full path. ' +
+            'Runtime note: when optional arguments are supplied, every argument must be a compile-time literal.',
+        isConfirmed: true,
         params: [
             {
                 name: 'name',
@@ -1121,7 +1129,10 @@ export const PLATFORM_FUNCTIONS = [
         ampscriptEquivalent: 'ContentBlockByID',
         minArgs: 1,
         maxArgs: 4,
-        description: 'Renders a Content Builder asset by its numeric identifier.',
+        description:
+            'Renders a Content Builder asset by its numeric identifier. ' +
+            'Runtime note: when optional arguments are supplied, every argument must be a compile-time literal.',
+        isConfirmed: true,
         params: [
             { name: 'id', description: 'Numeric ID of the Content Builder asset', type: 'number' },
             {
@@ -1158,6 +1169,7 @@ export const PLATFORM_FUNCTIONS = [
         maxArgs: 2,
         description:
             'Returns an HTML img tag for a Content Builder image identified by its external key. An optional fallback image ID can be supplied if the primary image is not found.',
+        isConfirmed: true,
         params: [
             {
                 name: 'key',
@@ -1183,6 +1195,7 @@ export const PLATFORM_FUNCTIONS = [
         maxArgs: 2,
         description:
             'Returns an HTML img tag for a Content Builder image identified by its numeric ID. An optional fallback ID can be supplied if the primary image is not found.',
+        isConfirmed: true,
         params: [
             { name: 'id', description: 'Numeric ID of the Content Builder image', type: 'number' },
             {
@@ -1219,7 +1232,13 @@ export const PLATFORM_FUNCTIONS = [
         ampscriptEquivalent: 'BeginImpressionRegion',
         minArgs: 1,
         maxArgs: 1,
-        description: 'Marks the start of a named impression tracking region within content.',
+        description:
+            'Marks the start of a named impression tracking region within content. ' +
+            'Runtime note: the region name must be a compile-time literal — a variable is rejected with a resolved-value error.',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs do not mention that the region name must be a compile-time literal; a variable argument is rejected at runtime.',
         params: [
             { name: 'name', description: 'Name identifying the impression region', type: 'string' },
         ],
@@ -1388,6 +1407,7 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 1,
         maxArgs: 1,
         description: 'Instantiates a Marketing Cloud SOAP API object.',
+        isConfirmed: true,
         params: [{ name: 'objectType', description: 'SOAP API object type name', type: 'string' }],
         returnType: 'object',
         syntax: 'Platform.Function.CreateObject(objectType)',
@@ -1416,6 +1436,10 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 3,
         maxArgs: 3,
         description: "Appends an item to a SOAP API object's array property.",
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs list a return value, but at runtime the call returns nothing (undefined); it mutates the passed object in place.',
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
             { name: 'propertyName', description: 'Array property name', type: 'string' },
@@ -1885,9 +1909,13 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 1,
         maxArgs: 2,
         description:
-            'Encodes any string value to Base64. ' +
-            'Note: values encoded with this function can only be decoded using `Platform.Function.Base64Decode()` or `Base64Decode()` — not other Base64 decoders. ' +
+            'Encodes any string value to standard Base64. The optional charset controls the byte encoding. ' +
+            'The result is interoperable standard Base64 and can be decoded by any Base64 decoder. ' +
             'For a simpler single-parameter form without charset control, see `Base64Encode()`.',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs claim output can only be decoded by the matching Base64Decode() function, but the runtime produces standard interoperable Base64 that any decoder accepts.',
         params: [
             { name: 'string', description: 'String to encode', type: 'string' },
             {
@@ -1909,9 +1937,12 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 1,
         maxArgs: 2,
         description:
-            'Decodes a Base64-encoded string. ' +
-            'Only works with values encoded using `Platform.Function.Base64Encode()` or `Base64Encode()` — not arbitrary Base64 strings. ' +
-            'For a simpler single-parameter form without charset control, see `Base64Decode()`.',
+            'Decodes a standard Base64-encoded string. The optional charset controls how the decoded bytes are interpreted. ' +
+            'It decodes any valid standard Base64 string, not only values produced by `Base64Encode()`.',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs imply it only decodes values created by the matching Base64Encode() function, but the runtime decodes any valid standard Base64 string.',
         params: [
             {
                 name: 'encodedString',
@@ -1988,6 +2019,7 @@ export const PLATFORM_FUNCTIONS = [
             'Deprecated — Content Areas are no longer supported on current SFMC infrastructure. ' +
             'Note: the bare-name ContentArea() global uses a string errorMsg as the 3rd parameter ' +
             'and requires Platform.Load("core","1.1.5"); this Platform.Function form does not.',
+        isConfirmed: true,
         params: [
             { name: 'id', description: 'Numeric ID of the Content Area.', type: 'number' },
             {
@@ -2026,6 +2058,7 @@ export const PLATFORM_FUNCTIONS = [
             'Deprecated — Content Areas are no longer supported on current SFMC infrastructure. ' +
             'Note: the bare-name ContentAreaByName() global uses a string errorMsg as the 3rd parameter ' +
             'and requires Platform.Load("core","1.1.5"); this Platform.Function form does not.',
+        isConfirmed: true,
         params: [
             { name: 'name', description: 'Name of the Content Area.', type: 'string' },
             {
