@@ -13,7 +13,12 @@
  *   - isStatic?: boolean      — true for namespace-level calls (Class.Method()), false for instance calls
  *   - deprecated?: boolean    — true for entries that resolve at runtime but should not be used in new code
  *   - isProperty?: boolean    — true for entries accessed without parentheses (e.g. Platform.Request.HasSSL)
- *   - requiresCoreLoad?: boolean — true when the call site requires a preceding Platform.Load("core", "<version>")
+ *   - requiresCoreLoad?: boolean — true when the call site requires a preceding Platform.Load("core", "<version>").
+ *       RUNTIME NOTE: the bare-name globals injected by Platform.Load (Write, Stringify, Base64Encode,
+ *       Base64Decode, Format, Variable, Attribute, …) exist ONLY in the scope where Platform.Load was
+ *       called (normally the top level of the <script runat=server> block). They are NOT visible inside
+ *       eval() strings or nested helper-function bodies — there they read as undefined and throw
+ *       Jint.Native.JsException when called. Call them at the same top-level scope as Platform.Load.
  *   - aliasOf?: string        — names the canonical entry this one aliases (dual-call modeling)
  *   - returnEnum?: (string|number|boolean)[] — allowed return literals when returnType is a primitive
  *   - enum?: (string|number|boolean)[]       — allowed literals for a parameter value
@@ -110,10 +115,16 @@ export const SSJS_GLOBALS = [
         type: 'function',
         minArgs: 0,
         maxArgs: 1,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified: unlike standard JavaScript, a JS-constructed `new Error("msg")` in the SFMC Jint engine does NOT expose the message via `.message` — `err.message` reads back `undefined`, and `Stringify(err)` surfaces only a hidden `{jintException}` (the .NET stack), not the message. Recover the message with `String(err)` or `("" + err)` (both yield the constructor argument), or `err.toString()` (yields "Error: undefined"). This differs from engine-raised errors, which DO carry `.message` + `.description`. Do not rely on `new Error(...).message`.',
         description:
             'Native JavaScript Error constructor. Creates an Error object that can be thrown or caught. ' +
             'Use inside try/catch blocks for structured error handling in SSJS. ' +
-            'The caught error object has a message property.',
+            'CAVEAT: for a JS-constructed `new Error("msg")`, the message is NOT readable via `.message` ' +
+            '(it returns undefined); use `String(err)` or `("" + err)` to recover it. Engine-raised errors ' +
+            '(e.g. from a bad Platform.Function call) instead expose `.message` and `.description`.',
         params: [
             {
                 name: 'message',
@@ -134,7 +145,8 @@ export const SSJS_GLOBALS = [
             '        throw new Error("Request failed with status: " + resp.statusCode);\n' +
             '    }\n' +
             '} catch (e) {\n' +
-            '    Write("Error: " + e.message);\n' +
+            '    // For new Error(...), the message is recovered via String(e), NOT e.message.\n' +
+            '    Write("Error: " + String(e));\n' +
             '}',
     },
     {
@@ -6274,9 +6286,14 @@ export const ATTRIBUTE_METHODS = [
         maxArgs: 1,
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified on a published CloudPage: after Platform.Load("Core", ...) the Attribute object exists and Attribute.GetValue(name) executes and returns a string — it is NOT unavailable in CloudPages. When no subscriber/attribute is in context (e.g. an anonymous CloudPage GET) it returns an empty string rather than throwing. In email/triggered-send/personalized contexts it returns the actual attribute value.',
         description:
             'Returns the value of the specified subscriber attribute or sendable data extension field for the current recipient. ' +
-            'Preferred over Platform.Recipient.GetAttributeValue() — both methods are equivalent.',
+            'Preferred over Platform.Recipient.GetAttributeValue() — both methods are equivalent. ' +
+            'Available in CloudPages after Platform.Load("Core", ...); returns an empty string when no recipient/attribute context is present.',
         params: [
             {
                 name: 'name',
@@ -6287,7 +6304,7 @@ export const ATTRIBUTE_METHODS = [
         returnType: 'string',
         syntax: 'Attribute.GetValue(name)',
         example:
-            'Platform.Load("core", "1.1.5");\n' +
+            'Platform.Load("Core", "1.1.1");\n' +
             'var email = Attribute.GetValue("EmailAddress");\n' +
             'Write(email);',
     },

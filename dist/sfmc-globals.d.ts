@@ -3277,14 +3277,16 @@ declare namespace DateTime.TimeZone {
 // ── Standalone Core Library globals ──────────────────────────────────────────
 declare namespace Attribute {
     /**
-     * Returns the value of the specified subscriber attribute or sendable data extension field for the current recipient. Preferred over Platform.Recipient.GetAttributeValue() — both methods are equivalent.
+     * Returns the value of the specified subscriber attribute or sendable data extension field for the current recipient. Preferred over Platform.Recipient.GetAttributeValue() — both methods are equivalent. Available in CloudPages after Platform.Load("Core", ...); returns an empty string when no recipient/attribute context is present.
      *
      * [ssjs.guide reference](https://ssjs.guide/global-functions/attribute/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a published CloudPage: after Platform.Load("Core", ...) the Attribute object exists and Attribute.GetValue(name) executes and returns a string — it is NOT unavailable in CloudPages. When no subscriber/attribute is in context (e.g. an anonymous CloudPage GET) it returns an empty string rather than throwing. In email/triggered-send/personalized contexts it returns the actual attribute value.
      * @param name - Name of the subscriber attribute or sendable DE field to retrieve.
      * @example
-     * Platform.Load("core", "1.1.5");
+     * Platform.Load("Core", "1.1.1");
      * var email = Attribute.GetValue("EmailAddress");
      * Write(email);
      */
