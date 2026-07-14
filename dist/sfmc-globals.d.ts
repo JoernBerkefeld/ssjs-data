@@ -21,6 +21,7 @@ declare namespace Platform {
      *
      * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-load/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param libraryName - Library to load (e.g. "core")
      * @param version - Library version (e.g. "1.1.5")
      * @example
@@ -772,6 +773,8 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-variable/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): available WITHOUT Platform.Load. When the variable was NEVER SET it returns `null` (typeof "object"), NOT an empty string. A variable explicitly set to "" returns `""`. The leading `@` is optional — GetValue("v") and GetValue("@v") return the same value. (The bare-name `Variable` alias only exists AFTER Platform.Load("core", ...).)
          * @param variableName - Name of the AMPscript variable
          * @example
          * var sk = Platform.Variable.GetValue("SubscriberKey");
@@ -784,6 +787,7 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-variable/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param variableName - Name of the AMPscript variable
          * @param value - Value to assign
          * @example
@@ -861,6 +865,7 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param content - Content string to write to the response.
          * @example
          * var data = { name: "Jane", status: "active" };
@@ -882,6 +887,8 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage GET): available WITHOUT Platform.Load (typeof Platform.Request = "clr"). For an ABSENT parameter it returns `null` (typeof "object"), NOT an empty string. A present parameter returns its string value. Guard reads with a truthiness / `!= null` check.
          * @param parameterName - Name of the query string parameter.
          * @example
          * // Page URL: /mypage?email=jane@example.com
@@ -894,6 +901,8 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): available WITHOUT Platform.Load. For an ABSENT field it returns `null` (typeof "object"), NOT an empty string.
          * @param name - Name of the form field to retrieve.
          * @example
          * var email = Platform.Request.GetFormField("emailAddress");
@@ -905,6 +914,7 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param encoding - Character encoding for the post data.
          * @example
          * // Read raw POST body once and store it:
@@ -917,6 +927,8 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): available WITHOUT Platform.Load. For an ABSENT cookie it returns `null` (typeof "object"), NOT an empty string.
          * @param cookieName - Name of the cookie to retrieve.
          * @example
          * var sessionId = Platform.Request.GetCookieValue("sessionId");
@@ -928,6 +940,8 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): THROWS "Unable to retrieve security descriptor for this frame." in a plain CloudPage GET context. Wrap in try/catch or avoid; may only work in specific contexts.
          * @example
          * var lang = Platform.Request.GetUserLanguages();
          * Write(lang); // e.g. "en-US,en;q=0.9"
@@ -938,6 +952,7 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param headerName - Name of the HTTP request header to retrieve.
          * @example
          * var auth = Platform.Request.GetRequestHeader("Authorization");
@@ -966,6 +981,8 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-recipient/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): available WITHOUT Platform.Load and does NOT throw outside a send context — in a plain CloudPage it returns `""` (empty string, typeof "string") for any attribute because no recipient is bound. The bare-name `Recipient` alias is NOT available even after Platform.Load; use `Platform.Recipient.GetAttributeValue(...)` (or `Attribute.GetValue(...)` after load).
          * @param attributeName - Name of the subscriber attribute or sendable DE field to retrieve
          * @example
          * var email = Platform.Recipient.GetAttributeValue("EmailAddress");
@@ -982,6 +999,8 @@ declare namespace Variable {
      *
      * [ssjs.guide reference](https://ssjs.guide/global-functions/variable/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): available WITHOUT Platform.Load. When the variable was NEVER SET it returns `null` (typeof "object"), NOT an empty string. A variable explicitly set to "" returns `""`. The leading `@` is optional — GetValue("v") and GetValue("@v") return the same value. (The bare-name `Variable` alias only exists AFTER Platform.Load("core", ...).)
      * @param variableName - Name of the AMPscript variable
      * @example
      * var sk = Platform.Variable.GetValue("SubscriberKey");
@@ -994,6 +1013,7 @@ declare namespace Variable {
      *
      * [ssjs.guide reference](https://ssjs.guide/global-functions/variable/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param variableName - Name of the AMPscript variable
      * @param value - Value to assign
      * @example
@@ -1010,6 +1030,8 @@ declare namespace Request {
      *
      * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage GET): available WITHOUT Platform.Load (typeof Platform.Request = "clr"). For an ABSENT parameter it returns `null` (typeof "object"), NOT an empty string. A present parameter returns its string value. Guard reads with a truthiness / `!= null` check.
      * @param parameterName - Name of the query string parameter.
      * @example
      * // Page URL: /mypage?email=jane@example.com
@@ -1022,6 +1044,8 @@ declare namespace Request {
      *
      * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): available WITHOUT Platform.Load. For an ABSENT field it returns `null` (typeof "object"), NOT an empty string.
      * @param name - Name of the form field to retrieve.
      * @example
      * var email = Platform.Request.GetFormField("emailAddress");
@@ -1033,6 +1057,7 @@ declare namespace Request {
      *
      * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param encoding - Character encoding for the post data.
      * @example
      * // Read raw POST body once and store it:
@@ -1045,6 +1070,8 @@ declare namespace Request {
      *
      * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): available WITHOUT Platform.Load. For an ABSENT cookie it returns `null` (typeof "object"), NOT an empty string.
      * @param cookieName - Name of the cookie to retrieve.
      * @example
      * var sessionId = Platform.Request.GetCookieValue("sessionId");
@@ -1056,6 +1083,8 @@ declare namespace Request {
      *
      * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): THROWS "Unable to retrieve security descriptor for this frame." in a plain CloudPage GET context. Wrap in try/catch or avoid; may only work in specific contexts.
      * @example
      * var lang = Platform.Request.GetUserLanguages();
      * Write(lang); // e.g. "en-US,en;q=0.9"
@@ -1066,6 +1095,7 @@ declare namespace Request {
      *
      * [ssjs.guide reference](https://ssjs.guide/global-functions/request/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param headerName - Name of the HTTP request header to retrieve.
      * @example
      * var auth = Platform.Request.GetRequestHeader("Authorization");
@@ -1162,20 +1192,6 @@ declare namespace Request {
      * Write(Platform.Request.UserAgent);
      */
     var UserAgent: string;
-}
-
-declare namespace Recipient {
-    /**
-     * Returns the value of a subscriber attribute or sendable data extension field for the current recipient.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-recipient/)
-     *
-     * @param attributeName - Name of the subscriber attribute or sendable DE field to retrieve
-     * @example
-     * var email = Platform.Recipient.GetAttributeValue("EmailAddress");
-     * Platform.Response.Write(email);
-     */
-    function GetAttributeValue(attributeName: string): string;
 }
 
 /**
@@ -1323,6 +1339,7 @@ declare function IsPhoneNumber(value: string): boolean;
  *
  * [ssjs.guide reference](https://ssjs.guide/global-functions/write/)
  *
+ * @remarks ✅ Runtime-verified in a live SFMC test.
  * @param content - Content string to write to the response.
  * @example
  * var data = { name: "Jane", status: "active" };
