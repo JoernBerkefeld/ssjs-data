@@ -296,14 +296,15 @@ declare namespace Platform {
          */
         function ContentImageByID(id: number, fallbackId?: number): string;
         /**
-         * Processes a string as AMPscript/HTML and returns rendered output.
+         * Processes a string as AMPscript/HTML on the SFMC server and returns the rendered result directly as a string. Inline AMPscript (%%=..=%%) is returned in the result; a block-only %%[..]%% string renders to an empty string but its variable side effects persist and are readable by later calls. Does not require Platform.Load("core"). Passing 0 or 2+ arguments throws.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/treatascontent/)
          *
-         * @param content - String containing AMPscript or HTML to evaluate
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @param content - String containing AMPscript or HTML to evaluate (non-string values are coerced to string)
          * @example
-         * var result = Platform.Function.TreatAsContent("%%[Set @x = 1]%%%%=v(@x)=%%");
-         * Write(result); // "1"
+         * var result = Platform.Function.TreatAsContent("%%=Add(2,3)=%%");
+         * Write(result); // "5"
          */
         function TreatAsContent(content: string): string;
         /**
@@ -325,56 +326,69 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/endimpressionregion/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return as void, but the runtime always returns a genuine null (typeof "object", === null) — including when called with no matching BeginImpressionRegion.
          * @param closeAll - When true, closes all nested impression regions
          * @example
          * Platform.Function.BeginImpressionRegion("footer");
          * Write(footerContent);
          * Platform.Function.EndImpressionRegion();
          */
-        function EndImpressionRegion(closeAll?: boolean): void;
+        function EndImpressionRegion(closeAll?: boolean): null;
         /**
-         * Returns the current system timestamp, or the timestamp of the triggering send when called with true.
+         * Returns the current server date/time as a Date object (in the account timezone, Central by default), or the timestamp of the triggering send when called with true. Concatenating it to a string yields an RFC 2822-style value such as "Tue, 14 Jul 2026 17:59:40 GMT-06:00".
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/now/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs describe the return as an RFC 2822-compliant date-time string, but the runtime returns a Date object (typeof "object", [object Date] with working Date accessors); it only appears as an RFC 2822 string when coerced during output.
          * @param useContextTime - When true, returns the time the triggering send or activity was initiated. When false or omitted, returns the current system clock time.
          * @example
          * var current = Platform.Function.Now();
-         * Write(current); // e.g. "8/5/2025 12:00:00 PM"
+         * Write(current); // e.g. "Tue, 14 Jul 2026 17:59:40 GMT-06:00"
+         *
+         * // current is a Date object:
+         * Write(current.getFullYear()); // 2026
          *
          * // Use context time during triggered sends:
          * var sendTime = Platform.Function.Now(true);
          */
-        function Now(useContextTime?: boolean): string;
+        function Now(useContextTime?: boolean): Date;
         /**
-         * Converts a date-time value from Marketing Cloud system time (CST) to the local time of the account or user.
+         * Converts a date-time value from Marketing Cloud system time (CST, without daylight saving) to the local time of the account or user. Returns a Date object (not a string).
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/systemdatetolocaldate/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return value as a string, but the runtime returns a Date object (typeof "object", [object Date], with working getFullYear/getHours/getTime); it only serializes to an ISO-like string when written or stringified.
          * @param dateString - Date-time string in system time (CST)
          * @example
          * var systemDate = Platform.Function.Now();
          * var localDate = Platform.Function.SystemDateToLocalDate(systemDate);
          * Write(localDate);
          */
-        function SystemDateToLocalDate(dateString: string): string;
+        function SystemDateToLocalDate(dateString: string): Date;
         /**
-         * Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST).
+         * Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST, without daylight saving). Returns a Date object (not a string).
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/localdatetosystemdate/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return value as a string, but the runtime returns a Date object (typeof "object", [object Date], with working getFullYear/getHours/getTime); it only serializes to an ISO-like string when written or stringified.
          * @param dateString - Date-time string in local account/user time
          * @example
          * var localDate = "8/5/2025 12:00:00 PM";
          * var systemDate = Platform.Function.LocalDateToSystemDate(localDate);
          * Write(systemDate);
          */
-        function LocalDateToSystemDate(dateString: string): string;
+        function LocalDateToSystemDate(dateString: string): Date;
         /**
          * Raises an error with an optional scope flag. When the second parameter is true, the error stops only the current recipient's send. When false, the error halts the entire send job.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/raiseerror/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs mark currentRecipientOnly, errorCode, and errorNumber as required, but the runtime accepts a single message argument; and the caught exception on a CloudPage exposes only message and description (an AMPScriptRaiseErrorException) — the errorCode and errorNumber values are not surfaced on the error object.
          * @param message - Error message describing what went wrong
          * @param currentRecipientOnly - When true, the error applies only to the current recipient. When false, the entire send job stops.
          * @param errorCode - Short user-defined code identifying the error type
@@ -387,10 +401,11 @@ declare namespace Platform {
          */
         function RaiseError(message: string, currentRecipientOnly?: boolean, errorCode?: string, errorNumber?: number): void;
         /**
-         * Generates a new globally unique identifier string.
+         * Generates a new globally unique identifier as a lowercase canonical UUID v4 string (36 characters). Does not require Platform.Load("core"); passing any argument throws.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/guid/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @example
          * var id = Platform.Function.GUID();
          * Write(id); // e.g. "550e8400-e29b-41d4-a716-446655440000"
@@ -401,6 +416,7 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/isemailaddress/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param value - String to validate
          * @example
          * if (Platform.Function.IsEmailAddress(emailInput)) {
@@ -411,10 +427,12 @@ declare namespace Platform {
          */
         function IsEmailAddress(value: string): boolean;
         /**
-         * Evaluates whether a string contains a valid phone number.
+         * Evaluates whether a string is a valid phone number and returns a boolean. Runtime-verified (CloudPage): the accepted format is digits 0-9 only, with no spaces and no leading 0. To present any country's country code (including the US) you omit the leading 00/+ and write the country code as bare digits with no leading zero. Values containing spaces, a leading 0, or a +/00 international prefix return false, as do empty, letters, and mixed-text inputs. This is the same digits-only, no-leading-zero format that SFMC phone-number fields and the SMS (MobileConnect) service expect.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/isphonenumber/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs describe generic "valid phone number" validation, but the runtime enforces a stricter format: digits 0-9 only, no spaces, and no leading 0 — country codes must be written without the leading 00/+ (the same format SFMC phone fields and the SMS service expect).
          * @param value - String to evaluate
          * @example
          * if (Platform.Function.IsPhoneNumber(phoneInput)) {
@@ -438,10 +456,12 @@ declare namespace Platform {
          */
         function CreateObject(objectType: string): object;
         /**
-         * Assigns a property value on a SOAP API object.
+         * Assigns a property value on a SOAP API object created with CreateObject. Requires exactly three arguments — calling it with fewer or more throws a TypeError ("Unable to retrieve security descriptor for this frame."). The property name is validated against the object's real SOAP API schema at set-time: setting an unknown property (or a value the property rejects) throws. String and number values are accepted; the assigned property cannot be read back from SSJS because the underlying CLR object blocks introspection. Returns a genuine JavaScript null on success.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/setobjectproperty/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return as void, but at runtime SetObjectProperty returns a genuine JavaScript null (=== null is true) on success. It also strictly requires exactly three arguments — any other arity throws a TypeError — and validates the property name against the object schema, throwing when the property is unknown or the value is invalid for it.
          * @param apiObject - SOAP API object instance
          * @param propertyName - Property name to set
          * @param value - Value to assign
@@ -449,7 +469,7 @@ declare namespace Platform {
          * var sub = Platform.Function.CreateObject("Subscriber");
          * Platform.Function.SetObjectProperty(sub, "EmailAddress", "jane@example.com");
          */
-        function SetObjectProperty(apiObject: object, propertyName: string, value: any): void;
+        function SetObjectProperty(apiObject: object, propertyName: string, value: any): null;
         /**
          * Appends an item to a SOAP API object's array property.
          *
@@ -522,7 +542,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeretrieve/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs do not mention the null return: at runtime the call returns an array of result objects when records match, but returns null on error or when no records match. The call takes exactly two arguments — passing a third throws a security-descriptor error.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs do not mention the null return: at runtime the call returns an array of result objects when records match, but returns null on error or when no records match.
          * @param apiObject - SOAP API RetrieveRequest object instance
          * @param status - Array that receives the status message and request ID of the API call (e.g. [0, 0]); status[0] is the message string ("OK" / "Error: ..."), status[1] the request ID (GUID string)
          * @example
@@ -667,15 +687,21 @@ declare namespace Platform {
          */
         function HTTPPost(url: string, contentType: string, payload: string, headerNames?: string[], headerValues?: string[], response?: any[]): number;
         /**
-         * Parses a JSON-formatted string (or array of strings) and returns the resulting JavaScript object (or array of objects). SFMC-native equivalent of JSON.parse(), which is not available in the legacy SSJS engine.
+         * Parses a JSON-formatted string and returns the resulting JavaScript object or array. SFMC-native equivalent of JSON.parse(), which is not available in the legacy SSJS engine. Only single JSON object/array strings are deserialised; scalar JSON values are returned as strings and invalid, empty, null, or undefined input returns null (no error is thrown). Passing an array or a non-string object throws a runtime error, so pass exactly one string argument.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/parsejson/)
          *
-         * @param jsonString - A valid JSON-formatted string or array of JSON strings to parse
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage. Two corrections to the official docs: (1) The docs type the argument as `string or string[]` and describe passing an "array of strings"; at runtime passing an array (or any non-string object) throws `System.InvalidOperationException: Unable to retrieve security descriptor for this frame`. Only a single string argument is accepted. (2) The docs return type `object|object[]` is incomplete: only JSON objects/arrays are deserialised; a scalar JSON string ("42", "\"hello\"", "true", "null") is returned unchanged as a string, and invalid/empty/null/undefined input returns null (it does NOT throw).
+         * @param jsonString - A single valid JSON-formatted string to parse. Must be a string — passing an array or other object throws a runtime error (contrary to the official docs).
          * @example
          * var jsonString = '{"name":"Jane","age":30}';
          * var obj = Platform.Function.ParseJSON(jsonString);
          * Write(obj.name); // outputs: Jane
+         *
+         * // Invalid or empty input returns null (it does NOT throw):
+         * var bad = Platform.Function.ParseJSON("{not json");
+         * if (bad === null) { Write("could not parse"); }
          *
          * // Use String() to convert CLR response content before parsing:
          * var req = new Script.Util.HttpRequest("https://api.example.com/data");
@@ -683,12 +709,14 @@ declare namespace Platform {
          * var resp = req.send();
          * var result = Platform.Function.ParseJSON(String(resp.content));
          */
-        function ParseJSON(jsonString: string | string[]): any;
+        function ParseJSON(jsonString: string): any;
         /**
          * Specifies the target of an email link as a complete URL stored in an attribute, data extension field, or variable. Use only within the href attribute of an anchor tag in HTML emails. In text emails, add the http:// prefix without spaces inside the parentheses. Include anchor tags in the email body (not in retrieved link content) to retain click-tracking.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/redirectto/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs imply no return value, but at runtime RedirectTo returns the passed-in URL string (typeof "string") and does not issue an HTTP redirect nor halt execution when called from SSJS; it requires exactly one argument (zero or two arguments throw a TypeError).
          * @param url - The URL to redirect to
          * @example
          * var email = "aruiz@example.com";
@@ -698,12 +726,13 @@ declare namespace Platform {
          * Platform.Function.RedirectTo(baseUrl.concat(email, nameJoin, firstName));
          * // Use inside href: <a href="%%=RedirectTo(...)=%%">link</a>
          */
-        function RedirectTo(url: string): void;
+        function RedirectTo(url: string): string;
         /**
          * Percent-encodes a complete URL. When encodeReservedKeywords is false (default), only space characters are encoded as %20. When true, all URL-reserved characters are also encoded (spaces become +).
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/urlencode/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param url - The complete URL to encode
          * @param encodeReservedKeywords - When true, encodes all reserved characters; spaces become +. When false (default), only spaces are encoded as %20.
          * @example
@@ -743,10 +772,11 @@ declare namespace Platform {
          */
         function Base64Decode(encodedString: string, charset?: string): string;
         /**
-         * Returns an MD5 hash for a given string value.
+         * Returns a lowercase 32-character hexadecimal MD5 hash for a given string value. The optional charset only affects non-ASCII input and defaults to UTF-8.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/md5/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param string - String to evaluate
          * @param charset - Character set to use when evaluating, such as ASCII or UTF-8
          * @example
@@ -759,8 +789,9 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/stringify/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param value - Value to serialize to JSON. Accepts objects, arrays, strings, numbers, and booleans.
-         * @returns JSON string representation of the value.
+         * @returns JSON string representation of the value. Serializes objects, arrays, nested structures, and scalars; null and undefined both serialize to the literal string "null".
          * @example
          * var json = Platform.Function.Stringify({ name: "Jane", age: 30 });
          * Platform.Function.Write(json);
@@ -803,6 +834,7 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/ischtmlbrowser/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param userAgentString - User-agent string to evaluate.
          * @returns True if the user agent represents a CHTML browser.
          * @example
@@ -1330,28 +1362,35 @@ declare function BeginImpressionRegion(name: string): void;
  * [ssjs.guide reference](https://ssjs.guide/platform-functions/endimpressionregion/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @remarks ✅ Runtime-verified in a live SFMC test.
+ * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return as void, but the runtime always returns a genuine null (typeof "object", === null) — including when called with no matching BeginImpressionRegion.
  * @param closeAll - When true, closes all nested impression regions
  * @example
  * Platform.Function.BeginImpressionRegion("footer");
  * Write(footerContent);
  * Platform.Function.EndImpressionRegion();
  */
-declare function EndImpressionRegion(closeAll?: boolean): void;
+declare function EndImpressionRegion(closeAll?: boolean): null;
 /**
- * Returns the current system timestamp, or the timestamp of the triggering send when called with true.
+ * Returns the current server date/time as a Date object (in the account timezone, Central by default), or the timestamp of the triggering send when called with true. Concatenating it to a string yields an RFC 2822-style value such as "Tue, 14 Jul 2026 17:59:40 GMT-06:00".
  *
  * [ssjs.guide reference](https://ssjs.guide/platform-functions/now/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @remarks ✅ Runtime-verified in a live SFMC test.
+ * @remarks ⚠️ Differs from the official Salesforce docs. The official docs describe the return as an RFC 2822-compliant date-time string, but the runtime returns a Date object (typeof "object", [object Date] with working Date accessors); it only appears as an RFC 2822 string when coerced during output.
  * @param useContextTime - When true, returns the time the triggering send or activity was initiated. When false or omitted, returns the current system clock time.
  * @example
  * var current = Platform.Function.Now();
- * Write(current); // e.g. "8/5/2025 12:00:00 PM"
+ * Write(current); // e.g. "Tue, 14 Jul 2026 17:59:40 GMT-06:00"
+ *
+ * // current is a Date object:
+ * Write(current.getFullYear()); // 2026
  *
  * // Use context time during triggered sends:
  * var sendTime = Platform.Function.Now(true);
  */
-declare function Now(useContextTime?: boolean): string;
+declare function Now(useContextTime?: boolean): Date;
 /**
  * Redirects the browser to another address. Requires `Platform.Load("core", "1.1.5")` and must be called in the same scope as `Platform.Load` (bare-name Core globals are not visible inside nested helper functions). For scope-independent use that needs no Platform.Load, use `Platform.Response.Redirect(url, movedPermanently)`. Meaningful only in CloudPage context.
  *
@@ -1368,11 +1407,12 @@ declare function Now(useContextTime?: boolean): string;
  */
 declare function Redirect(url: string, movedPermanently: boolean): void;
 /**
- * Generates a new globally unique identifier string.
+ * Generates a new globally unique identifier as a lowercase canonical UUID v4 string (36 characters). Does not require Platform.Load("core"); passing any argument throws.
  *
  * [ssjs.guide reference](https://ssjs.guide/platform-functions/guid/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @remarks ✅ Runtime-verified in a live SFMC test.
  * @example
  * var id = Platform.Function.GUID();
  * Write(id); // e.g. "550e8400-e29b-41d4-a716-446655440000"
@@ -1384,6 +1424,7 @@ declare function GUID(): string;
  * [ssjs.guide reference](https://ssjs.guide/platform-functions/isemailaddress/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @remarks ✅ Runtime-verified in a live SFMC test.
  * @param value - String to validate
  * @example
  * if (Platform.Function.IsEmailAddress(emailInput)) {
@@ -1394,11 +1435,13 @@ declare function GUID(): string;
  */
 declare function IsEmailAddress(value: string): boolean;
 /**
- * Evaluates whether a string contains a valid phone number.
+ * Evaluates whether a string is a valid phone number and returns a boolean. Runtime-verified (CloudPage): the accepted format is digits 0-9 only, with no spaces and no leading 0. To present any country's country code (including the US) you omit the leading 00/+ and write the country code as bare digits with no leading zero. Values containing spaces, a leading 0, or a +/00 international prefix return false, as do empty, letters, and mixed-text inputs. This is the same digits-only, no-leading-zero format that SFMC phone-number fields and the SMS (MobileConnect) service expect.
  *
  * [ssjs.guide reference](https://ssjs.guide/platform-functions/isphonenumber/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
+ * @remarks ✅ Runtime-verified in a live SFMC test.
+ * @remarks ⚠️ Differs from the official Salesforce docs. The official docs describe generic "valid phone number" validation, but the runtime enforces a stricter format: digits 0-9 only, no spaces, and no leading 0 — country codes must be written without the leading 00/+ (the same format SFMC phone fields and the SMS service expect).
  * @param value - String to evaluate
  * @example
  * if (Platform.Function.IsPhoneNumber(phoneInput)) {
@@ -1431,7 +1474,7 @@ declare function Write(content: string): void;
  * @remarks ✅ Runtime-verified in a live SFMC test.
  * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `Stringify` works after `Platform.Load("core", ...)` (e.g. Stringify({a:1,b:"x"}) -> '{"a":1,"b":"x"}'). IMPORTANT SCOPE RULE: bare-name Core globals are injected ONLY into the scope where Platform.Load runs — they are NOT visible inside nested helper-function bodies or eval(). Call Stringify at the same scope as Platform.Load, or use the always-available `Platform.Function.Stringify(value)` form.
  * @param value - Value to serialize to JSON.
- * @returns JSON string representation of the value.
+ * @returns JSON string representation of the value. Serializes objects, arrays, nested structures, and scalars; null and undefined both serialize to the literal string "null".
  * @example
  * Platform.Load("core", "1.1.5");
  * var json = Stringify({ a: 1, b: "x" }); // '{"a":1,"b":"x"}'
@@ -1463,8 +1506,9 @@ interface DataExtensionFields {
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-fields/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - Object describing the new field.
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns "OK" on success. Runtime returns the string "Error" (rather than throwing) when the field cannot be added or arguments are missing.
      * @example
      * Platform.Load("core", "1.1.5");
      * var de = DataExtension.Init("SSJSTest");
@@ -1478,7 +1522,9 @@ interface DataExtensionFields {
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-fields/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @returns List of field-definition objects.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs example response lists only Name, FieldType, IsPrimaryKey, MaxLength, Ordinal, and DefaultValue. At runtime each field object also includes an `ObjectID` (string) property.
+     * @returns List of field-definition objects. Each object exposes `Name` (string), `ObjectID` (string), `FieldType` (string), `IsPrimaryKey` (boolean), `MaxLength` (number), `Ordinal` (number), and `DefaultValue` (string).
      * @example
      * Platform.Load("core", "1.1.5");
      * var birthdayDE = DataExtension.Init("birthdayDE");
@@ -1491,9 +1537,10 @@ interface DataExtensionFields {
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-fields/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param deFieldName - Name of the data extension field that should make the connection to the subscriber list.
      * @param subscriberField - Subscriber attribute to map the data extension field to.
-     * @returns Returns "OK" on success or throws on failure (assumed; doc has no `@returns`, treated as `"OK"` for consistency with sibling `Fields.*` methods).
+     * @returns Returns "OK" on success (confirmed at runtime; the doc has no `@returns`). Returns the string "Error" instead of throwing on failure.
      * @example
      * Platform.Load("core", "1.1.5");
      * var updateDE = DataExtension.Init("sendableDataExtension");
@@ -1812,6 +1859,7 @@ declare namespace Account {
      * [ssjs.guide reference](https://ssjs.guide/core-library/account/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param key - External key of the account.
      * @returns An initialized Account bound to the specified external key.
      * @example
@@ -1825,8 +1873,9 @@ declare namespace Account {
      * [ssjs.guide reference](https://ssjs.guide/core-library/account/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - Criteria used to search for the account. Use a filter expression or a JSON object containing filter and additional search parameters.
-     * @returns List of results matching the filter.
+     * @returns Array of account rows matching the filter; an empty array (which is falsy in this engine) when nothing matches.
      * @example
      * Platform.Load("core", "1.1.5");
      * var getAcct = Account.Retrieve({Property:"CustomerKey",SimpleOperator:"equals",Value:"MyAccount"});
@@ -1840,8 +1889,9 @@ interface AccountInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/account/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs state the call throws on failure, but at runtime it returns the plain string "Error" instead of throwing.
      * @param properties - Account attributes to change.
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns the string "OK" on success. On failure it returns the string "Error" (proven at runtime) rather than throwing.
      * @example
      * Platform.Load("core", "1.1.5");
      * var myAccount = Account.Init("MyCustomerKey");
@@ -1856,8 +1906,9 @@ declare namespace Account.Tracking {
      * [ssjs.guide reference](https://ssjs.guide/core-library/account/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - Criteria used to search for the account.
-     * @returns List of results matching the filter.
+     * @returns Array of tracking rows; each row exposes Sends, Bounces, Clicks, Opens and Unsubscribes counters (each an object such as {"Total":N}).
      * @example
      * Platform.Load("core", "1.1.5");
      * var acctTracking = Account.Tracking.Retrieve({Property:"CustomerKey",SimpleOperator:"equals",Value:"MyAccount"});
@@ -1871,6 +1922,7 @@ declare namespace AccountUser {
      * [ssjs.guide reference](https://ssjs.guide/core-library/accountuser/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param targetUserKey - External key of the user.
      * @param myClientID - MID of the business unit.
      * @returns An initialized AccountUser bound to the specified external key and client ID.
@@ -1907,6 +1959,7 @@ declare namespace AccountUser {
      * [ssjs.guide reference](https://ssjs.guide/core-library/accountuser/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - Criteria used to search for the account user.
      * @returns List of results matching the filter.
      * @example
@@ -2036,30 +2089,33 @@ interface PortfolioInstance {
 }
 declare namespace ContentAreaObj {
     /**
-     * Initializes a ContentAreaObj instance bound to the specified external key. DEPRECATED — Content Areas have been deprecated; new content areas cannot be created or updated. Existing content areas remain readable on older accounts only.
+     * Initializes a ContentAreaObj instance bound to the specified external key. DEPRECATED — Content Areas are a legacy Classic Content feature; prefer Content Builder assets for new work.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/contentareaobj/)
      *
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param key - External key of the content area.
      * @returns An initialized ContentAreaObj bound to the specified external key.
      * @example
-     * Platform.Load("core", "1.1.5");
+     * Platform.Load("core", "1.1.1");
      * var area = ContentAreaObj.Init("myCA");
      */
     function Init(key: string): ContentAreaObjInstance;
     /**
-     * Creates a new content area from the supplied properties. DEPRECATED — calls fail on accounts where the Content Areas feature has been retired.
+     * Creates a new content area from the supplied properties and returns an initialized ContentAreaObj instance bound to it. DEPRECATED — Content Areas are a legacy Classic Content feature.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/contentareaobj/)
      *
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The official `Add` reference lists `@returns {Enum("OK")}`, but runtime returns an initialized ContentAreaObj instance (an object exposing `Update`/`Remove`, identical in shape to `Init`) — matching the doc's own H1 summary ("returns an initialized object") rather than the `@returns` annotation.
      * @param properties - JSON object describing the new content area (CustomerKey, Name, CategoryID, Layout, LayoutSpecified, Content).
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns An initialized ContentAreaObj instance bound to the newly created content area (exposes Update/Remove). Note: contrary to the `@returns {Enum("OK")}` annotation in the official docs, runtime returns an instance object, not the string "OK".
      * @example
-     * Platform.Load("core", "1.1.5");
+     * Platform.Load("core", "1.1.1");
      * var exampleArea = {
      *     CustomerKey: "exampleArea",
      *     Name: "SSJS Content Area Example",
@@ -2068,50 +2124,53 @@ declare namespace ContentAreaObj {
      *     LayoutSpecified: true,
      *     Content: "<b>This is example content</b>"
      * };
-     * var status = ContentAreaObj.Add(exampleArea);
+     * var area = ContentAreaObj.Add(exampleArea);
      */
-    function Add(properties: object): string;
+    function Add(properties: object): ContentAreaObjInstance;
     /**
-     * Returns an array of content areas matching the specified filter. DEPRECATED — read-only access only; the Content Areas feature has been retired for new content.
+     * Returns an array of content areas matching the specified filter. DEPRECATED — Content Areas are a legacy Classic Content feature.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/contentareaobj/)
      *
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
-     * @returns List of content areas matching the filter.
+     * @returns A host array of content areas matching the filter (empty array when none match). Reports as `[object Array]` and exposes `.length`, but `instanceof Array` is false (host-backed collection).
      * @example
-     * Platform.Load("core", "1.1.5");
+     * Platform.Load("core", "1.1.1");
      * var results = ContentAreaObj.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "myCA" });
      */
     function Retrieve(filter: object): object[];
 }
 interface ContentAreaObjInstance {
     /**
-     * Updates the content area with the supplied attributes. DEPRECATED — calls fail on accounts where the Content Areas feature has been retired.
+     * Updates the content area with the supplied attributes. DEPRECATED — Content Areas are a legacy Classic Content feature.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/contentareaobj/)
      *
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - Attributes to change on the content area.
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns "OK" on success.
      * @example
-     * Platform.Load("core", "1.1.5");
+     * Platform.Load("core", "1.1.1");
      * var obj = ContentAreaObj.Init("myCA");
      * var status = obj.Update({ Name: "Name Updated By SSJS" });
      */
     Update(properties: object): string;
     /**
-     * Removes the previously initialized content area. DEPRECATED — calls fail on accounts where the Content Areas feature has been retired.
+     * Removes the previously initialized content area. DEPRECATED — Content Areas are a legacy Classic Content feature.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/contentareaobj/)
      *
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @returns Returns "OK" on success or throws on failure.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @returns Returns "OK" on success.
      * @example
-     * Platform.Load("core", "1.1.5");
+     * Platform.Load("core", "1.1.1");
      * var obj = ContentAreaObj.Init("myCA");
      * var status = obj.Remove();
      */
@@ -3265,24 +3324,26 @@ interface TriggeredSendInstance {
 }
 declare namespace DataExtension {
     /**
-     * Initializes a DataExtension instance bound to the specified external key. Required before invoking any `Fields` or `Rows` sub-namespace method on the returned instance. Note: Core Library DataExtension methods do not support enterprise-level data extensions.
+     * Initializes a DataExtension instance bound to the specified data extension. Runtime accepts either the External Key or the Name of the data extension (both resolve to the same DE). Binding is lazy — Init never throws for a missing DE; the error surfaces on the first Rows/Fields operation. Required before invoking any `Fields` or `Rows` sub-namespace method on the returned instance. Note: Core Library DataExtension methods do not support enterprise-level data extensions.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param key - External key of the data extension.
-     * @returns An initialized DataExtension bound to the specified external key.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @param key - External Key or Name of the data extension (the runtime resolves either).
+     * @returns An initialized DataExtension (exposing `Rows`, `Fields`, `Update`, `Remove`) bound to the specified data extension.
      * @example
      * Platform.Load("core", "1.1.5");
      * var birthdayDE = DataExtension.Init("birthdayDE");
      */
     function Init(key: string): DataExtensionInstance;
     /**
-     * Creates a new data extension from the supplied properties and returns an initialized DataExtension instance. Note: unlike most static `Add` methods, this returns a `DataExtensionInstance`, not `"OK"`.
+     * Creates a new data extension from the supplied properties and returns an initialized DataExtension instance (the same shape as `DataExtension.Init`, exposing `Rows`, `Fields`, `Update`, `Remove`). Note: unlike most static `Add` methods, this returns a `DataExtensionInstance`, not `"OK"`.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - JSON object describing the new data extension (CustomerKey, Name, Fields[], optional SendableInfo).
      * @returns An initialized DataExtension bound to the newly-created data extension.
      * @example
@@ -3303,12 +3364,14 @@ declare namespace DataExtension {
      */
     function Add(properties: object): DataExtensionInstance;
     /**
-     * Returns an array of data extensions matching the specified filter. Pass `queryAllAccounts: true` to search all accounts accessible to the authenticated user.
+     * Returns an array of data extensions matching the specified filter. Pass `queryAllAccounts: true` to search all accounts accessible to the authenticated user. The `filter` is documented as required but is optional at runtime — omitting it returns all data extensions.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param filter - PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The official Salesforce docs document `filter` as required, but at runtime it is optional: calling `DataExtension.Retrieve()` with no arguments does not throw and returns the full list of data extensions. A filter that matches nothing returns a real empty array (`[object Array]`, `length: 0`).
+     * @param filter - PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`. Documented as required, but optional at runtime (omitting it returns all data extensions).
      * @param queryAllAccounts - When `true`, search across all accounts accessible to the authenticated user. Defaults to `false`.
      * @returns List of data extensions matching the filter. Limit data extension external keys to 36 characters for downstream compatibility.
      * @example

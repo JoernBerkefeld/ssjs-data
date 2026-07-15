@@ -1294,18 +1294,22 @@ export const PLATFORM_FUNCTIONS = [
         ampscriptEquivalent: 'TreatAsContent',
         minArgs: 1,
         maxArgs: 1,
-        description: 'Processes a string as AMPscript/HTML and returns rendered output.',
+        description:
+            'Processes a string as AMPscript/HTML on the SFMC server and returns the rendered result directly as a string. Inline AMPscript (%%=..=%%) is returned in the result; a block-only %%[..]%% string renders to an empty string but its variable side effects persist and are readable by later calls. Does not require Platform.Load("core"). Passing 0 or 2+ arguments throws.',
         params: [
             {
                 name: 'content',
-                description: 'String containing AMPscript or HTML to evaluate',
+                description:
+                    'String containing AMPscript or HTML to evaluate (non-string values are coerced to string)',
                 type: 'string',
             },
         ],
         returnType: 'string',
+        requiresCoreLoad: false,
         syntax: 'Platform.Function.TreatAsContent(content)',
         example:
-            'var result = Platform.Function.TreatAsContent("%%[Set @x = 1]%%%%=v(@x)=%%");\nWrite(result); // "1"',
+            'var result = Platform.Function.TreatAsContent("%%=Add(2,3)=%%");\nWrite(result); // "5"',
+        isConfirmed: true,
     },
     {
         name: 'BeginImpressionRegion',
@@ -1341,7 +1345,11 @@ export const PLATFORM_FUNCTIONS = [
                 optional: true,
             },
         ],
-        returnType: 'void',
+        returnType: 'null',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs type the return as void, but the runtime always returns a genuine null (typeof "object", === null) — including when called with no matching BeginImpressionRegion.',
         syntax: 'Platform.Function.EndImpressionRegion([closeAll])',
         example:
             'Platform.Function.BeginImpressionRegion("footer");\nWrite(footerContent);\nPlatform.Function.EndImpressionRegion();',
@@ -1352,7 +1360,7 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 0,
         maxArgs: 1,
         description:
-            'Returns the current system timestamp, or the timestamp of the triggering send when called with true.',
+            'Returns the current server date/time as a Date object (in the account timezone, Central by default), or the timestamp of the triggering send when called with true. Concatenating it to a string yields an RFC 2822-style value such as "Tue, 14 Jul 2026 17:59:40 GMT-06:00".',
         params: [
             {
                 name: 'useContextTime',
@@ -1362,10 +1370,14 @@ export const PLATFORM_FUNCTIONS = [
                 optional: true,
             },
         ],
-        returnType: 'string',
+        returnType: 'Date',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs describe the return as an RFC 2822-compliant date-time string, but the runtime returns a Date object (typeof "object", [object Date] with working Date accessors); it only appears as an RFC 2822 string when coerced during output.',
         syntax: 'Platform.Function.Now([useContextTime])',
         example:
-            'var current = Platform.Function.Now();\nWrite(current); // e.g. "8/5/2025 12:00:00 PM"\n\n// Use context time during triggered sends:\nvar sendTime = Platform.Function.Now(true);',
+            'var current = Platform.Function.Now();\nWrite(current); // e.g. "Tue, 14 Jul 2026 17:59:40 GMT-06:00"\n\n// current is a Date object:\nWrite(current.getFullYear()); // 2026\n\n// Use context time during triggered sends:\nvar sendTime = Platform.Function.Now(true);',
     },
     {
         name: 'SystemDateToLocalDate',
@@ -1373,7 +1385,7 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Converts a date-time value from Marketing Cloud system time (CST) to the local time of the account or user.',
+            'Converts a date-time value from Marketing Cloud system time (CST, without daylight saving) to the local time of the account or user. Returns a Date object (not a string).',
         params: [
             {
                 name: 'dateString',
@@ -1381,7 +1393,11 @@ export const PLATFORM_FUNCTIONS = [
                 type: 'string',
             },
         ],
-        returnType: 'string',
+        returnType: 'Date',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs type the return value as a string, but the runtime returns a Date object (typeof "object", [object Date], with working getFullYear/getHours/getTime); it only serializes to an ISO-like string when written or stringified.',
         syntax: 'Platform.Function.SystemDateToLocalDate(dateString)',
         example:
             'var systemDate = Platform.Function.Now();\nvar localDate = Platform.Function.SystemDateToLocalDate(systemDate);\nWrite(localDate);',
@@ -1392,7 +1408,7 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST).',
+            'Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST, without daylight saving). Returns a Date object (not a string).',
         params: [
             {
                 name: 'dateString',
@@ -1400,7 +1416,11 @@ export const PLATFORM_FUNCTIONS = [
                 type: 'string',
             },
         ],
-        returnType: 'string',
+        returnType: 'Date',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs type the return value as a string, but the runtime returns a Date object (typeof "object", [object Date], with working getFullYear/getHours/getTime); it only serializes to an ISO-like string when written or stringified.',
         syntax: 'Platform.Function.LocalDateToSystemDate(dateString)',
         example:
             'var localDate = "8/5/2025 12:00:00 PM";\nvar systemDate = Platform.Function.LocalDateToSystemDate(localDate);\nWrite(systemDate);',
@@ -1442,6 +1462,10 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'void',
         syntax: 'Platform.Function.RaiseError(message[, currentRecipientOnly[, errorCode[, errorNumber]]])',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs mark currentRecipientOnly, errorCode, and errorNumber as required, but the runtime accepts a single message argument; and the caught exception on a CloudPage exposes only message and description (an AMPScriptRaiseErrorException) — the errorCode and errorNumber values are not surfaced on the error object.',
         example:
             'var status = Platform.Function.Lookup("MyDE", "Status", "Email", emailAddress);\nif (!status) {\n    Platform.Function.RaiseError("Subscriber not found", true, "NOT_FOUND", 404);\n}',
     },
@@ -1450,12 +1474,14 @@ export const PLATFORM_FUNCTIONS = [
         ampscriptEquivalent: 'GUID',
         minArgs: 0,
         maxArgs: 0,
-        description: 'Generates a new globally unique identifier string.',
+        description:
+            'Generates a new globally unique identifier as a lowercase canonical UUID v4 string (36 characters). Does not require Platform.Load("core"); passing any argument throws.',
         params: [],
         returnType: 'string',
         syntax: 'Platform.Function.GUID()',
         example:
             'var id = Platform.Function.GUID();\nWrite(id); // e.g. "550e8400-e29b-41d4-a716-446655440000"',
+        isConfirmed: true,
     },
     {
         name: 'IsEmailAddress',
@@ -1468,15 +1494,28 @@ export const PLATFORM_FUNCTIONS = [
         syntax: 'Platform.Function.IsEmailAddress(value)',
         example:
             'if (Platform.Function.IsEmailAddress(emailInput)) {\n    Write("Valid email");\n} else {\n    Write("Invalid email format");\n}',
+        isConfirmed: true,
     },
     {
         name: 'IsPhoneNumber',
         ampscriptEquivalent: 'IsPhoneNumber',
         minArgs: 1,
         maxArgs: 1,
-        description: 'Evaluates whether a string contains a valid phone number.',
+        description:
+            'Evaluates whether a string is a valid phone number and returns a boolean. Runtime-verified ' +
+            '(CloudPage): the accepted format is digits 0-9 only, with no spaces and no leading 0. To present ' +
+            "any country's country code (including the US) you omit the leading 00/+ and write the country code " +
+            'as bare digits with no leading zero. Values containing spaces, a leading 0, or a +/00 international ' +
+            'prefix return false, as do empty, letters, and mixed-text inputs. This is the same digits-only, ' +
+            'no-leading-zero format that SFMC phone-number fields and the SMS (MobileConnect) service expect.',
         params: [{ name: 'value', description: 'String to evaluate', type: 'string' }],
         returnType: 'boolean',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs describe generic "valid phone number" validation, but the runtime enforces a ' +
+            'stricter format: digits 0-9 only, no spaces, and no leading 0 — country codes must be written ' +
+            'without the leading 00/+ (the same format SFMC phone fields and the SMS service expect).',
         syntax: 'Platform.Function.IsPhoneNumber(value)',
         example:
             'if (Platform.Function.IsPhoneNumber(phoneInput)) {\n    Write("Valid phone");\n} else {\n    Write("Invalid phone number");\n}',
@@ -1499,13 +1538,18 @@ export const PLATFORM_FUNCTIONS = [
         ampscriptEquivalent: 'SetObjectProperty',
         minArgs: 3,
         maxArgs: 3,
-        description: 'Assigns a property value on a SOAP API object.',
+        description:
+            'Assigns a property value on a SOAP API object created with CreateObject. Requires exactly three arguments — calling it with fewer or more throws a TypeError ("Unable to retrieve security descriptor for this frame."). The property name is validated against the object\'s real SOAP API schema at set-time: setting an unknown property (or a value the property rejects) throws. String and number values are accepted; the assigned property cannot be read back from SSJS because the underlying CLR object blocks introspection. Returns a genuine JavaScript null on success.',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs type the return as void, but at runtime SetObjectProperty returns a genuine JavaScript null (=== null is true) on success. It also strictly requires exactly three arguments — any other arity throws a TypeError — and validates the property name against the object schema, throwing when the property is unknown or the value is invalid for it.',
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
             { name: 'propertyName', description: 'Property name to set', type: 'string' },
             { name: 'value', description: 'Value to assign', type: 'any' },
         ],
-        returnType: 'void',
+        returnType: 'null',
         syntax: 'Platform.Function.SetObjectProperty(apiObject, propertyName, value)',
         example:
             'var sub = Platform.Function.CreateObject("Subscriber");\nPlatform.Function.SetObjectProperty(sub, "EmailAddress", "jane@example.com");',
@@ -1640,7 +1684,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs do not mention the null return: at runtime the call returns an array of result objects when records match, but returns null on error or when no records match. The call takes exactly two arguments — passing a third throws a security-descriptor error.',
+            'The official docs do not mention the null return: at runtime the call returns an array of result objects when records match, but returns null on error or when no records match.',
         description:
             'Executes a SOAP API Retrieve call, returning an array of result objects when records match or null on error / no match.',
         params: [
@@ -1937,26 +1981,45 @@ export const PLATFORM_FUNCTIONS = [
     {
         name: 'ParseJSON',
         ampscriptEquivalent: null,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified on a CloudPage. Two corrections to the official docs: ' +
+            '(1) The docs type the argument as `string or string[]` and describe passing an "array of strings"; ' +
+            'at runtime passing an array (or any non-string object) throws `System.InvalidOperationException: ' +
+            'Unable to retrieve security descriptor for this frame`. Only a single string argument is accepted. ' +
+            '(2) The docs return type `object|object[]` is incomplete: only JSON objects/arrays are deserialised; ' +
+            String.raw`a scalar JSON string ("42", "\"hello\"", "true", "null") is returned unchanged as a string, and ` +
+            'invalid/empty/null/undefined input returns null (it does NOT throw).',
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Parses a JSON-formatted string (or array of strings) and returns the resulting JavaScript object (or array of objects). ' +
-            'SFMC-native equivalent of JSON.parse(), which is not available in the legacy SSJS engine.',
+            'Parses a JSON-formatted string and returns the resulting JavaScript object or array. ' +
+            'SFMC-native equivalent of JSON.parse(), which is not available in the legacy SSJS engine. ' +
+            'Only single JSON object/array strings are deserialised; scalar JSON values are returned as strings ' +
+            'and invalid, empty, null, or undefined input returns null (no error is thrown). ' +
+            'Passing an array or a non-string object throws a runtime error, so pass exactly one string argument.',
         params: [
             {
                 name: 'jsonString',
-                description: 'A valid JSON-formatted string or array of JSON strings to parse',
-                type: 'string|string[]',
+                description:
+                    'A single valid JSON-formatted string to parse. Must be a string — passing an array or ' +
+                    'other object throws a runtime error (contrary to the official docs).',
+                type: 'string',
             },
         ],
         // `any` (not `object`) so callers can access dynamic properties on the parsed
         // result, e.g. `var o = Platform.Function.ParseJSON(s); Write(o.name);`.
+        // Runtime returns object|array for JSON objects/arrays, string for scalar JSON, null for invalid input.
         returnType: 'any',
         syntax: 'Platform.Function.ParseJSON(jsonString)',
         example:
             'var jsonString = \'{"name":"Jane","age":30}\';\n' +
             'var obj = Platform.Function.ParseJSON(jsonString);\n' +
             'Write(obj.name); // outputs: Jane\n\n' +
+            '// Invalid or empty input returns null (it does NOT throw):\n' +
+            'var bad = Platform.Function.ParseJSON("{not json");\n' +
+            'if (bad === null) { Write("could not parse"); }\n\n' +
             '// Use String() to convert CLR response content before parsing:\n' +
             'var req = new Script.Util.HttpRequest("https://api.example.com/data");\n' +
             'req.method = "GET";\n' +
@@ -1975,7 +2038,11 @@ export const PLATFORM_FUNCTIONS = [
             'In text emails, add the http:// prefix without spaces inside the parentheses. ' +
             'Include anchor tags in the email body (not in retrieved link content) to retain click-tracking.',
         params: [{ name: 'url', description: 'The URL to redirect to', type: 'string' }],
-        returnType: 'void',
+        returnType: 'string',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs imply no return value, but at runtime RedirectTo returns the passed-in URL string (typeof "string") and does not issue an HTTP redirect nor halt execution when called from SSJS; it requires exactly one argument (zero or two arguments throw a TypeError).',
         syntax: 'Platform.Function.RedirectTo(url)',
         example:
             'var email = "aruiz@example.com";\n' +
@@ -2007,6 +2074,7 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
+        isConfirmed: true,
         syntax: 'Platform.Function.UrlEncode(url[, encodeReservedKeywords])',
         example:
             'var baseURL = "https://www.example.com?value=12+3 12;3";\n' +
@@ -2079,7 +2147,8 @@ export const PLATFORM_FUNCTIONS = [
         ampscriptEquivalent: 'MD5',
         minArgs: 1,
         maxArgs: 2,
-        description: 'Returns an MD5 hash for a given string value.',
+        description:
+            'Returns a lowercase 32-character hexadecimal MD5 hash for a given string value. The optional charset only affects non-ASCII input and defaults to UTF-8.',
         params: [
             { name: 'string', description: 'String to evaluate', type: 'string' },
             {
@@ -2094,6 +2163,7 @@ export const PLATFORM_FUNCTIONS = [
         example:
             'var normalStr = Platform.Function.Lookup("ForMD5Info","HashData","HashKey","stringValue");\n' +
             'var hashedStr = Platform.Function.MD5(normalStr);',
+        isConfirmed: true,
     },
     {
         name: 'Stringify',
@@ -2115,10 +2185,12 @@ export const PLATFORM_FUNCTIONS = [
             },
         ],
         returnType: 'string',
-        returnDescription: 'JSON string representation of the value.',
+        returnDescription:
+            'JSON string representation of the value. Serializes objects, arrays, nested structures, and scalars; null and undefined both serialize to the literal string "null".',
         syntax: 'Platform.Function.Stringify(value)',
         example:
             'var json = Platform.Function.Stringify({ name: "Jane", age: 30 });\nPlatform.Function.Write(json);',
+        isConfirmed: true,
     },
     {
         name: 'ContentArea',
@@ -2220,6 +2292,7 @@ export const PLATFORM_FUNCTIONS = [
             'Platform.Response.Write(Platform.Request.UserAgent);\n' +
             'Platform.Response.Write("<br>Is CHTML: ");\n' +
             'Platform.Response.Write(Platform.Function.IsCHTMLBrowser(Platform.Request.UserAgent));',
+        isConfirmed: true,
     },
 ];
 
@@ -2530,6 +2603,7 @@ export const ACCOUNT_METHODS = [
         returnDescription: 'An initialized Account bound to the specified external key.',
         syntax: 'Account.Init(key)',
         example: 'Platform.Load("core", "1.1.5");\nvar myAccount = Account.Init("MyCustomerKey");',
+        isConfirmed: true,
     },
     {
         name: 'Retrieve',
@@ -2547,11 +2621,13 @@ export const ACCOUNT_METHODS = [
             },
         ],
         returnType: 'object[]',
-        returnDescription: 'List of results matching the filter.',
+        returnDescription:
+            'Array of account rows matching the filter; an empty array (which is falsy in this engine) when nothing matches.',
         syntax: 'Account.Retrieve(filter)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
             'var getAcct = Account.Retrieve({Property:"CustomerKey",SimpleOperator:"equals",Value:"MyAccount"});',
+        isConfirmed: true,
     },
     {
         name: 'Update',
@@ -2566,8 +2642,12 @@ export const ACCOUNT_METHODS = [
             { name: 'properties', description: 'Account attributes to change.', type: 'object' },
         ],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns the string "OK" on success. On failure it returns the string "Error" (proven at runtime) rather than throwing.',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs state the call throws on failure, but at runtime it returns the plain string "Error" instead of throwing.',
         syntax: '<AccountInstance>.Update(properties)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -2594,11 +2674,13 @@ export const ACCOUNT_TRACKING_METHODS = [
             },
         ],
         returnType: 'object[]',
-        returnDescription: 'List of results matching the filter.',
+        returnDescription:
+            'Array of tracking rows; each row exposes Sends, Bounces, Clicks, Opens and Unsubscribes counters (each an object such as {"Total":N}).',
         syntax: 'Account.Tracking.Retrieve(filter)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
             'var acctTracking = Account.Tracking.Retrieve({Property:"CustomerKey",SimpleOperator:"equals",Value:"MyAccount"});',
+        isConfirmed: true,
     },
 ];
 
@@ -2620,6 +2702,7 @@ export const ACCOUNT_USER_METHODS = [
         returnType: 'AccountUserInstance',
         returnDescription:
             'An initialized AccountUser bound to the specified external key and client ID.',
+        isConfirmed: true,
         syntax: 'AccountUser.Init(targetUserKey, myClientID)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -2673,6 +2756,7 @@ export const ACCOUNT_USER_METHODS = [
         ],
         returnType: 'object[]',
         returnDescription: 'List of results matching the filter.',
+        isConfirmed: true,
         syntax: 'AccountUser.Retrieve(filter)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -2857,27 +2941,34 @@ export const CONTENT_AREA_OBJ_METHODS = [
         isStatic: true,
         deprecated: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
             'Initializes a ContentAreaObj instance bound to the specified external key. ' +
-            'DEPRECATED — Content Areas have been deprecated; new content areas cannot be created or updated. Existing content areas remain readable on older accounts only.',
+            'DEPRECATED — Content Areas are a legacy Classic Content feature; prefer Content Builder assets for new work.',
         params: [{ name: 'key', description: 'External key of the content area.', type: 'string' }],
         returnType: 'ContentAreaObjInstance',
         returnDescription: 'An initialized ContentAreaObj bound to the specified external key.',
         syntax: 'ContentAreaObj.Init(key)',
-        example: 'Platform.Load("core", "1.1.5");\nvar area = ContentAreaObj.Init("myCA");',
+        example: 'Platform.Load("core", "1.1.1");\nvar area = ContentAreaObj.Init("myCA");',
     },
     {
         name: 'Add',
         isStatic: true,
         deprecated: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official `Add` reference lists `@returns {Enum("OK")}`, but runtime returns an initialized ' +
+            'ContentAreaObj instance (an object exposing `Update`/`Remove`, identical in shape to `Init`) — ' +
+            'matching the doc\'s own H1 summary ("returns an initialized object") rather than the `@returns` annotation.',
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Creates a new content area from the supplied properties. ' +
-            'DEPRECATED — calls fail on accounts where the Content Areas feature has been retired.',
+            'Creates a new content area from the supplied properties and returns an initialized ContentAreaObj instance bound to it. ' +
+            'DEPRECATED — Content Areas are a legacy Classic Content feature.',
         params: [
             {
                 name: 'properties',
@@ -2886,12 +2977,13 @@ export const CONTENT_AREA_OBJ_METHODS = [
                 type: 'object',
             },
         ],
-        returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnType: 'ContentAreaObjInstance',
+        returnDescription:
+            'An initialized ContentAreaObj instance bound to the newly created content area (exposes Update/Remove). ' +
+            'Note: contrary to the `@returns {Enum("OK")}` annotation in the official docs, runtime returns an instance object, not the string "OK".',
         syntax: 'ContentAreaObj.Add(properties)',
         example:
-            'Platform.Load("core", "1.1.5");\n' +
+            'Platform.Load("core", "1.1.1");\n' +
             'var exampleArea = {\n' +
             '    CustomerKey: "exampleArea",\n' +
             '    Name: "SSJS Content Area Example",\n' +
@@ -2900,18 +2992,19 @@ export const CONTENT_AREA_OBJ_METHODS = [
             '    LayoutSpecified: true,\n' +
             '    Content: "<b>This is example content</b>"\n' +
             '};\n' +
-            'var status = ContentAreaObj.Add(exampleArea);',
+            'var area = ContentAreaObj.Add(exampleArea);',
     },
     {
         name: 'Retrieve',
         isStatic: true,
         deprecated: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
             'Returns an array of content areas matching the specified filter. ' +
-            'DEPRECATED — read-only access only; the Content Areas feature has been retired for new content.',
+            'DEPRECATED — Content Areas are a legacy Classic Content feature.',
         params: [
             {
                 name: 'filter',
@@ -2921,10 +3014,12 @@ export const CONTENT_AREA_OBJ_METHODS = [
             },
         ],
         returnType: 'object[]',
-        returnDescription: 'List of content areas matching the filter.',
+        returnDescription:
+            'A host array of content areas matching the filter (empty array when none match). ' +
+            'Reports as `[object Array]` and exposes `.length`, but `instanceof Array` is false (host-backed collection).',
         syntax: 'ContentAreaObj.Retrieve(filter)',
         example:
-            'Platform.Load("core", "1.1.5");\n' +
+            'Platform.Load("core", "1.1.1");\n' +
             'var results = ContentAreaObj.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "myCA" });',
     },
     {
@@ -2932,11 +3027,12 @@ export const CONTENT_AREA_OBJ_METHODS = [
         isStatic: false,
         deprecated: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
             'Updates the content area with the supplied attributes. ' +
-            'DEPRECATED — calls fail on accounts where the Content Areas feature has been retired.',
+            'DEPRECATED — Content Areas are a legacy Classic Content feature.',
         params: [
             {
                 name: 'properties',
@@ -2946,10 +3042,10 @@ export const CONTENT_AREA_OBJ_METHODS = [
         ],
         returnType: 'string',
         returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnDescription: 'Returns "OK" on success.',
         syntax: '<ContentAreaObjInstance>.Update(properties)',
         example:
-            'Platform.Load("core", "1.1.5");\n' +
+            'Platform.Load("core", "1.1.1");\n' +
             'var obj = ContentAreaObj.Init("myCA");\n' +
             'var status = obj.Update({ Name: "Name Updated By SSJS" });',
     },
@@ -2958,18 +3054,19 @@ export const CONTENT_AREA_OBJ_METHODS = [
         isStatic: false,
         deprecated: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 0,
         maxArgs: 0,
         description:
             'Removes the previously initialized content area. ' +
-            'DEPRECATED — calls fail on accounts where the Content Areas feature has been retired.',
+            'DEPRECATED — Content Areas are a legacy Classic Content feature.',
         params: [],
         returnType: 'string',
         returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnDescription: 'Returns "OK" on success.',
         syntax: '<ContentAreaObjInstance>.Remove()',
         example:
-            'Platform.Load("core", "1.1.5");\n' +
+            'Platform.Load("core", "1.1.1");\n' +
             'var obj = ContentAreaObj.Init("myCA");\n' +
             'var status = obj.Remove();',
     },
@@ -5389,17 +5486,26 @@ export const DATA_EXTENSION_METHODS = [
         name: 'Init',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Initializes a DataExtension instance bound to the specified external key. ' +
+            'Initializes a DataExtension instance bound to the specified data extension. ' +
+            'Runtime accepts either the External Key or the Name of the data extension (both resolve to the same DE). ' +
+            'Binding is lazy — Init never throws for a missing DE; the error surfaces on the first Rows/Fields operation. ' +
             'Required before invoking any `Fields` or `Rows` sub-namespace method on the returned instance. ' +
             'Note: Core Library DataExtension methods do not support enterprise-level data extensions.',
         params: [
-            { name: 'key', description: 'External key of the data extension.', type: 'string' },
+            {
+                name: 'key',
+                description:
+                    'External Key or Name of the data extension (the runtime resolves either).',
+                type: 'string',
+            },
         ],
         returnType: 'DataExtensionInstance',
-        returnDescription: 'An initialized DataExtension bound to the specified external key.',
+        returnDescription:
+            'An initialized DataExtension (exposing `Rows`, `Fields`, `Update`, `Remove`) bound to the specified data extension.',
         syntax: 'DataExtension.Init(key)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -5409,10 +5515,12 @@ export const DATA_EXTENSION_METHODS = [
         name: 'Add',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Creates a new data extension from the supplied properties and returns an initialized DataExtension instance. ' +
+            'Creates a new data extension from the supplied properties and returns an initialized DataExtension instance ' +
+            '(the same shape as `DataExtension.Init`, exposing `Rows`, `Fields`, `Update`, `Remove`). ' +
             'Note: unlike most static `Add` methods, this returns a `DataExtensionInstance`, not `"OK"`.',
         params: [
             {
@@ -5446,16 +5554,24 @@ export const DATA_EXTENSION_METHODS = [
         name: 'Retrieve',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official Salesforce docs document `filter` as required, but at runtime it is optional: ' +
+            'calling `DataExtension.Retrieve()` with no arguments does not throw and returns the full list of data extensions. ' +
+            'A filter that matches nothing returns a real empty array (`[object Array]`, `length: 0`).',
         minArgs: 1,
         maxArgs: 2,
         description:
             'Returns an array of data extensions matching the specified filter. ' +
-            'Pass `queryAllAccounts: true` to search all accounts accessible to the authenticated user.',
+            'Pass `queryAllAccounts: true` to search all accounts accessible to the authenticated user. ' +
+            'The `filter` is documented as required but is optional at runtime — omitting it returns all data extensions.',
         params: [
             {
                 name: 'filter',
                 description:
-                    'PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.',
+                    'PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`. ' +
+                    'Documented as required, but optional at runtime (omitting it returns all data extensions).',
                 type: 'object',
             },
             {
@@ -5493,13 +5609,15 @@ export const DATA_EXTENSION_FIELDS_METHODS = [
         ],
         returnType: 'string',
         returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnDescription:
+            'Returns "OK" on success. Runtime returns the string "Error" (rather than throwing) when the field cannot be added or arguments are missing.',
         syntax: '<DataExtensionInstance>.Fields.Add(properties)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
             'var de = DataExtension.Init("SSJSTest");\n' +
             'var newField = { Name: "NewFieldV2", CustomerKey: "CustomerKey", FieldType: "Number", IsRequired: true, DefaultValue: "100" };\n' +
             'var status = de.Fields.Add(newField);',
+        isConfirmed: true,
     },
     {
         name: 'Retrieve',
@@ -5511,12 +5629,17 @@ export const DATA_EXTENSION_FIELDS_METHODS = [
             'Returns an array of field definitions for the previously initialized data extension.',
         params: [],
         returnType: 'object[]',
-        returnDescription: 'List of field-definition objects.',
+        returnDescription:
+            'List of field-definition objects. Each object exposes `Name` (string), `ObjectID` (string), `FieldType` (string), `IsPrimaryKey` (boolean), `MaxLength` (number), `Ordinal` (number), and `DefaultValue` (string).',
         syntax: '<DataExtensionInstance>.Fields.Retrieve()',
         example:
             'Platform.Load("core", "1.1.5");\n' +
             'var birthdayDE = DataExtension.Init("birthdayDE");\n' +
             'var fields = birthdayDE.Fields.Retrieve();',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs example response lists only Name, FieldType, IsPrimaryKey, MaxLength, Ordinal, and DefaultValue. At runtime each field object also includes an `ObjectID` (string) property.',
     },
     {
         name: 'UpdateSendableField',
@@ -5544,12 +5667,13 @@ export const DATA_EXTENSION_FIELDS_METHODS = [
         returnType: 'string',
         returnEnum: ['OK'],
         returnDescription:
-            'Returns "OK" on success or throws on failure (assumed; doc has no `@returns`, treated as `"OK"` for consistency with sibling `Fields.*` methods).',
+            'Returns "OK" on success (confirmed at runtime; the doc has no `@returns`). Returns the string "Error" instead of throwing on failure.',
         syntax: '<DataExtensionInstance>.Fields.UpdateSendableField(deFieldName, subscriberField)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
             'var updateDE = DataExtension.Init("sendableDataExtension");\n' +
             'var status = updateDE.Fields.UpdateSendableField("DifferentSubKey", "Subscriber Key");',
+        isConfirmed: true,
     },
 ];
 

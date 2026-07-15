@@ -92,6 +92,7 @@ import {
 
 /** Maps ssjs-data instance-type strings to their TypeScript names. */
 const INSTANCE_TYPE_MAP = {
+    Date: 'Date',
     DataExtensionInstance: 'DataExtensionInstance',
     WSProxyInstance: 'Script.Util.WSProxy',
     HttpRequestInstance: 'Script.Util.HttpRequest',
