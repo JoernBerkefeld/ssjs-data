@@ -3880,9 +3880,6 @@ export const FILTER_DEFINITION_METHODS = [
         name: 'Retrieve',
         isStatic: true,
         isConfirmed: true,
-        differsFromOfficialDocs: true,
-        officialDocsNote:
-            'Runtime-verified on a CloudPage: executes and returns a host array. On a filter that matches nothing it returns an empty array (`.length === 0`) for an `equals` comparison, but returns `null` for an `isNotNull` comparison when no filter definitions exist on the account. Callers should guard for both `null` and empty array.',
         requiresCoreLoad: true,
         minArgs: 1,
         maxArgs: 1,
@@ -3897,7 +3894,7 @@ export const FILTER_DEFINITION_METHODS = [
         ],
         returnType: 'object[]',
         returnDescription:
-            'List of filter definitions matching the filter (may be `null` when none exist).',
+            'Array of filter definitions matching the filter; an empty array when none match.',
         syntax: 'FilterDefinition.Retrieve(filter)',
         example:
             'Platform.Load("core", "1.1.5");\n' +

@@ -2612,9 +2612,8 @@ declare namespace FilterDefinition {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage: executes and returns a host array. On a filter that matches nothing it returns an empty array (`.length === 0`) for an `equals` comparison, but returns `null` for an `isNotNull` comparison when no filter definitions exist on the account. Callers should guard for both `null` and empty array.
      * @param filter - PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
-     * @returns List of filter definitions matching the filter (may be `null` when none exist).
+     * @returns Array of filter definitions matching the filter; an empty array when none match.
      * @example
      * Platform.Load("core", "1.1.5");
      * var results = FilterDefinition.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "myFilterDef" });
