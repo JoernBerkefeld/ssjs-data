@@ -17,6 +17,14 @@
  *       ssjs-data (and ssjs.guide) for discoverability, but EXCLUDED from the generated .d.ts so editors
  *       never offer them, and flagged by ESLint as "does not exist at runtime". Pair with officialDocsNote
  *       (runtime evidence) and a "use X instead" pointer.
+ *   - verificationBlocked?: boolean — true when a runtime verification was ATTEMPTED but could not
+ *       complete for a concrete technical/environmental reason (a platform guardrail, missing auth
+ *       context, absent test data, etc.). This is a THIRD state, distinct from both "verified"
+ *       (isConfirmed: true) and "never checked" (neither flag set). When true, isConfirmed MUST be
+ *       explicitly false and verificationBlockedReason MUST name the blocker category. Put the concrete,
+ *       human-readable detail (error codes, SOAP fault names) in officialDocsNote, not the enum value.
+ *   - verificationBlockedReason?: string — REQUIRED whenever verificationBlocked is true; one of the
+ *       VERIFICATION_BLOCKED_REASONS enum values. Never set on its own.
  *   - isProperty?: boolean    — true for entries accessed without parentheses (e.g. Platform.Request.HasSSL)
  *   - requiresCoreLoad?: boolean — true when the call site requires a preceding Platform.Load("core", "<version>").
  *       RUNTIME NOTE: the bare-name globals injected by Platform.Load (Write, Stringify, Base64Encode,
@@ -31,6 +39,29 @@
  *   - optional?: boolean                     — equivalent to Required:No in the docs
  *   - caseInsensitive?: boolean              — true for SOAP-style enums where casing is not enforced
  */
+
+// ── Verification-blocked reasons ─────────────────────────────────────────────
+// Fixed enum of concrete technical/environmental reasons why a runtime verification
+// was ATTEMPTED but could not complete. Set on an entry as `verificationBlockedReason`
+// together with `verificationBlocked: true` and `isConfirmed: false`. The specific
+// evidence (error codes, SOAP fault names) belongs in `officialDocsNote`, not here.
+//
+//   - bu-guardrail        the test BU rejects the operation via a platform guardrail
+//                         (spam filter, send-definition creation policy, etc.)
+//   - needs-auth-context  requires authenticated user / send / subscriber context that
+//                         the anonymous CloudPage test harness cannot provide
+//   - no-test-data        requires pre-existing data of a kind not available on the BU
+//   - classic-only-no-assets  method only works with classic (legacy) assets and none
+//                         exist on the BU to test against
+//   - destructive-unsafe  cannot be exercised without unacceptable side effects
+//                         (reserved; destructive testing is generally allowed on the QA BU)
+export const VERIFICATION_BLOCKED_REASONS = Object.freeze([
+    'bu-guardrail',
+    'needs-auth-context',
+    'no-test-data',
+    'classic-only-no-assets',
+    'destructive-unsafe',
+]);
 
 // ── Global functions ─────────────────────────────────────────────────────────
 // Functions and objects available at the top scope of any SSJS execution context.
@@ -2363,7 +2394,11 @@ export const CORE_LIBRARY_OBJECTS = [
         name: 'Email',
         methods: ['Init', 'Add', 'Retrieve', 'Update', 'Remove', 'Validate', 'CheckContent'],
         requiresCoreLoad: true,
-        description: 'Manages email message definitions.',
+        deprecated: true,
+        description:
+            'Manages classic Email Studio email message definitions. ' +
+            'Deprecated — operates on the legacy (classic) email type, not Content Builder `htmlemail` assets. ' +
+            'Still works at runtime; prefer Content Builder emails and the modern send methods for new development.',
     },
     {
         name: 'TriggeredSend',
@@ -2438,9 +2473,21 @@ export const CORE_LIBRARY_OBJECTS = [
     },
     {
         name: 'Send.Tracking',
-        methods: ['Retrieve', 'ClickRetrieve', 'TotalByIntervalRetrieve'],
+        methods: ['Retrieve'],
         requiresCoreLoad: true,
         description: 'Retrieves tracking data for a specific send.',
+    },
+    {
+        name: 'Send.Tracking.Clicks',
+        methods: ['Retrieve'],
+        requiresCoreLoad: true,
+        description: 'Retrieves click tracking data for the initialized send.',
+    },
+    {
+        name: 'Send.Tracking.TotalByInterval',
+        methods: ['Retrieve'],
+        requiresCoreLoad: true,
+        description: 'Retrieves aggregated tracking data by interval for the initialized send.',
     },
     {
         name: 'Send.Definition',
@@ -3911,6 +3958,7 @@ export const LIST_METHODS = [
         name: 'Init',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -3926,6 +3974,7 @@ export const LIST_METHODS = [
         name: 'Add',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -3950,6 +3999,7 @@ export const LIST_METHODS = [
         name: 'Retrieve',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description: 'Returns an array of lists matching the specified filter.',
@@ -3972,6 +4022,7 @@ export const LIST_METHODS = [
         name: 'Remove',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 0,
         maxArgs: 0,
         description: 'Removes the previously initialized list.',
@@ -4159,6 +4210,7 @@ export const SUBSCRIBER_METHODS = [
         name: 'Init',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -4174,6 +4226,13 @@ export const SUBSCRIBER_METHODS = [
         name: 'Add',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'bu-guardrail',
+        officialDocsNote:
+            'Verification attempted but blocked: the QA test BU rejects programmatic Subscriber writes ' +
+            'via its spam-filter guardrail. The live CloudPage attempt returned SOAP fault ' +
+            '`TriggeredSpamFilter` (ErrorCode 12002), so the "OK" success path could not be proven on this BU.',
         minArgs: 1,
         maxArgs: 1,
         description: 'Creates a new subscriber from the supplied properties.',
@@ -4204,6 +4263,7 @@ export const SUBSCRIBER_METHODS = [
         name: 'Retrieve',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description: 'Returns an array of subscribers matching the specified filter.',
@@ -4224,12 +4284,19 @@ export const SUBSCRIBER_METHODS = [
     },
     {
         name: 'Upsert',
-        isStatic: true,
+        isStatic: false,
         requiresCoreLoad: true,
+        differsFromOfficialDocs: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'bu-guardrail',
+        officialDocsNote:
+            'Official docs document a static Subscriber.Upsert(properties); at runtime Subscriber.Upsert is undefined — the method lives on the instance (Subscriber.Init(key).Upsert(properties)). ' +
+            'The instance-method location is proven, but the write itself could not be verified: the QA test BU rejects programmatic Subscriber writes via its spam-filter guardrail (SOAP fault `TriggeredSpamFilter`, ErrorCode 12002).',
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Creates a new subscriber, or updates an existing one matched by EmailAddress / SubscriberKey.',
+            'Creates a new subscriber, or updates the initialized one matched by EmailAddress / SubscriberKey.',
         params: [
             {
                 name: 'properties',
@@ -4241,44 +4308,48 @@ export const SUBSCRIBER_METHODS = [
         returnType: 'string',
         returnEnum: ['OK'],
         returnDescription: 'Returns "OK" on success or throws on failure.',
-        syntax: 'Subscriber.Upsert(properties)',
+        syntax: '<SubscriberInstance>.Upsert(properties)',
         example:
-            'Platform.Load("core", "1");\n' +
-            'var sub = {\n' +
+            'Platform.Load("core", "1.1.5");\n' +
+            'var subObj = Subscriber.Init("test@example.com");\n' +
+            'var result = subObj.Upsert({\n' +
             '    EmailAddress: "test@example.com",\n' +
             '    SubscriberKey: "test@example.com",\n' +
             '    Attributes: [ { Name: "FirstName", Value: "Jane" } ]\n' +
-            '};\n' +
-            'var result = Subscriber.Upsert(sub);\n' +
-            'Write(Stringify(result));',
+            '});',
     },
     {
         name: 'Statistics',
-        isStatic: true,
+        isStatic: false,
         requiresCoreLoad: true,
-        minArgs: 1,
-        maxArgs: 1,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Official docs document a static Subscriber.Statistics(subscriberKey); at runtime Subscriber.Statistics is undefined — the method lives on the instance (Subscriber.Init(key).Statistics()).',
+        minArgs: 0,
+        maxArgs: 0,
         description:
-            'Retrieves statistical data for the specified subscriber (sends, opens, clicks, bounces, unsubscribes).',
-        params: [
-            {
-                name: 'subscriberKey',
-                description: 'The subscriber key identifying the subscriber.',
-                type: 'string',
-            },
-        ],
+            'Retrieves statistical data for the initialized subscriber (sends, opens, clicks, bounces, unsubscribes).',
+        params: [],
         returnType: 'object',
         returnDescription: 'A single object with subscriber statistics (not an array).',
-        syntax: 'Subscriber.Statistics(subscriberKey)',
+        syntax: '<SubscriberInstance>.Statistics()',
         example:
-            'Platform.Load("core", "1");\n' +
-            'var stats = Subscriber.Statistics("test@example.com");\n' +
-            'Write(Stringify(stats));',
+            'Platform.Load("core", "1.1.5");\n' +
+            'var subObj = Subscriber.Init("test@example.com");\n' +
+            'var stats = subObj.Statistics();',
     },
     {
         name: 'Update',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'bu-guardrail',
+        officialDocsNote:
+            'Verification attempted but blocked: the QA test BU rejects programmatic Subscriber writes ' +
+            'via its spam-filter guardrail (SOAP fault `TriggeredSpamFilter`, ErrorCode 12002), so the ' +
+            'update success path could not be proven on this BU.',
         minArgs: 1,
         maxArgs: 1,
         description: 'Updates the previously initialized subscriber with the supplied attributes.',
@@ -4298,6 +4369,13 @@ export const SUBSCRIBER_METHODS = [
         name: 'Remove',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'bu-guardrail',
+        officialDocsNote:
+            'Verification attempted but blocked: the QA test BU rejects programmatic Subscriber writes ' +
+            'via its spam-filter guardrail (SOAP fault `TriggeredSpamFilter`, ErrorCode 12002), so the ' +
+            'delete success path could not be proven on this BU.',
         minArgs: 0,
         maxArgs: 0,
         description: 'Deletes the previously initialized subscriber.',
@@ -4315,6 +4393,13 @@ export const SUBSCRIBER_METHODS = [
         name: 'Unsubscribe',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'bu-guardrail',
+        officialDocsNote:
+            'Verification attempted but blocked: the QA test BU rejects programmatic Subscriber writes ' +
+            'via its spam-filter guardrail (SOAP fault `TriggeredSpamFilter`, ErrorCode 12002), so the ' +
+            'unsubscribe success path could not be proven on this BU.',
         minArgs: 0,
         maxArgs: 0,
         description: 'Sets the previously initialized subscriber\'s status to `"Unsubscribed"`.',
@@ -4335,6 +4420,7 @@ export const SUBSCRIBER_ATTRIBUTES_METHODS = [
         name: 'Retrieve',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 0,
         maxArgs: 0,
         description:
@@ -4355,6 +4441,7 @@ export const SUBSCRIBER_LISTS_METHODS = [
         name: 'Retrieve',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 0,
         maxArgs: 0,
         description: 'Returns the lists the previously initialized subscriber is a member of.',
@@ -4376,12 +4463,15 @@ export const EMAIL_METHODS = [
         name: 'Init',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        deprecated: true,
         minArgs: 1,
         maxArgs: 1,
         description:
             'Initializes an Email instance bound to the specified external key. ' +
             'Required before invoking any other Email method on the returned instance. ' +
-            'External keys cannot be set in the UI — set one via SOAP API, or look up the value via `Email.Retrieve()`.',
+            'External keys cannot be set in the UI — set one via SOAP API, or look up the value via `Email.Retrieve()`. ' +
+            'Deprecated — operates on classic Email Studio emails; prefer Content Builder assets for new work.',
         params: [
             { name: 'key', description: 'External key of the email message.', type: 'string' },
         ],
@@ -4394,11 +4484,14 @@ export const EMAIL_METHODS = [
         name: 'Add',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        deprecated: true,
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Creates a new email message from the supplied properties and returns an initialized email instance. ' +
-            'Note: unlike most static `Add` methods, this returns an `EmailInstance`, not `"OK"`.',
+            'Creates a new classic email message from the supplied properties and returns an initialized email instance. ' +
+            'Note: unlike most static `Add` methods, this returns an `EmailInstance`, not `"OK"`. ' +
+            'Deprecated — operates on classic Email Studio emails; prefer Content Builder assets for new work.',
         params: [
             {
                 name: 'properties',
@@ -4427,9 +4520,13 @@ export const EMAIL_METHODS = [
         name: 'Retrieve',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        deprecated: true,
         minArgs: 1,
         maxArgs: 1,
-        description: 'Returns an array of email messages matching the specified filter.',
+        description:
+            'Returns an array of classic email messages matching the specified filter. ' +
+            'Deprecated — operates on classic Email Studio emails; prefer Content Builder assets for new work.',
         params: [
             {
                 name: 'filter',
@@ -4449,9 +4546,13 @@ export const EMAIL_METHODS = [
         name: 'Update',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        deprecated: true,
         minArgs: 1,
         maxArgs: 1,
-        description: 'Updates the email message with the supplied attributes.',
+        description:
+            'Updates the classic email message with the supplied attributes. ' +
+            'Deprecated — operates on classic Email Studio emails; prefer Content Builder assets for new work.',
         params: [
             {
                 name: 'properties',
@@ -4472,9 +4573,13 @@ export const EMAIL_METHODS = [
         name: 'Remove',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        deprecated: true,
         minArgs: 0,
         maxArgs: 0,
-        description: 'Removes the previously initialized email message.',
+        description:
+            'Removes the previously initialized classic email message. ' +
+            'Deprecated — operates on classic Email Studio emails; prefer Content Builder assets for new work.',
         params: [],
         returnType: 'string',
         returnEnum: ['OK'],
@@ -4489,15 +4594,22 @@ export const EMAIL_METHODS = [
         name: 'Validate',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        deprecated: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): `Task.ValidationStatus` is a STRING (e.g. "Fail"), not the boolean ' +
+            'the official docs describe. Compare against string values, not `true`/`false`.',
         minArgs: 0,
         maxArgs: 0,
         description:
-            'Runs validation checks on the previously initialized email message. ' +
-            'Returns a `{Task: {ValidationStatus: boolean, ValidationMessages: string}}` object.',
+            'Runs validation checks on the previously initialized classic email message. ' +
+            'Returns a `{Task: {ValidationStatus: string, ValidationMessages: string}}` object. ' +
+            'Deprecated — operates on classic Email Studio emails; prefer Content Builder assets for new work.',
         params: [],
         returnType: 'object',
         returnDescription:
-            'Validation result with `Task.ValidationStatus` (boolean) and `Task.ValidationMessages` (string).',
+            'Validation result with `Task.ValidationStatus` (string, e.g. "Fail") and `Task.ValidationMessages` (string).',
         syntax: '<EmailInstance>.Validate()',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -4510,11 +4622,14 @@ export const EMAIL_METHODS = [
         name: 'CheckContent',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        deprecated: true,
         minArgs: 0,
         maxArgs: 0,
         description:
-            'Runs content checks on the previously initialized email message. ' +
-            'Returns a `{Task: {CheckPassed: boolean, ResultMessage: string}}` object.',
+            'Runs content checks on the previously initialized classic email message. ' +
+            'Returns a `{Task: {CheckPassed: boolean, ResultMessage: string}}` object. ' +
+            'Deprecated — operates on classic Email Studio emails; prefer Content Builder assets for new work.',
         params: [],
         returnType: 'object',
         returnDescription:
@@ -4536,6 +4651,7 @@ export const SEND_METHODS = [
         name: 'Init',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -4551,6 +4667,7 @@ export const SEND_METHODS = [
         name: 'Add',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 2,
         maxArgs: 3,
         description:
@@ -4585,6 +4702,7 @@ export const SEND_METHODS = [
         name: 'Retrieve',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description: 'Returns an array of sends matching the specified filter.',
@@ -4607,6 +4725,7 @@ export const SEND_METHODS = [
         name: 'RetrieveLists',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -4631,6 +4750,7 @@ export const SEND_METHODS = [
         name: 'Remove',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 0,
         maxArgs: 0,
         description: 'Removes the previously initialized send.',
@@ -4645,13 +4765,19 @@ export const SEND_METHODS = [
         name: 'CancelSend',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): `CancelSend()` returns the literal string "status" on success, ' +
+            'not the "OK" the official docs describe. Do not compare its return value against "OK".',
         minArgs: 0,
         maxArgs: 0,
         description: 'Attempts to cancel the previously initialized send.',
         params: [],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['status'],
+        returnDescription:
+            'Returns the literal string "status" on success (not "OK"); throws on failure.',
         syntax: '<SendInstance>.CancelSend()',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -4665,6 +4791,7 @@ export const SEND_TRACKING_METHODS = [
         name: 'Retrieve',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -4678,10 +4805,19 @@ export const SEND_TRACKING_METHODS = [
             'Platform.Load("core", "1.1.5");\n' +
             'var sendTracking = Send.Tracking.Retrieve({ Property: "SendID", SimpleOperator: "equals", Value: 12345 });',
     },
+];
+
+export const SEND_TRACKING_CLICKS_METHODS = [
     {
-        name: 'ClickRetrieve',
+        name: 'Retrieve',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Salesforce docs (and older references) document click tracking as `<SendInstance>.Tracking.ClickRetrieve(filter)`. ' +
+            'At runtime that name is `undefined`; the working member is `<SendInstance>.Tracking.Clicks.Retrieve(filter)` ' +
+            '(a `Clicks` sub-object with a `Retrieve` method), matching the TriggeredSend.Tracking.Clicks pattern.',
         minArgs: 1,
         maxArgs: 1,
         description: 'Returns click tracking data for the previously initialized send.',
@@ -4694,16 +4830,27 @@ export const SEND_TRACKING_METHODS = [
         ],
         returnType: 'object[]',
         returnDescription: 'List of click tracking records matching the filter.',
-        syntax: '<SendInstance>.Tracking.ClickRetrieve(filter)',
+        syntax: '<SendInstance>.Tracking.Clicks.Retrieve(filter)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
             'var singleSend = Send.Init(12345);\n' +
-            'var results = singleSend.Tracking.ClickRetrieve({ Property: "ID", SimpleOperator: "equals", Value: 12345 });',
+            'var results = singleSend.Tracking.Clicks.Retrieve({ Property: "ID", SimpleOperator: "equals", Value: 12345 });',
     },
+];
+
+export const SEND_TRACKING_TOTAL_BY_INTERVAL_METHODS = [
     {
-        name: 'TotalByIntervalRetrieve',
+        name: 'Retrieve',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Salesforce docs (and older references) document interval aggregation as ' +
+            '`<SendInstance>.Tracking.TotalByIntervalRetrieve(type, startDate, endDate, groupBy)`. ' +
+            'At runtime that name is `undefined`; the working member is ' +
+            '`<SendInstance>.Tracking.TotalByInterval.Retrieve(type, startDate, endDate, groupBy)` ' +
+            '(a `TotalByInterval` sub-object with a `Retrieve` method), matching the TriggeredSend.Tracking.TotalByInterval pattern.',
         minArgs: 4,
         maxArgs: 4,
         description:
@@ -4735,11 +4882,11 @@ export const SEND_TRACKING_METHODS = [
         ],
         returnType: 'object[]',
         returnDescription: 'List of aggregated tracking records.',
-        syntax: '<SendInstance>.Tracking.TotalByIntervalRetrieve(type, startDate, endDate, groupBy)',
+        syntax: '<SendInstance>.Tracking.TotalByInterval.Retrieve(type, startDate, endDate, groupBy)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
             'var singleSend = Send.Init(12345);\n' +
-            'var results = singleSend.Tracking.TotalByIntervalRetrieve("Click", "07-01-2010", "07-31-2010", "day");',
+            'var results = singleSend.Tracking.TotalByInterval.Retrieve("Click", "07-01-2010", "07-31-2010", "day");',
     },
 ];
 
@@ -4748,6 +4895,7 @@ export const SEND_DEFINITION_METHODS = [
         name: 'Init',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -4765,6 +4913,13 @@ export const SEND_DEFINITION_METHODS = [
         name: 'Add',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'bu-guardrail',
+        officialDocsNote:
+            'Verification attempted but blocked: creating a send definition programmatically is rejected ' +
+            'by this BU. The live CloudPage attempt returned `CreateEmailSendDefinition` SOAP ErrorCode ' +
+            '42116, so the "OK" success path could not be proven on this BU.',
         minArgs: 4,
         maxArgs: 4,
         description: 'Creates a new send definition.',
@@ -4804,6 +4959,13 @@ export const SEND_DEFINITION_METHODS = [
         name: 'AddWithDE',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'bu-guardrail',
+        officialDocsNote:
+            'Verification attempted but blocked: creating a send definition programmatically is rejected ' +
+            'by this BU (`CreateEmailSendDefinition` SOAP ErrorCode 42116), so the "OK" success path could ' +
+            'not be proven on this BU.',
         minArgs: 5,
         maxArgs: 5,
         description: 'Creates a new send definition that targets a sendable Data Extension.',
@@ -4848,6 +5010,13 @@ export const SEND_DEFINITION_METHODS = [
         name: 'AddWithFilterDefinition',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'bu-guardrail',
+        officialDocsNote:
+            'Verification attempted but blocked: creating a send definition programmatically is rejected ' +
+            'by this BU (`CreateEmailSendDefinition` SOAP ErrorCode 42116), so the "OK" success path could ' +
+            'not be proven on this BU.',
         minArgs: 5,
         maxArgs: 5,
         description:
@@ -4893,6 +5062,7 @@ export const SEND_DEFINITION_METHODS = [
         name: 'Retrieve',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 0,
         maxArgs: 1,
         description:
@@ -4919,6 +5089,13 @@ export const SEND_DEFINITION_METHODS = [
         name: 'Update',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'bu-guardrail',
+        officialDocsNote:
+            'Verification attempted but blocked: send-definition writes are rejected by this BU ' +
+            '(`CreateEmailSendDefinition` SOAP ErrorCode 42116), so the update success path could not be ' +
+            'proven on this BU.',
         minArgs: 1,
         maxArgs: 1,
         description: 'Updates the previously initialized send definition.',
@@ -4936,6 +5113,13 @@ export const SEND_DEFINITION_METHODS = [
         name: 'Remove',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'bu-guardrail',
+        officialDocsNote:
+            'Verification attempted but blocked: send-definition writes are rejected by this BU ' +
+            '(`CreateEmailSendDefinition` SOAP ErrorCode 42116), so the delete success path could not be ' +
+            'proven on this BU.',
         minArgs: 0,
         maxArgs: 0,
         description: 'Deletes the previously initialized send definition.',
@@ -4953,6 +5137,13 @@ export const SEND_DEFINITION_METHODS = [
         name: 'Send',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'bu-guardrail',
+        officialDocsNote:
+            'Verification attempted but blocked: triggering a send programmatically is rejected by this BU ' +
+            '(send-definition creation policy, `CreateEmailSendDefinition` SOAP ErrorCode 42116), so the ' +
+            'send success path could not be proven on this BU.',
         minArgs: 0,
         maxArgs: 0,
         description:
@@ -10128,6 +10319,8 @@ for (const [className, methods] of [
     ['Email', EMAIL_METHODS],
     ['Send', SEND_METHODS],
     ['Send.Tracking', SEND_TRACKING_METHODS],
+    ['Send.Tracking.Clicks', SEND_TRACKING_CLICKS_METHODS],
+    ['Send.Tracking.TotalByInterval', SEND_TRACKING_TOTAL_BY_INTERVAL_METHODS],
     ['Send.Definition', SEND_DEFINITION_METHODS],
     ['TriggeredSend', TRIGGERED_SEND_METHODS],
     ['TriggeredSend.Tracking', TRIGGERED_SEND_TRACKING_METHODS],

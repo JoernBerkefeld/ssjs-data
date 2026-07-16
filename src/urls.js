@@ -204,6 +204,8 @@ export const CORE_LIBRARY_URLS = {
     Send: '/core-library/send/',
     'Send.Definition': '/core-library/senddefinition/',
     'Send.Tracking': '/core-library/send/',
+    'Send.Tracking.Clicks': '/core-library/send/',
+    'Send.Tracking.TotalByInterval': '/core-library/send/',
     SendClassification: '/core-library/sendclassification/',
     SenderProfile: '/core-library/senderprofile/',
     Subscriber: '/core-library/subscriber/',

@@ -1741,6 +1741,7 @@ interface SubscriberAttributesInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @returns List of attribute objects for the subscriber.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -1756,6 +1757,7 @@ interface SubscriberListsInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @returns List of list objects the subscriber belongs to.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -1763,39 +1765,6 @@ interface SubscriberListsInstance {
      * var listArray = subObj.Lists.Retrieve();
      */
     Retrieve(): object[];
-}
-interface SendTrackingInstance {
-    /**
-     * Returns click tracking data for the previously initialized send.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param filter - WSProxy-style filter restricting results.
-     * @returns List of click tracking records matching the filter.
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var singleSend = Send.Init(12345);
-     * var results = singleSend.Tracking.ClickRetrieve({ Property: "ID", SimpleOperator: "equals", Value: 12345 });
-     */
-    ClickRetrieve(filter: object): object[];
-    /**
-     * Returns aggregated tracking data for the previously initialized send. Aggregates by `type` over the date range, grouped by `groupBy`.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
-     *
-     * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param type - Type of data to aggregate.
-     * @param startDate - Start date of the data period (MM-DD-YYYY).
-     * @param endDate - End date of the data period (MM-DD-YYYY).
-     * @param groupBy - Interval used to aggregate data.
-     * @returns List of aggregated tracking records.
-     * @example
-     * Platform.Load("core", "1.1.5");
-     * var singleSend = Send.Init(12345);
-     * var results = singleSend.Tracking.TotalByIntervalRetrieve("Click", "07-01-2010", "07-31-2010", "day");
-     */
-    TotalByIntervalRetrieve(type: string, startDate: string, endDate: string, groupBy: string): object[];
 }
 interface TriggeredSendTrackingClicksInstance {
     /**
@@ -2734,6 +2703,7 @@ declare namespace List {
      * [ssjs.guide reference](https://ssjs.guide/core-library/list/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param key - External key of the list.
      * @returns An initialized List bound to the specified external key.
      * @example
@@ -2747,6 +2717,7 @@ declare namespace List {
      * [ssjs.guide reference](https://ssjs.guide/core-library/list/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - JSON object describing the new list (CustomerKey, Name, Description, ...).
      * @returns An initialized List bound to the newly-created list.
      * @example
@@ -2760,6 +2731,7 @@ declare namespace List {
      * [ssjs.guide reference](https://ssjs.guide/core-library/list/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
      * @returns List of list objects matching the filter.
      * @example
@@ -2775,6 +2747,7 @@ interface ListInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/list/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @returns Returns "OK" on success or throws on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -2791,6 +2764,7 @@ declare namespace Subscriber {
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param key - Subscriber key.
      * @returns An initialized Subscriber bound to the specified key.
      * @example
@@ -2824,6 +2798,7 @@ declare namespace Subscriber {
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
      * @returns List of subscribers matching the filter.
      * @example
@@ -2831,41 +2806,42 @@ declare namespace Subscriber {
      * var results = Subscriber.Retrieve({ Property: "SubscriberKey", SimpleOperator: "equals", Value: "MySubscriberKey" });
      */
     function Retrieve(filter: object): object[];
+}
+interface SubscriberInstance {
     /**
-     * Creates a new subscriber, or updates an existing one matched by EmailAddress / SubscriberKey.
+     * Creates a new subscriber, or updates the initialized one matched by EmailAddress / SubscriberKey.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Official docs document a static Subscriber.Upsert(properties); at runtime Subscriber.Upsert is undefined — the method lives on the instance (Subscriber.Init(key).Upsert(properties)). The instance-method location is proven, but the write itself could not be verified: the QA test BU rejects programmatic Subscriber writes via its spam-filter guardrail (SOAP fault `TriggeredSpamFilter`, ErrorCode 12002).
      * @param properties - JSON object describing the subscriber (EmailAddress, SubscriberKey, Attributes, ...).
      * @returns Returns "OK" on success or throws on failure.
      * @example
-     * Platform.Load("core", "1");
-     * var sub = {
+     * Platform.Load("core", "1.1.5");
+     * var subObj = Subscriber.Init("test@example.com");
+     * var result = subObj.Upsert({
      *     EmailAddress: "test@example.com",
      *     SubscriberKey: "test@example.com",
      *     Attributes: [ { Name: "FirstName", Value: "Jane" } ]
-     * };
-     * var result = Subscriber.Upsert(sub);
-     * Write(Stringify(result));
+     * });
      */
-    function Upsert(properties: object): string;
+    Upsert(properties: object): string;
     /**
-     * Retrieves statistical data for the specified subscriber (sends, opens, clicks, bounces, unsubscribes).
+     * Retrieves statistical data for the initialized subscriber (sends, opens, clicks, bounces, unsubscribes).
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param subscriberKey - The subscriber key identifying the subscriber.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Official docs document a static Subscriber.Statistics(subscriberKey); at runtime Subscriber.Statistics is undefined — the method lives on the instance (Subscriber.Init(key).Statistics()).
      * @returns A single object with subscriber statistics (not an array).
      * @example
-     * Platform.Load("core", "1");
-     * var stats = Subscriber.Statistics("test@example.com");
-     * Write(Stringify(stats));
+     * Platform.Load("core", "1.1.5");
+     * var subObj = Subscriber.Init("test@example.com");
+     * var stats = subObj.Statistics();
      */
-    function Statistics(subscriberKey: string): object;
-}
-interface SubscriberInstance {
+    Statistics(): object;
     /**
      * Updates the previously initialized subscriber with the supplied attributes.
      *
@@ -2911,11 +2887,13 @@ interface SubscriberInstance {
 }
 declare namespace Email {
     /**
-     * Initializes an Email instance bound to the specified external key. Required before invoking any other Email method on the returned instance. External keys cannot be set in the UI — set one via SOAP API, or look up the value via `Email.Retrieve()`.
+     * Initializes an Email instance bound to the specified external key. Required before invoking any other Email method on the returned instance. External keys cannot be set in the UI — set one via SOAP API, or look up the value via `Email.Retrieve()`. Deprecated — operates on classic Email Studio emails; prefer Content Builder assets for new work.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param key - External key of the email message.
      * @returns An initialized Email bound to the specified external key.
      * @example
@@ -2924,11 +2902,13 @@ declare namespace Email {
      */
     function Init(key: string): EmailInstance;
     /**
-     * Creates a new email message from the supplied properties and returns an initialized email instance. Note: unlike most static `Add` methods, this returns an `EmailInstance`, not `"OK"`.
+     * Creates a new classic email message from the supplied properties and returns an initialized email instance. Note: unlike most static `Add` methods, this returns an `EmailInstance`, not `"OK"`. Deprecated — operates on classic Email Studio emails; prefer Content Builder assets for new work.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - JSON object describing the new email (CustomerKey, Name, optional CategoryID, HTMLBody, TextBody, Subject, EmailType, ...).
      * @returns An initialized Email bound to the newly-created email message.
      * @example
@@ -2946,11 +2926,13 @@ declare namespace Email {
      */
     function Add(properties: object): EmailInstance;
     /**
-     * Returns an array of email messages matching the specified filter.
+     * Returns an array of classic email messages matching the specified filter. Deprecated — operates on classic Email Studio emails; prefer Content Builder assets for new work.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
      * @returns List of email messages matching the filter.
      * @example
@@ -2961,11 +2943,13 @@ declare namespace Email {
 }
 interface EmailInstance {
     /**
-     * Updates the email message with the supplied attributes.
+     * Updates the classic email message with the supplied attributes. Deprecated — operates on classic Email Studio emails; prefer Content Builder assets for new work.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - Attributes to change on the email message.
      * @returns Returns "OK" on success or throws on failure.
      * @example
@@ -2975,11 +2959,13 @@ interface EmailInstance {
      */
     Update(properties: object): string;
     /**
-     * Removes the previously initialized email message.
+     * Removes the previously initialized classic email message. Deprecated — operates on classic Email Studio emails; prefer Content Builder assets for new work.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @returns Returns "OK" on success or throws on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -2988,12 +2974,15 @@ interface EmailInstance {
      */
     Remove(): string;
     /**
-     * Runs validation checks on the previously initialized email message. Returns a `{Task: {ValidationStatus: boolean, ValidationMessages: string}}` object.
+     * Runs validation checks on the previously initialized classic email message. Returns a `{Task: {ValidationStatus: string, ValidationMessages: string}}` object. Deprecated — operates on classic Email Studio emails; prefer Content Builder assets for new work.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @returns Validation result with `Task.ValidationStatus` (boolean) and `Task.ValidationMessages` (string).
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): `Task.ValidationStatus` is a STRING (e.g. "Fail"), not the boolean the official docs describe. Compare against string values, not `true`/`false`.
+     * @returns Validation result with `Task.ValidationStatus` (string, e.g. "Fail") and `Task.ValidationMessages` (string).
      * @example
      * Platform.Load("core", "1.1.5");
      * var myEmail = Email.Init("myEmail");
@@ -3003,11 +2992,13 @@ interface EmailInstance {
      */
     Validate(): object;
     /**
-     * Runs content checks on the previously initialized email message. Returns a `{Task: {CheckPassed: boolean, ResultMessage: string}}` object.
+     * Runs content checks on the previously initialized classic email message. Returns a `{Task: {CheckPassed: boolean, ResultMessage: string}}` object. Deprecated — operates on classic Email Studio emails; prefer Content Builder assets for new work.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @returns Content-check result with `Task.CheckPassed` (boolean) and `Task.ResultMessage` (string).
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3025,6 +3016,7 @@ declare namespace Send {
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param id - Numeric ID of the send.
      * @returns An initialized Send bound to the specified send ID.
      * @example
@@ -3038,6 +3030,7 @@ declare namespace Send {
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param emailKey - CustomerKey of the email message to associate with the send.
      * @param listIds - Array of list IDs to send to.
      * @param options - Optional send options (FromName, FromAddress, Subject, send time, ...).
@@ -3055,6 +3048,7 @@ declare namespace Send {
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - PascalCase WSProxy-style filter object — simple or compound with `LeftOperand`/`LogicalOperator`/`RightOperand`.
      * @returns List of sends matching the filter.
      * @example
@@ -3068,6 +3062,7 @@ declare namespace Send {
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - WSProxy-style filter restricting results to specific send ID(s).
      * @returns List of list objects associated with matching sends; throws on failure.
      * @example
@@ -3083,6 +3078,7 @@ interface SendInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @returns Returns "OK" on success or throws on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3096,7 +3092,9 @@ interface SendInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @returns Returns "OK" on success or throws on failure.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): `CancelSend()` returns the literal string "status" on success, not the "OK" the official docs describe. Do not compare its return value against "OK".
+     * @returns Returns the literal string "status" on success (not "OK"); throws on failure.
      * @example
      * Platform.Load("core", "1.1.5");
      * var mySend = Send.Init(12345);
@@ -3112,6 +3110,7 @@ declare namespace Send.Tracking {
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - WSProxy-style filter object.
      * @returns List of tracking records matching the filter.
      * @example
@@ -3127,6 +3126,7 @@ declare namespace Send.Definition {
      * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param key - External key of the send definition.
      * @returns An initialized SendDefinition bound to the specified external key.
      * @example
@@ -3193,6 +3193,7 @@ declare namespace Send.Definition {
      * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - Optional WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
      * @returns List of send definitions matching the filter (or all when no filter is supplied).
      * @example
