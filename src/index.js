@@ -702,7 +702,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs type the return as a string, but at runtime Lookup returns the column\'s native type (number, boolean, or a real Date object). No-match returns a genuine JavaScript null. A row with an empty/NULL field returns a CLR null (typeof "clr", not === null) that stringifies to "" — so guard empty fields with a loose == null or a String() coercion, not a strict === null check.',
+            'The official docs type the return as a string, but at runtime Lookup returns the column\'s typed value. Runtime-verified per DE field type: Text/EmailAddress/Locale/Phone return a string, Number/Decimal return a number, Boolean returns a boolean, and Date returns a real Date object. No-match returns a genuine JavaScript null. A row with an empty/NULL field returns a CLR null (typeof "clr", not === null) that stringifies to "" — so guard empty fields with a loose == null or a String() coercion, not a strict === null check.',
         params: [
             {
                 name: 'deName',
@@ -723,7 +723,7 @@ export const PLATFORM_FUNCTIONS = [
                 type: 'string|array',
             },
         ],
-        returnType: 'string|number|boolean|object|null',
+        returnType: 'string|number|boolean|Date|null',
         syntax: 'Platform.Function.Lookup(deName, returnField, whereFieldNames, whereFieldValues)',
         example:
             '// Single filter:\n' +
@@ -744,7 +744,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs do not mention that no-match returns null (rather than an empty array) or that each row object includes the system fields _CustomObjectKey and _CreatedDate. Runtime testing confirms the return value is a genuine JavaScript Array (Array.isArray is true; .push/.slice/.sort work), so the return type is object[]; note that instanceof Array is unreliable in the SFMC engine, so use the Array.isArray polyfill to test it.',
+            'The official docs do not mention that no-match returns null (rather than an empty array) or that each row object includes the system fields _CustomObjectKey and _CreatedDate. Most fields are returned as their typed/native JS value, unlike DataExtension.Rows.Retrieve() which stringifies every field. Runtime-verified per DE field type: Text/EmailAddress/Locale/Phone come back as string, Number/Decimal as number, Boolean as boolean; Date columns are the exception — they come back as an ISO-8601 string (e.g. "2024-01-15T00:00:00.000"), NOT a Date object — this differs from Platform.Function.Lookup, which returns a real Date for Date columns. Runtime testing confirms the return value is a genuine JavaScript Array (Array.isArray is true; .push/.slice/.sort work), so the return type is object[]; note that instanceof Array is unreliable in the SFMC engine, so use the Array.isArray polyfill to test it.',
         params: [
             {
                 name: 'deName',
@@ -787,7 +787,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs do not mention that each returned row object includes the system fields _CustomObjectKey and _CreatedDate. Runtime testing confirms the return value is a genuine JavaScript Array (Array.isArray is true; .push/.slice/.sort work), so the return type is object[]; note that instanceof Array is unreliable in the SFMC engine, so use the Array.isArray polyfill to test it.',
+            'The official docs do not mention that each returned row object includes the system fields _CustomObjectKey and _CreatedDate. Most fields are returned as their typed/native JS value, unlike DataExtension.Rows.Retrieve() which stringifies every field. Runtime-verified per DE field type: Text/EmailAddress/Locale/Phone come back as string, Number/Decimal as number, Boolean as boolean; Date columns are the exception — they come back as an ISO-8601 string (e.g. "2024-01-15T00:00:00.000"), NOT a Date object — this differs from Platform.Function.Lookup, which returns a real Date for Date columns. Runtime testing confirms the return value is a genuine JavaScript Array (Array.isArray is true; .push/.slice/.sort work), so the return type is object[]; note that instanceof Array is unreliable in the SFMC engine, so use the Array.isArray polyfill to test it.',
         params: [
             {
                 name: 'deName',
@@ -3124,6 +3124,7 @@ export const FOLDER_METHODS = [
     {
         name: 'Init',
         isStatic: true,
+        isConfirmed: true,
         requiresCoreLoad: true,
         minArgs: 0,
         maxArgs: 1,
@@ -3153,6 +3154,7 @@ export const FOLDER_METHODS = [
     {
         name: 'Add',
         isStatic: true,
+        isConfirmed: true,
         requiresCoreLoad: true,
         minArgs: 1,
         maxArgs: 1,
@@ -3186,6 +3188,7 @@ export const FOLDER_METHODS = [
     {
         name: 'Retrieve',
         isStatic: true,
+        isConfirmed: true,
         requiresCoreLoad: true,
         minArgs: 1,
         maxArgs: 1,
@@ -3214,6 +3217,7 @@ export const FOLDER_METHODS = [
     {
         name: 'Update',
         isStatic: false,
+        isConfirmed: true,
         requiresCoreLoad: true,
         minArgs: 1,
         maxArgs: 1,
@@ -3237,6 +3241,7 @@ export const FOLDER_METHODS = [
     {
         name: 'Remove',
         isStatic: false,
+        isConfirmed: true,
         requiresCoreLoad: true,
         minArgs: 0,
         maxArgs: 0,
@@ -3254,6 +3259,7 @@ export const FOLDER_METHODS = [
     {
         name: 'SetID',
         isStatic: false,
+        isConfirmed: true,
         requiresCoreLoad: true,
         minArgs: 1,
         maxArgs: 1,
@@ -3377,6 +3383,7 @@ export const DELIVERY_PROFILE_METHODS = [
         name: 'Init',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -3396,6 +3403,11 @@ export const DELIVERY_PROFILE_METHODS = [
         name: 'Add',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified on a CloudPage: returns a CLR object (`ExactTarget.Integration.WSDL.DeliveryProfile`), not the string "OK". ' +
+            'The returned object stringifies to its .NET type name and its properties are NOT readable from SSJS ("Use of Common Language Runtime (CLR) is not allowed"). Treat a non-throwing return as success.',
         minArgs: 1,
         maxArgs: 1,
         description: 'Creates a new delivery profile from the supplied properties.',
@@ -3407,9 +3419,9 @@ export const DELIVERY_PROFILE_METHODS = [
                 type: 'object',
             },
         ],
-        returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnType: 'object',
+        returnDescription:
+            'A CLR DeliveryProfile object on success (its properties are not readable from SSJS). Treat a non-throwing return as success.',
         syntax: 'DeliveryProfile.Add(properties)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -3425,6 +3437,7 @@ export const DELIVERY_PROFILE_METHODS = [
         name: 'Update',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description: 'Updates the delivery profile with the supplied attributes.',
@@ -3448,6 +3461,7 @@ export const DELIVERY_PROFILE_METHODS = [
         name: 'Remove',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 0,
         maxArgs: 0,
         description: 'Removes the previously initialized delivery profile.',
@@ -3688,6 +3702,7 @@ export const FILTER_DEFINITION_METHODS = [
     {
         name: 'Init',
         isStatic: true,
+        isConfirmed: true,
         requiresCoreLoad: true,
         minArgs: 1,
         maxArgs: 1,
@@ -3705,13 +3720,21 @@ export const FILTER_DEFINITION_METHODS = [
     {
         name: 'Add',
         isStatic: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'no-test-data',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verification of the success path was BLOCKED: a valid FilterDefinition could not be created on the test BU (creating one requires an audience/DataSource configuration the test account could not satisfy). ' +
+            'Confirmed discrepancy: on failure the Core-library method returns the string "Error" (not "OK"), and it does NOT throw — the official docs state it returns "OK" or throws. Attempted with SubscriberList (by Type, and by real "All Subscribers" list ID) and DataExtension (by CustomerKey and by Name) DataSources; every attempt returned the string "Error". A direct WSProxy createItem("FilterDefinition") throws with SOAP inner exception "Invalid property name: Type" on DataSource.',
         requiresCoreLoad: true,
         minArgs: 1,
         maxArgs: 1,
         description:
             'Creates a new filter definition from the supplied properties. ' +
             'The `Filter` field accepts either a simple `{Property, SimpleOperator, Value}` filter or a complex filter with `LeftOperand`, `LogicalOperator`, `RightOperand`. ' +
-            '`DataSource.Type` must be `"SubscriberList"` or `"DataExtension"`.',
+            '`DataSource.Type` must be `"SubscriberList"` or `"DataExtension"`. ' +
+            'On failure the Core library returns the string "Error" rather than throwing.',
         params: [
             {
                 name: 'properties',
@@ -3721,8 +3744,9 @@ export const FILTER_DEFINITION_METHODS = [
             },
         ],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success. On failure the Core library returns the string "Error" (it does not throw).',
         syntax: 'FilterDefinition.Add(properties)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -3738,6 +3762,10 @@ export const FILTER_DEFINITION_METHODS = [
     {
         name: 'Retrieve',
         isStatic: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified on a CloudPage: executes and returns a host array. On a filter that matches nothing it returns an empty array (`.length === 0`) for an `equals` comparison, but returns `null` for an `isNotNull` comparison when no filter definitions exist on the account. Callers should guard for both `null` and empty array.',
         requiresCoreLoad: true,
         minArgs: 1,
         maxArgs: 1,
@@ -3751,7 +3779,8 @@ export const FILTER_DEFINITION_METHODS = [
             },
         ],
         returnType: 'object[]',
-        returnDescription: 'List of filter definitions matching the filter.',
+        returnDescription:
+            'List of filter definitions matching the filter (may be `null` when none exist).',
         syntax: 'FilterDefinition.Retrieve(filter)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -3760,10 +3789,18 @@ export const FILTER_DEFINITION_METHODS = [
     {
         name: 'Update',
         isStatic: false,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'no-test-data',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verification was BLOCKED: no valid FilterDefinition could be created on the test BU (see Add), so Update could not be exercised against a real definition. Against a non-existent definition the Core library returned the string "Error" (not "OK") and did not throw — the official docs state it returns "OK" or throws.',
         requiresCoreLoad: true,
         minArgs: 1,
         maxArgs: 1,
-        description: 'Updates the filter definition with the supplied attributes.',
+        description:
+            'Updates the filter definition with the supplied attributes. ' +
+            'On failure the Core library returns the string "Error" rather than throwing.',
         params: [
             {
                 name: 'properties',
@@ -3772,8 +3809,9 @@ export const FILTER_DEFINITION_METHODS = [
             },
         ],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success. On failure the Core library returns the string "Error" (it does not throw).',
         syntax: '<FilterDefinitionInstance>.Update(properties)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -3783,14 +3821,23 @@ export const FILTER_DEFINITION_METHODS = [
     {
         name: 'Remove',
         isStatic: false,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'no-test-data',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verification was BLOCKED: no valid FilterDefinition could be created on the test BU (see Add), so Remove could not be exercised against a real definition. Against a non-existent definition the Core library returned the string "Error" (not "OK") and did not throw — the official docs state it returns "OK" or throws.',
         requiresCoreLoad: true,
         minArgs: 0,
         maxArgs: 0,
-        description: 'Deletes the previously initialized filter definition.',
+        description:
+            'Deletes the previously initialized filter definition. ' +
+            'On failure the Core library returns the string "Error" rather than throwing.',
         params: [],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success. On failure the Core library returns the string "Error" (it does not throw).',
         syntax: '<FilterDefinitionInstance>.Remove()',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -5459,6 +5506,7 @@ export const EVENT_METHODS = [
         owner: 'BounceEvent',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description: 'Retrieves bounce event data for message sends matching the specified filter.',
@@ -5482,6 +5530,7 @@ export const EVENT_METHODS = [
         owner: 'ClickEvent',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -5506,6 +5555,7 @@ export const EVENT_METHODS = [
         owner: 'ForwardedEmailEvent',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -5530,6 +5580,7 @@ export const EVENT_METHODS = [
         owner: 'ForwardedEmailOptInEvent',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -5554,6 +5605,7 @@ export const EVENT_METHODS = [
         owner: 'NotSentEvent',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -5578,6 +5630,7 @@ export const EVENT_METHODS = [
         owner: 'OpenEvent',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -5602,6 +5655,7 @@ export const EVENT_METHODS = [
         owner: 'SentEvent',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description: 'Retrieves sent event data for message sends matching the specified filter.',
@@ -5625,6 +5679,7 @@ export const EVENT_METHODS = [
         owner: 'SurveyEvent',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -5649,6 +5704,7 @@ export const EVENT_METHODS = [
         owner: 'UnsubEvent',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -5873,20 +5929,26 @@ export const DATA_EXTENSION_ROWS_METHODS = [
         name: 'Add',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified on a CloudPage: returns a number (the count of rows added), not the string "OK". ' +
+            'Also accepts a single row object in addition to an array of objects.',
         minArgs: 1,
         maxArgs: 1,
-        description: 'Adds one or more rows to the previously initialized data extension.',
+        description:
+            'Adds one or more rows to the previously initialized data extension. ' +
+            'Accepts either an array of row objects or a single row object.',
         params: [
             {
                 name: 'rowData',
                 description:
-                    "Array of objects, one per row to add. Each object's keys must match data extension field names.",
+                    "Array of row objects (or a single row object). Each object's keys must match data extension field names.",
                 type: 'array',
             },
         ],
-        returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnType: 'number',
+        returnDescription: 'The number of rows that were added.',
         syntax: '<DataExtensionInstance>.Rows.Add(rowData)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -5901,6 +5963,11 @@ export const DATA_EXTENSION_ROWS_METHODS = [
         name: 'Lookup',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified on a CloudPage: returns typed values (Number columns come back as number, Boolean as boolean, Date as a real Date object, unlike Retrieve which returns every field as a string). ' +
+            'On no match, returns `null` (not an empty array). The result is a host array where `instanceof Array` is `false`, but `.length` and index access work.',
         minArgs: 2,
         maxArgs: 4,
         description:
@@ -5943,6 +6010,7 @@ export const DATA_EXTENSION_ROWS_METHODS = [
         name: 'Remove',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 2,
         maxArgs: 2,
         description:
@@ -5972,6 +6040,12 @@ export const DATA_EXTENSION_ROWS_METHODS = [
         name: 'Retrieve',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified on a CloudPage: calling `Retrieve()` without a filter DOES work on CloudPages and returns all rows — the widely-repeated "returns empty on CloudPages" bug could not be reproduced. ' +
+            'All field values are returned as strings (even Number/Boolean/Date columns), unlike Lookup which returns typed values. ' +
+            'On no match, returns an empty host array (`.length === 0`), not `null`. The result is a host array where `instanceof Array` is `false`, but `.length` and index access work.',
         minArgs: 0,
         maxArgs: 1,
         description:
@@ -5989,7 +6063,7 @@ export const DATA_EXTENSION_ROWS_METHODS = [
         ],
         returnType: 'object[]',
         returnDescription:
-            'Rows from the data extension matching the filter (or all rows when no filter is supplied).',
+            'Rows from the data extension matching the filter (or all rows when no filter is supplied). Field values are strings.',
         syntax: '<DataExtensionInstance>.Rows.Retrieve([filter])',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -6002,11 +6076,16 @@ export const DATA_EXTENSION_ROWS_METHODS = [
         name: 'Update',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified on a CloudPage: returns a number (the count of rows updated), not the string "OK". ' +
+            'When no row matches the WHERE clause, it returns `0` and does NOT throw.',
         minArgs: 3,
         maxArgs: 3,
         description:
             'Updates the columns of rows where `whereFieldNames` equal `whereValues` (AND-joined). ' +
-            'Throws if no row matches.',
+            'Returns 0 (does not throw) when no row matches.',
         params: [
             {
                 name: 'rowData',
@@ -6025,9 +6104,8 @@ export const DATA_EXTENSION_ROWS_METHODS = [
                 type: 'array',
             },
         ],
-        returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnType: 'number',
+        returnDescription: 'The number of rows that were updated (0 when no row matches).',
         syntax: '<DataExtensionInstance>.Rows.Update(rowData, whereFieldNames, whereValues)',
         example:
             'Platform.Load("Core", "1");\n' +

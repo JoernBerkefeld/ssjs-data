@@ -43,7 +43,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/lookup/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return as a string, but at runtime Lookup returns the column's native type (number, boolean, or a real Date object). No-match returns a genuine JavaScript null. A row with an empty/NULL field returns a CLR null (typeof "clr", not === null) that stringifies to "" — so guard empty fields with a loose == null or a String() coercion, not a strict === null check.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return as a string, but at runtime Lookup returns the column's typed value. Runtime-verified per DE field type: Text/EmailAddress/Locale/Phone return a string, Number/Decimal return a number, Boolean returns a boolean, and Date returns a real Date object. No-match returns a genuine JavaScript null. A row with an empty/NULL field returns a CLR null (typeof "clr", not === null) that stringifies to "" — so guard empty fields with a loose == null or a String() coercion, not a strict === null check.
          * @param deName - Data Extension name (resolved by Name, not external key)
          * @param returnField - Name of the field to return
          * @param whereFieldNames - Filter field name, or an array of field names connected with AND logic
@@ -55,14 +55,14 @@ declare namespace Platform {
          * // Multiple filters (AND logic):
          * var phone = Platform.Function.Lookup("CustomerData", "Phone", ["FirstName", "LastName"], ["Carolyn", "Baumgartner"]);
          */
-        function Lookup(deName: string, returnField: string, whereFieldNames: string | string[], whereFieldValues: string | any[]): string | number | boolean | object | null;
+        function Lookup(deName: string, returnField: string, whereFieldNames: string | string[], whereFieldValues: string | any[]): string | number | boolean | Date | null;
         /**
          * Returns an array of row objects from a Data Extension matching filter criteria (up to 2,000 rows). Each row object also carries the system fields _CustomObjectKey (number) and _CreatedDate (string). Returns null (not an empty array) when no row matches. To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/lookuprows/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs do not mention that no-match returns null (rather than an empty array) or that each row object includes the system fields _CustomObjectKey and _CreatedDate. Runtime testing confirms the return value is a genuine JavaScript Array (Array.isArray is true; .push/.slice/.sort work), so the return type is object[]; note that instanceof Array is unreliable in the SFMC engine, so use the Array.isArray polyfill to test it.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs do not mention that no-match returns null (rather than an empty array) or that each row object includes the system fields _CustomObjectKey and _CreatedDate. Most fields are returned as their typed/native JS value, unlike DataExtension.Rows.Retrieve() which stringifies every field. Runtime-verified per DE field type: Text/EmailAddress/Locale/Phone come back as string, Number/Decimal as number, Boolean as boolean; Date columns are the exception — they come back as an ISO-8601 string (e.g. "2024-01-15T00:00:00.000"), NOT a Date object — this differs from Platform.Function.Lookup, which returns a real Date for Date columns. Runtime testing confirms the return value is a genuine JavaScript Array (Array.isArray is true; .push/.slice/.sort work), so the return type is object[]; note that instanceof Array is unreliable in the SFMC engine, so use the Array.isArray polyfill to test it.
          * @param deName - Data Extension name (resolved by Name, not external key)
          * @param whereFieldNames - Filter field name, or an array of field names connected with AND logic
          * @param whereFieldValues - Filter field value matching whereFieldNames; must be an array of equal length when whereFieldNames is an array
@@ -83,7 +83,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/lookuporderedrows/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs do not mention that each returned row object includes the system fields _CustomObjectKey and _CreatedDate. Runtime testing confirms the return value is a genuine JavaScript Array (Array.isArray is true; .push/.slice/.sort work), so the return type is object[]; note that instanceof Array is unreliable in the SFMC engine, so use the Array.isArray polyfill to test it.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs do not mention that each returned row object includes the system fields _CustomObjectKey and _CreatedDate. Most fields are returned as their typed/native JS value, unlike DataExtension.Rows.Retrieve() which stringifies every field. Runtime-verified per DE field type: Text/EmailAddress/Locale/Phone come back as string, Number/Decimal as number, Boolean as boolean; Date columns are the exception — they come back as an ISO-8601 string (e.g. "2024-01-15T00:00:00.000"), NOT a Date object — this differs from Platform.Function.Lookup, which returns a real Date for Date columns. Runtime testing confirms the return value is a genuine JavaScript Array (Array.isArray is true; .push/.slice/.sort work), so the return type is object[]; note that instanceof Array is unreliable in the SFMC engine, so use the Array.isArray polyfill to test it.
          * @param deName - Data Extension name (resolved by Name, not external key)
          * @param count - Maximum number of rows to return; values below 1 return up to 2,000
          * @param orderBy - Sort expression using "ColumnName ASC/DESC" syntax (e.g. "LastName ASC, FirstName ASC")
@@ -1550,13 +1550,15 @@ interface DataExtensionFields {
 }
 interface DataExtensionRows {
     /**
-     * Adds one or more rows to the previously initialized data extension.
+     * Adds one or more rows to the previously initialized data extension. Accepts either an array of row objects or a single row object.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param rowData - Array of objects, one per row to add. Each object's keys must match data extension field names.
-     * @returns Returns "OK" on success or throws on failure.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage: returns a number (the count of rows added), not the string "OK". Also accepts a single row object in addition to an array of objects.
+     * @param rowData - Array of row objects (or a single row object). Each object's keys must match data extension field names.
+     * @returns The number of rows that were added.
      * @example
      * Platform.Load("core", "1.1.5");
      * var arrContacts = [
@@ -1566,13 +1568,15 @@ interface DataExtensionRows {
      * var birthdayDE = DataExtension.Init("birthdayDE");
      * birthdayDE.Rows.Add(arrContacts);
      */
-    Add(rowData: any[]): string;
+    Add(rowData: any[]): number;
     /**
      * Returns rows where the specified columns equal the specified values (AND-joined). Optionally limits results and orders by a field. When initializing a data extension for `Lookup()` from an email message, you must use the data extension Name; on landing pages, either Name or external key works — make them identical to be safe.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage: returns typed values (Number columns come back as number, Boolean as boolean, Date as a real Date object, unlike Retrieve which returns every field as a string). On no match, returns `null` (not an empty array). The result is a host array where `instanceof Array` is `false`, but `.length` and index access work.
      * @param searchFieldNames - Array of column names to match against.
      * @param searchValues - Array of values to match (one per column, in order).
      * @param limit - Maximum number of rows to return.
@@ -1590,6 +1594,7 @@ interface DataExtensionRows {
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param columnNames - Array of column names to match against.
      * @param columnValues - Array of values to match (one per column, in order).
      * @returns The number of rows that were modified (deleted).
@@ -1605,8 +1610,10 @@ interface DataExtensionRows {
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage: calling `Retrieve()` without a filter DOES work on CloudPages and returns all rows — the widely-repeated "returns empty on CloudPages" bug could not be reproduced. All field values are returned as strings (even Number/Boolean/Date columns), unlike Lookup which returns typed values. On no match, returns an empty host array (`.length === 0`), not `null`. The result is a host array where `instanceof Array` is `false`, but `.length` and index access work.
      * @param filter - WSProxy-style filter object — simple `{Property, SimpleOperator, Value}` or compound with `LeftOperand`/`LogicalOperator`/`RightOperand`. Optional per the example, despite the doc table marking `Required: Yes`.
-     * @returns Rows from the data extension matching the filter (or all rows when no filter is supplied).
+     * @returns Rows from the data extension matching the filter (or all rows when no filter is supplied). Field values are strings.
      * @example
      * Platform.Load("core", "1.1.5");
      * var birthdayDE = DataExtension.Init("birthdayDE");
@@ -1616,22 +1623,24 @@ interface DataExtensionRows {
      */
     Retrieve(filter?: object): object[];
     /**
-     * Updates the columns of rows where `whereFieldNames` equal `whereValues` (AND-joined). Throws if no row matches.
+     * Updates the columns of rows where `whereFieldNames` equal `whereValues` (AND-joined). Returns 0 (does not throw) when no row matches.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension-rows/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage: returns a number (the count of rows updated), not the string "OK". When no row matches the WHERE clause, it returns `0` and does NOT throw.
      * @param rowData - Object whose keys are columns to update and values are the new values.
      * @param whereFieldNames - Array of column names to match against.
      * @param whereValues - Array of values to match (one per column, in order).
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns The number of rows that were updated (0 when no row matches).
      * @example
      * Platform.Load("Core", "1");
      * var dataExt = DataExtension.Init("NTO Customer List");
      * var fieldsToUpdate = { StateProvince: "QC", PreferredActivity: "Sailing" };
      * var result = dataExt.Rows.Update(fieldsToUpdate, ["MemberId", "Country"], [9868600, "CA"]);
      */
-    Update(rowData: object, whereFieldNames: any[], whereValues: any[]): string;
+    Update(rowData: object, whereFieldNames: any[], whereValues: any[]): number;
 }
 interface DataExtensionInstance {
     Fields: DataExtensionFields;
@@ -2152,6 +2161,7 @@ declare namespace Folder {
      * [ssjs.guide reference](https://ssjs.guide/core-library/folder/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param key - External key of the folder. Optional — pass nothing and use `SetID()` when the folder has no external key.
      * @returns An initialized Folder; bound to the specified external key when one is supplied.
      * @example
@@ -2168,6 +2178,7 @@ declare namespace Folder {
      * [ssjs.guide reference](https://ssjs.guide/core-library/folder/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - JSON object describing the new folder (Name, CustomerKey, Description, ContentType, IsActive, IsEditable, AllowChildren, ParentFolderID).
      * @returns Returns "OK" on success or throws on failure.
      * @example
@@ -2191,6 +2202,7 @@ declare namespace Folder {
      * [ssjs.guide reference](https://ssjs.guide/core-library/folder/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - WSProxy-style filter object — simple or compound with `AND`/`OR`.
      * @returns Array of folder objects (including nested `ParentFolder` info).
      * @example
@@ -2211,6 +2223,7 @@ interface FolderInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/folder/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - Attributes to change on the folder.
      * @returns Returns "OK" on success or throws on failure.
      * @example
@@ -2225,6 +2238,7 @@ interface FolderInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/folder/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @returns Returns "OK" on success or throws on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -2238,6 +2252,7 @@ interface FolderInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/folder/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param id - The folder ID to bind to this Folder instance.
      * @returns No return value.
      * @example
@@ -2316,6 +2331,7 @@ declare namespace DeliveryProfile {
      * [ssjs.guide reference](https://ssjs.guide/core-library/deliveryprofile/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param key - External key of the delivery profile.
      * @returns An initialized DeliveryProfile bound to the specified external key.
      * @example
@@ -2329,8 +2345,10 @@ declare namespace DeliveryProfile {
      * [ssjs.guide reference](https://ssjs.guide/core-library/deliveryprofile/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage: returns a CLR object (`ExactTarget.Integration.WSDL.DeliveryProfile`), not the string "OK". The returned object stringifies to its .NET type name and its properties are NOT readable from SSJS ("Use of Common Language Runtime (CLR) is not allowed"). Treat a non-throwing return as success.
      * @param properties - JSON object describing the new delivery profile (Name, CustomerKey, Description, SourceAddressType, ...).
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns A CLR DeliveryProfile object on success (its properties are not readable from SSJS). Treat a non-throwing return as success.
      * @example
      * Platform.Load("core", "1.1.5");
      * var newDP = {
@@ -2341,7 +2359,7 @@ declare namespace DeliveryProfile {
      * };
      * var status = DeliveryProfile.Add(newDP);
      */
-    function Add(properties: object): string;
+    function Add(properties: object): object;
 }
 interface DeliveryProfileInstance {
     /**
@@ -2350,6 +2368,7 @@ interface DeliveryProfileInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/deliveryprofile/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - Attributes to change on the delivery profile.
      * @returns Returns "OK" on success or throws on failure.
      * @example
@@ -2364,6 +2383,7 @@ interface DeliveryProfileInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/deliveryprofile/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @returns Returns "OK" on success or throws on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -2525,6 +2545,7 @@ declare namespace FilterDefinition {
      * [ssjs.guide reference](https://ssjs.guide/core-library/filterdefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param key - External key of the filter definition.
      * @returns An initialized FilterDefinition bound to the specified external key.
      * @example
@@ -2533,13 +2554,14 @@ declare namespace FilterDefinition {
      */
     function Init(key: string): FilterDefinitionInstance;
     /**
-     * Creates a new filter definition from the supplied properties. The `Filter` field accepts either a simple `{Property, SimpleOperator, Value}` filter or a complex filter with `LeftOperand`, `LogicalOperator`, `RightOperand`. `DataSource.Type` must be `"SubscriberList"` or `"DataExtension"`.
+     * Creates a new filter definition from the supplied properties. The `Filter` field accepts either a simple `{Property, SimpleOperator, Value}` filter or a complex filter with `LeftOperand`, `LogicalOperator`, `RightOperand`. `DataSource.Type` must be `"SubscriberList"` or `"DataExtension"`. On failure the Core library returns the string "Error" rather than throwing.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/filterdefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verification of the success path was BLOCKED: a valid FilterDefinition could not be created on the test BU (creating one requires an audience/DataSource configuration the test account could not satisfy). Confirmed discrepancy: on failure the Core-library method returns the string "Error" (not "OK"), and it does NOT throw — the official docs state it returns "OK" or throws. Attempted with SubscriberList (by Type, and by real "All Subscribers" list ID) and DataExtension (by CustomerKey and by Name) DataSources; every attempt returned the string "Error". A direct WSProxy createItem("FilterDefinition") throws with SOAP inner exception "Invalid property name: Type" on DataSource.
      * @param properties - JSON object describing the new filter definition (Name, CustomerKey, Filter, DataSource).
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns "OK" on success. On failure the Core library returns the string "Error" (it does not throw).
      * @example
      * Platform.Load("core", "1.1.5");
      * var filterObj = { Property: "LuckyNumber", SimpleOperator: "equals", Value: 77 };
@@ -2558,8 +2580,10 @@ declare namespace FilterDefinition {
      * [ssjs.guide reference](https://ssjs.guide/core-library/filterdefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage: executes and returns a host array. On a filter that matches nothing it returns an empty array (`.length === 0`) for an `equals` comparison, but returns `null` for an `isNotNull` comparison when no filter definitions exist on the account. Callers should guard for both `null` and empty array.
      * @param filter - PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
-     * @returns List of filter definitions matching the filter.
+     * @returns List of filter definitions matching the filter (may be `null` when none exist).
      * @example
      * Platform.Load("core", "1.1.5");
      * var results = FilterDefinition.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "myFilterDef" });
@@ -2568,13 +2592,14 @@ declare namespace FilterDefinition {
 }
 interface FilterDefinitionInstance {
     /**
-     * Updates the filter definition with the supplied attributes.
+     * Updates the filter definition with the supplied attributes. On failure the Core library returns the string "Error" rather than throwing.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/filterdefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verification was BLOCKED: no valid FilterDefinition could be created on the test BU (see Add), so Update could not be exercised against a real definition. Against a non-existent definition the Core library returned the string "Error" (not "OK") and did not throw — the official docs state it returns "OK" or throws.
      * @param properties - Attributes to change on the filter definition.
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns "OK" on success. On failure the Core library returns the string "Error" (it does not throw).
      * @example
      * Platform.Load("core", "1.1.5");
      * var fd = FilterDefinition.Init("myFilterDef");
@@ -2582,12 +2607,13 @@ interface FilterDefinitionInstance {
      */
     Update(properties: object): string;
     /**
-     * Deletes the previously initialized filter definition.
+     * Deletes the previously initialized filter definition. On failure the Core library returns the string "Error" rather than throwing.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/filterdefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @returns Returns "OK" on success or throws on failure.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verification was BLOCKED: no valid FilterDefinition could be created on the test BU (see Add), so Remove could not be exercised against a real definition. Against a non-existent definition the Core library returned the string "Error" (not "OK") and did not throw — the official docs state it returns "OK" or throws.
+     * @returns Returns "OK" on success. On failure the Core library returns the string "Error" (it does not throw).
      * @example
      * Platform.Load("core", "1.1.5");
      * var myFD = FilterDefinition.Init("myFilterDef");
@@ -3481,6 +3507,7 @@ declare namespace BounceEvent {
      * Retrieves bounce event data for message sends matching the specified filter.
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3494,6 +3521,7 @@ declare namespace ClickEvent {
      * Retrieves click tracking event data for message sends matching the specified filter.
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3507,6 +3535,7 @@ declare namespace ForwardedEmailEvent {
      * Retrieves forwarded email event data for message sends matching the specified filter.
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3520,6 +3549,7 @@ declare namespace ForwardedEmailOptInEvent {
      * Retrieves forwarded email opt-in event data for message sends matching the specified filter.
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3533,6 +3563,7 @@ declare namespace NotSentEvent {
      * Retrieves not-sent event data for message sends matching the specified filter.
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3546,6 +3577,7 @@ declare namespace OpenEvent {
      * Retrieves open tracking event data for message sends matching the specified filter.
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3559,6 +3591,7 @@ declare namespace SentEvent {
      * Retrieves sent event data for message sends matching the specified filter.
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3572,6 +3605,7 @@ declare namespace SurveyEvent {
      * Retrieves survey response event data for message sends matching the specified filter.
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3585,6 +3619,7 @@ declare namespace UnsubEvent {
      * Retrieves unsubscribe event data for message sends matching the specified filter.
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
      * @example
      * Platform.Load("core", "1.1.5");
