@@ -1655,6 +1655,7 @@ interface ListSubscribersTrackingInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - PascalCase WSProxy-style filter object identifying the subscribers.
      * @returns List of tracking records matching the filter.
      * @example
@@ -1671,6 +1672,7 @@ interface ListSubscribersInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - Object containing subscriber properties (EmailAddress, SubscriberKey, optionally list status).
      * @returns Returns "OK" on success or throws on failure.
      * @example
@@ -1689,6 +1691,7 @@ interface ListSubscribersInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - Optional WSProxy-style filter object to narrow the results.
      * @returns List of subscriber objects on the list (filtered when a filter is supplied).
      * @example
@@ -1703,6 +1706,7 @@ interface ListSubscribersInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param emailAddress - Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.
      * @returns Returns "OK" on success or throws on failure.
      * @example
@@ -1717,6 +1721,7 @@ interface ListSubscribersInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param emailAddress - Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.
      * @param status - New status of the subscriber on the list.
      * @returns Returns "OK" on success or throws on failure.
@@ -1732,6 +1737,7 @@ interface ListSubscribersInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param emailAddress - Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.
      * @param attributes - Additional subscriber attributes to set or update.
      * @returns Returns "OK" on success or throws on failure.
@@ -1995,6 +2001,7 @@ declare namespace Portfolio {
      * [ssjs.guide reference](https://ssjs.guide/core-library/portfolio/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param key - External key of the portfolio.
      * @returns An initialized Portfolio bound to the specified external key.
      * @example
@@ -2008,8 +2015,9 @@ declare namespace Portfolio {
      * [ssjs.guide reference](https://ssjs.guide/core-library/portfolio/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs state Add returns "OK" on success or throws on failure. Runtime-verification of the success path was BLOCKED: no portfolio item could be created on the test BU (no valid category/file to reference) — every Add attempt (including a full DisplayName/CustomerKey/FileName/FileLocation payload) returned the plain string "Error" and did NOT throw. Treat any non-"OK" return as failure.
      * @param properties - JSON object describing the new portfolio item (DisplayName, CustomerKey, CategoryID, FileName, FileLocation).
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
      * Platform.Load("core", "1.1.5");
      * var newPortfolio = {
@@ -2028,6 +2036,7 @@ declare namespace Portfolio {
      * [ssjs.guide reference](https://ssjs.guide/core-library/portfolio/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return as an array of portfolio objects. Runtime-verification was BLOCKED: no portfolio item could be created on the test BU (no valid category/file to reference; see Add), so a populated array could not be produced. Against an empty account the call returned an `object` with no `.length` property (not a JS array), so the documented `object[]` shape could not be confirmed.
      * @param filter - Criteria used to search for portfolio objects. PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
      * @returns List of portfolio objects matching the filter.
      * @example
@@ -2043,8 +2052,9 @@ interface PortfolioInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/portfolio/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs state Update returns "OK" on success or throws on failure. Runtime-verification was BLOCKED: no portfolio item could be created on the test BU (no valid category/file to reference; see Add), so Update could not be exercised against a real item. Against a non-existent key it returned the string "Error" (not "OK") and did not throw.
      * @param properties - Attributes to change on the portfolio object.
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
      * Platform.Load("core", "1.1.5");
      * var portObj = Portfolio.Init("myPortfolioCK");
@@ -2057,7 +2067,8 @@ interface PortfolioInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/portfolio/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @returns Returns "OK" on success or throws on failure.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs state Remove returns "OK" on success or throws on failure. Runtime-verification was BLOCKED: no portfolio item could be created on the test BU (no valid category/file to reference; see Add), so Remove could not be exercised against a real item. Against a non-existent key it returned the string "Error" (not "OK") and did not throw.
+     * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
      * Platform.Load("core", "1.1.5");
      * var portObj = Portfolio.Init("myPortfolioCK");
@@ -2399,6 +2410,7 @@ declare namespace SenderProfile {
      * [ssjs.guide reference](https://ssjs.guide/core-library/senderprofile/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param key - External key of the sender profile.
      * @returns An initialized SenderProfile bound to the specified external key.
      * @example
@@ -2412,8 +2424,10 @@ declare namespace SenderProfile {
      * [ssjs.guide reference](https://ssjs.guide/core-library/senderprofile/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs annotate Add as returning the string "OK". Runtime-verified on a live CloudPage: it returns a CLR object (`typeof` is `clr`; it stringifies to `ExactTarget.Integration.WSDL.SenderProfile`), not "OK". Reading any property off it throws "Use of Common Language Runtime (CLR) is not allowed", so the object is opaque from SSJS — treat any non-throwing return as success. This mirrors DeliveryProfile.Add.
      * @param properties - JSON object describing the new sender profile (Name, CustomerKey, Description, FromName, FromAddress, ...).
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns a CLR SenderProfile object (opaque from SSJS) on success; throws on failure. Not the "OK" string the docs imply.
      * @example
      * Platform.Load("core", "1.1.5");
      * var newSP = {
@@ -2425,7 +2439,7 @@ declare namespace SenderProfile {
      * };
      * var status = SenderProfile.Add(newSP);
      */
-    function Add(properties: object): string;
+    function Add(properties: object): object;
 }
 interface SenderProfileInstance {
     /**
@@ -2434,6 +2448,7 @@ interface SenderProfileInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/senderprofile/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - Attributes to change on the sender profile.
      * @returns Returns "OK" on success or throws on failure.
      * @example
@@ -2448,6 +2463,7 @@ interface SenderProfileInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/senderprofile/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @returns Returns "OK" on success or throws on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -2463,6 +2479,7 @@ declare namespace SendClassification {
      * [ssjs.guide reference](https://ssjs.guide/core-library/sendclassification/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param key - External key of the send classification.
      * @returns An initialized SendClassification bound to the specified external key.
      * @example
@@ -2476,6 +2493,7 @@ declare namespace SendClassification {
      * [ssjs.guide reference](https://ssjs.guide/core-library/sendclassification/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verification of the success path was BLOCKED on the test BU. The official docs state Add returns "OK" or throws. Confirmed discrepancy: on failure the Core-library method throws an engine error whose `.message` is `undefined` and whose `String()` is "Error adding SendClassification." (no useful `.message`). Even with the account's own proven-valid `Default` SenderProfile + `Default` DeliveryProfile, `SendClassification.Add` threw "Error adding SendClassification." A direct WSProxy `createItem("SendClassification")` with `SenderProfile.CustomerKey = "Default"` returned Status=Error, StatusMessage="SenderProfile given an invalid identifier.", ErrorCode=24101 — the SOAP path needs the SenderProfile ObjectID, not its CustomerKey, so a new SendClassification could not be created from SSJS to confirm the "OK" success return.
      * @param properties - JSON object describing the new send classification (CustomerKey, Name, Description, SenderProfileKey, DeliveryProfileKey).
      * @returns Returns "OK" on success or throws on failure.
      * @example
@@ -2496,6 +2514,7 @@ declare namespace SendClassification {
      * [ssjs.guide reference](https://ssjs.guide/core-library/sendclassification/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
      * @returns List of send classifications matching the filter.
      * @example
@@ -2512,7 +2531,7 @@ interface SendClassificationInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @param properties - Attributes to change. Must include `SenderProfileKey` and `DeliveryProfileKey`.
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
      * Platform.Load("core", "1.1.5");
      * var sc = SendClassification.Init("mySendClassification");
@@ -2530,7 +2549,7 @@ interface SendClassificationInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/sendclassification/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
      * Platform.Load("core", "1.1.5");
      * var sc = SendClassification.Init("mySendClassification");
@@ -2628,6 +2647,7 @@ declare namespace QueryDefinition {
      * [ssjs.guide reference](https://ssjs.guide/core-library/querydefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param key - External key of the query definition.
      * @returns An initialized QueryDefinition bound to the specified external key.
      * @example
@@ -2641,6 +2661,7 @@ declare namespace QueryDefinition {
      * [ssjs.guide reference](https://ssjs.guide/core-library/querydefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - JSON object describing the new query definition (Name, CustomerKey, optional CategoryID, TargetUpdateType, TargetType, Target, QueryText).
      * @returns Returns "OK" on success or throws on failure.
      * @example
@@ -2662,6 +2683,7 @@ declare namespace QueryDefinition {
      * [ssjs.guide reference](https://ssjs.guide/core-library/querydefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - WSProxy-style filter object — simple or compound with `AND`/`OR`.
      * @returns Array of query definition objects (with nested `DataExtensionTarget` info when applicable).
      * @example
@@ -2682,6 +2704,7 @@ interface QueryDefinitionInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/querydefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - Attributes to change on the query definition.
      * @returns Returns "OK" on success or throws on failure.
      * @example
@@ -2699,6 +2722,7 @@ interface QueryDefinitionInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/querydefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @returns Returns "OK" on success or throws on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -2712,8 +2736,10 @@ interface QueryDefinitionInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/querydefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs and this page state Perform returns "OK". Runtime-verified on a live CloudPage: Perform("start") returns the string "QueryDefinition perform called successfully" (not "OK"). It queues the query run asynchronously and returns immediately — the returned string only confirms the run was accepted, not that the query finished. Treat any thrown error as failure; do not string-match against "OK".
      * @param action - The action to perform. Use `"start"` to execute the query.
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns the string "QueryDefinition perform called successfully" when the run is accepted; throws on failure.
      * @example
      * Platform.Load("core", "1");
      * var qd = QueryDefinition.Init("MY_QUERY_KEY");

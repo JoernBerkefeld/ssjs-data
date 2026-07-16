@@ -2876,6 +2876,7 @@ export const PORTFOLIO_METHODS = [
         name: 'Init',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -2891,6 +2892,15 @@ export const PORTFOLIO_METHODS = [
         name: 'Add',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'no-test-data',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs state Add returns "OK" on success or throws on failure. Runtime-verification of the ' +
+            'success path was BLOCKED: no portfolio item could be created on the test BU (no valid category/file to ' +
+            'reference) — every Add attempt (including a full DisplayName/CustomerKey/FileName/FileLocation payload) ' +
+            'returned the plain string "Error" and did NOT throw. Treat any non-"OK" return as failure.',
         minArgs: 1,
         maxArgs: 1,
         description: 'Creates a new portfolio (file) object from the supplied properties.',
@@ -2903,8 +2913,9 @@ export const PORTFOLIO_METHODS = [
             },
         ],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success; returns the string "Error" (not a throw) on failure.',
         syntax: 'Portfolio.Add(properties)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -2921,6 +2932,15 @@ export const PORTFOLIO_METHODS = [
         name: 'Retrieve',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'no-test-data',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs type the return as an array of portfolio objects. Runtime-verification was BLOCKED: no ' +
+            'portfolio item could be created on the test BU (no valid category/file to reference; see Add), so a ' +
+            'populated array could not be produced. Against an empty account the call returned an `object` with no ' +
+            '`.length` property (not a JS array), so the documented `object[]` shape could not be confirmed.',
         minArgs: 1,
         maxArgs: 1,
         description: 'Returns an array of portfolio objects matching the specified filter.',
@@ -2943,6 +2963,15 @@ export const PORTFOLIO_METHODS = [
         name: 'Update',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'no-test-data',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs state Update returns "OK" on success or throws on failure. Runtime-verification was ' +
+            'BLOCKED: no portfolio item could be created on the test BU (no valid category/file to reference; see Add), ' +
+            'so Update could not be exercised against a real item. Against a non-existent key it returned the string ' +
+            '"Error" (not "OK") and did not throw.',
         minArgs: 1,
         maxArgs: 1,
         description: 'Updates the portfolio object with the supplied attributes.',
@@ -2954,8 +2983,9 @@ export const PORTFOLIO_METHODS = [
             },
         ],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success; returns the string "Error" (not a throw) on failure.',
         syntax: '<PortfolioInstance>.Update(properties)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -2966,13 +2996,23 @@ export const PORTFOLIO_METHODS = [
         name: 'Remove',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'no-test-data',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs state Remove returns "OK" on success or throws on failure. Runtime-verification was ' +
+            'BLOCKED: no portfolio item could be created on the test BU (no valid category/file to reference; see Add), ' +
+            'so Remove could not be exercised against a real item. Against a non-existent key it returned the string ' +
+            '"Error" (not "OK") and did not throw.',
         minArgs: 0,
         maxArgs: 0,
         description: 'Removes the previously initialized portfolio object.',
         params: [],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success; returns the string "Error" (not a throw) on failure.',
         syntax: '<PortfolioInstance>.Remove()',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -3483,6 +3523,7 @@ export const SENDER_PROFILE_METHODS = [
         name: 'Init',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -3502,6 +3543,13 @@ export const SENDER_PROFILE_METHODS = [
         name: 'Add',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs annotate Add as returning the string "OK". Runtime-verified on a live CloudPage: it returns ' +
+            'a CLR object (`typeof` is `clr`; it stringifies to `ExactTarget.Integration.WSDL.SenderProfile`), not "OK". ' +
+            'Reading any property off it throws "Use of Common Language Runtime (CLR) is not allowed", so the object is ' +
+            'opaque from SSJS — treat any non-throwing return as success. This mirrors DeliveryProfile.Add.',
         minArgs: 1,
         maxArgs: 1,
         description: 'Creates a new sender profile from the supplied properties.',
@@ -3513,9 +3561,9 @@ export const SENDER_PROFILE_METHODS = [
                 type: 'object',
             },
         ],
-        returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnType: 'object',
+        returnDescription:
+            'Returns a CLR SenderProfile object (opaque from SSJS) on success; throws on failure. Not the "OK" string the docs imply.',
         syntax: 'SenderProfile.Add(properties)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -3532,6 +3580,7 @@ export const SENDER_PROFILE_METHODS = [
         name: 'Update',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description: 'Updates the sender profile with the supplied attributes.',
@@ -3555,6 +3604,7 @@ export const SENDER_PROFILE_METHODS = [
         name: 'Remove',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 0,
         maxArgs: 0,
         description: 'Removes the previously initialized sender profile.',
@@ -3576,6 +3626,7 @@ export const SEND_CLASSIFICATION_METHODS = [
         name: 'Init',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -3599,6 +3650,19 @@ export const SEND_CLASSIFICATION_METHODS = [
         name: 'Add',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'no-test-data',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verification of the success path was BLOCKED on the test BU. The official docs state Add returns "OK" ' +
+            'or throws. Confirmed discrepancy: on failure the Core-library method throws an engine error whose `.message` is ' +
+            '`undefined` and whose `String()` is "Error adding SendClassification." (no useful `.message`). Even with the ' +
+            "account's own proven-valid `Default` SenderProfile + `Default` DeliveryProfile, `SendClassification.Add` threw " +
+            '"Error adding SendClassification." A direct WSProxy `createItem("SendClassification")` with ' +
+            '`SenderProfile.CustomerKey = "Default"` returned Status=Error, StatusMessage="SenderProfile given an invalid ' +
+            'identifier.", ErrorCode=24101 — the SOAP path needs the SenderProfile ObjectID, not its CustomerKey, so a new ' +
+            'SendClassification could not be created from SSJS to confirm the "OK" success return.',
         minArgs: 1,
         maxArgs: 1,
         description: 'Creates a new send classification from the supplied properties.',
@@ -3629,6 +3693,7 @@ export const SEND_CLASSIFICATION_METHODS = [
         name: 'Retrieve',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description: 'Returns an array of send classifications matching the specified filter.',
@@ -3651,6 +3716,13 @@ export const SEND_CLASSIFICATION_METHODS = [
         name: 'Update',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'no-test-data',
+        officialDocsNote:
+            'Runtime-verification of the success path was BLOCKED: no SendClassification could be created on the test BU ' +
+            '(see Add), so Update could not be exercised against a real item. Against a non-existent key it returned the ' +
+            'string "Error" (not "OK") and did not throw.',
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -3665,8 +3737,9 @@ export const SEND_CLASSIFICATION_METHODS = [
             },
         ],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success; returns the string "Error" (not a throw) on failure.',
         syntax: '<SendClassificationInstance>.Update(properties)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -3682,13 +3755,21 @@ export const SEND_CLASSIFICATION_METHODS = [
         name: 'Remove',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'no-test-data',
+        officialDocsNote:
+            'Runtime-verification of the success path was BLOCKED: no SendClassification could be created on the test BU ' +
+            '(see Add), so Remove could not be exercised against a real item. Against a non-existent key it returned the ' +
+            'string "Error" (not "OK") and did not throw.',
         minArgs: 0,
         maxArgs: 0,
         description: 'Removes the previously initialized send classification.',
         params: [],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success; returns the string "Error" (not a throw) on failure.',
         syntax: '<SendClassificationInstance>.Remove()',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -3852,6 +3933,7 @@ export const QUERY_DEFINITION_METHODS = [
         name: 'Init',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -3869,6 +3951,7 @@ export const QUERY_DEFINITION_METHODS = [
         name: 'Add',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -3902,6 +3985,7 @@ export const QUERY_DEFINITION_METHODS = [
         name: 'Retrieve',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -3931,6 +4015,7 @@ export const QUERY_DEFINITION_METHODS = [
         name: 'Update',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description: 'Updates the query definition with the supplied attributes.',
@@ -3957,6 +4042,7 @@ export const QUERY_DEFINITION_METHODS = [
         name: 'Remove',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 0,
         maxArgs: 0,
         description: 'Removes the previously initialized query definition.',
@@ -3974,6 +4060,13 @@ export const QUERY_DEFINITION_METHODS = [
         name: 'Perform',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs and this page state Perform returns "OK". Runtime-verified on a live CloudPage: ' +
+            'Perform("start") returns the string "QueryDefinition perform called successfully" (not "OK"). It queues the ' +
+            'query run asynchronously and returns immediately — the returned string only confirms the run was accepted, ' +
+            'not that the query finished. Treat any thrown error as failure; do not string-match against "OK".',
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -3987,8 +4080,9 @@ export const QUERY_DEFINITION_METHODS = [
             },
         ],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['QueryDefinition perform called successfully'],
+        returnDescription:
+            'Returns the string "QueryDefinition perform called successfully" when the run is accepted; throws on failure.',
         syntax: '<QueryDefinitionInstance>.Perform(action)',
         example:
             'Platform.Load("core", "1");\n' +
@@ -4090,6 +4184,7 @@ export const LIST_SUBSCRIBERS_METHODS = [
         name: 'Add',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description: 'Adds a subscriber to the previously initialized list.',
@@ -4118,6 +4213,7 @@ export const LIST_SUBSCRIBERS_METHODS = [
         name: 'Retrieve',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 0,
         maxArgs: 1,
         description:
@@ -4144,6 +4240,7 @@ export const LIST_SUBSCRIBERS_METHODS = [
         name: 'Unsubscribe',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description: 'Removes the specified subscriber from the previously initialized list.',
@@ -4168,6 +4265,7 @@ export const LIST_SUBSCRIBERS_METHODS = [
         name: 'Update',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 2,
         maxArgs: 2,
         description:
@@ -4198,6 +4296,7 @@ export const LIST_SUBSCRIBERS_METHODS = [
         name: 'Upsert',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 2,
         maxArgs: 2,
         description:
@@ -4232,6 +4331,7 @@ export const LIST_SUBSCRIBERS_TRACKING_METHODS = [
         name: 'Retrieve',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description: 'Returns an array of tracking data for subscribers matching the filter.',
