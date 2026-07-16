@@ -1788,6 +1788,7 @@ interface TriggeredSendTrackingClicksInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - WSProxy-style filter restricting click results.
      * @returns List of click tracking records matching the filter.
      * @example
@@ -1804,6 +1805,7 @@ interface TriggeredSendTrackingTotalByIntervalInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param type - Type of data to aggregate.
      * @param startDate - Start date of the data period (MM-DD-YYYY).
      * @param endDate - End date of the data period (MM-DD-YYYY).
@@ -1823,6 +1825,7 @@ interface TriggeredSendTrackingInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - Optional WSProxy-style filter object.
      * @returns List of tracking records.
      * @example
@@ -1996,10 +1999,11 @@ interface AccountUserInstance {
 }
 declare namespace Portfolio {
     /**
-     * Initializes a Portfolio instance bound to the specified external key. Required before invoking any other Portfolio method on the returned instance.
+     * Initializes a Portfolio instance bound to the specified external key. Required before invoking any other Portfolio method on the returned instance. DEPRECATED — Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/portfolio/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param key - External key of the portfolio.
@@ -2010,12 +2014,13 @@ declare namespace Portfolio {
      */
     function Init(key: string): PortfolioInstance;
     /**
-     * Creates a new portfolio (file) object from the supplied properties.
+     * Creates a new portfolio (file) object from the supplied properties. DEPRECATED — Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/portfolio/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs state Add returns "OK" on success or throws on failure. Runtime-verification of the success path was BLOCKED: no portfolio item could be created on the test BU (no valid category/file to reference) — every Add attempt (including a full DisplayName/CustomerKey/FileName/FileLocation payload) returned the plain string "Error" and did NOT throw. Treat any non-"OK" return as failure.
+     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. The official docs state Add returns "OK" on success or throws on failure. Runtime-verification of the success path was BLOCKED: no portfolio item could be created on the test BU (no valid category/file to reference) — every Add attempt (including a full DisplayName/CustomerKey/FileName/FileLocation payload) returned the plain string "Error" and did NOT throw. Treat any non-"OK" return as failure.
      * @param properties - JSON object describing the new portfolio item (DisplayName, CustomerKey, CategoryID, FileName, FileLocation).
      * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
@@ -2031,12 +2036,13 @@ declare namespace Portfolio {
      */
     function Add(properties: object): string;
     /**
-     * Returns an array of portfolio objects matching the specified filter.
+     * Returns an array of portfolio objects matching the specified filter. DEPRECATED — Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/portfolio/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return as an array of portfolio objects. Runtime-verification was BLOCKED: no portfolio item could be created on the test BU (no valid category/file to reference; see Add), so a populated array could not be produced. Against an empty account the call returned an `object` with no `.length` property (not a JS array), so the documented `object[]` shape could not be confirmed.
+     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. The official docs type the return as an array of portfolio objects. Runtime-verification was BLOCKED: no portfolio item could be created on the test BU (no valid category/file to reference; see Add), so a populated array could not be produced. Against an empty account the call returned an `object` with no `.length` property (not a JS array), so the documented `object[]` shape could not be confirmed.
      * @param filter - Criteria used to search for portfolio objects. PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
      * @returns List of portfolio objects matching the filter.
      * @example
@@ -2047,12 +2053,13 @@ declare namespace Portfolio {
 }
 interface PortfolioInstance {
     /**
-     * Updates the portfolio object with the supplied attributes.
+     * Updates the portfolio object with the supplied attributes. DEPRECATED — Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/portfolio/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs state Update returns "OK" on success or throws on failure. Runtime-verification was BLOCKED: no portfolio item could be created on the test BU (no valid category/file to reference; see Add), so Update could not be exercised against a real item. Against a non-existent key it returned the string "Error" (not "OK") and did not throw.
+     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. The official docs state Update returns "OK" on success or throws on failure. Runtime-verification was BLOCKED: no portfolio item could be created on the test BU (no valid category/file to reference; see Add), so Update could not be exercised against a real item. Against a non-existent key it returned the string "Error" (not "OK") and did not throw.
      * @param properties - Attributes to change on the portfolio object.
      * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
@@ -2062,12 +2069,13 @@ interface PortfolioInstance {
      */
     Update(properties: object): string;
     /**
-     * Removes the previously initialized portfolio object.
+     * Removes the previously initialized portfolio object. DEPRECATED — Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/portfolio/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs state Remove returns "OK" on success or throws on failure. Runtime-verification was BLOCKED: no portfolio item could be created on the test BU (no valid category/file to reference; see Add), so Remove could not be exercised against a real item. Against a non-existent key it returned the string "Error" (not "OK") and did not throw.
+     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. The official docs state Remove returns "OK" on success or throws on failure. Runtime-verification was BLOCKED: no portfolio item could be created on the test BU (no valid category/file to reference; see Add), so Remove could not be exercised against a real item. Against a non-existent key it returned the string "Error" (not "OK") and did not throw.
      * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -2280,6 +2288,7 @@ declare namespace Template {
      * [ssjs.guide reference](https://ssjs.guide/core-library/template/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param key - External key of the template.
      * @returns An initialized Template bound to the specified external key.
      * @example
@@ -2293,6 +2302,7 @@ declare namespace Template {
      * [ssjs.guide reference](https://ssjs.guide/core-library/template/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - JSON object describing the new template (CustomerKey, TemplateName, LayoutHTML).
      * @returns Returns "OK" on success or throws on failure.
      * @example
@@ -2311,6 +2321,7 @@ declare namespace Template {
      * [ssjs.guide reference](https://ssjs.guide/core-library/template/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - PascalCase WSProxy-style filter object, optionally wrapped with `QueryAllAccounts: true`.
      * @returns List of templates matching the filter.
      * @example
@@ -2326,6 +2337,7 @@ interface TemplateInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/template/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - Attributes to change on the template.
      * @returns Returns "OK" on success or throws on failure.
      * @example
@@ -3261,6 +3273,7 @@ declare namespace TriggeredSend {
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param key - External key of the triggered send definition.
      * @returns An initialized TriggeredSend bound to the specified external key.
      * @example
@@ -3295,6 +3308,7 @@ declare namespace TriggeredSend {
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
      * @returns List of triggered send definitions matching the filter.
      * @example

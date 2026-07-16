@@ -2875,13 +2875,21 @@ export const PORTFOLIO_METHODS = [
     {
         name: 'Init',
         isStatic: true,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
+        officialDocsNote:
+            'DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature. ' +
+            'Salesforce retired classic content creation and editing (the January 2021 release removed the ability to ' +
+            'edit/copy/move classic emails and templates, with Classic Content reaching end of life on 24 Apr 2023); ' +
+            'Content Builder is now the single cross-channel content repository and SOAP-era Portfolio integrations only ' +
+            'operate on the old Classic tools. Prefer Content Builder assets (Asset REST endpoints) for new work.',
         minArgs: 1,
         maxArgs: 1,
         description:
             'Initializes a Portfolio instance bound to the specified external key. ' +
-            'Required before invoking any other Portfolio method on the returned instance.',
+            'Required before invoking any other Portfolio method on the returned instance. ' +
+            'DEPRECATED — Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [{ name: 'key', description: 'External key of the portfolio.', type: 'string' }],
         returnType: 'PortfolioInstance',
         returnDescription: 'An initialized Portfolio bound to the specified external key.',
@@ -2891,19 +2899,25 @@ export const PORTFOLIO_METHODS = [
     {
         name: 'Add',
         isStatic: true,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: false,
         verificationBlocked: true,
         verificationBlockedReason: 'no-test-data',
         differsFromOfficialDocs: true,
         officialDocsNote:
+            'DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by ' +
+            'Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST ' +
+            'endpoints for new work. ' +
             'The official docs state Add returns "OK" on success or throws on failure. Runtime-verification of the ' +
             'success path was BLOCKED: no portfolio item could be created on the test BU (no valid category/file to ' +
             'reference) — every Add attempt (including a full DisplayName/CustomerKey/FileName/FileLocation payload) ' +
             'returned the plain string "Error" and did NOT throw. Treat any non-"OK" return as failure.',
         minArgs: 1,
         maxArgs: 1,
-        description: 'Creates a new portfolio (file) object from the supplied properties.',
+        description:
+            'Creates a new portfolio (file) object from the supplied properties. ' +
+            'DEPRECATED — Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [
             {
                 name: 'properties',
@@ -2931,19 +2945,25 @@ export const PORTFOLIO_METHODS = [
     {
         name: 'Retrieve',
         isStatic: true,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: false,
         verificationBlocked: true,
         verificationBlockedReason: 'no-test-data',
         differsFromOfficialDocs: true,
         officialDocsNote:
+            'DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by ' +
+            'Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST ' +
+            'endpoints for new work. ' +
             'The official docs type the return as an array of portfolio objects. Runtime-verification was BLOCKED: no ' +
             'portfolio item could be created on the test BU (no valid category/file to reference; see Add), so a ' +
             'populated array could not be produced. Against an empty account the call returned an `object` with no ' +
             '`.length` property (not a JS array), so the documented `object[]` shape could not be confirmed.',
         minArgs: 1,
         maxArgs: 1,
-        description: 'Returns an array of portfolio objects matching the specified filter.',
+        description:
+            'Returns an array of portfolio objects matching the specified filter. ' +
+            'DEPRECATED — Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [
             {
                 name: 'filter',
@@ -2962,19 +2982,25 @@ export const PORTFOLIO_METHODS = [
     {
         name: 'Update',
         isStatic: false,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: false,
         verificationBlocked: true,
         verificationBlockedReason: 'no-test-data',
         differsFromOfficialDocs: true,
         officialDocsNote:
+            'DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by ' +
+            'Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST ' +
+            'endpoints for new work. ' +
             'The official docs state Update returns "OK" on success or throws on failure. Runtime-verification was ' +
             'BLOCKED: no portfolio item could be created on the test BU (no valid category/file to reference; see Add), ' +
             'so Update could not be exercised against a real item. Against a non-existent key it returned the string ' +
             '"Error" (not "OK") and did not throw.',
         minArgs: 1,
         maxArgs: 1,
-        description: 'Updates the portfolio object with the supplied attributes.',
+        description:
+            'Updates the portfolio object with the supplied attributes. ' +
+            'DEPRECATED — Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [
             {
                 name: 'properties',
@@ -2995,19 +3021,25 @@ export const PORTFOLIO_METHODS = [
     {
         name: 'Remove',
         isStatic: false,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: false,
         verificationBlocked: true,
         verificationBlockedReason: 'no-test-data',
         differsFromOfficialDocs: true,
         officialDocsNote:
+            'DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by ' +
+            'Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST ' +
+            'endpoints for new work. ' +
             'The official docs state Remove returns "OK" on success or throws on failure. Runtime-verification was ' +
             'BLOCKED: no portfolio item could be created on the test BU (no valid category/file to reference; see Add), ' +
             'so Remove could not be exercised against a real item. Against a non-existent key it returned the string ' +
             '"Error" (not "OK") and did not throw.',
         minArgs: 0,
         maxArgs: 0,
-        description: 'Removes the previously initialized portfolio object.',
+        description:
+            'Removes the previously initialized portfolio object. ' +
+            'DEPRECATED — Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [],
         returnType: 'string',
         returnEnum: ['OK', 'Error'],
@@ -3329,6 +3361,7 @@ export const TEMPLATE_METHODS = [
         name: 'Init',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -3344,6 +3377,7 @@ export const TEMPLATE_METHODS = [
         name: 'Add',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description: 'Creates a new template from the supplied properties.',
@@ -3372,6 +3406,7 @@ export const TEMPLATE_METHODS = [
         name: 'Retrieve',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -3396,6 +3431,7 @@ export const TEMPLATE_METHODS = [
         name: 'Update',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description: 'Updates the template with the supplied attributes.',
@@ -5312,6 +5348,7 @@ export const TRIGGERED_SEND_METHODS = [
         name: 'Init',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -5334,6 +5371,15 @@ export const TRIGGERED_SEND_METHODS = [
         name: 'Add',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'bu-guardrail',
+        officialDocsNote:
+            'Verification attempted but blocked: the QA test BU rejects programmatic Triggered Send Definition ' +
+            'creation. On a live CloudPage, `TriggeredSend.Add` threw `Error adding TSD.` and the equivalent ' +
+            'WSProxy `CreateTriggeredSendDefinition` returned an opaque server exception (ErrorCode 2, no actionable ' +
+            'StatusMessage) even with a valid classic email, Default SendClassification, and the All Subscribers list. ' +
+            'No working TSD could be provisioned on this BU, so the documented `TriggeredSendInstance` return could not be proven.',
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -5367,6 +5413,7 @@ export const TRIGGERED_SEND_METHODS = [
         name: 'Retrieve',
         isStatic: true,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -5390,6 +5437,14 @@ export const TRIGGERED_SEND_METHODS = [
         name: 'Update',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'bu-guardrail',
+        officialDocsNote:
+            'Verification attempted but blocked: no Triggered Send Definition could be created on the QA test BU ' +
+            '(see TriggeredSend.Add), so there was no active TSD to update. On a live CloudPage the call returned the ' +
+            'string `"Error"` with `LastMessage` = "Unable to access the specified triggered send definition"; the ' +
+            'documented `"OK"` success path could not be proven without a valid TSD.',
         minArgs: 1,
         maxArgs: 1,
         description: 'Updates the previously initialized triggered send definition.',
@@ -5413,6 +5468,14 @@ export const TRIGGERED_SEND_METHODS = [
         name: 'Start',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'bu-guardrail',
+        officialDocsNote:
+            'Verification attempted but blocked: no Triggered Send Definition could be created on the QA test BU ' +
+            '(see TriggeredSend.Add), so there was no paused TSD to reactivate. On a live CloudPage the call returned ' +
+            'the string `"Error"` with `LastMessage` = "Unable to access the specified triggered send definition"; the ' +
+            'documented `"OK"` success path could not be proven.',
         minArgs: 0,
         maxArgs: 0,
         description: 'Starts (reactivates) a paused triggered send definition.',
@@ -5430,6 +5493,14 @@ export const TRIGGERED_SEND_METHODS = [
         name: 'Pause',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'bu-guardrail',
+        officialDocsNote:
+            'Verification attempted but blocked: no Triggered Send Definition could be created on the QA test BU ' +
+            '(see TriggeredSend.Add), so there was no active TSD to pause. On a live CloudPage the call returned ' +
+            'the string `"Error"` with `LastMessage` = "Unable to access the specified triggered send definition"; the ' +
+            'documented `"OK"` success path could not be proven.',
         minArgs: 0,
         maxArgs: 0,
         description: 'Pauses an active triggered send definition.',
@@ -5447,6 +5518,14 @@ export const TRIGGERED_SEND_METHODS = [
         name: 'Publish',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'bu-guardrail',
+        officialDocsNote:
+            'Verification attempted but blocked: no Triggered Send Definition could be created on the QA test BU ' +
+            '(see TriggeredSend.Add), so there was no draft/inactive TSD to publish. On a live CloudPage the call ' +
+            'returned the string `"Error"` with `LastMessage` = "Unable to access the specified triggered send ' +
+            'definition"; the documented `"OK"` success path could not be proven.',
         minArgs: 0,
         maxArgs: 0,
         description:
@@ -5466,6 +5545,14 @@ export const TRIGGERED_SEND_METHODS = [
         name: 'Send',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'bu-guardrail',
+        officialDocsNote:
+            'Verification attempted but blocked: no Triggered Send Definition could be created on the QA test BU ' +
+            '(see TriggeredSend.Add), so there was no active TSD to send through. On a live CloudPage the call returned ' +
+            'the string `"Error"` with `LastMessage` = "Unable to access the specified triggered send definition"; the ' +
+            'documented `"OK"` success path and the actual send side effect could not be proven.',
         minArgs: 1,
         maxArgs: 2,
         description:
@@ -5501,6 +5588,7 @@ export const TRIGGERED_SEND_TRACKING_METHODS = [
         name: 'Retrieve',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 0,
         maxArgs: 1,
         description:
@@ -5528,6 +5616,7 @@ export const TRIGGERED_SEND_TRACKING_CLICKS_METHODS = [
         name: 'Retrieve',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -5554,6 +5643,7 @@ export const TRIGGERED_SEND_TRACKING_TOTAL_BY_INTERVAL_METHODS = [
         name: 'Retrieve',
         isStatic: false,
         requiresCoreLoad: true,
+        isConfirmed: true,
         minArgs: 4,
         maxArgs: 4,
         description:
