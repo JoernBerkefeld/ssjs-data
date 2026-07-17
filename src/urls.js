@@ -265,6 +265,82 @@ export const ECMASCRIPT_URLS = {
 export const ecmascriptAnchor = (member) => String(member).toLowerCase();
 
 /**
+ * Split a PascalCase / camelCase identifier into lowercase hyphen-joined words.
+ * Used for event-type anchors (e.g. `ForwardedEmailOptInEvent` → `forwarded-email-opt-in-event`).
+ *
+ * @param {string} name - Identifier to slugify
+ * @returns {string} Hyphen-joined lowercase slug
+ */
+const kebabCase = (name) =>
+    String(name)
+        .replaceAll(/([a-z0-9])([A-Z])/g, '$1-$2')
+        .toLowerCase();
+
+/**
+ * Derive the in-page H3 anchor for a Core Library / Platform object method on its
+ * shared documentation page, matching the `{#anchor}` IDs authored in the .md pages
+ * (see the SSJS Guide Page Structure rule).
+ *
+ * The anchor is derived from the method's `syntax` string:
+ *
+ * - **Instance methods** (`syntax` begins with `<XxxInstance>.`): drop the
+ *   `<XxxInstance>` token, lowercase the remaining dot-separated path, join with
+ *   hyphens, and prefix with `instance-`
+ *   (e.g. `<ListInstance>.Subscribers.Tracking.Retrieve` → `instance-subscribers-tracking-retrieve`).
+ * - **Static methods** (`syntax` begins with `ClassName.`): drop the leading
+ *   segments that make up the page-owning class (derived from `pageSlug`), then
+ *   lowercase + hyphen-join the remaining path
+ *   (e.g. `Send.Tracking.Retrieve` on the `send` page → `tracking-retrieve`;
+ *   `Send.Definition.AddWithDE` on the `senddefinition` page → `addwithde`).
+ *
+ * @param {string} syntax - The method's `syntax` string (may include a trailing `(args)` list)
+ * @param {string} pageSlug - Last path segment of the method's page URL (e.g. `send`, `senddefinition`, `list-subscribers`)
+ * @returns {string} Lowercased anchor slug (no leading `#`), or '' if it cannot be derived
+ */
+export const methodAnchor = (syntax, pageSlug) => {
+    if (!syntax) {
+        return '';
+    }
+    // Strip the argument list: everything from the first '(' onward.
+    const call = String(syntax).split('(', 1)[0].trim();
+    const instanceMatch = call.match(/^<[^>]+>\.(.+)$/);
+    if (instanceMatch) {
+        const rest = instanceMatch[1].split('.').filter(Boolean);
+        return ['instance', ...rest.map((s) => s.toLowerCase())].join('-');
+    }
+    // Static method: drop the leading segments that form the page-owner class.
+    const segments = call.split('.').filter(Boolean);
+    const slugNorm = String(pageSlug || '')
+        .replaceAll('-', '')
+        .toLowerCase();
+    let dropCount = 0;
+    let acc = '';
+    for (let i = 0; i < segments.length - 1; i++) {
+        acc += segments[i].toLowerCase();
+        dropCount = i + 1;
+        if (acc === slugNorm) {
+            break;
+        }
+    }
+    // Fallback: if no prefix matched the page slug, drop only the first segment.
+    if (acc !== slugNorm) {
+        dropCount = 1;
+    }
+    const rest = segments.slice(dropCount);
+    return rest.map((s) => s.toLowerCase()).join('-');
+};
+
+/**
+ * Derive the in-page H2 anchor for a tracking event type on the events page,
+ * matching the authored `{#anchor}` IDs (e.g. `BounceEvent` → `bounce-event`,
+ * `ForwardedEmailOptInEvent` → `forwarded-email-opt-in-event`).
+ *
+ * @param {string} eventType - Event owner name (e.g. `BounceEvent`)
+ * @returns {string} Lowercased hyphen-joined anchor slug (no leading `#`)
+ */
+export const eventAnchor = (eventType) => kebabCase(eventType);
+
+/**
  * Standalone URL constants for pages not covered by the function-per-page patterns above.
  *
  * @type {Record<string, string>}

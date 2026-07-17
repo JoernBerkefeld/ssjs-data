@@ -37,6 +37,8 @@ import {
     GUIDE_URLS,
     httpRequestMethodUrl,
     PLATFORM_FUNCTION_GLOBAL_ALIAS,
+    methodAnchor,
+    eventAnchor,
 } from '../src/urls.js';
 
 import {
@@ -116,6 +118,28 @@ function firstSentence(text) {
  */
 function paramNames(entry) {
     return (entry.params || []).map((p) => p.name);
+}
+
+/**
+ * Extract the last path segment (page slug) from a site-relative page URL.
+ *
+ * @param {string} url - Site-relative URL (e.g. `/core-library/senddefinition/`)
+ * @returns {string} Last non-empty path segment (e.g. `senddefinition`)
+ */
+function pageSlug(url) {
+    const segments = String(url).split('#', 1)[0].split('/').filter(Boolean);
+    return segments.at(-1) ?? '';
+}
+
+/**
+ * Append an in-page anchor to a page URL, avoiding a double '#'.
+ *
+ * @param {string} url - Page URL (without fragment)
+ * @param {string} anchor - Anchor slug (no leading '#'); empty leaves the URL unchanged
+ * @returns {string} URL with `#anchor` appended when anchor is non-empty
+ */
+function withAnchor(url, anchor) {
+    return anchor ? `${url.split('#', 1)[0]}#${anchor}` : url;
 }
 
 /**
@@ -261,11 +285,13 @@ const PLATFORM_OBJECT_GROUPS = [
 ];
 
 for (const { array, prefix, url, category } of PLATFORM_OBJECT_GROUPS) {
+    const slug = pageSlug(url);
     for (const fn of array) {
+        const anchor = methodAnchor(fn.syntax || `${prefix}.${fn.name}`, slug);
         index.push(
             record(
                 `${prefix}.${fn.name}`,
-                url,
+                withAnchor(url, anchor),
                 category ?? 'Platform Objects',
                 fn.isProperty ? 'property' : 'method',
                 fn,
@@ -390,11 +416,19 @@ const CORE_LIBRARY_GROUPS = [
 ];
 
 for (const { array, prefix, url } of CORE_LIBRARY_GROUPS) {
+    const slug = pageSlug(url);
+    // The events page groups methods by event type (H2 anchor per event), so its
+    // per-method anchor is derived from the method's `owner` (e.g. BounceEvent),
+    // not from the method syntax like every other Core Library page.
+    const isEventsPage = prefix === 'Tracking';
     for (const fn of array) {
+        const anchor = isEventsPage
+            ? eventAnchor(fn.owner)
+            : methodAnchor(fn.syntax || `${prefix}.${fn.name}`, slug);
         index.push(
             record(
                 `${prefix}.${fn.name}`,
-                url,
+                withAnchor(url, anchor),
                 'Core Library',
                 fn.isProperty ? 'property' : 'method',
                 fn,
