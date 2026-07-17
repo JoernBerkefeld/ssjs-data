@@ -45,6 +45,7 @@ import {
     SCRIPT_UTIL_HTTPGET_PROPERTIES,
     SCRIPT_UTIL_RESPONSE_PROPERTIES,
     WSPROXY_RESULT_PROPERTIES,
+    WSP_RESULT_ENTRY_PROPERTIES,
     CONSTRUCTIBLE_BUILTINS,
     EVENT_METHODS,
     DATA_EXTENSION_METHODS,
@@ -98,6 +99,7 @@ const INSTANCE_TYPE_MAP = {
     HttpRequestInstance: 'Script.Util.HttpRequest',
     HttpResponseInstance: 'HttpResponseInstance',
     WSProxyResult: 'WSProxyResult',
+    WspResult: 'WspResult',
     AccountInstance: 'AccountInstance',
     AccountUserInstance: 'AccountUserInstance',
     PortfolioInstance: 'PortfolioInstance',
@@ -1184,6 +1186,19 @@ line('interface HttpResponseInstance {');
 for (const p of SCRIPT_UTIL_RESPONSE_PROPERTIES) {
     line(`${buildJsDocComment(p, ' '.repeat(4))}    readonly ${p.name}: ${toTsType(p.type)};`);
 }
+line('}');
+line('');
+
+// ── WSProxy per-item result entry (each element of WSProxyResult.Results) ──────
+line('// ── WSProxy per-item result entry ───────────────────────────────────────────');
+line('interface WspResult {');
+for (const p of WSP_RESULT_ENTRY_PROPERTIES) {
+    line(`    /** ${p.description} */`);
+    line(`    readonly ${p.name}${p.optional ? '?' : ''}: ${toTsType(p.type)};`);
+}
+// retrieve()/getNextBatch() reuse Results for retrieved rows; allow arbitrary row fields.
+line('    /** retrieve()/getNextBatch(): retrieved-row fields keyed by column name. */');
+line('    readonly [column: string]: any;');
 line('}');
 line('');
 

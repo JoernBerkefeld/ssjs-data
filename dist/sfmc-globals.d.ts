@@ -3761,6 +3761,7 @@ declare namespace Script {
          *
          * [ssjs.guide reference](https://ssjs.guide/wsproxy/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @returns An authenticated WSProxy object bound to the current execution context.
          * @example
          * var api = new Script.Util.WSProxy();
@@ -3775,6 +3776,7 @@ declare namespace Script {
              *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
              * @returns An authenticated WSProxy object bound to the current execution context.
              * @example
              * var api = new Script.Util.WSProxy();
@@ -3789,9 +3791,11 @@ declare namespace Script {
              *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/createitem/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param objectType - SOAP API object type name
              * @param properties - Object properties to set
-             * @returns Object with Status, StatusMessage, RequestID, and Results array.
+             * @param createOptions - Optional SOAP CreateOptions object (e.g. RequestType, QueuePriority).
+             * @returns Object with Status, RequestID, and a Results array of per-item results.
              * @example
              * var api = new Script.Util.WSProxy();
              * var result = api.createItem("DataExtensionObject", {
@@ -3800,32 +3804,37 @@ declare namespace Script {
              * });
              * if (result.Status === "OK") { Write("Created"); }
              */
-            createItem(objectType: string, properties: object): WSProxyResult;
+            createItem(objectType: string, properties: object, createOptions?: object): WSProxyResult;
             /**
-             * Updates an existing Marketing Cloud object via the SOAP API.
+             * Updates a single existing Marketing Cloud object via the SOAP API.
              *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/updateitem/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param objectType - SOAP API object type name
              * @param properties - Object properties to update
-             * @returns Object with Status, StatusMessage, RequestID, and Results array.
+             * @param updateOptions - Optional SOAP UpdateOptions object (e.g. { SaveOptions: [...] })
+             * @returns Object with Status, RequestID, and a single-entry Results array. The one Results entry carries StatusCode, StatusMessage, OrdinalID, ErrorCode, and an Object wrapper.
              * @example
              * var api = new Script.Util.WSProxy();
              * var result = api.updateItem("DataExtensionObject", {
              *     CustomerKey: "MyDE",
-             *     Properties: { Property: [{ Name: "Status", Value: "inactive" }] }
+             *     Keys: [{ Name: "Email", Value: "a@example.com" }],
+             *     Properties: [{ Name: "Status", Value: "inactive" }]
              * });
              * if (result.Status === "OK") { Write("Updated"); }
              */
-            updateItem(objectType: string, properties: object): WSProxyResult;
+            updateItem(objectType: string, properties: object, updateOptions?: object): WSProxyResult;
             /**
              * Deletes a Marketing Cloud object via the SOAP API.
              *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/deleteitem/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param objectType - SOAP API object type name
              * @param properties - Object properties identifying the item to delete
-             * @returns Object with Status, StatusMessage, RequestID, and Results array.
+             * @param deleteOptions - Optional SOAP DeleteOptions object (e.g. RequestType, QueuePriority).
+             * @returns Object with Status, RequestID, and a Results array of per-item results (StatusCode, StatusMessage, ErrorCode). The top-level object has no StatusMessage.
              * @example
              * var api = new Script.Util.WSProxy();
              * var result = api.deleteItem("DataExtensionObject", {
@@ -3834,18 +3843,19 @@ declare namespace Script {
              * });
              * if (result.Status === "OK") { Write("Deleted"); }
              */
-            deleteItem(objectType: string, properties: object): WSProxyResult;
+            deleteItem(objectType: string, properties: object, deleteOptions?: object): WSProxyResult;
             /**
              * Retrieves Marketing Cloud objects matching an optional filter via the SOAP API. The third parameter is a simple or complex filter; the fourth sets RetrieveOptions; the fifth sets additional request properties such as QueryAllAccounts.
              *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/retrieve/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param objectType - SOAP API object type name
              * @param columns - Array of property names to retrieve
              * @param filter - Simple or complex filter object
-             * @param retrieveOptions - Properties to set on the SOAP RetrieveOptions object
-             * @param requestProps - Additional request properties (e.g. QueryAllAccounts)
-             * @returns Object with Status, HasMoreRows, RequestID, and Results array.
+             * @param retrieveOptions - Properties to set on the SOAP RetrieveOptions object. Set BatchSize (1..2500) here to force paged results; a value above 2500 is ignored and the default page size applies.
+             * @param requestProps - Additional request properties, e.g. QueryAllAccounts (boolean) and ContinueRequest (a RequestID string). Setting ContinueRequest to the RequestID from a prior paged retrieve fetches the next page — a retrieve-based alternative to getNextBatch.
+             * @returns Object with Status, HasMoreRows, RequestID, and Results array. When a result set is paged, Status is "MoreDataAvailable" and HasMoreRows is true; the final page returns Status "OK" and HasMoreRows false.
              * @example
              * var api = new Script.Util.WSProxy();
              * var cols = ["Name", "CustomerKey", "Status"];
@@ -3868,6 +3878,7 @@ declare namespace Script {
              *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/getnextbatch/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param objectType - SOAP API object type name used in the original retrieve call
              * @param requestId - RequestID returned by the previous retrieve response
              * @returns Object with Status, HasMoreRows, RequestID, and Results array.
@@ -3887,11 +3898,13 @@ declare namespace Script {
              *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/performitem/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             * @remarks ⚠️ Differs from the official Salesforce docs. Runtime (CloudPage) confirmed the (objectType, properties, action[, performOptions]) signature and the WSProxyResult return shape: Status/StatusMessage/RequestID plus a single-entry Results array. Against a freshly-created active QueryDefinition, both "Start" and lowercase "start" returned Status "OK" with Results[0].StatusMessage "QueryDefinition perform called successfully" — the action verb is case-insensitive, so the docs' Enum('Start') is not case-sensitive as the page previously claimed. The Results[0] element exposes StatusCode, StatusMessage, OrdinalID, ErrorCode, an Object wrapper and a Task sub-object (with InteractionObjectID); the official docs do not detail this per-item structure.
              * @param objectType - SOAP API object type name.
              * @param properties - Object properties identifying the target item (e.g. { ObjectID: "..." }).
-             * @param action - Action to perform. Only "Start" is valid (lowercase "start" fails).
+             * @param action - Action to perform, typically "Start". The verb is case-insensitive at runtime ("start" works identically to "Start").
              * @param performOptions - Properties of the SOAP PerformOptions object.
-             * @returns Object with Status, StatusMessage, RequestID, and Results array.
+             * @returns Object with Status (string, "OK" on success), StatusMessage (string, empty on success), RequestID (string) and Results (Array with a single entry for the acted-on item). The Results[0] element carries StatusCode, StatusMessage ("QueryDefinition perform called successfully"), OrdinalID, ErrorCode plus an Object (the acted-on API object) and a Task sub-object (StatusCode, StatusMessage, ID, TblAsyncID, InteractionObjectID).
              * @example
              * var api = new Script.Util.WSProxy();
              * var result = api.performItem("QueryDefinition", { ObjectID: queryObjectId }, "Start");
@@ -3903,11 +3916,13 @@ declare namespace Script {
              *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/performbatch/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             * @remarks ⚠️ Differs from the official Salesforce docs. Runtime (CloudPage) confirmed the (objectType, propertiesArray, action[, performOptions]) signature and the WSProxyResult return shape: Status/StatusMessage/RequestID plus a Results array with one entry per input item. Against a freshly-created active QueryDefinition, both "Start" and lowercase "start" returned Status "OK" with Results[0].StatusMessage "QueryDefinition perform called successfully" — the action verb is case-insensitive, so the docs' Enum('Start') is not case-sensitive as previously assumed. Each Results element exposes StatusCode, StatusMessage, OrdinalID, ErrorCode, an Object wrapper and a Task sub-object (with InteractionObjectID); the official docs do not detail this per-item structure.
              * @param objectType - SOAP API object type name
              * @param propertiesArray - Array of property objects identifying the target items
-             * @param action - Action to perform. Only "Start" is valid (lowercase "start" fails).
+             * @param action - Action to perform, typically "Start". The verb is case-insensitive at runtime ("start" works identically to "Start").
              * @param performOptions - Properties of the SOAP PerformOptions object
-             * @returns Object with Status, StatusMessage, RequestID, and Results array.
+             * @returns Object with Status (string, "OK" on success), StatusMessage (string, empty on success), RequestID (string) and Results (Array with one entry per input item). Each Results element carries StatusCode, StatusMessage, OrdinalID, ErrorCode plus an Object (the acted-on API object) and a Task sub-object (StatusCode, StatusMessage, InteractionObjectID, etc.).
              * @example
              * var api = new Script.Util.WSProxy();
              * var items = [{ ObjectID: id1 }, { ObjectID: id2 }];
@@ -3916,32 +3931,42 @@ declare namespace Script {
              */
             performBatch(objectType: string, propertiesArray: any[], action: string, performOptions?: object): WSProxyResult;
             /**
-             * Returns structural metadata (ObjectDefinition) for one or more SOAP API object types.
+             * Returns structural metadata for one or more SOAP API object types, one ObjectDefinition per requested type.
              *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/describe/)
              *
-             * @param objectType - Object type name or array of type names to describe
-             * @returns Object with Status and Results array containing ObjectDefinition entries.
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             * @remarks ⚠️ Differs from the official Salesforce docs. The official docs place field details at Results[0].ObjectDefinition.Properties, but at runtime each Results element is directly the ObjectDefinition (Results[0].Properties); there is no nested ObjectDefinition wrapper, and the return object exposes RequestID (not Status).
+             * @param objectType - Object type name, or an array of type names, to describe
+             * @returns Object with RequestID (string) and Results (Array). Each Results element is itself the ObjectDefinition — properties like ObjectType, Name, IsCreatable and the Properties field-definition array sit directly on Results[i], NOT under a nested Results[i].ObjectDefinition.
              * @example
              * var api = new Script.Util.WSProxy();
              * var result = api.describe("DataExtension");
-             * Write(Stringify(result.Results));
+             * Write(Stringify(result.Results[0].Properties));
              */
-            describe(objectType: string): WSProxyResult;
+            describe(objectType: string | string[]): WSProxyResult;
             /**
-             * Executes a named method on a Marketing Cloud object.
+             * Runs a SOAP Execute request (e.g. LogUnsubEvent), passing an array of Name/Value parameter objects and the request name.
              *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/execute/)
              *
-             * @param objectType - SOAP API object type name.
-             * @param requestName - Name of the request to execute.
-             * @returns Object with Status, StatusMessage, RequestID, and Results array.
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             * @param parameters - Array of Name/Value parameter objects to include in the Execute call.
+             * @param requestName - Name of the Execute request to run.
+             * @returns Object with Status (string), RequestID (string), and a Results array of per-item ExecuteResponse objects (StatusCode, StatusMessage, OrdinalID, Results, ErrorCode).
              * @example
              * var api = new Script.Util.WSProxy();
-             * var result = api.execute("DataExtensionObject", "LogUnsubEvent");
+             * var props = [
+             *     { Name: "SubscriberKey", Value: "sample@sample.com" },
+             *     { Name: "EmailAddress", Value: "sample@sample.com" },
+             *     { Name: "JobID", Value: 0 },
+             *     { Name: "ListID", Value: 0 },
+             *     { Name: "BatchID", Value: 0 }
+             * ];
+             * var result = api.execute(props, "LogUnsubEvent");
              * Write(result.Status);
              */
-            execute(objectType: string, requestName: string): WSProxyResult;
+            execute(parameters: object[], requestName: string): WSProxyResult;
             /**
              * Sets the maximum number of objects returned per SOAP API page (default is 2500).
              *
@@ -3955,22 +3980,26 @@ declare namespace Script {
              */
             setBatchSize(batchSize: number): void;
             /**
-             * Sets the business unit MID for cross-account operations.
+             * Sets a ClientId (impersonation) context on the WSProxy instance so subsequent operations run against another business unit. Pass an object with the MID under the "ID" key (and optionally "UserID"); the calling context must have access to the target BU.
              *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/setclientid/)
              *
-             * @param clientId - Object containing the MID of the target business unit
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             * @remarks ⚠️ Differs from the official Salesforce docs. The official docs document setClientId() as returning void, but at runtime it returns a genuine null (=== null), not undefined.
+             * @param options - Object with the target ClientId properties; at least the "ID" key (target BU MID) is expected, "UserID" is optional.
              * @example
              * var api = new Script.Util.WSProxy();
              * api.setClientId({ ID: 12345 }); // target child BU by MID
              * var result = api.retrieve("DataExtension", ["Name"], {});
              */
-            setClientId(clientId: object): void;
+            setClientId(options: object): null;
             /**
              * Clears all client IDs set on the WSProxy instance, reverting to the default execution context credentials.
              *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/resetclientids/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             * @remarks ⚠️ Differs from the official Salesforce docs. The official docs document resetClientIds() as returning void, but at runtime it returns a genuine null (=== null), not undefined.
              * @example
              * var api = new Script.Util.WSProxy();
              * api.setClientId({ ID: 12345 });
@@ -3978,15 +4007,17 @@ declare namespace Script {
              * api.resetClientIds(); // revert to default context
              * var result = api.retrieve("DataExtension", ["Name"], {});
              */
-            resetClientIds(): void;
+            resetClientIds(): null;
             /**
              * Creates multiple Marketing Cloud objects in a single SOAP API call.
              *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/createbatch/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param objectType - SOAP API object type name
              * @param propertiesArray - Array of property objects to create
-             * @returns Object with Status, StatusMessage, RequestID, and Results array.
+             * @param createOptions - Optional SOAP CreateOptions object (e.g. RequestType, QueuePriority).
+             * @returns Object with Status (string, e.g. "OK"), RequestID (string GUID), and a Results array holding one entry per input object (each with StatusCode, StatusMessage, NewObjectID, Object, etc.).
              * @example
              * var api = new Script.Util.WSProxy();
              * var items = [
@@ -3996,32 +4027,36 @@ declare namespace Script {
              * var result = api.createBatch("DataExtensionObject", items);
              * Write(result.Status);
              */
-            createBatch(objectType: string, propertiesArray: any[]): WSProxyResult;
+            createBatch(objectType: string, propertiesArray: any[], createOptions?: object): WSProxyResult;
             /**
              * Updates multiple Marketing Cloud objects in a single SOAP API call.
              *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/updatebatch/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param objectType - SOAP API object type name
              * @param propertiesArray - Array of property objects to update
-             * @returns Object with Status, StatusMessage, RequestID, and Results array.
+             * @param updateOptions - Optional SOAP UpdateOptions object (e.g. { SaveOptions: [...] })
+             * @returns Object with Status, RequestID, and a Results array (one entry per input item). Each Results entry carries StatusCode, StatusMessage, OrdinalID, ErrorCode, and an Object wrapper.
              * @example
              * var api = new Script.Util.WSProxy();
              * var items = [
-             *     { CustomerKey: "MyDE", Keys: { Key: [{ Name: "Email", Value: "a@example.com" }] }, Properties: { Property: [{ Name: "Status", Value: "active" }] } }
+             *     { CustomerKey: "MyDE", Keys: [{ Name: "Email", Value: "a@example.com" }], Properties: [{ Name: "Status", Value: "active" }] }
              * ];
              * var result = api.updateBatch("DataExtensionObject", items);
              * Write(result.Status);
              */
-            updateBatch(objectType: string, propertiesArray: any[]): WSProxyResult;
+            updateBatch(objectType: string, propertiesArray: any[], updateOptions?: object): WSProxyResult;
             /**
              * Deletes multiple Marketing Cloud objects in a single SOAP API call.
              *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/deletebatch/)
              *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param objectType - SOAP API object type name
-             * @param propertiesArray - Array of property objects to delete
-             * @returns Object with Status, StatusMessage, RequestID, and Results array.
+             * @param propertiesArray - Array of property objects identifying each object to delete
+             * @param deleteOptions - Optional SOAP DeleteOptions object (e.g. RequestType, QueuePriority).
+             * @returns Object with Status (string, e.g. "OK"), RequestID (string GUID), and a Results array holding one entry per input object (each with StatusCode, StatusMessage, ErrorCode, Object, etc.). There is no top-level StatusMessage.
              * @example
              * var api = new Script.Util.WSProxy();
              * var items = [
@@ -4030,7 +4065,7 @@ declare namespace Script {
              * var result = api.deleteBatch("DataExtensionObject", items);
              * Write(result.Status);
              */
-            deleteBatch(objectType: string, propertiesArray: any[]): WSProxyResult;
+            deleteBatch(objectType: string, propertiesArray: any[], deleteOptions?: object): WSProxyResult;
         }
         /**
          * Creates an HTTP request handler that supports any HTTP method (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS). Unlike Platform.Function.HTTPGet/HTTPPost, this handler supports custom methods and headers. Call send() to execute the request and receive a Script.Util.HttpResponse object.
@@ -4351,6 +4386,26 @@ interface HttpResponseInstance {
     readonly statusCode: number;
 }
 
+// ── WSProxy per-item result entry ───────────────────────────────────────────
+interface WspResult {
+    /** Per-item status: "OK" or "Error". */
+    readonly StatusCode?: string;
+    /** Per-item human-readable status message. */
+    readonly StatusMessage?: string;
+    /** Zero-based index of the input item this entry corresponds to. */
+    readonly OrdinalID?: number;
+    /** Error code when the item failed; absent/empty on success. */
+    readonly ErrorCode?: string;
+    /** Server-assigned ID of a newly created object, when applicable. */
+    readonly NewID?: number;
+    /** Wrapper carrying the affected object as returned by the API. */
+    readonly Object?: object;
+    /** perform-only: async task descriptor (carries InteractionObjectID). Present for performItem()/performBatch(). */
+    readonly Task?: object;
+    /** retrieve()/getNextBatch(): retrieved-row fields keyed by column name. */
+    readonly [column: string]: any;
+}
+
 // ── WSProxy result object ───────────────────────────────────────────────────
 interface WSProxyResult {
     /** Overall result status: "OK" or "Error". */
@@ -4358,7 +4413,7 @@ interface WSProxyResult {
     /** Server-assigned request identifier. */
     readonly RequestID: string;
     /** Array of per-object result entries (or retrieved rows for retrieve()). */
-    readonly Results: any[];
+    readonly Results: WspResult[];
     /** For retrieve()/getNextBatch(): true when more rows exist — call getNextBatch() with RequestID. */
     readonly HasMoreRows?: boolean;
     /** Human-readable status message when present. */

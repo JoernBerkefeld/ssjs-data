@@ -6385,15 +6385,24 @@ export const WSPROXY_METHODS = [
         name: 'createItem',
         isStatic: false,
         minArgs: 2,
-        maxArgs: 2,
+        maxArgs: 3,
+        isConfirmed: true,
         description: 'Creates a new Marketing Cloud object via the SOAP API.',
         params: [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
             { name: 'properties', description: 'Object properties to set', type: 'object' },
+            {
+                name: 'createOptions',
+                description:
+                    'Optional SOAP CreateOptions object (e.g. RequestType, QueuePriority).',
+                type: 'object',
+                optional: true,
+            },
         ],
         returnType: 'WSProxyResult',
-        returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
-        syntax: '<WSProxyInstance>.createItem(objectType, properties)',
+        returnDescription:
+            'Object with Status, RequestID, and a Results array of per-item results.',
+        syntax: '<WSProxyInstance>.createItem(objectType, properties[, createOptions])',
         example:
             'var api = new Script.Util.WSProxy();\n' +
             'var result = api.createItem("DataExtensionObject", {\n' +
@@ -6406,20 +6415,29 @@ export const WSPROXY_METHODS = [
         name: 'updateItem',
         isStatic: false,
         minArgs: 2,
-        maxArgs: 2,
-        description: 'Updates an existing Marketing Cloud object via the SOAP API.',
+        maxArgs: 3,
+        isConfirmed: true,
+        description: 'Updates a single existing Marketing Cloud object via the SOAP API.',
         params: [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
             { name: 'properties', description: 'Object properties to update', type: 'object' },
+            {
+                name: 'updateOptions',
+                description: 'Optional SOAP UpdateOptions object (e.g. { SaveOptions: [...] })',
+                type: 'object',
+                optional: true,
+            },
         ],
         returnType: 'WSProxyResult',
-        returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
-        syntax: '<WSProxyInstance>.updateItem(objectType, properties)',
+        returnDescription:
+            'Object with Status, RequestID, and a single-entry Results array. The one Results entry carries StatusCode, StatusMessage, OrdinalID, ErrorCode, and an Object wrapper.',
+        syntax: '<WSProxyInstance>.updateItem(objectType, properties[, updateOptions])',
         example:
             'var api = new Script.Util.WSProxy();\n' +
             'var result = api.updateItem("DataExtensionObject", {\n' +
             '    CustomerKey: "MyDE",\n' +
-            '    Properties: { Property: [{ Name: "Status", Value: "inactive" }] }\n' +
+            '    Keys: [{ Name: "Email", Value: "a@example.com" }],\n' +
+            '    Properties: [{ Name: "Status", Value: "inactive" }]\n' +
             '});\n' +
             'if (result.Status === "OK") { Write("Updated"); }',
     },
@@ -6427,7 +6445,8 @@ export const WSPROXY_METHODS = [
         name: 'deleteItem',
         isStatic: false,
         minArgs: 2,
-        maxArgs: 2,
+        maxArgs: 3,
+        isConfirmed: true,
         description: 'Deletes a Marketing Cloud object via the SOAP API.',
         params: [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
@@ -6436,10 +6455,18 @@ export const WSPROXY_METHODS = [
                 description: 'Object properties identifying the item to delete',
                 type: 'object',
             },
+            {
+                name: 'deleteOptions',
+                description:
+                    'Optional SOAP DeleteOptions object (e.g. RequestType, QueuePriority).',
+                type: 'object',
+                optional: true,
+            },
         ],
         returnType: 'WSProxyResult',
-        returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
-        syntax: '<WSProxyInstance>.deleteItem(objectType, properties)',
+        returnDescription:
+            'Object with Status, RequestID, and a Results array of per-item results (StatusCode, StatusMessage, ErrorCode). The top-level object has no StatusMessage.',
+        syntax: '<WSProxyInstance>.deleteItem(objectType, properties[, deleteOptions])',
         example:
             'var api = new Script.Util.WSProxy();\n' +
             'var result = api.deleteItem("DataExtensionObject", {\n' +
@@ -6466,20 +6493,25 @@ export const WSPROXY_METHODS = [
             },
             {
                 name: 'retrieveOptions',
-                description: 'Properties to set on the SOAP RetrieveOptions object',
+                description:
+                    'Properties to set on the SOAP RetrieveOptions object. Set BatchSize (1..2500) here to force paged results; a value above 2500 is ignored and the default page size applies.',
                 type: 'object',
                 optional: true,
             },
             {
                 name: 'requestProps',
-                description: 'Additional request properties (e.g. QueryAllAccounts)',
+                description:
+                    'Additional request properties, e.g. QueryAllAccounts (boolean) and ContinueRequest (a RequestID string). Setting ContinueRequest to the RequestID from a prior paged retrieve fetches the next page — a retrieve-based alternative to getNextBatch.',
                 type: 'object',
                 optional: true,
             },
         ],
         returnType: 'WSProxyResult',
-        returnDescription: 'Object with Status, HasMoreRows, RequestID, and Results array.',
+        returnDescription:
+            'Object with Status, HasMoreRows, RequestID, and Results array. When a result set is paged, Status is "MoreDataAvailable" and HasMoreRows is true; the final page returns Status "OK" and HasMoreRows false.',
         syntax: '<WSProxyInstance>.retrieve(objectType, columns[, filter[, retrieveOptions[, requestProps]]])',
+        officialDocsNote:
+            'Runtime verified in an anonymous CloudPage: retrieve(objectType, columns, null, { BatchSize: 2 }, { QueryAllAccounts: false }) against a 6-row Data Extension returned a first page with Status "MoreDataAvailable", HasMoreRows true, a RequestID, and exactly 2 rows — the retrieveOptions.BatchSize argument does NOT throw the security-descriptor error that the setBatchSize() instance method throws. Continuation via the requestProps.ContinueRequest field works: setting props.ContinueRequest to the returned RequestID and calling retrieve again returned each subsequent page (3 pages of 2 rows, 6 total), with the RequestID held constant across the sequence and HasMoreRows flipping to false (Status "OK") on the final page. This is a retrieve-only paging alternative to getNextBatch. BatchSize caps at 2500; larger values are ignored.',
         example:
             'var api = new Script.Util.WSProxy();\n' +
             'var cols = ["Name", "CustomerKey", "Status"];\n' +
@@ -6495,6 +6527,7 @@ export const WSPROXY_METHODS = [
             '        Write(rows[i].Name + "<br>");\n' +
             '    }\n' +
             '}',
+        isConfirmed: true,
     },
     {
         name: 'getNextBatch',
@@ -6527,6 +6560,9 @@ export const WSPROXY_METHODS = [
             '        Write(result.Results[i].Name + "<br>");\n' +
             '    }\n' +
             '}',
+        isConfirmed: true,
+        officialDocsNote:
+            'Runtime (CloudPage) proved the full paginated continuation without ever calling setBatchSize: a natural retrieve of a Data Extension seeded with 2600 rows returned the first page with Status "MoreDataAvailable", HasMoreRows true, a RequestID, and exactly 2500 rows (the default page size); passing that objectType + RequestID to getNextBatch returned the next page with Status "OK", HasMoreRows false, and the remaining 100 rows, for a total of 2600 across two pages. Each Results row exposes a Properties array of { Name, Value } pairs. Pagination therefore happens naturally once a result set exceeds the 2500-row default page size — setBatchSize is NOT a prerequisite (and does throw in the anonymous CloudPage). Calling getNextBatch with a completed/invalid RequestID returns Status "Error: The RequestID sent through ContinueRequest does not exist." The call maps to the SOAP ContinueRequest operation.',
     },
     {
         name: 'performItem',
@@ -6544,7 +6580,8 @@ export const WSPROXY_METHODS = [
             },
             {
                 name: 'action',
-                description: 'Action to perform. Only "Start" is valid (lowercase "start" fails).',
+                description:
+                    'Action to perform, typically "Start". The verb is case-insensitive at runtime ("start" works identically to "Start").',
                 type: 'string',
                 enum: ['Start'],
             },
@@ -6556,7 +6593,12 @@ export const WSPROXY_METHODS = [
             },
         ],
         returnType: 'WSProxyResult',
-        returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
+        returnDescription:
+            'Object with Status (string, "OK" on success), StatusMessage (string, empty on success), RequestID (string) and Results (Array with a single entry for the acted-on item). The Results[0] element carries StatusCode, StatusMessage ("QueryDefinition perform called successfully"), OrdinalID, ErrorCode plus an Object (the acted-on API object) and a Task sub-object (StatusCode, StatusMessage, ID, TblAsyncID, InteractionObjectID).',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime (CloudPage) confirmed the (objectType, properties, action[, performOptions]) signature and the WSProxyResult return shape: Status/StatusMessage/RequestID plus a single-entry Results array. Against a freshly-created active QueryDefinition, both "Start" and lowercase "start" returned Status "OK" with Results[0].StatusMessage "QueryDefinition perform called successfully" — the action verb is case-insensitive, so the docs\' Enum(\'Start\') is not case-sensitive as the page previously claimed. The Results[0] element exposes StatusCode, StatusMessage, OrdinalID, ErrorCode, an Object wrapper and a Task sub-object (with InteractionObjectID); the official docs do not detail this per-item structure.',
         syntax: '<WSProxyInstance>.performItem(objectType, properties, action[, performOptions])',
         example:
             'var api = new Script.Util.WSProxy();\n' +
@@ -6579,7 +6621,8 @@ export const WSPROXY_METHODS = [
             },
             {
                 name: 'action',
-                description: 'Action to perform. Only "Start" is valid (lowercase "start" fails).',
+                description:
+                    'Action to perform, typically "Start". The verb is case-insensitive at runtime ("start" works identically to "Start").',
                 type: 'string',
                 enum: ['Start'],
             },
@@ -6591,7 +6634,12 @@ export const WSPROXY_METHODS = [
             },
         ],
         returnType: 'WSProxyResult',
-        returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
+        returnDescription:
+            'Object with Status (string, "OK" on success), StatusMessage (string, empty on success), RequestID (string) and Results (Array with one entry per input item). Each Results element carries StatusCode, StatusMessage, OrdinalID, ErrorCode plus an Object (the acted-on API object) and a Task sub-object (StatusCode, StatusMessage, InteractionObjectID, etc.).',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime (CloudPage) confirmed the (objectType, propertiesArray, action[, performOptions]) signature and the WSProxyResult return shape: Status/StatusMessage/RequestID plus a Results array with one entry per input item. Against a freshly-created active QueryDefinition, both "Start" and lowercase "start" returned Status "OK" with Results[0].StatusMessage "QueryDefinition perform called successfully" — the action verb is case-insensitive, so the docs\' Enum(\'Start\') is not case-sensitive as previously assumed. Each Results element exposes StatusCode, StatusMessage, OrdinalID, ErrorCode, an Object wrapper and a Task sub-object (with InteractionObjectID); the official docs do not detail this per-item structure.',
         syntax: '<WSProxyInstance>.performBatch(objectType, propertiesArray, action[, performOptions])',
         example:
             'var api = new Script.Util.WSProxy();\n' +
@@ -6605,45 +6653,64 @@ export const WSPROXY_METHODS = [
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Returns structural metadata (ObjectDefinition) for one or more SOAP API object types.',
+            'Returns structural metadata for one or more SOAP API object types, one ObjectDefinition per requested type.',
         params: [
             {
                 name: 'objectType',
-                description: 'Object type name or array of type names to describe',
-                type: 'string',
+                description: 'Object type name, or an array of type names, to describe',
+                type: 'string|string[]',
             },
         ],
         returnType: 'WSProxyResult',
         returnDescription:
-            'Object with Status and Results array containing ObjectDefinition entries.',
+            'Object with RequestID (string) and Results (Array). Each Results element is itself the ObjectDefinition — properties like ObjectType, Name, IsCreatable and the Properties field-definition array sit directly on Results[i], NOT under a nested Results[i].ObjectDefinition.',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs place field details at Results[0].ObjectDefinition.Properties, but at runtime each Results element is directly the ObjectDefinition (Results[0].Properties); there is no nested ObjectDefinition wrapper, and the return object exposes RequestID (not Status).',
         syntax: '<WSProxyInstance>.describe(objectType)',
         example:
             'var api = new Script.Util.WSProxy();\n' +
             'var result = api.describe("DataExtension");\n' +
-            'Write(Stringify(result.Results));',
+            'Write(Stringify(result.Results[0].Properties));',
     },
     {
         name: 'execute',
         isStatic: false,
         minArgs: 2,
         maxArgs: 2,
-        description: 'Executes a named method on a Marketing Cloud object.',
+        description:
+            'Runs a SOAP Execute request (e.g. LogUnsubEvent), passing an array of Name/Value parameter objects and the request name.',
         params: [
-            { name: 'objectType', description: 'SOAP API object type name.', type: 'string' },
+            {
+                name: 'parameters',
+                description:
+                    'Array of Name/Value parameter objects to include in the Execute call.',
+                type: 'object[]',
+            },
             {
                 name: 'requestName',
-                description: 'Name of the request to execute.',
+                description: 'Name of the Execute request to run.',
                 type: 'string',
                 enum: ['LogUnsubEvent'],
             },
         ],
         returnType: 'WSProxyResult',
-        returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
-        syntax: '<WSProxyInstance>.execute(objectType, requestName)',
+        returnDescription:
+            'Object with Status (string), RequestID (string), and a Results array of per-item ExecuteResponse objects (StatusCode, StatusMessage, OrdinalID, Results, ErrorCode).',
+        syntax: '<WSProxyInstance>.execute(parameters, requestName)',
         example:
             'var api = new Script.Util.WSProxy();\n' +
-            'var result = api.execute("DataExtensionObject", "LogUnsubEvent");\n' +
+            'var props = [\n' +
+            '    { Name: "SubscriberKey", Value: "sample@sample.com" },\n' +
+            '    { Name: "EmailAddress", Value: "sample@sample.com" },\n' +
+            '    { Name: "JobID", Value: 0 },\n' +
+            '    { Name: "ListID", Value: 0 },\n' +
+            '    { Name: "BatchID", Value: 0 }\n' +
+            '];\n' +
+            'var result = api.execute(props, "LogUnsubEvent");\n' +
             'Write(result.Status);',
+        isConfirmed: true,
     },
     {
         name: 'setBatchSize',
@@ -6665,22 +6732,33 @@ export const WSPROXY_METHODS = [
             'var api = new Script.Util.WSProxy();\n' +
             'api.setBatchSize(200);\n' +
             'var result = api.retrieve("DataExtension", ["Name"], {});',
+        isConfirmed: false,
+        verificationBlocked: true,
+        verificationBlockedReason: 'needs-auth-context',
+        officialDocsNote:
+            'The setBatchSize() INSTANCE METHOD resolves at runtime (typeof is "clrmethodinfo") but calling setBatchSize(n) in an anonymous CloudPage throws System.InvalidOperationException "Unable to retrieve security descriptor for this frame" (mscorlib), so its effect on the per-page row count could not be runtime-proven in that context; it is NOT required to paginate. Do NOT confuse this throwing instance method with the SEPARATE retrieveOptions.BatchSize argument of retrieve() (its 4th parameter): that argument is runtime-verified to work in the anonymous CloudPage — retrieve(obj, cols, null, { BatchSize: n }, props) pages cleanly (Status "MoreDataAvailable") without throwing, and requestProps.ContinueRequest continues the paging. Use retrieveOptions.BatchSize / ContinueRequest (or getNextBatch) to page; only the setBatchSize() method itself is blocked.',
     },
     {
         name: 'setClientId',
         isStatic: false,
         minArgs: 1,
         maxArgs: 1,
-        description: 'Sets the business unit MID for cross-account operations.',
+        description:
+            'Sets a ClientId (impersonation) context on the WSProxy instance so subsequent operations run against another business unit. Pass an object with the MID under the "ID" key (and optionally "UserID"); the calling context must have access to the target BU.',
         params: [
             {
-                name: 'clientId',
-                description: 'Object containing the MID of the target business unit',
+                name: 'options',
+                description:
+                    'Object with the target ClientId properties; at least the "ID" key (target BU MID) is expected, "UserID" is optional.',
                 type: 'object',
             },
         ],
-        returnType: 'void',
-        syntax: '<WSProxyInstance>.setClientId(clientId)',
+        returnType: 'null',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs document setClientId() as returning void, but at runtime it returns a genuine null (=== null), not undefined.',
+        syntax: '<WSProxyInstance>.setClientId(options)',
         example:
             'var api = new Script.Util.WSProxy();\n' +
             'api.setClientId({ ID: 12345 }); // target child BU by MID\n' +
@@ -6694,7 +6772,11 @@ export const WSPROXY_METHODS = [
         description:
             'Clears all client IDs set on the WSProxy instance, reverting to the default execution context credentials.',
         params: [],
-        returnType: 'void',
+        returnType: 'null',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs document resetClientIds() as returning void, but at runtime it returns a genuine null (=== null), not undefined.',
         syntax: '<WSProxyInstance>.resetClientIds()',
         example:
             'var api = new Script.Util.WSProxy();\n' +
@@ -6707,7 +6789,8 @@ export const WSPROXY_METHODS = [
         name: 'createBatch',
         isStatic: false,
         minArgs: 2,
-        maxArgs: 2,
+        maxArgs: 3,
+        isConfirmed: true,
         description: 'Creates multiple Marketing Cloud objects in a single SOAP API call.',
         params: [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
@@ -6716,10 +6799,18 @@ export const WSPROXY_METHODS = [
                 description: 'Array of property objects to create',
                 type: 'array',
             },
+            {
+                name: 'createOptions',
+                description:
+                    'Optional SOAP CreateOptions object (e.g. RequestType, QueuePriority).',
+                type: 'object',
+                optional: true,
+            },
         ],
         returnType: 'WSProxyResult',
-        returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
-        syntax: '<WSProxyInstance>.createBatch(objectType, propertiesArray)',
+        returnDescription:
+            'Object with Status (string, e.g. "OK"), RequestID (string GUID), and a Results array holding one entry per input object (each with StatusCode, StatusMessage, NewObjectID, Object, etc.).',
+        syntax: '<WSProxyInstance>.createBatch(objectType, propertiesArray[, createOptions])',
         example:
             'var api = new Script.Util.WSProxy();\n' +
             'var items = [\n' +
@@ -6733,7 +6824,8 @@ export const WSPROXY_METHODS = [
         name: 'updateBatch',
         isStatic: false,
         minArgs: 2,
-        maxArgs: 2,
+        maxArgs: 3,
+        isConfirmed: true,
         description: 'Updates multiple Marketing Cloud objects in a single SOAP API call.',
         params: [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
@@ -6742,14 +6834,21 @@ export const WSPROXY_METHODS = [
                 description: 'Array of property objects to update',
                 type: 'array',
             },
+            {
+                name: 'updateOptions',
+                description: 'Optional SOAP UpdateOptions object (e.g. { SaveOptions: [...] })',
+                type: 'object',
+                optional: true,
+            },
         ],
         returnType: 'WSProxyResult',
-        returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
-        syntax: '<WSProxyInstance>.updateBatch(objectType, propertiesArray)',
+        returnDescription:
+            'Object with Status, RequestID, and a Results array (one entry per input item). Each Results entry carries StatusCode, StatusMessage, OrdinalID, ErrorCode, and an Object wrapper.',
+        syntax: '<WSProxyInstance>.updateBatch(objectType, propertiesArray[, updateOptions])',
         example:
             'var api = new Script.Util.WSProxy();\n' +
             'var items = [\n' +
-            '    { CustomerKey: "MyDE", Keys: { Key: [{ Name: "Email", Value: "a@example.com" }] }, Properties: { Property: [{ Name: "Status", Value: "active" }] } }\n' +
+            '    { CustomerKey: "MyDE", Keys: [{ Name: "Email", Value: "a@example.com" }], Properties: [{ Name: "Status", Value: "active" }] }\n' +
             '];\n' +
             'var result = api.updateBatch("DataExtensionObject", items);\n' +
             'Write(result.Status);',
@@ -6758,19 +6857,28 @@ export const WSPROXY_METHODS = [
         name: 'deleteBatch',
         isStatic: false,
         minArgs: 2,
-        maxArgs: 2,
+        maxArgs: 3,
+        isConfirmed: true,
         description: 'Deletes multiple Marketing Cloud objects in a single SOAP API call.',
         params: [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
             {
                 name: 'propertiesArray',
-                description: 'Array of property objects to delete',
+                description: 'Array of property objects identifying each object to delete',
                 type: 'array',
+            },
+            {
+                name: 'deleteOptions',
+                description:
+                    'Optional SOAP DeleteOptions object (e.g. RequestType, QueuePriority).',
+                type: 'object',
+                optional: true,
             },
         ],
         returnType: 'WSProxyResult',
-        returnDescription: 'Object with Status, StatusMessage, RequestID, and Results array.',
-        syntax: '<WSProxyInstance>.deleteBatch(objectType, propertiesArray)',
+        returnDescription:
+            'Object with Status (string, e.g. "OK"), RequestID (string GUID), and a Results array holding one entry per input object (each with StatusCode, StatusMessage, ErrorCode, Object, etc.). There is no top-level StatusMessage.',
+        syntax: '<WSProxyInstance>.deleteBatch(objectType, propertiesArray[, deleteOptions])',
         example:
             'var api = new Script.Util.WSProxy();\n' +
             'var items = [\n' +
@@ -7496,6 +7604,7 @@ export const SCRIPT_UTIL_CONSTRUCTORS = [
             'if (result.Status === "OK") {\n' +
             '    Write(Stringify(result.Results));\n' +
             '}',
+        isConfirmed: true,
     },
     {
         name: 'HttpRequest',
@@ -7832,7 +7941,7 @@ export const WSPROXY_RESULT_PROPERTIES = [
     { name: 'RequestID', type: 'string', description: 'Server-assigned request identifier.' },
     {
         name: 'Results',
-        type: 'any[]',
+        type: 'WspResult[]',
         description: 'Array of per-object result entries (or retrieved rows for retrieve()).',
     },
     {
@@ -7847,6 +7956,61 @@ export const WSPROXY_RESULT_PROPERTIES = [
         type: 'string',
         optional: true,
         description: 'Human-readable status message when present.',
+    },
+];
+
+// ── WSProxy per-item result entry shape ─────────────────────────────────────
+// Shape of each entry in the `Results` array returned by the CRUD/perform
+// methods (createItem/createBatch/updateItem/updateBatch/deleteItem/deleteBatch/
+// performItem/performBatch). Runtime-proven on live CloudPages. For retrieve()/
+// getNextBatch(), `Results` instead holds retrieved rows, so entries are typed as
+// `WspResult` loosely (extra row fields are permitted via the index signature).
+// Emitted in the generated .d.ts as `interface WspResult`.
+
+/** @type {{name: string, type: string, optional?: boolean, description: string}[]} */
+export const WSP_RESULT_ENTRY_PROPERTIES = [
+    {
+        name: 'StatusCode',
+        type: 'string',
+        optional: true,
+        description: 'Per-item status: "OK" or "Error".',
+    },
+    {
+        name: 'StatusMessage',
+        type: 'string',
+        optional: true,
+        description: 'Per-item human-readable status message.',
+    },
+    {
+        name: 'OrdinalID',
+        type: 'number',
+        optional: true,
+        description: 'Zero-based index of the input item this entry corresponds to.',
+    },
+    {
+        name: 'ErrorCode',
+        type: 'string',
+        optional: true,
+        description: 'Error code when the item failed; absent/empty on success.',
+    },
+    {
+        name: 'NewID',
+        type: 'number',
+        optional: true,
+        description: 'Server-assigned ID of a newly created object, when applicable.',
+    },
+    {
+        name: 'Object',
+        type: 'object',
+        optional: true,
+        description: 'Wrapper carrying the affected object as returned by the API.',
+    },
+    {
+        name: 'Task',
+        type: 'object',
+        optional: true,
+        description:
+            'perform-only: async task descriptor (carries InteractionObjectID). Present for performItem()/performBatch().',
     },
 ];
 
