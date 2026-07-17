@@ -4497,6 +4497,7 @@ interface String {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/charAt) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
+     * @remarks ⚠️ Out-of-range indices are broken in the SFMC engine: instead of the spec-mandated empty string "", str.charAt(i) for i >= str.length returns the LAST character of the string (e.g. "Hello".charAt(99) returns "o"). Guard the index against str.length before calling. Bracket access str[i] for an out-of-range index throws "Index was outside the bounds of the array" rather than returning undefined.
      * @param index - Zero-based character index
      * @example
      * var str = "Hello";
@@ -4688,7 +4689,7 @@ interface Number {
      */
     toFixed(fractionDigits?: number): string;
     /**
-     * Returns a string representing the number in exponential notation. If fractionDigits is omitted, enough digits are included to uniquely identify the value.
+     * Returns a string representing the number in exponential notation. When fractionDigits is omitted the SFMC Jint engine pads the significand with trailing zeros (e.g. (3.14159).toExponential() → "3.1415900000000000e+0") instead of the minimal form standard JS produces. Always pass an explicit fractionDigits argument for predictable output.
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toExponential) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
      *
@@ -4707,6 +4708,27 @@ interface Number {
      * Write((123.456).toPrecision(5)); // "123.46"
      */
     toPrecision(precision?: number): string;
+    /**
+     * Returns a string representing the number. In the SFMC Jint engine the optional radix only supports 2, 8, 10, and 16 — any other base throws "Invalid Base." (standard JS supports 2–36). Fractional values are truncated to their integer part before non-decimal conversion.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
+     *
+     * @param radix - Base for the conversion. SFMC only accepts 2, 8, 10, or 16; other values throw "Invalid Base."
+     * @example
+     * Write((255).toString(16)); // "ff"
+     * Write((255).toString(2)); // "11111111"
+     * // (35).toString(36) throws "Invalid Base." in SFMC
+     */
+    toString(radix?: number): string;
+    /**
+     * Returns the primitive number value of a Number object.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/valueOf) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
+     *
+     * @example
+     * Write((42).valueOf()); // 42
+     */
+    valueOf(): number;
 }
 
 interface Object {
@@ -4723,6 +4745,27 @@ interface Object {
      * }
      */
     hasOwnProperty(v: string): boolean;
+    /**
+     * Returns a string representation of the object. For a plain object it returns "[object Object]". Object.prototype.toString.call(value) is the standard type-tag test (e.g. "[object Array]").
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/toString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/object-methods/)
+     *
+     * @example
+     * var obj = {a: 1};
+     * Write(obj.toString()); // "[object Object]"
+     * Write(Object.prototype.toString.call([])); // "[object Array]"
+     */
+    toString(): string;
+    /**
+     * Returns the primitive value of the object. For a plain object it returns the object itself.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/valueOf) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/object-methods/)
+     *
+     * @example
+     * var obj = {a: 1};
+     * Write(obj.valueOf() === obj); // true
+     */
+    valueOf(): object;
 }
 
 interface Date {
@@ -4867,6 +4910,96 @@ interface Date {
      * Write(d.valueOf()); // 0
      */
     valueOf(): number;
+    /**
+     * Returns the four-digit year of the date according to universal time (UTC).
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCFullYear) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
+     * @example
+     * var d = new Date(0);
+     * Write(d.getUTCFullYear()); // 1970
+     */
+    getUTCFullYear(): number;
+    /**
+     * Returns the month (0 = January … 11 = December) of the date according to universal time (UTC).
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCMonth) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
+     * @example
+     * var d = new Date(0);
+     * Write(d.getUTCMonth()); // 0
+     */
+    getUTCMonth(): number;
+    /**
+     * Returns the day of the month (1–31) of the date according to universal time (UTC).
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCDate) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
+     * @example
+     * var d = new Date(0);
+     * Write(d.getUTCDate()); // 1
+     */
+    getUTCDate(): number;
+    /**
+     * Returns the day of the week (0 = Sunday … 6 = Saturday) according to universal time (UTC).
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCDay) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
+     * @example
+     * var d = new Date(0);
+     * Write(d.getUTCDay()); // 4 (Thursday)
+     */
+    getUTCDay(): number;
+    /**
+     * Returns the hour (0–23) of the date according to universal time (UTC).
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCHours) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
+     * @example
+     * var d = new Date(0);
+     * Write(d.getUTCHours()); // 0
+     */
+    getUTCHours(): number;
+    /**
+     * Returns the minutes (0–59) of the date according to universal time (UTC).
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCMinutes) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
+     * @example
+     * var d = new Date(0);
+     * Write(d.getUTCMinutes()); // 0
+     */
+    getUTCMinutes(): number;
+    /**
+     * Returns the seconds (0–59) of the date according to universal time (UTC).
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCSeconds) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
+     * @example
+     * var d = new Date(0);
+     * Write(d.getUTCSeconds()); // 0
+     */
+    getUTCSeconds(): number;
+    /**
+     * Returns the milliseconds (0–999) of the date according to universal time (UTC).
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCMilliseconds) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
+     * @example
+     * var d = new Date(0);
+     * Write(d.getUTCMilliseconds()); // 0
+     */
+    getUTCMilliseconds(): number;
+    /**
+     * Returns the time portion of the date as a human-readable string.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toTimeString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
+     * @example
+     * var d = new Date(0);
+     * Write(d.toTimeString());
+     */
+    toTimeString(): string;
 }
 
 declare namespace Math {
@@ -5138,7 +5271,7 @@ interface RegExp {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/regular-expressions/)
      *
-     * @remarks ⚠️ In the SFMC engine capture groups are broken: result[0] (the full match) works, but result[1], result[2], … are undefined. Likewise the g-flag lastIndex does not advance between calls. Use the full match plus String.split/substring to extract sub-parts instead of capture groups.
+     * @remarks ⚠️ In the SFMC engine capture groups are broken: result[0] (the full match), result.index, and result.input work, but result[1], result[2], … are undefined. result.length is always 3 regardless of group count, so it cannot be used to count captures. Likewise the g-flag lastIndex does not advance between calls. Use the full match plus String.split/substring to extract sub-parts instead of capture groups.
      * @param string - The string to search
      * @example
      * var re = /\d{4}-\d{2}-\d{2}/;
@@ -5173,7 +5306,7 @@ interface RegExp {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/lastIndex) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/regular-expressions/)
      *
-     * @remarks ⚠️ In the SFMC engine lastIndex does NOT advance after exec()/test() with the g flag, so it cannot be used to iterate matches. Use String.match(/.../g) to get all matches at once instead.
+     * @remarks ⚠️ In the SFMC engine lastIndex does NOT advance after exec()/test() with the g flag, so it cannot be used to iterate matches. Setting lastIndex manually is also ignored — the next exec() still matches from the start. Use String.match(/.../g) to get all matches at once instead.
      * @example
      * var re = /\d+/g;
      * re.exec("abc 123 def 456");
@@ -5208,6 +5341,17 @@ interface Function {
      * var r = sum.apply(null, [2, 3]); // 5
      */
     apply(thisArg: any, argsArray?: any[]): any;
+    /**
+     * Returns a string representing the function. In the SFMC engine this returns the generic "[object Function]" tag, NOT the function source code the spec produces.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/toString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/function-methods/)
+     *
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: unlike standard JavaScript (which returns the function source), fn.toString() returns the generic "[object Function]" object tag in the SFMC Jint engine. String(fn) / ("" + fn) yield "function" instead. Do not rely on function source introspection.
+     * @example
+     * function greet() {}
+     * Write(greet.toString()); // "[object Function]" in SFMC (not the source)
+     */
+    toString(): string;
 }
 
 // Global ECMAScript functions
@@ -5319,6 +5463,16 @@ interface ObjectConstructor {
      * Write(o.x); // 42
      */
     defineProperty(obj: object, prop: string, descriptor: object): object;
+    /**
+     * Returns the prototype (internal [[Prototype]]) of the specified object. Runtime-verified working in SFMC SSJS.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/object-methods/)
+     *
+     * @param obj - The object whose prototype to return
+     * @example
+     * var proto = Object.getPrototypeOf({ a: 1 }); // returns the object prototype
+     */
+    getPrototypeOf(obj: object): object;
     readonly prototype: Object;
 }
 declare var Object: ObjectConstructor;
@@ -5331,6 +5485,7 @@ interface DateConstructor {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/UTC) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ⚠️ Runtime-verified: with year + month (and beyond) it returns the correct UTC timestamp, but the year-only form Date.UTC(2026) returns a nonsense small number (observed -21597974) instead of treating the month as 0 — always pass at least year and month, e.g. Date.UTC(2026, 0, 1).
      * @param year - Full year
      * @param month - Month (0–11)
      * @param day - Day of the month (1–31)
@@ -5343,24 +5498,26 @@ interface DateConstructor {
      */
     UTC(year: number, month?: number, day?: number, hours?: number, minutes?: number, seconds?: number, milliseconds?: number): number;
     /**
-     * Parses a date string and returns the numeric timestamp (milliseconds since the Unix epoch), or NaN if the string cannot be parsed.
+     * Parses a date string and returns the numeric timestamp (milliseconds since the Unix epoch). In the SFMC engine an unparseable string returns 0 (the epoch), NOT NaN as the spec requires.
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ⚠️ Runtime-verified: unlike the spec, an unparseable or invalid string (e.g. "garbage", "", "2021-13-45") returns 0 — the Unix epoch — instead of NaN, so isNaN() cannot detect a bad date and invalid input silently becomes 1970-01-01. Also, a date-only ISO string such as "2026-06-18" is parsed as LOCAL midnight, not UTC (contrary to the ES5+ spec). Validate input yourself; do not rely on NaN for error detection.
      * @param dateString - A date string (ISO 8601 is the most portable form)
      * @example
      * Write(Date.parse('2021-01-01T00:00:00Z')); // 1609459200000
      */
     parse(dateString: string): number;
     /**
-     * Returns the current time as the numeric timestamp (milliseconds since the Unix epoch).
+     * Returns the current time. In the SFMC engine this returns a Date OBJECT, not a numeric timestamp as the spec requires — coerce it (+Date.now() or new Date().getTime()) to get epoch milliseconds.
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ⚠️ Runtime-verified: unlike the spec (which returns a Number), Date.now() returns a Date object (typeof "object") that stringifies to a date-time string. Numeric coercion (Date.now() + 0, Date.now() * 1) yields the epoch milliseconds, but code expecting a number will break. Prefer new Date().getTime(), which returns a clean number.
      * @example
-     * var ms = Date.now(); // current epoch milliseconds
+     * var ms = new Date().getTime(); // clean epoch milliseconds (Date.now() returns a Date object in SFMC)
      */
-    now(): number;
+    now(): object;
     readonly prototype: Date;
 }
 declare var Date: DateConstructor;

@@ -8028,6 +8028,7 @@ export const ECMASCRIPT_BUILTINS = [
         owner: 'String.prototype',
         esVersion: 3,
         description: 'Returns the character at the specified index.',
+        caveat: 'Out-of-range indices are broken in the SFMC engine: instead of the spec-mandated empty string "", str.charAt(i) for i >= str.length returns the LAST character of the string (e.g. "Hello".charAt(99) returns "o"). Guard the index against str.length before calling. Bracket access str[i] for an out-of-range index throws "Index was outside the bounds of the array" rather than returning undefined.',
         params: [{ name: 'index', description: 'Zero-based character index', type: 'number' }],
         returnType: 'string',
         syntax: 'String.charAt(index)',
@@ -8528,7 +8529,9 @@ export const ECMASCRIPT_BUILTINS = [
         esVersion: 3,
         description:
             'Returns a string representing the number in exponential notation. ' +
-            'If fractionDigits is omitted, enough digits are included to uniquely identify the value.',
+            'When fractionDigits is omitted the SFMC Jint engine pads the significand with trailing zeros ' +
+            '(e.g. (3.14159).toExponential() → "3.1415900000000000e+0") instead of the minimal form standard JS produces. ' +
+            'Always pass an explicit fractionDigits argument for predictable output.',
         params: [
             {
                 name: 'fractionDigits',
@@ -8559,6 +8562,36 @@ export const ECMASCRIPT_BUILTINS = [
         syntax: 'Number.toPrecision([precision])',
         example: 'Write((123.456).toPrecision(5)); // "123.46"',
     },
+    {
+        name: 'toString',
+        owner: 'Number.prototype',
+        esVersion: 3,
+        description:
+            'Returns a string representing the number. In the SFMC Jint engine the optional radix only supports 2, 8, 10, and 16 — any other base throws "Invalid Base." (standard JS supports 2–36). Fractional values are truncated to their integer part before non-decimal conversion.',
+        params: [
+            {
+                name: 'radix',
+                description:
+                    'Base for the conversion. SFMC only accepts 2, 8, 10, or 16; other values throw "Invalid Base."',
+                type: 'number',
+                optional: true,
+            },
+        ],
+        returnType: 'string',
+        syntax: 'Number.toString([radix])',
+        example:
+            'Write((255).toString(16)); // "ff"\nWrite((255).toString(2)); // "11111111"\n// (35).toString(36) throws "Invalid Base." in SFMC',
+    },
+    {
+        name: 'valueOf',
+        owner: 'Number.prototype',
+        esVersion: 3,
+        description: 'Returns the primitive number value of a Number object.',
+        params: [],
+        returnType: 'number',
+        syntax: 'Number.valueOf()',
+        example: 'Write((42).valueOf()); // 42',
+    },
     // ── Object.prototype ─────────────────────────────────────────────────────
     {
         name: 'hasOwnProperty',
@@ -8575,6 +8608,32 @@ export const ECMASCRIPT_BUILTINS = [
             'for (var key in obj) {\n' +
             '    if (obj.hasOwnProperty(key)) { Write(key); }\n' +
             '}',
+    },
+    {
+        name: 'toString',
+        owner: 'Object.prototype',
+        esVersion: 3,
+        description:
+            'Returns a string representation of the object. For a plain object it returns "[object Object]". ' +
+            'Object.prototype.toString.call(value) is the standard type-tag test (e.g. "[object Array]").',
+        params: [],
+        returnType: 'string',
+        syntax: 'Object.toString()',
+        example:
+            'var obj = {a: 1};\n' +
+            'Write(obj.toString()); // "[object Object]"\n' +
+            'Write(Object.prototype.toString.call([])); // "[object Array]"',
+    },
+    {
+        name: 'valueOf',
+        owner: 'Object.prototype',
+        esVersion: 3,
+        description:
+            'Returns the primitive value of the object. For a plain object it returns the object itself.',
+        params: [],
+        returnType: 'object',
+        syntax: 'Object.valueOf()',
+        example: 'var obj = {a: 1};\nWrite(obj.valueOf() === obj); // true',
     },
     // ── Global functions ─────────────────────────────────────────────────────
     {
@@ -8719,7 +8778,7 @@ export const ECMASCRIPT_BUILTINS = [
             'or null if no match is found. ' +
             'The array also has index and input properties. ' +
             'When the g flag is set, successive calls advance lastIndex.',
-        caveat: 'In the SFMC engine capture groups are broken: result[0] (the full match) works, but result[1], result[2], … are undefined. Likewise the g-flag lastIndex does not advance between calls. Use the full match plus String.split/substring to extract sub-parts instead of capture groups.',
+        caveat: 'In the SFMC engine capture groups are broken: result[0] (the full match), result.index, and result.input work, but result[1], result[2], … are undefined. result.length is always 3 regardless of group count, so it cannot be used to count captures. Likewise the g-flag lastIndex does not advance between calls. Use the full match plus String.split/substring to extract sub-parts instead of capture groups.',
         params: [
             {
                 name: 'string',
@@ -8771,7 +8830,7 @@ export const ECMASCRIPT_BUILTINS = [
             'The index at which to start the next match. ' +
             'Only relevant when the g or y flag is set. ' +
             'Automatically updated by exec() and test().',
-        caveat: 'In the SFMC engine lastIndex does NOT advance after exec()/test() with the g flag, so it cannot be used to iterate matches. Use String.match(/.../g) to get all matches at once instead.',
+        caveat: 'In the SFMC engine lastIndex does NOT advance after exec()/test() with the g flag, so it cannot be used to iterate matches. Setting lastIndex manually is also ignored — the next exec() still matches from the start. Use String.match(/.../g) to get all matches at once instead.',
         params: [],
         returnType: 'number',
         syntax: 'RegExp.lastIndex',
@@ -8928,6 +8987,100 @@ export const ECMASCRIPT_BUILTINS = [
         syntax: 'Date.valueOf()',
         example: 'var d = new Date(0);\nWrite(d.valueOf()); // 0',
     },
+    {
+        name: 'getUTCFullYear',
+        owner: 'Date.prototype',
+        esVersion: 3,
+        description: 'Returns the four-digit year of the date according to universal time (UTC).',
+        params: [],
+        returnType: 'number',
+        syntax: 'Date.getUTCFullYear()',
+        example: 'var d = new Date(0);\nWrite(d.getUTCFullYear()); // 1970',
+    },
+    {
+        name: 'getUTCMonth',
+        owner: 'Date.prototype',
+        esVersion: 3,
+        description:
+            'Returns the month (0 = January … 11 = December) of the date according to universal time (UTC).',
+        params: [],
+        returnType: 'number',
+        syntax: 'Date.getUTCMonth()',
+        example: 'var d = new Date(0);\nWrite(d.getUTCMonth()); // 0',
+    },
+    {
+        name: 'getUTCDate',
+        owner: 'Date.prototype',
+        esVersion: 3,
+        description:
+            'Returns the day of the month (1–31) of the date according to universal time (UTC).',
+        params: [],
+        returnType: 'number',
+        syntax: 'Date.getUTCDate()',
+        example: 'var d = new Date(0);\nWrite(d.getUTCDate()); // 1',
+    },
+    {
+        name: 'getUTCDay',
+        owner: 'Date.prototype',
+        esVersion: 3,
+        description:
+            'Returns the day of the week (0 = Sunday … 6 = Saturday) according to universal time (UTC).',
+        params: [],
+        returnType: 'number',
+        syntax: 'Date.getUTCDay()',
+        example: 'var d = new Date(0);\nWrite(d.getUTCDay()); // 4 (Thursday)',
+    },
+    {
+        name: 'getUTCHours',
+        owner: 'Date.prototype',
+        esVersion: 3,
+        description: 'Returns the hour (0–23) of the date according to universal time (UTC).',
+        params: [],
+        returnType: 'number',
+        syntax: 'Date.getUTCHours()',
+        example: 'var d = new Date(0);\nWrite(d.getUTCHours()); // 0',
+    },
+    {
+        name: 'getUTCMinutes',
+        owner: 'Date.prototype',
+        esVersion: 3,
+        description: 'Returns the minutes (0–59) of the date according to universal time (UTC).',
+        params: [],
+        returnType: 'number',
+        syntax: 'Date.getUTCMinutes()',
+        example: 'var d = new Date(0);\nWrite(d.getUTCMinutes()); // 0',
+    },
+    {
+        name: 'getUTCSeconds',
+        owner: 'Date.prototype',
+        esVersion: 3,
+        description: 'Returns the seconds (0–59) of the date according to universal time (UTC).',
+        params: [],
+        returnType: 'number',
+        syntax: 'Date.getUTCSeconds()',
+        example: 'var d = new Date(0);\nWrite(d.getUTCSeconds()); // 0',
+    },
+    {
+        name: 'getUTCMilliseconds',
+        owner: 'Date.prototype',
+        esVersion: 3,
+        description:
+            'Returns the milliseconds (0–999) of the date according to universal time (UTC).',
+        params: [],
+        returnType: 'number',
+        syntax: 'Date.getUTCMilliseconds()',
+        example: 'var d = new Date(0);\nWrite(d.getUTCMilliseconds()); // 0',
+    },
+    {
+        name: 'toTimeString',
+        owner: 'Date.prototype',
+        esVersion: 3,
+        description: 'Returns the time portion of the date as a human-readable string.',
+        params: [],
+        returnType: 'string',
+        syntax: 'Date.toTimeString()',
+        example: 'var d = new Date(0);\nWrite(d.toTimeString());',
+    },
     // ── Date statics ───────────────────────────────────────────────────────────
     {
         name: 'UTC',
@@ -8951,6 +9104,7 @@ export const ECMASCRIPT_BUILTINS = [
             },
         ],
         returnType: 'number',
+        caveat: 'Runtime-verified: with year + month (and beyond) it returns the correct UTC timestamp, but the year-only form Date.UTC(2026) returns a nonsense small number (observed -21597974) instead of treating the month as 0 — always pass at least year and month, e.g. Date.UTC(2026, 0, 1).',
         syntax: 'Date.UTC(year[, month[, day[, hours[, minutes[, seconds[, ms]]]]]])',
         example: 'Write(Date.UTC(1970, 0, 1)); // 0',
     },
@@ -8960,7 +9114,7 @@ export const ECMASCRIPT_BUILTINS = [
         esVersion: 3,
         isStatic: true,
         description:
-            'Parses a date string and returns the numeric timestamp (milliseconds since the Unix epoch), or NaN if the string cannot be parsed.',
+            'Parses a date string and returns the numeric timestamp (milliseconds since the Unix epoch). In the SFMC engine an unparseable string returns 0 (the epoch), NOT NaN as the spec requires.',
         params: [
             {
                 name: 'dateString',
@@ -8969,6 +9123,7 @@ export const ECMASCRIPT_BUILTINS = [
             },
         ],
         returnType: 'number',
+        caveat: 'Runtime-verified: unlike the spec, an unparseable or invalid string (e.g. "garbage", "", "2021-13-45") returns 0 — the Unix epoch — instead of NaN, so isNaN() cannot detect a bad date and invalid input silently becomes 1970-01-01. Also, a date-only ISO string such as "2026-06-18" is parsed as LOCAL midnight, not UTC (contrary to the ES5+ spec). Validate input yourself; do not rely on NaN for error detection.',
         syntax: 'Date.parse(dateString)',
         example: "Write(Date.parse('2021-01-01T00:00:00Z')); // 1609459200000",
     },
@@ -8978,11 +9133,13 @@ export const ECMASCRIPT_BUILTINS = [
         esVersion: 5,
         isStatic: true,
         description:
-            'Returns the current time as the numeric timestamp (milliseconds since the Unix epoch).',
+            'Returns the current time. In the SFMC engine this returns a Date OBJECT, not a numeric timestamp as the spec requires — coerce it (+Date.now() or new Date().getTime()) to get epoch milliseconds.',
         params: [],
-        returnType: 'number',
+        returnType: 'object',
+        caveat: 'Runtime-verified: unlike the spec (which returns a Number), Date.now() returns a Date object (typeof "object") that stringifies to a date-time string. Numeric coercion (Date.now() + 0, Date.now() * 1) yields the epoch milliseconds, but code expecting a number will break. Prefer new Date().getTime(), which returns a clean number.',
         syntax: 'Date.now()',
-        example: 'var ms = Date.now(); // current epoch milliseconds',
+        example:
+            'var ms = new Date().getTime(); // clean epoch milliseconds (Date.now() returns a Date object in SFMC)',
     },
     // ── Object statics ─────────────────────────────────────────────────────────
     {
@@ -9011,10 +9168,32 @@ export const ECMASCRIPT_BUILTINS = [
         example:
             'var o = {};\nObject.defineProperty(o, "x", { value: 42, enumerable: true });\nWrite(o.x); // 42',
     },
+    {
+        name: 'getPrototypeOf',
+        owner: 'Object',
+        esVersion: 5,
+        isStatic: true,
+        description:
+            'Returns the prototype (internal [[Prototype]]) of the specified object. Runtime-verified working in SFMC SSJS.',
+        params: [
+            {
+                name: 'obj',
+                description: 'The object whose prototype to return',
+                type: 'object',
+            },
+        ],
+        returnType: 'object',
+        syntax: 'Object.getPrototypeOf(obj)',
+        example: 'var proto = Object.getPrototypeOf({ a: 1 }); // returns the object prototype',
+    },
     // ── Function.prototype ─────────────────────────────────────────────────────
     // call() and apply() are ES3 and confirmed working in SFMC SSJS (verified on a
     // CloudPage). bind() is ES5 and is NOT available — and Function.prototype is sealed,
     // so it cannot be installed. Use a standalone helper instead (see POLYFILLABLE_METHODS).
+    // Runtime-verified extras: toString() returns "[object Function]" not source (differs);
+    // .length THROWS a null-reference error, .name and .caller are undefined, and
+    // fn.constructor === Function is false (all in KNOWN_UNSUPPORTED / differs-from-docs).
+    // The `arguments` object and the Function() constructor DO work.
     {
         name: 'call',
         owner: 'Function.prototype',
@@ -9063,6 +9242,21 @@ export const ECMASCRIPT_BUILTINS = [
         returnType: 'any',
         syntax: 'fn.apply(thisArg[, argsArray])',
         example: 'function sum(a, b) { return a + b; }\nvar r = sum.apply(null, [2, 3]); // 5',
+    },
+    {
+        name: 'toString',
+        owner: 'Function.prototype',
+        esVersion: 3,
+        description:
+            'Returns a string representing the function. In the SFMC engine this returns the generic "[object Function]" tag, NOT the function source code the spec produces.',
+        params: [],
+        returnType: 'string',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified: unlike standard JavaScript (which returns the function source), fn.toString() returns the generic "[object Function]" object tag in the SFMC Jint engine. String(fn) / ("" + fn) yield "function" instead. Do not rely on function source introspection.',
+        syntax: 'fn.toString()',
+        example:
+            'function greet() {}\nWrite(greet.toString()); // "[object Function]" in SFMC (not the source)',
     },
 ];
 
@@ -9735,7 +9929,7 @@ export const POLYFILLABLE_METHODS = [
         category: 'broken',
         ambiguousWithString: false,
         description:
-            'Array.prototype.splice(start, deleteCount, item1, …, itemN) works correctly in SFMC SSJS for the delete-only form (splice(start) and splice(start, deleteCount)). The bug surfaces only when inserting items: as soon as a third argument (item1) is passed, the engine ignores start and deleteCount and just overwrites from the left with the items to insert. A polyfill is needed only if you insert items; it also accepts unlimited additional items.',
+            'Array.prototype.splice(start, deleteCount, item1, …, itemN) works in SFMC SSJS only for the two-argument delete form splice(start, deleteCount) (deleteCount may exceed the remaining length). The one-argument form splice(start) throws "Index was outside the bounds of the array." The insert form is also broken: as soon as a third argument (item1) is passed, the engine ignores start and deleteCount and just overwrites from the left with the items to insert. A polyfill is needed for the one-argument delete form and for any insert; it also accepts unlimited additional items. Verified on a CloudPage.',
         polyfill:
             '/**\n' +
             ' * Polyfill for Array.prototype.splice (SFMC SSJS).\n' +
@@ -9869,26 +10063,6 @@ export const POLYFILLABLE_METHODS = [
             '}',
     },
     {
-        method: 'getPrototypeOf',
-        owner: 'Object',
-        esVersion: 5,
-        isStatic: true,
-        category: 'broken',
-        ambiguousWithString: false,
-        description:
-            'Object.getPrototypeOf exists in SFMC SSJS but throws at runtime, so it cannot be used. Access the constructor prototype directly or use a known reference instead.',
-        polyfill:
-            '/**\n' +
-            ' * Polyfill for Object.getPrototypeOf (SFMC SSJS).\n' +
-            ' * @param {object} obj - the object whose prototype to return\n' +
-            ' * @returns {object|null} the prototype, or null\n' +
-            ' */\n' +
-            'Object.getPrototypeOf = function (obj) {\n' +
-            '    if (obj === null || obj === undefined) { return null; }\n' +
-            '    return obj.constructor ? obj.constructor.prototype : null;\n' +
-            '};',
-    },
-    {
         method: 'isArray',
         owner: 'Array',
         esVersion: 5,
@@ -9960,7 +10134,7 @@ export const POLYFILLABLE_METHODS = [
         category: 'broken',
         ambiguousWithString: true,
         description:
-            'Array.prototype.slice exists in SFMC SSJS but the no-argument form throws and negative indices throw "Arithmetic operation resulted in an overflow." This polyfill reimplements slice in pure JS (avoiding the bitwise coercion that overflows on negatives) so slice(), slice(-2), and slice(1, -1) all work. Verified on a CloudPage.',
+            'Array.prototype.slice exists in SFMC SSJS and handles positive and negative indices correctly (slice(1, 3), slice(-2), slice(1, -1) all work), but the no-argument form slice() throws "Index was outside the bounds of the array." This polyfill reimplements slice in pure JS so slice() (whole-array copy) also works; always pass at least a start index (e.g. slice(0)) if you avoid the polyfill. Verified on a CloudPage.',
         polyfill:
             '/**\n' +
             ' * Polyfill for Array.prototype.slice (SFMC SSJS).\n' +
@@ -10192,7 +10366,52 @@ export const KNOWN_UNSUPPORTED = [
         suggestion:
             'RegExp.prototype.multiline is undefined in SFMC. Track the m flag yourself when constructing the RegExp.',
     },
-    // ── Confirmed-missing Date member ────────────────────────────────────────
+    {
+        member: 'instanceof',
+        owner: 'RegExp',
+        esVersion: 3,
+        isStatic: false,
+        isProperty: false,
+        category: 'broken',
+        hasPolyfill: false,
+        suggestion:
+            'The instanceof operator against RegExp is broken in SFMC: `re instanceof RegExp` always returns false, even for objects created with `new RegExp(...)`. Use `re.constructor === RegExp` instead (that comparison works correctly).',
+    },
+    // ── Function.prototype members missing/broken in SFMC ────────────────────
+    {
+        member: 'length',
+        owner: 'Function.prototype',
+        esVersion: 3,
+        isStatic: false,
+        isProperty: true,
+        category: 'broken',
+        hasPolyfill: false,
+        suggestion:
+            'fn.length throws "Object reference not set to an instance of an object." in SFMC (does not return the declared argument count). hasOwnProperty("length") is false. Track expected arity yourself instead of reading fn.length.',
+    },
+    {
+        member: 'name',
+        owner: 'Function.prototype',
+        esVersion: 3,
+        isStatic: false,
+        isProperty: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'fn.name is undefined in SFMC (it does not return the function name). Pass an explicit name string where you need it instead of reading fn.name.',
+    },
+    {
+        member: 'caller',
+        owner: 'Function.prototype',
+        esVersion: 3,
+        isStatic: false,
+        isProperty: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'fn.caller is undefined in SFMC (the deprecated caller property is not exposed). Do not rely on caller-chain introspection.',
+    },
+    // ── Confirmed-missing Date members ───────────────────────────────────────
     {
         member: 'toISOString',
         owner: 'Date.prototype',
@@ -10202,6 +10421,16 @@ export const KNOWN_UNSUPPORTED = [
         hasPolyfill: false,
         suggestion:
             'Date.prototype.toISOString is unavailable in SFMC. Build the ISO string manually from the get* methods, or use Platform.Function.SystemDateToLocalDate / FormatDate.',
+    },
+    {
+        member: 'toJSON',
+        owner: 'Date.prototype',
+        esVersion: 5,
+        isStatic: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'Date.prototype.toJSON is unavailable in SFMC (it depends on the absent toISOString). Serialize dates with a manual ISO string built from the getUTC* methods, or use Platform.Function.FormatDate.',
     },
     // ── JSON (entire object is undefined) ────────────────────────────────────
     {
@@ -10226,6 +10455,27 @@ export const KNOWN_UNSUPPORTED = [
             'JSON is undefined in SFMC SSJS. Use Platform.Function.Stringify(value) instead of JSON.stringify.',
         replacement: 'Platform.Function.Stringify',
     },
+    // ── Object.prototype members that exist but are broken ───────────────────
+    {
+        member: 'isPrototypeOf',
+        owner: 'Object.prototype',
+        esVersion: 3,
+        isStatic: false,
+        category: 'broken',
+        hasPolyfill: false,
+        suggestion:
+            'Object.prototype.isPrototypeOf exists but HANGS the Jint engine when called (the CloudPage times out / never returns). Do not call it. Compare prototypes directly (e.g. obj.constructor === Ctor) or walk the prototype chain manually.',
+    },
+    {
+        member: 'propertyIsEnumerable',
+        owner: 'Object.prototype',
+        esVersion: 3,
+        isStatic: false,
+        category: 'broken',
+        hasPolyfill: false,
+        suggestion:
+            'Object.prototype.propertyIsEnumerable exists but is broken: it returns false for own enumerable properties (should be true). Use hasOwnProperty for own-property checks instead.',
+    },
     // ── Object statics (ES5/ES6) confirmed missing ───────────────────────────
     {
         member: 'keys',
@@ -10235,6 +10485,26 @@ export const KNOWN_UNSUPPORTED = [
         category: 'unavailable',
         hasPolyfill: false,
         suggestion: 'Object.keys is unavailable in SFMC. Use a for...in loop with hasOwnProperty.',
+    },
+    {
+        member: 'values',
+        owner: 'Object',
+        esVersion: 6,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'Object.values is unavailable in SFMC. Collect values with a for...in loop and hasOwnProperty.',
+    },
+    {
+        member: 'entries',
+        owner: 'Object',
+        esVersion: 6,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'Object.entries is unavailable in SFMC. Build [key, value] pairs with a for...in loop and hasOwnProperty.',
     },
     {
         member: 'assign',
@@ -10275,6 +10545,75 @@ export const KNOWN_UNSUPPORTED = [
         hasPolyfill: false,
         suggestion:
             'Object.getOwnPropertyNames is unavailable in SFMC. Use a for...in loop with hasOwnProperty (enumerable own keys only).',
+    },
+    {
+        member: 'defineProperties',
+        owner: 'Object',
+        esVersion: 5,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'Object.defineProperties is unavailable in SFMC (only the singular Object.defineProperty works). Call Object.defineProperty once per property.',
+    },
+    {
+        member: 'getOwnPropertyDescriptor',
+        owner: 'Object',
+        esVersion: 5,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'Object.getOwnPropertyDescriptor is unavailable in SFMC. Read the property value directly and use hasOwnProperty to test ownership.',
+    },
+    {
+        member: 'isFrozen',
+        owner: 'Object',
+        esVersion: 5,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'Object.isFrozen is unavailable in SFMC (freeze itself is missing). There is no runtime immutability to test.',
+    },
+    {
+        member: 'seal',
+        owner: 'Object',
+        esVersion: 5,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'Object.seal is unavailable in SFMC. There is no way to prevent adding/removing properties at runtime.',
+    },
+    {
+        member: 'isSealed',
+        owner: 'Object',
+        esVersion: 5,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion: 'Object.isSealed is unavailable in SFMC (seal itself is missing).',
+    },
+    {
+        member: 'preventExtensions',
+        owner: 'Object',
+        esVersion: 5,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'Object.preventExtensions is unavailable in SFMC. Objects remain extensible at runtime.',
+    },
+    {
+        member: 'isExtensible',
+        owner: 'Object',
+        esVersion: 5,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'Object.isExtensible is unavailable in SFMC (preventExtensions itself is missing).',
     },
     // ── String ES6 members confirmed missing ─────────────────────────────────
     {
@@ -10462,6 +10801,102 @@ export const KNOWN_UNSUPPORTED = [
         suggestion:
             'Number.MAX_SAFE_INTEGER is undefined in SFMC. Use the literal 9007199254740991.',
     },
+    {
+        member: 'isSafeInteger',
+        owner: 'Number',
+        esVersion: 6,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'Number.isSafeInteger is unavailable in SFMC. Compare Math.abs(n) against the literal 9007199254740991 after confirming n is an integer.',
+    },
+    {
+        member: 'parseFloat',
+        owner: 'Number',
+        esVersion: 6,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion: 'Number.parseFloat is unavailable in SFMC. Use the global parseFloat(string).',
+    },
+    {
+        member: 'MIN_SAFE_INTEGER',
+        owner: 'Number',
+        esVersion: 6,
+        isStatic: true,
+        isProperty: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'Number.MIN_SAFE_INTEGER is undefined in SFMC. Use the literal -9007199254740991.',
+    },
+    {
+        member: 'EPSILON',
+        owner: 'Number',
+        esVersion: 6,
+        isStatic: true,
+        isProperty: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion: 'Number.EPSILON is undefined in SFMC. Use the literal 2.220446049250313e-16.',
+    },
+    // ── Number classic constants (ES3) — undefined in the SFMC Jint engine ───
+    {
+        member: 'MAX_VALUE',
+        owner: 'Number',
+        esVersion: 3,
+        isStatic: true,
+        isProperty: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'Number.MAX_VALUE is undefined in SFMC (unlike standard ES3). Use the literal 1.7976931348623157e308.',
+    },
+    {
+        member: 'MIN_VALUE',
+        owner: 'Number',
+        esVersion: 3,
+        isStatic: true,
+        isProperty: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'Number.MIN_VALUE is undefined in SFMC (unlike standard ES3). Use the literal 5e-324.',
+    },
+    {
+        member: 'NaN',
+        owner: 'Number',
+        esVersion: 3,
+        isStatic: true,
+        isProperty: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'Number.NaN is undefined in SFMC (unlike standard ES3). Use the global NaN identifier or the expression 0/0.',
+    },
+    {
+        member: 'POSITIVE_INFINITY',
+        owner: 'Number',
+        esVersion: 3,
+        isStatic: true,
+        isProperty: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'Number.POSITIVE_INFINITY is undefined in SFMC (unlike standard ES3). Note the global Infinity is also unreliable — comparisons like (Infinity > 0) return false and it stringifies with an inverted sign.',
+    },
+    {
+        member: 'NEGATIVE_INFINITY',
+        owner: 'Number',
+        esVersion: 3,
+        isStatic: true,
+        isProperty: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'Number.NEGATIVE_INFINITY is undefined in SFMC (unlike standard ES3). The global Infinity is also unreliable in this engine.',
+    },
     // ── Math ES6 methods confirmed missing ───────────────────────────────────
     {
         member: 'trunc',
@@ -10516,6 +10951,109 @@ export const KNOWN_UNSUPPORTED = [
         category: 'unavailable',
         hasPolyfill: false,
         suggestion: 'Math.hypot is unavailable in SFMC. Use Math.sqrt(a * a + b * b).',
+    },
+    {
+        member: 'expm1',
+        owner: 'Math',
+        esVersion: 6,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion: 'Math.expm1 is unavailable in SFMC. Use Math.exp(x) - 1.',
+    },
+    {
+        member: 'log1p',
+        owner: 'Math',
+        esVersion: 6,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion: 'Math.log1p is unavailable in SFMC. Use Math.log(1 + x).',
+    },
+    {
+        member: 'sinh',
+        owner: 'Math',
+        esVersion: 6,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion: 'Math.sinh is unavailable in SFMC. Use (Math.exp(x) - Math.exp(-x)) / 2.',
+    },
+    {
+        member: 'cosh',
+        owner: 'Math',
+        esVersion: 6,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion: 'Math.cosh is unavailable in SFMC. Use (Math.exp(x) + Math.exp(-x)) / 2.',
+    },
+    {
+        member: 'tanh',
+        owner: 'Math',
+        esVersion: 6,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'Math.tanh is unavailable in SFMC. Use (Math.exp(2 * x) - 1) / (Math.exp(2 * x) + 1).',
+    },
+    {
+        member: 'asinh',
+        owner: 'Math',
+        esVersion: 6,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion: 'Math.asinh is unavailable in SFMC. Use Math.log(x + Math.sqrt(x * x + 1)).',
+    },
+    {
+        member: 'acosh',
+        owner: 'Math',
+        esVersion: 6,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion: 'Math.acosh is unavailable in SFMC. Use Math.log(x + Math.sqrt(x * x - 1)).',
+    },
+    {
+        member: 'atanh',
+        owner: 'Math',
+        esVersion: 6,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion: 'Math.atanh is unavailable in SFMC. Use Math.log((1 + x) / (1 - x)) / 2.',
+    },
+    {
+        member: 'clz32',
+        owner: 'Math',
+        esVersion: 6,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'Math.clz32 is unavailable in SFMC. Count leading zero bits manually over a 32-bit unsigned value.',
+    },
+    {
+        member: 'fround',
+        owner: 'Math',
+        esVersion: 6,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'Math.fround is unavailable in SFMC. There is no ES3-safe equivalent; keep values as doubles.',
+    },
+    {
+        member: 'imul',
+        owner: 'Math',
+        esVersion: 6,
+        isStatic: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        suggestion:
+            'Math.imul is unavailable in SFMC. Emulate 32-bit integer multiplication with bitwise operations if needed.',
     },
 ];
 
