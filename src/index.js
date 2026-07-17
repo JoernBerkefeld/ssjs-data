@@ -10063,6 +10063,30 @@ export const POLYFILLABLE_METHODS = [
             '}',
     },
     {
+        method: 'toISOString',
+        owner: 'Date.prototype',
+        esVersion: 5,
+        isStatic: false,
+        category: 'unavailable',
+        ambiguousWithString: false,
+        description:
+            'Date.prototype.toISOString is not available in SFMC SSJS (typeof d.toISOString is undefined; calling it throws "Object expected: toISOString"). ' +
+            'Date.prototype.toJSON is also absent because it depends on toISOString. Installing a working method on Date.prototype is unreliable here, ' +
+            'so use the standalone toISOStringUTC helper instead: toISOStringUTC(date) builds the ISO 8601 UTC string from the working getUTC* getters. ' +
+            'Alternatively use Platform.Function.FormatDate.',
+        polyfill:
+            '/**\n' +
+            ' * Standalone replacement for the missing Date.prototype.toISOString (SFMC SSJS).\n' +
+            ' * @param {Date} d - the date to serialize\n' +
+            ' * @returns {string} the date in ISO 8601 UTC form, e.g. "2026-06-18T00:00:00Z"\n' +
+            ' */\n' +
+            'function toISOStringUTC(d) {\n' +
+            "    function pad(n) { return n < 10 ? '0' + n : '' + n; }\n" +
+            "    return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()) +\n" +
+            "        'T' + pad(d.getUTCHours()) + ':' + pad(d.getUTCMinutes()) + ':' + pad(d.getUTCSeconds()) + 'Z';\n" +
+            '}',
+    },
+    {
         method: 'isArray',
         owner: 'Array',
         esVersion: 5,
