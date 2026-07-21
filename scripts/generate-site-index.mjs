@@ -37,6 +37,9 @@ import {
     GUIDE_URLS,
     httpRequestMethodUrl,
     PLATFORM_FUNCTION_GLOBAL_ALIAS,
+    GLOBAL_FUNCTION_PAGES,
+    MDN_GLOBAL_FUNCTIONS,
+    mdnBuiltinUrl,
     methodAnchor,
     eventAnchor,
 } from '../src/urls.js';
@@ -51,6 +54,7 @@ import {
     PLATFORM_VARIABLE_METHODS,
     PLATFORM_RESPONSE_METHODS,
     PLATFORM_REQUEST_METHODS,
+    REQUEST_UTILITY_METHODS,
     PLATFORM_RECIPIENT_METHODS,
     HTTPHEADER_METHODS,
     DATE_TIME_TIMEZONE_METHODS,
@@ -517,31 +521,125 @@ for (const fn of KNOWN_UNSUPPORTED) {
     );
 }
 
+// ── ECMAScript global functions without a dedicated ssjs.guide page ─────────
+// Top-level global functions (eval, parseInt, parseFloat, isNaN, isFinite) live
+// in ECMASCRIPT_BUILTINS with owner 'Global'. They are documented by MDN rather
+// than by an ssjs.guide page, so their canonical link is the MDN deep link from
+// mdnBuiltinUrl(). Derived dynamically: any owner==='Global' builtin that MDN
+// documents as a global function (MDN_GLOBAL_FUNCTIONS) and that does not already
+// have a dedicated ssjs.guide page (GLOBAL_FUNCTION_PAGES) or a section-page entry
+// (e.g. the RegExp constructor, handled by the ECMASCRIPT_BUILTINS loop above).
+// Their MDN url is external, so they are marked `external: true` and skipped by
+// the ssjs.guide URL validation below.
+for (const fn of ECMASCRIPT_BUILTINS) {
+    if (fn.owner !== 'Global') {
+        continue;
+    }
+    const lower = fn.name.toLowerCase();
+    // Skip globals that MDN treats as constructors (RegExp, …) — those already
+    // resolve to an /ecmascript-builtins/ page via the ECMASCRIPT_BUILTINS loop.
+    if (!MDN_GLOBAL_FUNCTIONS.has(fn.name)) {
+        continue;
+    }
+    // Skip anything that already has a dedicated ssjs.guide page.
+    if (GLOBAL_FUNCTION_PAGES.has(lower)) {
+        continue;
+    }
+    const rec = record(
+        fn.name,
+        mdnBuiltinUrl(fn.owner, fn.name),
+        'ECMAScript Builtins',
+        'function',
+        fn,
+    );
+    rec.external = true;
+    index.push(rec);
+}
+
 // ── SSJS bare-name globals ─────────────────────────────────────────────────
 // Functions with dedicated pages under /core-library/ (Core-injected bare
 // names) or /ecmascript-builtins/ (native constructors) — see globalFunctionUrl.
+//
+// A bare-name global gets its own /core-library/ page ONLY when it is in the
+// GLOBAL_FUNCTION_PAGES allowlist. Every other bare-name global is an alias
+// (aliasOf) whose documentation lives on its aliased Platform page — resolve to
+// that page instead of a nonexistent /core-library/<name>/ URL (mirrors the
+// generate-dts fallback in this same package).
 for (const g of SSJS_GLOBALS) {
     if (g.type !== 'function') {
         continue;
     }
-    index.push(
-        record(g.name, globalFunctionUrl(g.name), globalFunctionCategory(g.name), 'function', g),
-    );
+    // Dotted-name aliases (e.g. DateTime.SystemDateToLocalDate) are already
+    // indexed by their owning group loop above (PLATFORM_OBJECT_GROUPS →
+    // DATE_TIME_METHODS → /core-library/datetime/#anchor). Skip here to avoid a
+    // duplicate entry pointing at a nonexistent /core-library/<dotted>/ page.
+    if (g.name.includes('.')) {
+        continue;
+    }
+    const lower = g.name.toLowerCase();
+    let url;
+    let category;
+    if (GLOBAL_FUNCTION_PAGES.has(lower) || !g.aliasOf) {
+        // Dedicated page (allowlist) or a full standalone definition.
+        url = globalFunctionUrl(g.name);
+        category = globalFunctionCategory(g.name);
+    } else {
+        // Alias fallback: the bare-name global has no dedicated page, so point
+        // it at the aliased Platform page (mirrors the generate-dts fallback).
+        const [, ns, fnName] = g.aliasOf.split('.');
+        if (ns === 'Function') {
+            url = platformFunctionUrl(fnName);
+            category = 'Platform Functions';
+        } else if (ns === 'Response') {
+            url = PLATFORM_OBJECT_URLS['Platform.Response'];
+            category = 'Platform Objects';
+        } else {
+            url = globalFunctionUrl(g.name);
+            category = globalFunctionCategory(g.name);
+        }
+    }
+    index.push(record(g.name, url, category, 'function', g));
 }
 
 // Request is a bare-name global object (type: 'object') with a dedicated
 // /core-library/request/ page, so it is not covered by the function loop above.
+// It resolves its OWN member set (REQUEST_UTILITY_METHODS) — a smaller,
+// method-based set distinct from Platform.Request. We emit both the object
+// overview entry and one entry per member (Request.URL, Request.GetFormField, …)
+// so those members are searchable and linkable just like Platform.Request.*.
+//
+// Request-scoped (not generic): the other bare-name `type: 'object'` globals are
+// deliberately excluded. `Variable` (namespaceMethodsOf: 'Platform.Variable') has
+// no `Variable.*` member entries today and adding them would be a behavior change;
+// `Recipient` is notDefinedAtRuntime; `HTTPHeader`/`Attribute` members are already
+// emitted via PLATFORM_OBJECT_GROUPS; `Platform`/`Script` are pure namespaces.
 const requestGlobal = SSJS_GLOBALS.find((x) => x.name === 'Request');
 if (requestGlobal) {
+    const requestUrl = globalFunctionUrl(requestGlobal.name);
     index.push(
         record(
             requestGlobal.name,
-            globalFunctionUrl(requestGlobal.name),
+            requestUrl,
             globalFunctionCategory(requestGlobal.name),
             'object',
             requestGlobal,
         ),
     );
+    // The /core-library/request/ page uses `layout: function` and lists its
+    // members in a `## Members` table without per-member H3 anchors (unlike the
+    // Platform.Request page). Deep-link every member to that table's `#members`
+    // heading so entries still carry a resolving anchor.
+    for (const fn of REQUEST_UTILITY_METHODS) {
+        index.push(
+            record(
+                `${requestGlobal.name}.${fn.name}`,
+                withAnchor(requestUrl, 'members'),
+                globalFunctionCategory(requestGlobal.name),
+                fn.isProperty ? 'property' : 'method',
+                fn,
+            ),
+        );
+    }
 }
 
 // ── Validate URLs against ssjs.guide ──────────────────────────────────────
@@ -603,8 +701,11 @@ function collectGuideUrls(guideRoot) {
 if (existsSync(GUIDE)) {
     const knownUrls = collectGuideUrls(GUIDE);
     // Validate the page portion only — deep-link entries carry a `#anchor`
-    // fragment that is not part of the page URL set.
-    const missingEntries = index.filter((entry) => !knownUrls.has(entry.url.split('#', 1)[0]));
+    // fragment that is not part of the page URL set. Entries flagged `external`
+    // point at off-site docs (e.g. MDN) and have no ssjs.guide page to validate.
+    const missingEntries = index.filter(
+        (entry) => !entry.external && !knownUrls.has(entry.url.split('#', 1)[0]),
+    );
     if (missingEntries.length > 0) {
         const byUrl = new Map();
         for (const entry of missingEntries) {

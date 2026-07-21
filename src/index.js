@@ -12,11 +12,19 @@
  *       Used by mcp-server-sfmc conversion tools. (PLATFORM_FUNCTIONS only)
  *   - isStatic?: boolean      — true for namespace-level calls (Class.Method()), false for instance calls
  *   - deprecated?: boolean    — true for entries that resolve at runtime but should not be used in new code
- *   - notDefinedAtRuntime?: boolean — true for entries that are officially documented but proven (via live
- *       CloudPage test) NOT to exist in the SSJS engine; calling them throws a ReferenceError. Kept in
- *       ssjs-data (and ssjs.guide) for discoverability, but EXCLUDED from the generated .d.ts so editors
- *       never offer them, and flagged by ESLint as "does not exist at runtime". Pair with officialDocsNote
- *       (runtime evidence) and a "use X instead" pointer.
+ *   - notDefinedAtRuntime?: boolean — true for entries that cannot be USED at runtime in any context
+ *       available for testing. Two cases share this flag:
+ *         (1) PRIMARY: entries that are officially documented but proven (via live CloudPage test) NOT to
+ *             exist in the SSJS engine; calling them throws a ReferenceError (e.g. `Redirect`).
+ *         (2) EXTENSION: documented members that the SSJS engine does NOT resolve as documented at
+ *             runtime — calling them throws the generic `System.InvalidOperationException:
+ *             "Unable to retrieve security descriptor for this frame."`, which in the SFMC SSJS engine
+ *             signals an unrecognized member name or an argument count the engine does not accept
+ *             (NOT a security or frame restriction). Example: `Platform.Request.GetUserLanguages`, which
+ *             throws this error at every arity tried (0/1/2 args), so it cannot be invoked as documented.
+ *       The shared EFFECT is identical for both cases: the entry is EXCLUDED from the generated .d.ts so
+ *       editors never offer it, flagged by ESLint, but KEPT in ssjs-data (and ssjs.guide) for
+ *       discoverability. Pair with officialDocsNote (runtime evidence) and a "use X instead" pointer.
  *   - verificationBlocked?: boolean — true when a runtime verification was ATTEMPTED but could not
  *       complete for a concrete technical/environmental reason (a platform guardrail, missing auth
  *       context, absent test data, etc.). This is a THIRD state, distinct from both "verified"
@@ -28,16 +36,22 @@
  *   - isProperty?: boolean    — true for entries accessed without parentheses (e.g. Platform.Request.HasSSL)
  *   - requiresCoreLoad?: boolean — true when the call site requires a preceding Platform.Load("core", "<version>").
  *       RUNTIME NOTE: the bare-name globals injected by Platform.Load (Write, Stringify, Base64Encode,
- *       Base64Decode, Format, Variable, Attribute, …) exist ONLY in the scope where Platform.Load was
- *       called (normally the top level of the <script runat=server> block). They are NOT visible inside
- *       eval() strings or nested helper-function bodies — there they read as undefined and throw
- *       Jint.Native.JsException when called. Call them at the same top-level scope as Platform.Load.
+ *       Base64Decode, Format, Variable, Attribute, …) exist ONLY after Platform.Load("core", …) has run,
+ *       so the load must precede any use of them. Once loaded they are usable in that scope and in nested
+ *       helper-function bodies that close over it (runtime-verified — closures see them).
  *   - aliasOf?: string        — names the canonical entry this one aliases (dual-call modeling)
  *   - returnEnum?: (string|number|boolean)[] — allowed return literals when returnType is a primitive
  *   - enum?: (string|number|boolean)[]       — allowed literals for a parameter value
  *   - default?: string|number|boolean        — documented default value for a parameter
  *   - optional?: boolean                     — equivalent to Required:No in the docs
  *   - caseInsensitive?: boolean              — true for SOAP-style enums where casing is not enforced
+ *   - validArities?: number[] — OPTIONAL, PLATFORM_FUNCTIONS only. Exact set of permitted
+ *       argument counts for a DISCONTINUOUS OVERLOAD, where a contiguous minArgs..maxArgs
+ *       range would wrongly accept intermediate counts. When present, a call is valid only
+ *       when its argument count is within [minArgs, maxArgs] AND a member of this array.
+ *       Every entry MUST lie within [minArgs, maxArgs], and both minArgs and maxArgs MUST
+ *       be members. Example: HTTPGet accepts exactly 1 or 6 arguments (validArities: [1, 6]);
+ *       2-5 arguments throw at runtime. Absent → behavior is a pure contiguous range.
  */
 
 // ── Verification-blocked reasons ─────────────────────────────────────────────
@@ -49,7 +63,7 @@
 //   - bu-guardrail        the test BU rejects the operation via a platform guardrail
 //                         (spam filter, send-definition creation policy, etc.)
 //   - needs-auth-context  requires authenticated user / send / subscriber context that
-//                         the anonymous CloudPage test harness cannot provide
+//                         a plain CloudPage test harness cannot provide
 //   - no-test-data        requires pre-existing data of a kind not available on the BU
 //   - classic-only-no-assets  method only works with classic (legacy) assets and none
 //                         exist on the BU to test against
@@ -81,31 +95,38 @@ export const SSJS_GLOBALS = [
             '`Variable.GetValue(key)` work; `GetValue` on a variable that was set to `""` returns `""`, and on a ' +
             'never-set variable returns `""` (empty string), not `null`.',
         description:
-            'Bare-name access to Platform.Variable.* methods (`Variable.SetValue`, `Variable.GetValue`). ' +
-            'Requires `Platform.Load("core", "1.1.5")` before use.',
+            'Bare-name access to Platform.Variable.* methods (`Variable.SetValue`, `Variable.GetValue`).',
         requiresCoreLoad: true,
     },
     {
         name: 'Request',
         type: 'object',
-        // Standalone bare-name object (not an alias). Shares the same member set as
-        // Platform.Request; the generators reuse PLATFORM_REQUEST_METHODS via namespaceMethodsOf.
-        namespaceMethodsOf: 'Platform.Request',
+        // Core Library "Request Object Utility Functions" object. It exposes EXACTLY 6
+        // zero-arg METHODS of its own (URL, PagePath, Method, ApplicationID, PackageID,
+        // ApplicationBaseURL) — a DIFFERENT, SMALLER member set than Platform.Request
+        // (which uses properties like RequestURL and functions like GetCookieValue).
+        // The generators resolve its members by this object's OWN name via
+        // PLATFORM_NAMESPACE_MAP['Request'] → REQUEST_UTILITY_METHODS (no self-pointer).
+        // It must NOT inherit Platform.Request's whole member set.
         isConfirmed: true,
-        differsFromOfficialDocs: true,
+        differsFromOfficialDocs: false,
         officialDocsNote:
-            'Runtime-verified (CloudPage, Platform.Load("core","1.1.5")): the bare-name global `Request` works ' +
-            'and is actually more reliable than `Platform.Request` for `.URL()` — `Request.URL()` returns the ' +
-            'full request URL as a string, whereas `Platform.Request.URL()` throws ' +
-            '"Unable to retrieve security descriptor for this frame." in CloudPages. Other members ' +
-            '(PagePath, Method, ApplicationID, PackageID, ApplicationBaseURL) return CLR values (empty in a ' +
-            'plain CloudPage GET, with Method="GET"). Prefer the bare-name `Request` in CloudPages.',
+            'Runtime-verified (CloudPage GET) per-member: `Request.URL()` returns the full request URL ' +
+            'as a string; `Request.Method()` returns the HTTP verb (e.g. `"GET"`); `Request.PagePath()`, ' +
+            '`Request.ApplicationID()`, `Request.PackageID()`, and `Request.ApplicationBaseURL()` invoke ' +
+            'cleanly and return empty strings (`""`) when read outside their populating context. All 6 ' +
+            'members invoke cleanly (a fake member such as `Request.NoSuchMember()` instead throws ' +
+            '`Object expected`). This is a smaller, method-based set than `Platform.Request` — do not ' +
+            'expect Platform.Request-only members (`RequestURL`, `GetCookieValue`, `GetUserLanguages`) here.',
         description:
-            'Object for reading incoming request values in CloudPage context. ' +
-            'Members include `Request.URL()`, `Request.PagePath()`, `Request.Method()`, ' +
-            '`Request.ApplicationID()`, `Request.PackageID()`, and `Request.ApplicationBaseURL()`. ' +
-            'Behaves like Platform.Request but `Request.URL()` works where `Platform.Request.URL()` throws. ' +
-            'Requires `Platform.Load("core", "1.1.5")` before use.',
+            'Core Library "Request Object Utility Functions" object for reading incoming request values. ' +
+            'It exposes exactly 6 zero-arg methods: `Request.URL()`, `Request.PagePath()`, `Request.Method()`, ' +
+            '`Request.ApplicationID()`, `Request.PackageID()`, and `Request.ApplicationBaseURL()`. Requires ' +
+            '`Platform.Load("core","1")`. This is a DISTINCT object from `Platform.Request`, not an alias: ' +
+            'it has a smaller, method-only member set and requires Platform.Load, whereas `Platform.Request` ' +
+            'works without Platform.Load and mixes properties (e.g. `RequestURL`) with getter methods. ' +
+            'For example the current URL is the `Request.URL()` METHOD here versus the `RequestURL` PROPERTY ' +
+            'on `Platform.Request`.',
         requiresCoreLoad: true,
     },
     {
@@ -133,8 +154,7 @@ export const SSJS_GLOBALS = [
             'names, so treat an empty string as "no value in this context" rather than proof the attribute is absent.',
         description:
             'Namespace for reading subscriber attribute values. ' +
-            'Call `Attribute.GetValue(name)` to retrieve an attribute for the current recipient. ' +
-            'Requires `Platform.Load("core", "1.1.5")` before use.',
+            'Call `Attribute.GetValue(name)` to retrieve an attribute for the current recipient.',
         requiresCoreLoad: true,
     },
     {
@@ -147,8 +167,7 @@ export const SSJS_GLOBALS = [
             'request headers and returns `null` for a header you set via `SetValue` (separate inbound/outbound ' +
             'collections). `Remove` returns `undefined`, not `"OK"`.',
         description:
-            'Object that provides access to HTTP request headers in SSJS CloudPage context. ' +
-            'Requires `Platform.Load("core", "1.1.5")` before use.',
+            'Object that provides access to HTTP request headers in SSJS CloudPage context.',
         requiresCoreLoad: true,
     },
     {
@@ -243,17 +262,17 @@ export const SSJS_GLOBALS = [
         maxArgs: 1,
         requiresCoreLoad: true,
         isConfirmed: true,
-        differsFromOfficialDocs: true,
+        differsFromOfficialDocs: false,
         officialDocsNote:
             'Runtime-verified (CloudPage): the bare-name `Base64Encode` works after `Platform.Load("core", ...)` ' +
-            'and returns the encoded string (e.g. Base64Encode("hi") -> "aGk="). IMPORTANT SCOPE RULE: bare-name ' +
-            'Core globals are injected ONLY into the scope where Platform.Load runs — they are NOT visible inside ' +
-            'nested helper-function bodies or eval(). Call them at the same scope as Platform.Load, or use the ' +
-            'always-available `Platform.Function.Base64Encode(string[, charset])` form (which also allows charset control).',
+            'and returns the encoded string (e.g. Base64Encode("hi") -> "aGk="). This matches the official docs — ' +
+            'the Core-library intro documents that these bare-name globals require Platform.Load, so the requirement ' +
+            'is documented behavior, not a deviation. SCOPE RULE: bare-name Core globals exist ONLY after ' +
+            'Platform.Load has run — call the load first. Once loaded they are usable in that scope and inside ' +
+            'nested helper-function bodies that close over it. For charset control or a scope-independent form ' +
+            'that needs no Platform.Load, use `Platform.Function.Base64Encode(string[, charset])`.',
         description:
             'Encodes plain text to a Base64 encoded string. ' +
-            'Requires `Platform.Load("core", "1.1.5")` before use, and must be called in the same scope as ' +
-            '`Platform.Load` (bare-name Core globals are not visible inside nested helper functions). ' +
             'For charset control or scope-independent use, use `Platform.Function.Base64Encode(string, charset)` instead.',
         params: [{ name: 'string', description: 'Text to encode', type: 'string' }],
         returnType: 'string',
@@ -269,17 +288,17 @@ export const SSJS_GLOBALS = [
         maxArgs: 1,
         requiresCoreLoad: true,
         isConfirmed: true,
-        differsFromOfficialDocs: true,
+        differsFromOfficialDocs: false,
         officialDocsNote:
             'Runtime-verified (CloudPage): the bare-name `Base64Decode` works after `Platform.Load("core", ...)` ' +
-            '(e.g. Base64Decode("aGk=") -> "hi"). IMPORTANT SCOPE RULE: bare-name Core globals are injected ONLY ' +
-            'into the scope where Platform.Load runs — they are NOT visible inside nested helper-function bodies ' +
-            'or eval(). Call them at the same scope as Platform.Load, or use the always-available ' +
-            '`Platform.Function.Base64Decode(encodedString[, charset])` form.',
+            '(e.g. Base64Decode("aGk=") -> "hi"). This matches the official docs — the Core-library intro documents ' +
+            'that these bare-name globals require Platform.Load, so the requirement is documented behavior, not a ' +
+            'deviation. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load ' +
+            'first. Once loaded they are usable in that scope and inside nested helper-function bodies that close ' +
+            'over it. For charset control or a scope-independent form that needs no Platform.Load, use ' +
+            '`Platform.Function.Base64Decode(encodedString[, charset])`.',
         description:
             'Decodes a Base64 encoded string to plain text. ' +
-            'Requires `Platform.Load("core", "1.1.5")` before use, and must be called in the same scope as ' +
-            '`Platform.Load` (bare-name Core globals are not visible inside nested helper functions). ' +
             'For charset control or scope-independent use, use `Platform.Function.Base64Decode(encodedString, charset)` instead.',
         params: [
             {
@@ -307,14 +326,14 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         officialDocsNote:
             'Runtime-verified (CloudPage): the bare-name `ContentArea` IS defined as a function after ' +
-            '`Platform.Load("core", ...)` (called in the same scope — bare-name Core globals are not visible ' +
-            'inside nested helper functions). It throws only because Content Areas are deprecated and the target ' +
-            'area no longer resolves on current SFMC infrastructure, not because the global is missing. ' +
+            '`Platform.Load("core", ...)` has run (the load must precede use; once loaded the bare name is ' +
+            'usable in that scope and in nested helper bodies that close over it). It throws only because ' +
+            'Content Areas are deprecated and the target area no longer resolves on current SFMC ' +
+            'infrastructure, not because the global is missing. ' +
             'The Platform.Function.ContentArea() variant does not require Platform.Load.',
         description:
             'Retrieves content from a classic Content Area by numeric ID. ' +
             'Deprecated — Content Areas are no longer supported on current SFMC infrastructure. ' +
-            'Requires `Platform.Load("core", "1.1.5")` (in the same scope) before use. ' +
             'Note: the Platform.Function.ContentArea() variant does not require Platform.Load and ' +
             'accepts a boolean stopOnError parameter instead of a string errorMsg.',
         params: [
@@ -354,14 +373,14 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         officialDocsNote:
             'Runtime-verified (CloudPage): the bare-name `ContentAreaByName` IS defined as a function after ' +
-            '`Platform.Load("core", ...)` (called in the same scope — bare-name Core globals are not visible ' +
-            'inside nested helper functions). It throws only because Content Areas are deprecated and the target ' +
-            'area no longer resolves on current SFMC infrastructure, not because the global is missing. ' +
+            '`Platform.Load("core", ...)` has run (the load must precede use; once loaded the bare name is ' +
+            'usable in that scope and in nested helper bodies that close over it). It throws only because ' +
+            'Content Areas are deprecated and the target area no longer resolves on current SFMC ' +
+            'infrastructure, not because the global is missing. ' +
             'The Platform.Function.ContentAreaByName() variant does not require Platform.Load.',
         description:
             'Retrieves content from a classic Content Area by name. ' +
             'Deprecated — Content Areas are no longer supported on current SFMC infrastructure. ' +
-            'Requires `Platform.Load("core", "1.1.5")` (in the same scope) before use. ' +
             'Note: the Platform.Function.ContentAreaByName() variant does not require Platform.Load and ' +
             'accepts a boolean stopOnError parameter instead of a string errorMsg.',
         params: [
@@ -395,24 +414,179 @@ export const SSJS_GLOBALS = [
     },
     {
         name: 'BeginImpressionRegion',
-        aliasOf: 'Platform.Function.BeginImpressionRegion',
+        type: 'function',
+        aliasOf: 'Platform.Function.BeginImpressionRegion', // provenance
+        minArgs: 1,
+        maxArgs: 1,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the bare-name `BeginImpressionRegion` IS defined as a function after ' +
+            '`Platform.Load("core", ...)`, but calling it — with either a string literal or a variable — throws ' +
+            '"A BeginImpressionRegion function call includes an invalid parameter value. The values making up the ' +
+            'parameter value for this call must be a literal (constant) values." The bare alias and the ' +
+            '`Platform.Function.BeginImpressionRegion` form behave identically (both throw the same error), so ' +
+            'impression regions are effectively unusable from SSJS — they are an AMPscript-only feature. ' +
+            'SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first.',
+        description:
+            'Marks the start of a named impression tracking region within content. ' +
+            'Runtime note: unusable from SSJS — every call (literal or variable argument) throws a ' +
+            'resolved-value error; impression regions are an AMPscript-only feature.',
+        params: [{ name: 'name', description: 'The impression region name.', type: 'string' }],
+        returnType: 'void',
+        syntax: 'BeginImpressionRegion(name)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            '// Note: throws at runtime in SSJS — impression regions are AMPscript-only.\n' +
+            'BeginImpressionRegion("hero-banner");',
     },
     {
         name: 'EndImpressionRegion',
-        aliasOf: 'Platform.Function.EndImpressionRegion',
+        type: 'function',
+        aliasOf: 'Platform.Function.EndImpressionRegion', // provenance
+        minArgs: 0,
+        maxArgs: 1,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the bare-name `EndImpressionRegion` IS defined as a function after ' +
+            '`Platform.Load("core", ...)` and can be called without throwing. It DIFFERS from its ' +
+            '`Platform.Function.EndImpressionRegion` counterpart in return value: the bare alias returns ' +
+            '`undefined` (typeof "undefined"), whereas `Platform.Function.EndImpressionRegion()` returns a genuine ' +
+            '`null` (typeof "object", === null). The official docs type the return as void. Because ' +
+            '`BeginImpressionRegion` is unusable from SSJS, this method has no practical effect in SSJS either. ' +
+            'SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first.',
+        description:
+            'Marks the end of an impression tracking region within content. ' +
+            'Runtime note: the bare alias returns `undefined` (its `Platform.Function.EndImpressionRegion` ' +
+            'counterpart returns `null`); has no practical effect in SSJS because impression regions are ' +
+            'AMPscript-only.',
+        params: [
+            {
+                name: 'closeAll',
+                description: 'Optional flag to close all open impression regions.',
+                type: 'boolean',
+                optional: true,
+            },
+        ],
+        returnType: 'undefined',
+        syntax: 'EndImpressionRegion([closeAll])',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'EndImpressionRegion(); // returns undefined (Platform.Function form returns null)',
     },
-    { name: 'Now', aliasOf: 'Platform.Function.Now', requiresCoreLoad: true },
+    {
+        name: 'Now',
+        type: 'function',
+        aliasOf: 'Platform.Function.Now', // provenance
+        minArgs: 0,
+        maxArgs: 1,
+        requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the bare-name `Now` works after `Platform.Load("core", ...)` and ' +
+            'returns the same value as `Platform.Function.Now()` — a genuine Date object: typeof "object", ' +
+            '`Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and ' +
+            '`getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that ' +
+            '`instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via ' +
+            '`.constructor === Date`, not `instanceof`. It coerces to an RFC 2822-style string such as ' +
+            '"Tue, 21 Jul 2026 10:18:24 GMT-06:00" during output. The official docs describe the return as an ' +
+            'RFC 2822-compliant date-time string. ' +
+            'SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first.',
+        description:
+            'Returns the current server date/time as a Date object (in the account timezone, Central by ' +
+            'default), or the timestamp of the triggering send when called with `true`. Behaves identically to ' +
+            '`Platform.Function.Now()`.',
+        params: [
+            {
+                name: 'useContextTime',
+                description:
+                    'Pass `true` to return the timestamp of the triggering send instead of the current time.',
+                type: 'boolean',
+                optional: true,
+            },
+        ],
+        returnType: 'Date',
+        syntax: 'Now([useContextTime])',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var current = Now(); // e.g. "Tue, 21 Jul 2026 10:18:24 GMT-06:00"\n' +
+            'Write(current.getFullYear()); // 2026',
+    },
     {
         name: 'DateTime.SystemDateToLocalDate',
-        aliasOf: 'Platform.Function.SystemDateToLocalDate',
+        type: 'function',
+        aliasOf: 'Platform.Function.SystemDateToLocalDate', // provenance
+        minArgs: 1,
+        maxArgs: 1,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): `DateTime.SystemDateToLocalDate` works after `Platform.Load("core", ...)` ' +
+            'and returns the same value as `Platform.Function.SystemDateToLocalDate()` — a genuine Date object: ' +
+            'typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and ' +
+            '`getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that ' +
+            '`instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via ' +
+            '`.constructor === Date`, not `instanceof`. It coerces to an ISO-like string when written or stringified. ' +
+            'The official docs type the return value as a string. SCOPE RULE: bare-name Core globals exist ONLY after ' +
+            'Platform.Load has run — call the load first.',
+        description:
+            'Converts a date-time value from Marketing Cloud system time (CST, without daylight saving) to the ' +
+            'local time of the account or user. Returns a Date object. Behaves identically to ' +
+            '`Platform.Function.SystemDateToLocalDate()`.',
+        params: [
+            {
+                name: 'dateString',
+                description: 'The system-time date-time value to convert.',
+                type: 'string',
+            },
+        ],
+        returnType: 'Date',
+        syntax: 'DateTime.SystemDateToLocalDate(dateString)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var localDate = DateTime.SystemDateToLocalDate(Now());\n' +
+            'Write(localDate);',
     },
     {
         name: 'DateTime.LocalDateToSystemDate',
-        aliasOf: 'Platform.Function.LocalDateToSystemDate',
+        type: 'function',
+        aliasOf: 'Platform.Function.LocalDateToSystemDate', // provenance
+        minArgs: 1,
+        maxArgs: 1,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): `DateTime.LocalDateToSystemDate` works after `Platform.Load("core", ...)` ' +
+            'and returns the same value as `Platform.Function.LocalDateToSystemDate()` — a genuine Date object: ' +
+            'typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and ' +
+            '`getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that ' +
+            '`instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via ' +
+            '`.constructor === Date`, not `instanceof`. It coerces to an ISO-like string when written or stringified. ' +
+            'The official docs type the return value as a string. SCOPE RULE: bare-name Core globals exist ONLY after ' +
+            'Platform.Load has run — call the load first.',
+        description:
+            'Converts a date-time value from the local time of the account or user to Marketing Cloud system time ' +
+            '(CST, without daylight saving). Returns a Date object. Behaves identically to ' +
+            '`Platform.Function.LocalDateToSystemDate()`.',
+        params: [
+            {
+                name: 'dateString',
+                description: 'The local-time date-time value to convert.',
+                type: 'string',
+            },
+        ],
+        returnType: 'Date',
+        syntax: 'DateTime.LocalDateToSystemDate(dateString)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var systemDate = DateTime.LocalDateToSystemDate("8/5/2025 12:00:00 PM");\n' +
+            'Write(systemDate);',
     },
     {
         name: 'Redirect',
@@ -421,18 +595,18 @@ export const SSJS_GLOBALS = [
         minArgs: 2,
         maxArgs: 2,
         isConfirmed: true,
-        differsFromOfficialDocs: true,
+        differsFromOfficialDocs: false,
         officialDocsNote:
             'Runtime-verified (CloudPage): the bare-name `Redirect` IS defined as a function after ' +
-            '`Platform.Load("core", ...)` and actually performs the redirect. IMPORTANT SCOPE RULE: bare-name ' +
-            'Core globals are injected ONLY into the scope where Platform.Load runs — they are NOT visible inside ' +
-            'nested helper-function bodies or eval(). Call Redirect at the same scope as Platform.Load, or use ' +
-            'the always-available `Platform.Response.Redirect(url, movedPermanently)` (which needs no Platform.Load). ' +
+            '`Platform.Load("core", ...)` and actually performs the redirect. This matches the official docs — ' +
+            'the Core-library intro documents that these bare-name globals require Platform.Load, so the requirement ' +
+            'is documented behavior, not a deviation. SCOPE RULE: bare-name Core globals exist ONLY after ' +
+            'Platform.Load has run — call the load first. Once loaded they are usable in that scope and inside ' +
+            'nested helper-function bodies that close over it. For a scope-independent form that needs no ' +
+            'Platform.Load, use `Platform.Response.Redirect(url, movedPermanently)`. ' +
             'Meaningful only in CloudPage context.',
         description:
             'Redirects the browser to another address. ' +
-            'Requires `Platform.Load("core", "1.1.5")` and must be called in the same scope as `Platform.Load` ' +
-            '(bare-name Core globals are not visible inside nested helper functions). ' +
             'For scope-independent use that needs no Platform.Load, use `Platform.Response.Redirect(url, movedPermanently)`. ' +
             'Meaningful only in CloudPage context.',
         params: [
@@ -454,16 +628,78 @@ export const SSJS_GLOBALS = [
             'Platform.Load("core", "1.1.5");\n' +
             'Redirect("https://www.example.com", false); // or, scope-independent: Platform.Response.Redirect("https://www.example.com", false);',
     },
-    { name: 'GUID', aliasOf: 'Platform.Function.GUID', requiresCoreLoad: true },
+    {
+        name: 'GUID',
+        type: 'function',
+        aliasOf: 'Platform.Function.GUID', // provenance
+        minArgs: 0,
+        maxArgs: 0,
+        requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: false,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the bare-name `GUID` works after `Platform.Load("core", ...)` and ' +
+            'returns the same value as `Platform.Function.GUID()` — a lowercase canonical UUID v4 string of 36 ' +
+            'characters (e.g. "f038aa14-708f-4392-a329-7dfa46abaf4b"). SCOPE RULE: bare-name Core globals exist ' +
+            'ONLY after Platform.Load has run — call the load first.',
+        description:
+            'Generates a new globally unique identifier as a lowercase canonical UUID v4 string (36 characters). ' +
+            'Behaves identically to `Platform.Function.GUID()`.',
+        params: [],
+        returnType: 'string',
+        syntax: 'GUID()',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'var id = GUID(); // e.g. "f038aa14-708f-4392-a329-7dfa46abaf4b"',
+    },
     {
         name: 'IsEmailAddress',
-        aliasOf: 'Platform.Function.IsEmailAddress',
+        type: 'function',
+        aliasOf: 'Platform.Function.IsEmailAddress', // provenance
+        minArgs: 1,
+        maxArgs: 1,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: false,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the bare-name `IsEmailAddress` works after `Platform.Load("core", ...)` ' +
+            'and returns the same boolean as `Platform.Function.IsEmailAddress()` (e.g. "a@b.com" -> true, ' +
+            '"nope" -> false). SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call ' +
+            'the load first.',
+        description:
+            'Checks whether a string is a valid email address format. Behaves identically to ' +
+            '`Platform.Function.IsEmailAddress()`.',
+        params: [{ name: 'value', description: 'The string to validate.', type: 'string' }],
+        returnType: 'boolean',
+        syntax: 'IsEmailAddress(value)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'if (IsEmailAddress(emailInput)) { Write("Valid email"); }',
     },
     {
         name: 'IsPhoneNumber',
-        aliasOf: 'Platform.Function.IsPhoneNumber',
+        type: 'function',
+        aliasOf: 'Platform.Function.IsPhoneNumber', // provenance
+        minArgs: 1,
+        maxArgs: 1,
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the bare-name `IsPhoneNumber` works after `Platform.Load("core", ...)` ' +
+            'and returns the same boolean as `Platform.Function.IsPhoneNumber()`. The official docs describe ' +
+            'generic "valid phone number" validation; see the `Platform.Function.IsPhoneNumber` entry for the ' +
+            'stricter runtime format details. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load ' +
+            'has run — call the load first.',
+        description:
+            'Evaluates whether a string is a valid phone number and returns a boolean. Behaves identically to ' +
+            '`Platform.Function.IsPhoneNumber()` (see that entry for the strict digits-only runtime format).',
+        params: [{ name: 'value', description: 'The string to validate.', type: 'string' }],
+        returnType: 'boolean',
+        syntax: 'IsPhoneNumber(value)',
+        example:
+            'Platform.Load("core", "1.1.5");\n' +
+            'if (IsPhoneNumber(phoneInput)) { Write("Valid phone"); }',
     },
     {
         name: 'Write',
@@ -473,17 +709,17 @@ export const SSJS_GLOBALS = [
         maxArgs: 1,
         requiresCoreLoad: true,
         isConfirmed: true,
-        differsFromOfficialDocs: true,
+        differsFromOfficialDocs: false,
         officialDocsNote:
             'Runtime-verified (CloudPage): the bare-name `Write` works after `Platform.Load("core", ...)` and ' +
-            'outputs to the response. IMPORTANT SCOPE RULE: bare-name Core globals are injected ONLY into the ' +
-            'scope where Platform.Load runs — they are NOT visible inside nested helper-function bodies or eval(). ' +
-            'If you output from inside a helper function, use the always-available `Platform.Response.Write(text)` ' +
-            'instead (which needs no Platform.Load and works in any scope).',
+            'outputs to the response. This matches the official docs — the Core-library intro documents that these ' +
+            'bare-name globals require Platform.Load, so the requirement is documented behavior, not a deviation. ' +
+            'SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first. Once ' +
+            'loaded they are usable in that scope and inside nested helper-function bodies that close over it. For a ' +
+            'scope-independent form that needs no Platform.Load and works in any scope, use ' +
+            '`Platform.Response.Write(text)` instead.',
         description:
             'Writes text to the HTTP response output. ' +
-            'Requires `Platform.Load("core", "1.1.5")` and must be called in the same scope as `Platform.Load` ' +
-            '(bare-name Core globals are not visible inside nested helper functions). ' +
             'For scope-independent output that needs no Platform.Load, use `Platform.Response.Write(text)` instead.',
         params: [{ name: 'text', description: 'Text to write to the response.', type: 'string' }],
         returnType: 'void',
@@ -500,17 +736,17 @@ export const SSJS_GLOBALS = [
         maxArgs: 1,
         requiresCoreLoad: true,
         isConfirmed: true,
-        differsFromOfficialDocs: true,
+        differsFromOfficialDocs: false,
         officialDocsNote:
             'Runtime-verified (CloudPage): the bare-name `Stringify` works after `Platform.Load("core", ...)` ' +
-            '(e.g. Stringify({a:1,b:"x"}) -> \'{"a":1,"b":"x"}\'). IMPORTANT SCOPE RULE: bare-name Core globals ' +
-            'are injected ONLY into the scope where Platform.Load runs — they are NOT visible inside nested ' +
-            'helper-function bodies or eval(). Call Stringify at the same scope as Platform.Load, or use the ' +
-            'always-available `Platform.Function.Stringify(value)` form.',
+            '(e.g. Stringify({a:1,b:"x"}) -> \'{"a":1,"b":"x"}\'). This matches the official docs — the Core-library ' +
+            'intro documents that these bare-name globals require Platform.Load, so the requirement is documented ' +
+            'behavior, not a deviation. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — ' +
+            'call the load first. Once loaded they are usable in that scope and inside nested helper-function bodies ' +
+            'that close over it. For a scope-independent form that needs no Platform.Load, use ' +
+            '`Platform.Function.Stringify(value)`.',
         description:
             'Serializes a value to a JSON string. ' +
-            'Requires `Platform.Load("core", "1.1.5")` before use, and must be called in the same scope as ' +
-            '`Platform.Load` (bare-name Core globals are not visible inside nested helper functions). ' +
             'For scope-independent use, use `Platform.Function.Stringify(value)` instead.',
         params: [{ name: 'value', description: 'Value to serialize to JSON.', type: 'any' }],
         returnType: 'string',
@@ -526,13 +762,14 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         officialDocsNote:
             'Runtime-verified (CloudPage, Platform.Load("core","1.1.5")): available. ' +
-            '`SystemDateToLocalDate` / `LocalDateToSystemDate` return CLR DateTime objects (typeof "object"), ' +
-            'which coerce transparently to strings via `"" + value`, `String(value)`, or `Write(value)` — so ' +
-            'treating them as strings is fine in practice. `DateTime.TimeZone.Retrieve(filter)` returns CLR rows ' +
+            '`SystemDateToLocalDate` / `LocalDateToSystemDate` return genuine Date objects (typeof "object", ' +
+            '`Object.prototype.toString` === "[object Date]", `.constructor === Date`, working `getFullYear()` etc.; ' +
+            'only `instanceof Date` is false due to the engine-wide instanceof-on-builtins bug), which also coerce ' +
+            'transparently to strings via `"" + value`, `String(value)`, or `Write(value)`. ' +
+            '`DateTime.TimeZone.Retrieve(filter)` returns CLR rows ' +
             'that `Stringify()` cannot serialize (throws "Object expected"); enumerate fields with `for..in` instead.',
         description:
             'Namespace for time zone and date utilities. ' +
-            'Requires `Platform.Load("core", "1.1.5")` before use. ' +
             'Access sub-namespaces such as `DateTime.TimeZone` for time zone operations.',
         requiresCoreLoad: true,
     },
@@ -559,18 +796,16 @@ export const SSJS_GLOBALS = [
         maxArgs: 2,
         requiresCoreLoad: true,
         isConfirmed: true,
-        differsFromOfficialDocs: true,
+        differsFromOfficialDocs: false,
         officialDocsNote:
             'Runtime-verified (CloudPage): the bare-name `Format` works after `Platform.Load("core", ...)` ' +
-            '(e.g. Format(4213.65, "C2") -> "$4,213.65"). IMPORTANT SCOPE RULE: bare-name Core globals are ' +
-            'injected ONLY into the scope where Platform.Load runs — they are NOT visible inside nested ' +
-            'helper-function bodies or eval(). Call Format at the same scope as Platform.Load. (Curiously, in a ' +
-            'bare CloudPage the prefixed `Platform.Function.Format` can throw "Unable to retrieve security ' +
-            'descriptor for this frame" while the bare-name form succeeds.)',
+            '(e.g. Format(4213.65, "C2") -> "$4,213.65"). This matches the official docs — the Core-library intro ' +
+            'documents that these bare-name globals require Platform.Load, so the requirement is documented ' +
+            'behavior, not a deviation. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — ' +
+            'call the load first. Once loaded they are usable in that scope and inside nested helper-function ' +
+            'bodies that close over it.',
         description:
             'Applies a formatting rule to a string or numeric value. ' +
-            'Requires `Platform.Load("core", "1.1.5")` before use, and must be called in the same scope as ' +
-            '`Platform.Load` (bare-name Core globals are not visible inside nested helper functions). ' +
             'Use format codes such as `C` (currency), `D` (decimal), `N` (number with separators), ' +
             '`P` (percentage), `O` (ISO 8601 date), `s` (sortable date), `d` (short date), `t` (12-hour time), etc. ' +
             'Append a digit to control decimal places, e.g. `C2` for two decimal places.',
@@ -1326,7 +1561,7 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Processes a string as AMPscript/HTML on the SFMC server and returns the rendered result directly as a string. Inline AMPscript (%%=..=%%) is returned in the result; a block-only %%[..]%% string renders to an empty string but its variable side effects persist and are readable by later calls. Does not require Platform.Load("core"). Passing 0 or 2+ arguments throws.',
+            'Processes a string as AMPscript/HTML on the SFMC server and returns the rendered result directly as a string. Inline AMPscript (%%=..=%%) is returned in the result; a block-only %%[..]%% string renders to an empty string but its variable side effects persist and are readable by later calls. Does not require Platform.Load("core").',
         params: [
             {
                 name: 'content',
@@ -1405,7 +1640,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs describe the return as an RFC 2822-compliant date-time string, but the runtime returns a Date object (typeof "object", [object Date] with working Date accessors); it only appears as an RFC 2822 string when coerced during output.',
+            'Runtime-verified (CloudPage): the official docs describe the return as an RFC 2822-compliant date-time string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug (also affects Array/RegExp/Function) — detect via `.constructor === Date`, not `instanceof`. It coerces to an RFC 2822-style string during output.',
         syntax: 'Platform.Function.Now([useContextTime])',
         example:
             'var current = Platform.Function.Now();\nWrite(current); // e.g. "Tue, 14 Jul 2026 17:59:40 GMT-06:00"\n\n// current is a Date object:\nWrite(current.getFullYear()); // 2026\n\n// Use context time during triggered sends:\nvar sendTime = Platform.Function.Now(true);',
@@ -1428,7 +1663,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs type the return value as a string, but the runtime returns a Date object (typeof "object", [object Date], with working getFullYear/getHours/getTime); it only serializes to an ISO-like string when written or stringified.',
+            'Runtime-verified (CloudPage): the official docs type the return value as a string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an ISO-like string when written or stringified.',
         syntax: 'Platform.Function.SystemDateToLocalDate(dateString)',
         example:
             'var systemDate = Platform.Function.Now();\nvar localDate = Platform.Function.SystemDateToLocalDate(systemDate);\nWrite(localDate);',
@@ -1451,7 +1686,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs type the return value as a string, but the runtime returns a Date object (typeof "object", [object Date], with working getFullYear/getHours/getTime); it only serializes to an ISO-like string when written or stringified.',
+            'Runtime-verified (CloudPage): the official docs type the return value as a string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an ISO-like string when written or stringified.',
         syntax: 'Platform.Function.LocalDateToSystemDate(dateString)',
         example:
             'var localDate = "8/5/2025 12:00:00 PM";\nvar systemDate = Platform.Function.LocalDateToSystemDate(localDate);\nWrite(systemDate);',
@@ -1570,11 +1805,11 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 3,
         maxArgs: 3,
         description:
-            'Assigns a property value on a SOAP API object created with CreateObject. Requires exactly three arguments — calling it with fewer or more throws a TypeError ("Unable to retrieve security descriptor for this frame."). The property name is validated against the object\'s real SOAP API schema at set-time: setting an unknown property (or a value the property rejects) throws. String and number values are accepted; the assigned property cannot be read back from SSJS because the underlying CLR object blocks introspection. Returns a genuine JavaScript null on success.',
+            "Assigns a property value on a SOAP API object created with CreateObject. The property name is validated against the object's real SOAP API schema at set-time: setting an unknown property (or a value the property rejects) throws. String and number values are accepted; the assigned property cannot be read back from SSJS because the underlying CLR object blocks introspection. Returns a genuine JavaScript null on success.",
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs type the return as void, but at runtime SetObjectProperty returns a genuine JavaScript null (=== null is true) on success. It also strictly requires exactly three arguments — any other arity throws a TypeError — and validates the property name against the object schema, throwing when the property is unknown or the value is invalid for it.',
+            'The official docs type the return as void, but at runtime SetObjectProperty returns a genuine JavaScript null (=== null is true) on success. It also validates the property name against the object schema, throwing when the property is unknown or the value is invalid for it.',
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
             { name: 'propertyName', description: 'Property name to set', type: 'string' },
@@ -1817,7 +2052,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs list three arguments (including an options object) and type the return value as an object, but at runtime the call takes exactly two arguments (apiObject, status) — passing a third throws a security-descriptor error — and returns an array of result objects.',
+            'The official docs list three arguments (including an options object) and type the return value as an object, but at runtime the call takes exactly two arguments (apiObject, status) — passing the documented third argument throws "Unable to retrieve security descriptor for this frame." — and returns an array of result objects.',
         description:
             'Executes a SOAP API Execute call on an API object and returns an array of result objects. Takes exactly two arguments.',
         params: [
@@ -1904,54 +2139,78 @@ export const PLATFORM_FUNCTIONS = [
     {
         name: 'HTTPGet',
         ampscriptEquivalent: 'HTTPGet',
-        minArgs: 6,
+        minArgs: 1,
         maxArgs: 6,
+        // Discontinuous overload: only a 1-argument call (url only) or the full
+        // 6-argument call are valid at runtime. Calling with 2-5 arguments is
+        // an argument count the engine does not accept, so it throws the generic
+        // "Unable to retrieve security descriptor for this frame." error. A plain
+        // minArgs..maxArgs range cannot express "valid arities = {1, 6}", so this
+        // field lists the exact permitted counts. Consumers that support it emit a
+        // distinct diagnostic when the count is inside the range but not a member.
+        validArities: [1, 6],
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs are wrong on two counts. (1) They state this returns a numeric status, but it actually returns the response body as a string; the numeric status is written to the statusVariable out-parameter (statusVariable[0]). (2) They list emptyContentHandling, headerNames, headerValues, and statusVariable as optional, but runtime testing shows all six arguments are required — the call throws a security-descriptor error otherwise. Pass null for unused header arrays.',
+            'Runtime-verified on a CloudPage. Three corrections to the official docs. ' +
+            '(1) The docs state this returns a numeric status, but it actually returns the response body as a string. ' +
+            '(2) The argument count is a discontinuous overload, not a simple range: only a 1-argument call (url only) or the full 6-argument call are valid. ' +
+            'Calling with 2, 3, 4, or 5 arguments throws "Unable to retrieve security descriptor for this frame." ' +
+            'The trailing five arguments (continueOnError, emptyContentHandling, headerNames, headerValues, statusVariable) form an all-or-nothing group — you must supply all five together or none. ' +
+            'This contradicts the older claim that "all six arguments are required" (the 1-argument form works) as well as the docs listing arguments 3-6 as independently optional. ' +
+            '(3) Even on a successful 6-argument call the statusVariable out-parameter was observed empty (statusVariable.length === 0, statusVariable[0] === undefined), so the numeric status is not reliably delivered in a CloudPage context — read the returned body string and do not depend on statusVariable[0].',
         description:
             'Performs an HTTP GET request and returns the response body as a string. ' +
-            'The numeric status is written into the statusVariable out-parameter (statusVariable[0]). ' +
             'Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. ' +
-            'All six arguments are required; pass null for unused header arrays.',
+            'Valid call forms are exactly two: HTTPGet(url) with a single argument, or the full 6-argument form; ' +
+            'passing 2-5 arguments is an argument count it does not accept and throws the generic "Unable to retrieve security descriptor for this frame." error. ' +
+            'The statusVariable out-parameter is unreliable (observed empty even on success), so read the body from the return value.',
         params: [
             { name: 'url', description: 'URL to request', type: 'string' },
             {
                 name: 'continueOnError',
                 description:
-                    'When true, the request terminates if an error occurs. When false, the request continues on error.',
+                    'When true, the request terminates if an error occurs. When false, the request continues on error. Only valid in the 6-argument form; the trailing five arguments are all-or-nothing.',
                 type: 'boolean',
+                optional: true,
             },
             {
                 name: 'emptyContentHandling',
                 description:
-                    'How to handle a URL that returns empty content: 0 = allow empty, 1 = return error, 2 = skip subscriber.',
+                    'How to handle a URL that returns empty content: 0 = allow empty, 1 = return error, 2 = skip subscriber. Only valid in the 6-argument form (co-required with the other trailing arguments).',
                 type: 'number',
+                optional: true,
             },
             {
                 name: 'headerNames',
                 description:
-                    'Array of header names to include in the GET request (pass null when none).',
+                    'Array of header names to include in the GET request (pass null when none). Only valid in the 6-argument form (co-required with the other trailing arguments).',
                 type: 'string[]',
+                optional: true,
             },
             {
                 name: 'headerValues',
                 description:
-                    'Array of header values corresponding to headerNames (pass null when none).',
+                    'Array of header values corresponding to headerNames (pass null when none). Only valid in the 6-argument form (co-required with the other trailing arguments).',
                 type: 'string[]',
+                optional: true,
             },
             {
                 name: 'statusVariable',
                 description:
-                    'Array that receives the status code: 0 = success, -1 = URL not found, -2 = HTTP error, -3 = success but no content.',
+                    'Array intended to receive the status code, but observed empty at runtime even on success — do not rely on it. Only valid in the 6-argument form (co-required with the other trailing arguments).',
                 type: 'number[]',
+                optional: true,
             },
         ],
         returnType: 'string',
-        syntax: 'Platform.Function.HTTPGet(url, continueOnError, emptyContentHandling, headerNames, headerValues, statusVariable)',
+        syntax: 'Platform.Function.HTTPGet(url) | Platform.Function.HTTPGet(url, continueOnError, emptyContentHandling, headerNames, headerValues, statusVariable)',
         example:
-            'var status = [0];\n' +
+            '// Valid form 1 - single argument, returns the response body as a string\n' +
+            'var body = Platform.Function.HTTPGet("https://api.example.com/data");\n' +
+            'var obj = Platform.Function.ParseJSON(body);\n\n' +
+            '// Valid form 2 - full 6-argument form (the trailing five are all-or-nothing)\n' +
+            'var status = [];\n' +
             'var content = Platform.Function.HTTPGet(\n' +
             '    "https://api.example.com/data",\n' +
             '    false,\n' +
@@ -1960,9 +2219,8 @@ export const PLATFORM_FUNCTIONS = [
             '    ["sampleValue"],\n' +
             '    status\n' +
             ');\n' +
-            'if (status[0] === 0) {\n' +
-            '    var obj = Platform.Function.ParseJSON(content);\n' +
-            '}',
+            '// Note: status[0] is unreliable (observed empty); read the body from `content`.\n' +
+            'var parsed = Platform.Function.ParseJSON(content);',
     },
     {
         name: 'HTTPPost',
@@ -2463,6 +2721,7 @@ export const CORE_LIBRARY_OBJECTS = [
     {
         name: 'QueryDefinition',
         methods: [...STANDARD_METHODS, 'Perform'],
+        requiresCoreLoad: true,
         description: 'Manages SQL query activity definitions.',
     },
     {
@@ -2537,6 +2796,7 @@ export const CORE_LIBRARY_OBJECTS = [
     {
         name: 'FilterDefinition',
         methods: STANDARD_METHODS,
+        requiresCoreLoad: true,
         description: 'Manages data filter definitions.',
     },
     {
@@ -6511,7 +6771,7 @@ export const WSPROXY_METHODS = [
             'Object with Status, HasMoreRows, RequestID, and Results array. When a result set is paged, Status is "MoreDataAvailable" and HasMoreRows is true; the final page returns Status "OK" and HasMoreRows false.',
         syntax: '<WSProxyInstance>.retrieve(objectType, columns[, filter[, retrieveOptions[, requestProps]]])',
         officialDocsNote:
-            'Runtime verified in an anonymous CloudPage: retrieve(objectType, columns, null, { BatchSize: 2 }, { QueryAllAccounts: false }) against a 6-row Data Extension returned a first page with Status "MoreDataAvailable", HasMoreRows true, a RequestID, and exactly 2 rows — the retrieveOptions.BatchSize argument does NOT throw the security-descriptor error that the setBatchSize() instance method throws. Continuation via the requestProps.ContinueRequest field works: setting props.ContinueRequest to the returned RequestID and calling retrieve again returned each subsequent page (3 pages of 2 rows, 6 total), with the RequestID held constant across the sequence and HasMoreRows flipping to false (Status "OK") on the final page. This is a retrieve-only paging alternative to getNextBatch. BatchSize caps at 2500; larger values are ignored.',
+            'Runtime verified on a CloudPage: retrieve(objectType, columns, null, { BatchSize: 2 }, { QueryAllAccounts: false }) against a 6-row Data Extension returned a first page with Status "MoreDataAvailable", HasMoreRows true, a RequestID, and exactly 2 rows — the retrieveOptions.BatchSize argument pages cleanly without throwing. Continuation via the requestProps.ContinueRequest field works: setting props.ContinueRequest to the returned RequestID and calling retrieve again returned each subsequent page (3 pages of 2 rows, 6 total), with the RequestID held constant across the sequence and HasMoreRows flipping to false (Status "OK") on the final page. This is a retrieve-only paging alternative to getNextBatch. BatchSize caps at 2500; larger values are ignored.',
         example:
             'var api = new Script.Util.WSProxy();\n' +
             'var cols = ["Name", "CustomerKey", "Status"];\n' +
@@ -6562,7 +6822,7 @@ export const WSPROXY_METHODS = [
             '}',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime (CloudPage) proved the full paginated continuation without ever calling setBatchSize: a natural retrieve of a Data Extension seeded with 2600 rows returned the first page with Status "MoreDataAvailable", HasMoreRows true, a RequestID, and exactly 2500 rows (the default page size); passing that objectType + RequestID to getNextBatch returned the next page with Status "OK", HasMoreRows false, and the remaining 100 rows, for a total of 2600 across two pages. Each Results row exposes a Properties array of { Name, Value } pairs. Pagination therefore happens naturally once a result set exceeds the 2500-row default page size — setBatchSize is NOT a prerequisite (and does throw in the anonymous CloudPage). Calling getNextBatch with a completed/invalid RequestID returns Status "Error: The RequestID sent through ContinueRequest does not exist." The call maps to the SOAP ContinueRequest operation.',
+            'Runtime (CloudPage) proved the full paginated continuation: a natural retrieve of a Data Extension seeded with 2600 rows returned the first page with Status "MoreDataAvailable", HasMoreRows true, a RequestID, and exactly 2500 rows (the default page size); passing that objectType + RequestID to getNextBatch returned the next page with Status "OK", HasMoreRows false, and the remaining 100 rows, for a total of 2600 across two pages. Each Results row exposes a Properties array of { Name, Value } pairs. Pagination therefore happens naturally once a result set exceeds the 2500-row default page size. Calling getNextBatch with a completed/invalid RequestID returns Status "Error: The RequestID sent through ContinueRequest does not exist." The call maps to the SOAP ContinueRequest operation.',
     },
     {
         name: 'performItem',
@@ -6711,32 +6971,6 @@ export const WSPROXY_METHODS = [
             'var result = api.execute(props, "LogUnsubEvent");\n' +
             'Write(result.Status);',
         isConfirmed: true,
-    },
-    {
-        name: 'setBatchSize',
-        isStatic: false,
-        minArgs: 1,
-        maxArgs: 1,
-        description:
-            'Sets the maximum number of objects returned per SOAP API page (default is 2500).',
-        params: [
-            {
-                name: 'batchSize',
-                description: 'Maximum number of objects per batch',
-                type: 'number',
-            },
-        ],
-        returnType: 'void',
-        syntax: '<WSProxyInstance>.setBatchSize(batchSize)',
-        example:
-            'var api = new Script.Util.WSProxy();\n' +
-            'api.setBatchSize(200);\n' +
-            'var result = api.retrieve("DataExtension", ["Name"], {});',
-        isConfirmed: false,
-        verificationBlocked: true,
-        verificationBlockedReason: 'needs-auth-context',
-        officialDocsNote:
-            'The setBatchSize() INSTANCE METHOD resolves at runtime (typeof is "clrmethodinfo") but calling setBatchSize(n) in an anonymous CloudPage throws System.InvalidOperationException "Unable to retrieve security descriptor for this frame" (mscorlib), so its effect on the per-page row count could not be runtime-proven in that context; it is NOT required to paginate. Do NOT confuse this throwing instance method with the SEPARATE retrieveOptions.BatchSize argument of retrieve() (its 4th parameter): that argument is runtime-verified to work in the anonymous CloudPage — retrieve(obj, cols, null, { BatchSize: n }, props) pages cleanly (Status "MoreDataAvailable") without throwing, and requestProps.ContinueRequest continues the paging. Use retrieveOptions.BatchSize / ContinueRequest (or getNextBatch) to page; only the setBatchSize() method itself is blocked.',
     },
     {
         name: 'setClientId',
@@ -7160,9 +7394,9 @@ export const PLATFORM_REQUEST_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage GET): for an ABSENT parameter it returns `null` (typeof "object"), ' +
-            'NOT an empty string. A present parameter returns its string value. Guard reads with a ' +
-            'truthiness / `!= null` check.',
+            'Runtime-verified (CloudPage GET, ?probeParam=hello): a present parameter returns its string value ' +
+            '("hello"); an ABSENT parameter returns `null` (typeof "object"), NOT an empty string. ' +
+            'Guard reads with a truthiness / `!= null` check.',
         syntax: 'Platform.Request.GetQueryStringParameter(parameterName)',
         example:
             '// Page URL: /mypage?email=jane@example.com\nvar email = Platform.Request.GetQueryStringParameter("email");\nWrite(email);',
@@ -7179,8 +7413,8 @@ export const PLATFORM_REQUEST_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): for an ABSENT field it returns ' +
-            '`null` (typeof "object"), NOT an empty string.',
+            'Runtime-verified (CloudPage): for an ABSENT field it returns `null` (typeof "object"), NOT an empty ' +
+            'string.',
         syntax: 'Platform.Request.GetFormField(name)',
         example: 'var email = Platform.Request.GetFormField("emailAddress");\nWrite(email);',
     },
@@ -7236,11 +7470,18 @@ export const PLATFORM_REQUEST_METHODS = [
             'Returns the language preferences of the client browser as specified in the HTTP Accept-Language request header.',
         params: [],
         returnType: 'string',
-        isConfirmed: true,
-        differsFromOfficialDocs: true,
+        isConfirmed: false,
+        notDefinedAtRuntime: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): THROWS "Unable to retrieve security descriptor for this frame." ' +
-            'in a plain CloudPage GET context. Wrap in try/catch or avoid; may only work in specific contexts.',
+            'Officially documented to return the `Accept-Language` header value, but `GetUserLanguages()` as ' +
+            'called is NOT DEFINED AT RUNTIME: the engine does not resolve this member — runtime probing shows ' +
+            'it throws the generic `System.InvalidOperationException: "Unable to retrieve security descriptor ' +
+            'for this frame."` at every arity tried (0/1/2 args), the error the SSJS engine raises for an ' +
+            'unrecognized member name or an argument count the engine does not accept (NOT a security or ' +
+            'frame restriction). The same `Accept-Language` header IS present and readable in the same run via ' +
+            '`Platform.Request.GetRequestHeader("Accept-Language")`. Use ' +
+            '`Platform.Request.GetRequestHeader("Accept-Language")` instead, which returns the same value ' +
+            'this method is documented to expose.',
         syntax: 'Platform.Request.GetUserLanguages()',
         example:
             'var lang = Platform.Request.GetUserLanguages();\nWrite(lang); // e.g. "en-US,en;q=0.9"',
@@ -7370,6 +7611,161 @@ export const PLATFORM_REQUEST_METHODS = [
     },
 ];
 
+// ── Core Library "Request Object Utility Functions" methods ──────────────────
+// The bare-name Core `Request` object (available after Platform.Load("core","1"))
+// exposes these zero-arg utility METHODS plus the single-argument value getters
+// GetQueryStringParameter and GetFormField. This is a DIFFERENT, distinct object
+// from Platform.Request (which uses PROPERTIES like RequestURL and CLR methods) —
+// not an alias of it. For example `Request.URL()` is a real METHOD here whereas on
+// Platform.Request the equivalent is the `RequestURL` PROPERTY.
+// Runtime-verified on a published CloudPage: the six context
+// methods invoke cleanly (URL() returns the full URL; Method() returns the HTTP verb;
+// the rest return empty strings outside their populating context), and the two value
+// getters return the query-string value for a present key (null for an absent key).
+// Referenced by the generator via PLATFORM_NAMESPACE_MAP['Request'].
+export const REQUEST_UTILITY_METHODS = [
+    {
+        name: 'URL',
+        minArgs: 0,
+        maxArgs: 0,
+        requiresCoreLoad: true,
+        description: 'Returns the full URL of the current page request.',
+        params: [],
+        returnType: 'string',
+        isConfirmed: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage GET): returns the full request URL as a string ' +
+            '(e.g. `https://…pub.sfmc-content.com/hovt2pwtcq3`). This is a distinct Core object ' +
+            'method, not an alias of `Platform.Request` — the equivalent there is the ' +
+            '`RequestURL` PROPERTY, not a `URL()` method.',
+        syntax: 'Request.URL()',
+        example: 'var requestURL = Request.URL();\nWrite(requestURL);',
+    },
+    {
+        name: 'PagePath',
+        minArgs: 0,
+        maxArgs: 0,
+        requiresCoreLoad: true,
+        description: 'Returns the path portion of the current page request.',
+        params: [],
+        returnType: 'string',
+        isConfirmed: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage GET): invokes cleanly and returns an empty string ' +
+            '(`""`) outside its populating context. This is a distinct Core object method, ' +
+            'not an alias of `Platform.Request`.',
+        syntax: 'Request.PagePath()',
+        example: 'var path = Request.PagePath();\nWrite(path);',
+    },
+    {
+        name: 'Method',
+        minArgs: 0,
+        maxArgs: 0,
+        requiresCoreLoad: true,
+        description: 'Returns the HTTP method (GET, POST, etc.) of the current request.',
+        params: [],
+        returnType: 'string',
+        isConfirmed: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage GET): returns the HTTP verb as a string (e.g. `"GET"`). ' +
+            'This is a distinct Core object method, not an alias of `Platform.Request` — the ' +
+            'equivalent there is the `Method` PROPERTY.',
+        syntax: 'Request.Method()',
+        example: 'var method = Request.Method();\nWrite(method);',
+    },
+    {
+        name: 'ApplicationID',
+        minArgs: 0,
+        maxArgs: 0,
+        requiresCoreLoad: true,
+        description: 'Returns the application ID associated with the current request.',
+        params: [],
+        returnType: 'string',
+        isConfirmed: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage GET): invokes cleanly and returns an empty string ' +
+            '(`""`) outside its populating context. This is a distinct Core object method, ' +
+            'not an alias of `Platform.Request`.',
+        syntax: 'Request.ApplicationID()',
+        example: 'var appId = Request.ApplicationID();\nWrite(appId);',
+    },
+    {
+        name: 'PackageID',
+        minArgs: 0,
+        maxArgs: 0,
+        requiresCoreLoad: true,
+        description: 'Returns the package ID associated with the current request.',
+        params: [],
+        returnType: 'string',
+        isConfirmed: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage GET): invokes cleanly and returns an empty string ' +
+            '(`""`) outside its populating context. This is a distinct Core object method, ' +
+            'not an alias of `Platform.Request`.',
+        syntax: 'Request.PackageID()',
+        example: 'var packageId = Request.PackageID();\nWrite(packageId);',
+    },
+    {
+        name: 'ApplicationBaseURL',
+        minArgs: 0,
+        maxArgs: 0,
+        requiresCoreLoad: true,
+        description: 'Returns the base URL of the application for the current request.',
+        params: [],
+        returnType: 'string',
+        isConfirmed: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage GET): invokes cleanly and returns an empty string ' +
+            '(`""`) outside its populating context. This is a distinct Core object method, ' +
+            'not an alias of `Platform.Request`.',
+        syntax: 'Request.ApplicationBaseURL()',
+        example: 'var baseUrl = Request.ApplicationBaseURL();\nWrite(baseUrl);',
+    },
+    {
+        name: 'GetQueryStringParameter',
+        minArgs: 1,
+        maxArgs: 1,
+        requiresCoreLoad: true,
+        description:
+            'Returns the value of a named URL query string parameter for the current page request, or null when the parameter is absent.',
+        params: [
+            {
+                name: 'name',
+                description: 'Key name of the query string parameter to read.',
+                type: 'string',
+            },
+        ],
+        returnType: 'string',
+        isConfirmed: true,
+        officialDocsNote:
+            'Runtime-verified on a published CloudPage GET (?probeParam=hello): Request.GetQueryStringParameter("probeParam") returned "hello" (typeof "string"); an absent key returned null (typeof "object"). Unlike the CLR-backed Platform.Request.GetQueryStringParameter, this bare-name Core method is a Jint function: calling it with zero arguments returns null and a surplus second argument is ignored (it does NOT throw the "Unable to retrieve security descriptor for this frame." arity error). This is a distinct Core object method, not an alias of Platform.Request.GetQueryStringParameter. Guard reads with a truthiness / != null check.',
+        syntax: 'Request.GetQueryStringParameter(name)',
+        example:
+            'var sku = Request.GetQueryStringParameter("sku");\nif (sku) { Write("SKU: " + sku); }',
+    },
+    {
+        name: 'GetFormField',
+        minArgs: 1,
+        maxArgs: 1,
+        requiresCoreLoad: true,
+        description:
+            'Returns the value of a named form field submitted with the current request (including POST data), or null when the field is absent. Also reads GET query string values.',
+        params: [
+            {
+                name: 'name',
+                description: 'Name of the form field to read.',
+                type: 'string',
+            },
+        ],
+        returnType: 'string',
+        isConfirmed: true,
+        officialDocsNote:
+            'Runtime-verified on a published CloudPage GET: Request.GetFormField("probeParam") returned null (typeof "object") because no form field was posted; an absent key also returned null. This bare-name Core method is a Jint function: calling it with zero arguments or a surplus second argument does NOT throw the "Unable to retrieve security descriptor for this frame." arity error (it returns null / ignores the extra argument), unlike the CLR-backed Platform.Request.GetFormField. Populated form values were not exercised in the GET probe; a POST request is needed to observe a non-null return. This is a distinct Core object method, not an alias of Platform.Request.GetFormField. Guard reads with a truthiness / != null check.',
+        syntax: 'Request.GetFormField(name)',
+        example: 'var email = Request.GetFormField("emailAddress");\nif (email) { Write(email); }',
+    },
+];
+
 // ── Platform.Recipient methods ───────────────────────────────────────────────
 // Methods available under Platform.Recipient.* for accessing recipient/subscriber
 // attribute values and sendable data extension fields during email sends.
@@ -7420,7 +7816,7 @@ export const ATTRIBUTE_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified on a published CloudPage: after Platform.Load("Core", ...) the Attribute object exists and Attribute.GetValue(name) executes and returns a string — it is NOT unavailable in CloudPages. When no subscriber/attribute is in context (e.g. an anonymous CloudPage GET) it returns an empty string rather than throwing. In email/triggered-send/personalized contexts it returns the actual attribute value.',
+            'Runtime-verified on a published CloudPage: after Platform.Load("Core", ...) the Attribute object exists and Attribute.GetValue(name) executes and returns a string — it is NOT unavailable in CloudPages. When no subscriber/attribute is in context (e.g. a plain CloudPage GET) it returns an empty string rather than throwing. In email/triggered-send/personalized contexts it returns the actual attribute value.',
         description:
             'Returns the value of the specified subscriber attribute or sendable data extension field for the current recipient. ' +
             'Preferred over Platform.Recipient.GetAttributeValue() — both methods are equivalent. ' +
@@ -7453,7 +7849,7 @@ export const DATE_TIME_METHODS = [
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Converts a date-time value from Marketing Cloud system time (CST) to the local time of the account or user.',
+            'Converts a date-time value from Marketing Cloud system time (CST) to the local time of the account or user. Returns a Date object.',
         params: [
             {
                 name: 'dateString',
@@ -7461,18 +7857,29 @@ export const DATE_TIME_METHODS = [
                 type: 'string',
             },
         ],
-        returnType: 'string',
+        returnType: 'Date',
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the `DateTime.SystemDateToLocalDate` bare-name form behaves IDENTICALLY to ' +
+            '`Platform.Function.SystemDateToLocalDate` (same value, same type). The official docs type the return as a ' +
+            'string, but the runtime returns a genuine Date object: typeof "object", `Object.prototype.toString` reports ' +
+            '"[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical ' +
+            'to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide ' +
+            '`instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an ' +
+            'ISO-like string when written or stringified. SCOPE RULE: bare-name Core globals exist ONLY after ' +
+            'Platform.Load("core", ...) has run — call the load first.',
         syntax: 'DateTime.SystemDateToLocalDate(dateString)',
         example:
-            'var localTime = DateTime.SystemDateToLocalDate(Platform.Function.Now());\nWrite(localTime);',
+            'Platform.Load("core", "1.1.5");\nvar localTime = DateTime.SystemDateToLocalDate(Platform.Function.Now());\nWrite(localTime);',
     },
     {
         name: 'LocalDateToSystemDate',
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST).',
+            'Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST). Returns a Date object.',
         params: [
             {
                 name: 'dateString',
@@ -7480,11 +7887,22 @@ export const DATE_TIME_METHODS = [
                 type: 'string',
             },
         ],
-        returnType: 'string',
+        returnType: 'Date',
         requiresCoreLoad: true,
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the `DateTime.LocalDateToSystemDate` bare-name form behaves IDENTICALLY to ' +
+            '`Platform.Function.LocalDateToSystemDate` (same value, same type). The official docs type the return as a ' +
+            'string, but the runtime returns a genuine Date object: typeof "object", `Object.prototype.toString` reports ' +
+            '"[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical ' +
+            'to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide ' +
+            '`instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an ' +
+            'ISO-like string when written or stringified. SCOPE RULE: bare-name Core globals exist ONLY after ' +
+            'Platform.Load("core", ...) has run — call the load first.',
         syntax: 'DateTime.LocalDateToSystemDate(dateString)',
         example:
-            'var systemTime = DateTime.LocalDateToSystemDate("8/5/2025 12:34 PM");\nWrite(systemTime);',
+            'Platform.Load("core", "1.1.5");\nvar systemTime = DateTime.LocalDateToSystemDate("8/5/2025 12:34 PM");\nWrite(systemTime);',
     },
 ];
 
@@ -8872,6 +9290,31 @@ export const ECMASCRIPT_BUILTINS = [
             'Write(isFinite(1 / 0)); // false (Infinity)\n' +
             'Write(isFinite(NaN)); // false',
     },
+    {
+        name: 'eval',
+        owner: 'Global',
+        esVersion: 3,
+        description:
+            'Parses a string of JavaScript source and executes it as a script, returning the completion ' +
+            'value of the last evaluated expression (or undefined when there is nothing to complete). A ' +
+            'non-string argument is returned unchanged. Runtime-verified to work in SFMC SSJS: direct eval ' +
+            'sees the surrounding local scope, and bare-name Core globals loaded via Platform.Load are ' +
+            'visible inside the evaluated string. Use sparingly — it runs arbitrary code and is a common ' +
+            'injection risk; prefer Platform.Function.ParseJSON for parsing data.',
+        params: [
+            {
+                name: 'script',
+                description: 'A string of JavaScript source to evaluate',
+                type: 'string',
+            },
+        ],
+        returnType: 'any',
+        syntax: 'eval(script)',
+        example:
+            'Write(eval("1 + 1")); // 2\n' +
+            'var x = 5;\nWrite(eval("x + 10")); // 15\n' +
+            'Platform.Load("core","1.1.5");\nWrite(eval("Stringify({a:1})")); // {"a":1}',
+    },
     // ── RegExp constructor ────────────────────────────────────────────────────
     // Emitted as `declare function RegExp(...)` so that `new RegExp(...)` and
     // `RegExp(...)` both pass TypeScript validation in .ssjs files.
@@ -10236,8 +10679,7 @@ export const POLYFILLABLE_METHODS = [
         description:
             'Date.prototype.toISOString is not available in SFMC SSJS (typeof d.toISOString is undefined; calling it throws "Object expected: toISOString"). ' +
             'Date.prototype.toJSON is also absent because it depends on toISOString. Installing a working method on Date.prototype is unreliable here, ' +
-            'so use the standalone toISOStringUTC helper instead: toISOStringUTC(date) builds the ISO 8601 UTC string from the working getUTC* getters. ' +
-            'Alternatively use Platform.Function.FormatDate.',
+            'so use the standalone toISOStringUTC helper instead: toISOStringUTC(date) builds the ISO 8601 UTC string from the working getUTC* getters.',
         polyfill:
             '/**\n' +
             ' * Standalone replacement for the missing Date.prototype.toISOString (SFMC SSJS).\n' +
@@ -10608,7 +11050,7 @@ export const KNOWN_UNSUPPORTED = [
         category: 'unavailable',
         hasPolyfill: false,
         suggestion:
-            'Date.prototype.toISOString is unavailable in SFMC. Build the ISO string manually from the get* methods, or use Platform.Function.SystemDateToLocalDate / FormatDate.',
+            'Date.prototype.toISOString is unavailable in SFMC. Build the ISO string manually from the get* methods, or use Platform.Function.SystemDateToLocalDate.',
     },
     {
         member: 'toJSON',
@@ -10618,7 +11060,7 @@ export const KNOWN_UNSUPPORTED = [
         category: 'unavailable',
         hasPolyfill: false,
         suggestion:
-            'Date.prototype.toJSON is unavailable in SFMC (it depends on the absent toISOString). Serialize dates with a manual ISO string built from the getUTC* methods, or use Platform.Function.FormatDate.',
+            'Date.prototype.toJSON is unavailable in SFMC (it depends on the absent toISOString). Serialize dates with a manual ISO string built from the getUTC* methods.',
     },
     // ── JSON (entire object is undefined) ────────────────────────────────────
     {
@@ -11268,6 +11710,9 @@ export const platformVariableLookup = new Map(
 );
 export const platformRequestLookup = new Map(
     PLATFORM_REQUEST_METHODS.map((m) => [m.name.toLowerCase(), m]),
+);
+export const requestUtilityLookup = new Map(
+    REQUEST_UTILITY_METHODS.map((m) => [m.name.toLowerCase(), m]),
 );
 export const platformRecipientLookup = new Map(
     PLATFORM_RECIPIENT_METHODS.map((m) => [m.name.toLowerCase(), m]),

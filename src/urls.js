@@ -34,7 +34,8 @@ const MDN_GLOBAL_CONSTRUCTORS = new Set([
 ]);
 
 /** Top-level global functions/values that MDN documents under Global_Objects/<member>. */
-const MDN_GLOBAL_FUNCTIONS = new Set([
+export const MDN_GLOBAL_FUNCTIONS = new Set([
+    'eval',
     'parseInt',
     'parseFloat',
     'isNaN',
@@ -396,6 +397,14 @@ export const GLOBAL_FUNCTION_PAGES = new Set([
     'request',
     'contentarea',
     'contentareabyname',
+    // Bare-name Platform.Function aliases that also get a dedicated
+    // /core-library/<name>/ page cross-linked with their Platform.Function page.
+    'now',
+    'guid',
+    'isemailaddress',
+    'isphonenumber',
+    'beginimpressionregion',
+    'endimpressionregion',
 ]);
 
 /**

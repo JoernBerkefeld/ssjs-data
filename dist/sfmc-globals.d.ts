@@ -296,7 +296,7 @@ declare namespace Platform {
          */
         function ContentImageByID(id: number, fallbackId?: number): string;
         /**
-         * Processes a string as AMPscript/HTML on the SFMC server and returns the rendered result directly as a string. Inline AMPscript (%%=..=%%) is returned in the result; a block-only %%[..]%% string renders to an empty string but its variable side effects persist and are readable by later calls. Does not require Platform.Load("core"). Passing 0 or 2+ arguments throws.
+         * Processes a string as AMPscript/HTML on the SFMC server and returns the rendered result directly as a string. Inline AMPscript (%%=..=%%) is returned in the result; a block-only %%[..]%% string renders to an empty string but its variable side effects persist and are readable by later calls. Does not require Platform.Load("core").
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/treatascontent/)
          *
@@ -341,7 +341,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/now/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs describe the return as an RFC 2822-compliant date-time string, but the runtime returns a Date object (typeof "object", [object Date] with working Date accessors); it only appears as an RFC 2822 string when coerced during output.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the official docs describe the return as an RFC 2822-compliant date-time string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug (also affects Array/RegExp/Function) — detect via `.constructor === Date`, not `instanceof`. It coerces to an RFC 2822-style string during output.
          * @param useContextTime - When true, returns the time the triggering send or activity was initiated. When false or omitted, returns the current system clock time.
          * @example
          * var current = Platform.Function.Now();
@@ -360,7 +360,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/systemdatetolocaldate/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return value as a string, but the runtime returns a Date object (typeof "object", [object Date], with working getFullYear/getHours/getTime); it only serializes to an ISO-like string when written or stringified.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the official docs type the return value as a string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an ISO-like string when written or stringified.
          * @param dateString - Date-time string in system time (CST)
          * @example
          * var systemDate = Platform.Function.Now();
@@ -374,7 +374,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/localdatetosystemdate/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return value as a string, but the runtime returns a Date object (typeof "object", [object Date], with working getFullYear/getHours/getTime); it only serializes to an ISO-like string when written or stringified.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the official docs type the return value as a string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an ISO-like string when written or stringified.
          * @param dateString - Date-time string in local account/user time
          * @example
          * var localDate = "8/5/2025 12:00:00 PM";
@@ -456,12 +456,12 @@ declare namespace Platform {
          */
         function CreateObject(objectType: string): object;
         /**
-         * Assigns a property value on a SOAP API object created with CreateObject. Requires exactly three arguments — calling it with fewer or more throws a TypeError ("Unable to retrieve security descriptor for this frame."). The property name is validated against the object's real SOAP API schema at set-time: setting an unknown property (or a value the property rejects) throws. String and number values are accepted; the assigned property cannot be read back from SSJS because the underlying CLR object blocks introspection. Returns a genuine JavaScript null on success.
+         * Assigns a property value on a SOAP API object created with CreateObject. The property name is validated against the object's real SOAP API schema at set-time: setting an unknown property (or a value the property rejects) throws. String and number values are accepted; the assigned property cannot be read back from SSJS because the underlying CLR object blocks introspection. Returns a genuine JavaScript null on success.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/setobjectproperty/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return as void, but at runtime SetObjectProperty returns a genuine JavaScript null (=== null is true) on success. It also strictly requires exactly three arguments — any other arity throws a TypeError — and validates the property name against the object schema, throwing when the property is unknown or the value is invalid for it.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return as void, but at runtime SetObjectProperty returns a genuine JavaScript null (=== null is true) on success. It also validates the property name against the object schema, throwing when the property is unknown or the value is invalid for it.
          * @param apiObject - SOAP API object instance
          * @param propertyName - Property name to set
          * @param value - Value to assign
@@ -594,7 +594,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeexecute/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs list three arguments (including an options object) and type the return value as an object, but at runtime the call takes exactly two arguments (apiObject, status) — passing a third throws a security-descriptor error — and returns an array of result objects.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs list three arguments (including an options object) and type the return value as an object, but at runtime the call takes exactly two arguments (apiObject, status) — passing the documented third argument throws "Unable to retrieve security descriptor for this frame." — and returns an array of result objects.
          * @param apiObject - SOAP API object instance
          * @param status - Array that receives the status and request ID of the API call (e.g. [0, 0])
          * @example
@@ -638,20 +638,25 @@ declare namespace Platform {
          */
         function InvokeSchedule(apiObject: object, action: string, schedule: object, statusArray: any[], options?: object): string;
         /**
-         * Performs an HTTP GET request and returns the response body as a string. The numeric status is written into the statusVariable out-parameter (statusVariable[0]). Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. All six arguments are required; pass null for unused header arrays.
+         * Performs an HTTP GET request and returns the response body as a string. Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. Valid call forms are exactly two: HTTPGet(url) with a single argument, or the full 6-argument form; passing 2-5 arguments is an argument count it does not accept and throws the generic "Unable to retrieve security descriptor for this frame." error. The statusVariable out-parameter is unreliable (observed empty even on success), so read the body from the return value.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/httpget/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs are wrong on two counts. (1) They state this returns a numeric status, but it actually returns the response body as a string; the numeric status is written to the statusVariable out-parameter (statusVariable[0]). (2) They list emptyContentHandling, headerNames, headerValues, and statusVariable as optional, but runtime testing shows all six arguments are required — the call throws a security-descriptor error otherwise. Pass null for unused header arrays.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage. Three corrections to the official docs. (1) The docs state this returns a numeric status, but it actually returns the response body as a string. (2) The argument count is a discontinuous overload, not a simple range: only a 1-argument call (url only) or the full 6-argument call are valid. Calling with 2, 3, 4, or 5 arguments throws "Unable to retrieve security descriptor for this frame." The trailing five arguments (continueOnError, emptyContentHandling, headerNames, headerValues, statusVariable) form an all-or-nothing group — you must supply all five together or none. This contradicts the older claim that "all six arguments are required" (the 1-argument form works) as well as the docs listing arguments 3-6 as independently optional. (3) Even on a successful 6-argument call the statusVariable out-parameter was observed empty (statusVariable.length === 0, statusVariable[0] === undefined), so the numeric status is not reliably delivered in a CloudPage context — read the returned body string and do not depend on statusVariable[0].
          * @param url - URL to request
-         * @param continueOnError - When true, the request terminates if an error occurs. When false, the request continues on error.
-         * @param emptyContentHandling - How to handle a URL that returns empty content: 0 = allow empty, 1 = return error, 2 = skip subscriber.
-         * @param headerNames - Array of header names to include in the GET request (pass null when none).
-         * @param headerValues - Array of header values corresponding to headerNames (pass null when none).
-         * @param statusVariable - Array that receives the status code: 0 = success, -1 = URL not found, -2 = HTTP error, -3 = success but no content.
+         * @param continueOnError - When true, the request terminates if an error occurs. When false, the request continues on error. Only valid in the 6-argument form; the trailing five arguments are all-or-nothing.
+         * @param emptyContentHandling - How to handle a URL that returns empty content: 0 = allow empty, 1 = return error, 2 = skip subscriber. Only valid in the 6-argument form (co-required with the other trailing arguments).
+         * @param headerNames - Array of header names to include in the GET request (pass null when none). Only valid in the 6-argument form (co-required with the other trailing arguments).
+         * @param headerValues - Array of header values corresponding to headerNames (pass null when none). Only valid in the 6-argument form (co-required with the other trailing arguments).
+         * @param statusVariable - Array intended to receive the status code, but observed empty at runtime even on success — do not rely on it. Only valid in the 6-argument form (co-required with the other trailing arguments).
          * @example
-         * var status = [0];
+         * // Valid form 1 - single argument, returns the response body as a string
+         * var body = Platform.Function.HTTPGet("https://api.example.com/data");
+         * var obj = Platform.Function.ParseJSON(body);
+         *
+         * // Valid form 2 - full 6-argument form (the trailing five are all-or-nothing)
+         * var status = [];
          * var content = Platform.Function.HTTPGet(
          *     "https://api.example.com/data",
          *     false,
@@ -660,11 +665,10 @@ declare namespace Platform {
          *     ["sampleValue"],
          *     status
          * );
-         * if (status[0] === 0) {
-         *     var obj = Platform.Function.ParseJSON(content);
-         * }
+         * // Note: status[0] is unreliable (observed empty); read the body from `content`.
+         * var parsed = Platform.Function.ParseJSON(content);
          */
-        function HTTPGet(url: string, continueOnError: boolean, emptyContentHandling: number, headerNames: string[], headerValues: string[], statusVariable: number[]): string;
+        function HTTPGet(url: string, continueOnError?: boolean, emptyContentHandling?: number, headerNames?: string[], headerValues?: string[], statusVariable?: number[]): string;
         /**
          * Performs an HTTP POST request with a content type and payload. Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. Returns the HTTP status code as a number (e.g. 200 for success). The optional response out-parameter is unreliable — in runtime tests it stayed empty even for successful requests, so read the status code from the return value and use HTTP.Post / a WSProxy call when you need the response body.
          *
@@ -971,7 +975,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage GET): for an ABSENT parameter it returns `null` (typeof "object"), NOT an empty string. A present parameter returns its string value. Guard reads with a truthiness / `!= null` check.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage GET, ?probeParam=hello): a present parameter returns its string value ("hello"); an ABSENT parameter returns `null` (typeof "object"), NOT an empty string. Guard reads with a truthiness / `!= null` check.
          * @param parameterName - Name of the query string parameter.
          * @example
          * // Page URL: /mypage?email=jane@example.com
@@ -1018,18 +1022,6 @@ declare namespace Platform {
          * if (sessionId) { Write("Session: " + sessionId); }
          */
         function GetCookieValue(cookieName: string): string;
-        /**
-         * Returns the language preferences of the client browser as specified in the HTTP Accept-Language request header.
-         *
-         * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
-         *
-         * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): THROWS "Unable to retrieve security descriptor for this frame." in a plain CloudPage GET context. Wrap in try/catch or avoid; may only work in specific contexts.
-         * @example
-         * var lang = Platform.Request.GetUserLanguages();
-         * Write(lang); // e.g. "en-US,en;q=0.9"
-         */
-        function GetUserLanguages(): string;
         /**
          * Returns the value of the named HTTP request header, or null if not present.
          *
@@ -1109,182 +1101,112 @@ declare namespace Variable {
 
 declare namespace Request {
     /**
-     * Retrieves the value of a URL query string parameter.
+     * Returns the full URL of the current page request.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage GET): for an ABSENT parameter it returns `null` (typeof "object"), NOT an empty string. A present parameter returns its string value. Guard reads with a truthiness / `!= null` check.
-     * @param parameterName - Name of the query string parameter.
      * @example
-     * // Page URL: /mypage?email=jane@example.com
-     * var email = Platform.Request.GetQueryStringParameter("email");
-     * Write(email);
+     * var requestURL = Request.URL();
+     * Write(requestURL);
      */
-    function GetQueryStringParameter(parameterName: string): string;
+    function URL(): string;
     /**
-     * Retrieves data from a named form field, including values sent via POST.
+     * Returns the path portion of the current page request.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): for an ABSENT field it returns `null` (typeof "object"), NOT an empty string.
-     * @param name - Name of the form field to retrieve.
      * @example
-     * var email = Platform.Request.GetFormField("emailAddress");
-     * Write(email);
+     * var path = Request.PagePath();
+     * Write(path);
      */
-    function GetFormField(name: string): string;
-    /**
-     * Returns the raw body of the HTTP POST request. CAVEAT: Only returns data on the FIRST call per request; subsequent calls return nothing. Store the result in a variable if you need it multiple times.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
-     *
-     * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @param encoding - Character encoding for the post data.
-     * @example
-     * // Read raw POST body once and store it:
-     * var rawBody = Platform.Request.GetPostData();
-     * var payload = Platform.Function.ParseJSON(rawBody);
-     */
-    function GetPostData(encoding?: string): string;
-    /**
-     * Retrieves the value of a named cookie from the HTTP request sent by the client browser.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
-     *
-     * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): for an ABSENT cookie it returns `null` (typeof "object"), NOT an empty string.
-     * @param cookieName - Name of the cookie to retrieve.
-     * @example
-     * var sessionId = Platform.Request.GetCookieValue("sessionId");
-     * if (sessionId) { Write("Session: " + sessionId); }
-     */
-    function GetCookieValue(cookieName: string): string;
-    /**
-     * Returns the language preferences of the client browser as specified in the HTTP Accept-Language request header.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
-     *
-     * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): THROWS "Unable to retrieve security descriptor for this frame." in a plain CloudPage GET context. Wrap in try/catch or avoid; may only work in specific contexts.
-     * @example
-     * var lang = Platform.Request.GetUserLanguages();
-     * Write(lang); // e.g. "en-US,en;q=0.9"
-     */
-    function GetUserLanguages(): string;
-    /**
-     * Returns the value of the named HTTP request header, or null if not present.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
-     *
-     * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @param headerName - Name of the HTTP request header to retrieve.
-     * @example
-     * var auth = Platform.Request.GetRequestHeader("Authorization");
-     * if (auth) { Write("Auth: " + auth); }
-     */
-    function GetRequestHeader(headerName: string): string;
-    /**
-     * Returns an object describing the client browser.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
-     *
-     * @example
-     * var browser = Platform.Request.Browser;
-     * Write(Stringify(browser));
-     */
-    var Browser: object;
-    /**
-     * Returns the IP address of the client.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
-     *
-     * @example
-     * Write(Platform.Request.ClientIP);
-     */
-    var ClientIP: string;
-    /**
-     * Returns true if the current request was made over HTTPS.
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
-     *
-     * @example
-     * if (Platform.Request.HasSSL) {
-     *     Write("Secure connection");
-     * } else {
-     *     Platform.Response.Redirect("https://" + Platform.Request.RequestURL);
-     * }
-     */
-    var HasSSL: boolean;
-    /**
-     * Returns true if the current request was made over HTTPS (alias of HasSSL).
-     *
-     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
-     *
-     * @example
-     * Write(Platform.Request.IsSSL);
-     */
-    var IsSSL: boolean;
+    function PagePath(): string;
     /**
      * Returns the HTTP method (GET, POST, etc.) of the current request.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
-     * var method = Platform.Request.Method;
-     * if (method === "POST") {
-     *     var body = Platform.Request.GetPostData();
-     *     // handle POST
-     * }
+     * var method = Request.Method();
+     * Write(method);
      */
-    var Method: string;
+    function Method(): string;
     /**
-     * Returns the full query string of the current request URL.
+     * Returns the application ID associated with the current request.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
-     * Write(Platform.Request.QueryString);
+     * var appId = Request.ApplicationID();
+     * Write(appId);
      */
-    var QueryString: string;
+    function ApplicationID(): string;
     /**
-     * Returns the referrer URL from the HTTP Referer header.
+     * Returns the package ID associated with the current request.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
-     * Write(Platform.Request.ReferrerURL);
+     * var packageId = Request.PackageID();
+     * Write(packageId);
      */
-    var ReferrerURL: string;
+    function PackageID(): string;
     /**
-     * Returns the full URL of the current page request.
+     * Returns the base URL of the application for the current request.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
-     * Write("Current page: " + Platform.Request.RequestURL);
+     * var baseUrl = Request.ApplicationBaseURL();
+     * Write(baseUrl);
      */
-    var RequestURL: string;
+    function ApplicationBaseURL(): string;
     /**
-     * Returns the user-agent string from the HTTP request.
+     * Returns the value of a named URL query string parameter for the current page request, or null when the parameter is absent.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @param name - Key name of the query string parameter to read.
      * @example
-     * Write(Platform.Request.UserAgent);
+     * var sku = Request.GetQueryStringParameter("sku");
+     * if (sku) { Write("SKU: " + sku); }
      */
-    var UserAgent: string;
+    function GetQueryStringParameter(name: string): string;
+    /**
+     * Returns the value of a named form field submitted with the current request (including POST data), or null when the field is absent. Also reads GET query string values.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
+     *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @param name - Name of the form field to read.
+     * @example
+     * var email = Request.GetFormField("emailAddress");
+     * if (email) { Write(email); }
+     */
+    function GetFormField(name: string): string;
 }
 
 /**
- * Encodes plain text to a Base64 encoded string. Requires `Platform.Load("core", "1.1.5")` before use, and must be called in the same scope as `Platform.Load` (bare-name Core globals are not visible inside nested helper functions). For charset control or scope-independent use, use `Platform.Function.Base64Encode(string, charset)` instead.
+ * Encodes plain text to a Base64 encoded string. For charset control or scope-independent use, use `Platform.Function.Base64Encode(string, charset)` instead.
  *
  * [ssjs.guide reference](https://ssjs.guide/core-library/base64encode/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `Base64Encode` works after `Platform.Load("core", ...)` and returns the encoded string (e.g. Base64Encode("hi") -> "aGk="). IMPORTANT SCOPE RULE: bare-name Core globals are injected ONLY into the scope where Platform.Load runs — they are NOT visible inside nested helper-function bodies or eval(). Call them at the same scope as Platform.Load, or use the always-available `Platform.Function.Base64Encode(string[, charset])` form (which also allows charset control).
  * @param string - Text to encode
  * @example
  * Platform.Load("core", "1.1.5");
@@ -1292,13 +1214,12 @@ declare namespace Request {
  */
 declare function Base64Encode(string: string): string;
 /**
- * Decodes a Base64 encoded string to plain text. Requires `Platform.Load("core", "1.1.5")` before use, and must be called in the same scope as `Platform.Load` (bare-name Core globals are not visible inside nested helper functions). For charset control or scope-independent use, use `Platform.Function.Base64Decode(encodedString, charset)` instead.
+ * Decodes a Base64 encoded string to plain text. For charset control or scope-independent use, use `Platform.Function.Base64Decode(encodedString, charset)` instead.
  *
  * [ssjs.guide reference](https://ssjs.guide/core-library/base64decode/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `Base64Decode` works after `Platform.Load("core", ...)` (e.g. Base64Decode("aGk=") -> "hi"). IMPORTANT SCOPE RULE: bare-name Core globals are injected ONLY into the scope where Platform.Load runs — they are NOT visible inside nested helper-function bodies or eval(). Call them at the same scope as Platform.Load, or use the always-available `Platform.Function.Base64Decode(encodedString[, charset])` form.
  * @param encodedString - Base64 encoded string to decode
  * @example
  * Platform.Load("core", "1.1.5");
@@ -1306,7 +1227,7 @@ declare function Base64Encode(string: string): string;
  */
 declare function Base64Decode(encodedString: string): string;
 /**
- * Retrieves content from a classic Content Area by numeric ID. Deprecated — Content Areas are no longer supported on current SFMC infrastructure. Requires `Platform.Load("core", "1.1.5")` (in the same scope) before use. Note: the Platform.Function.ContentArea() variant does not require Platform.Load and accepts a boolean stopOnError parameter instead of a string errorMsg.
+ * Retrieves content from a classic Content Area by numeric ID. Deprecated — Content Areas are no longer supported on current SFMC infrastructure. Note: the Platform.Function.ContentArea() variant does not require Platform.Load and accepts a boolean stopOnError parameter instead of a string errorMsg.
  *
  * [ssjs.guide reference](https://ssjs.guide/core-library/contentarea/)
  *
@@ -1324,7 +1245,7 @@ declare function Base64Decode(encodedString: string): string;
  */
 declare function ContentArea(id: number, regionName?: string, errorMsg?: string, fallbackContent?: string): string;
 /**
- * Retrieves content from a classic Content Area by name. Deprecated — Content Areas are no longer supported on current SFMC infrastructure. Requires `Platform.Load("core", "1.1.5")` (in the same scope) before use. Note: the Platform.Function.ContentAreaByName() variant does not require Platform.Load and accepts a boolean stopOnError parameter instead of a string errorMsg.
+ * Retrieves content from a classic Content Area by name. Deprecated — Content Areas are no longer supported on current SFMC infrastructure. Note: the Platform.Function.ContentAreaByName() variant does not require Platform.Load and accepts a boolean stopOnError parameter instead of a string errorMsg.
  *
  * [ssjs.guide reference](https://ssjs.guide/core-library/contentareabyname/)
  *
@@ -1342,63 +1263,56 @@ declare function ContentArea(id: number, regionName?: string, errorMsg?: string,
  */
 declare function ContentAreaByName(name: string, regionName?: string, errorMsg?: string, fallbackContent?: string): string;
 /**
- * Marks the start of a named impression tracking region within content. Runtime note: the region name must be a compile-time literal — a variable is rejected with a resolved-value error.
+ * Marks the start of a named impression tracking region within content. Runtime note: unusable from SSJS — every call (literal or variable argument) throws a resolved-value error; impression regions are an AMPscript-only feature.
  *
- * [ssjs.guide reference](https://ssjs.guide/platform-functions/beginimpressionregion/)
+ * [ssjs.guide reference](https://ssjs.guide/core-library/beginimpressionregion/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. The official docs do not mention that the region name must be a compile-time literal; a variable argument is rejected at runtime.
- * @param name - Name identifying the impression region
+ * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `BeginImpressionRegion` IS defined as a function after `Platform.Load("core", ...)`, but calling it — with either a string literal or a variable — throws "A BeginImpressionRegion function call includes an invalid parameter value. The values making up the parameter value for this call must be a literal (constant) values." The bare alias and the `Platform.Function.BeginImpressionRegion` form behave identically (both throw the same error), so impression regions are effectively unusable from SSJS — they are an AMPscript-only feature. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first.
+ * @param name - The impression region name.
  * @example
- * Platform.Function.BeginImpressionRegion("hero-banner");
- * Write(heroContent);
- * Platform.Function.EndImpressionRegion();
+ * Platform.Load("core", "1.1.5");
+ * // Note: throws at runtime in SSJS — impression regions are AMPscript-only.
+ * BeginImpressionRegion("hero-banner");
  */
 declare function BeginImpressionRegion(name: string): void;
 /**
- * Marks the end of an impression tracking region within content.
+ * Marks the end of an impression tracking region within content. Runtime note: the bare alias returns `undefined` (its `Platform.Function.EndImpressionRegion` counterpart returns `null`); has no practical effect in SSJS because impression regions are AMPscript-only.
  *
- * [ssjs.guide reference](https://ssjs.guide/platform-functions/endimpressionregion/)
+ * [ssjs.guide reference](https://ssjs.guide/core-library/endimpressionregion/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return as void, but the runtime always returns a genuine null (typeof "object", === null) — including when called with no matching BeginImpressionRegion.
- * @param closeAll - When true, closes all nested impression regions
+ * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `EndImpressionRegion` IS defined as a function after `Platform.Load("core", ...)` and can be called without throwing. It DIFFERS from its `Platform.Function.EndImpressionRegion` counterpart in return value: the bare alias returns `undefined` (typeof "undefined"), whereas `Platform.Function.EndImpressionRegion()` returns a genuine `null` (typeof "object", === null). The official docs type the return as void. Because `BeginImpressionRegion` is unusable from SSJS, this method has no practical effect in SSJS either. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first.
+ * @param closeAll - Optional flag to close all open impression regions.
  * @example
- * Platform.Function.BeginImpressionRegion("footer");
- * Write(footerContent);
- * Platform.Function.EndImpressionRegion();
+ * Platform.Load("core", "1.1.5");
+ * EndImpressionRegion(); // returns undefined (Platform.Function form returns null)
  */
-declare function EndImpressionRegion(closeAll?: boolean): null;
+declare function EndImpressionRegion(closeAll?: boolean): any;
 /**
- * Returns the current server date/time as a Date object (in the account timezone, Central by default), or the timestamp of the triggering send when called with true. Concatenating it to a string yields an RFC 2822-style value such as "Tue, 14 Jul 2026 17:59:40 GMT-06:00".
+ * Returns the current server date/time as a Date object (in the account timezone, Central by default), or the timestamp of the triggering send when called with `true`. Behaves identically to `Platform.Function.Now()`.
  *
- * [ssjs.guide reference](https://ssjs.guide/platform-functions/now/)
+ * [ssjs.guide reference](https://ssjs.guide/core-library/now/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. The official docs describe the return as an RFC 2822-compliant date-time string, but the runtime returns a Date object (typeof "object", [object Date] with working Date accessors); it only appears as an RFC 2822 string when coerced during output.
- * @param useContextTime - When true, returns the time the triggering send or activity was initiated. When false or omitted, returns the current system clock time.
+ * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `Now` works after `Platform.Load("core", ...)` and returns the same value as `Platform.Function.Now()` — a genuine Date object: typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an RFC 2822-style string such as "Tue, 21 Jul 2026 10:18:24 GMT-06:00" during output. The official docs describe the return as an RFC 2822-compliant date-time string. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first.
+ * @param useContextTime - Pass `true` to return the timestamp of the triggering send instead of the current time.
  * @example
- * var current = Platform.Function.Now();
- * Write(current); // e.g. "Tue, 14 Jul 2026 17:59:40 GMT-06:00"
- *
- * // current is a Date object:
+ * Platform.Load("core", "1.1.5");
+ * var current = Now(); // e.g. "Tue, 21 Jul 2026 10:18:24 GMT-06:00"
  * Write(current.getFullYear()); // 2026
- *
- * // Use context time during triggered sends:
- * var sendTime = Platform.Function.Now(true);
  */
 declare function Now(useContextTime?: boolean): Date;
 /**
- * Redirects the browser to another address. Requires `Platform.Load("core", "1.1.5")` and must be called in the same scope as `Platform.Load` (bare-name Core globals are not visible inside nested helper functions). For scope-independent use that needs no Platform.Load, use `Platform.Response.Redirect(url, movedPermanently)`. Meaningful only in CloudPage context.
+ * Redirects the browser to another address. For scope-independent use that needs no Platform.Load, use `Platform.Response.Redirect(url, movedPermanently)`. Meaningful only in CloudPage context.
  *
  * [ssjs.guide reference](https://ssjs.guide/core-library/redirect/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `Redirect` IS defined as a function after `Platform.Load("core", ...)` and actually performs the redirect. IMPORTANT SCOPE RULE: bare-name Core globals are injected ONLY into the scope where Platform.Load runs — they are NOT visible inside nested helper-function bodies or eval(). Call Redirect at the same scope as Platform.Load, or use the always-available `Platform.Response.Redirect(url, movedPermanently)` (which needs no Platform.Load). Meaningful only in CloudPage context.
  * @param url - The address to send the browser to.
  * @param movedPermanently - Pass `true` for an HTTP 301 (permanent) redirect or `false` for a 302 (temporary) redirect.
  * @example
@@ -1407,58 +1321,51 @@ declare function Now(useContextTime?: boolean): Date;
  */
 declare function Redirect(url: string, movedPermanently: boolean): void;
 /**
- * Generates a new globally unique identifier as a lowercase canonical UUID v4 string (36 characters). Does not require Platform.Load("core"); passing any argument throws.
+ * Generates a new globally unique identifier as a lowercase canonical UUID v4 string (36 characters). Behaves identically to `Platform.Function.GUID()`.
  *
- * [ssjs.guide reference](https://ssjs.guide/platform-functions/guid/)
+ * [ssjs.guide reference](https://ssjs.guide/core-library/guid/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
  * @example
- * var id = Platform.Function.GUID();
- * Write(id); // e.g. "550e8400-e29b-41d4-a716-446655440000"
+ * Platform.Load("core", "1.1.5");
+ * var id = GUID(); // e.g. "f038aa14-708f-4392-a329-7dfa46abaf4b"
  */
 declare function GUID(): string;
 /**
- * Checks whether a string is a valid email address format.
+ * Checks whether a string is a valid email address format. Behaves identically to `Platform.Function.IsEmailAddress()`.
  *
- * [ssjs.guide reference](https://ssjs.guide/platform-functions/isemailaddress/)
+ * [ssjs.guide reference](https://ssjs.guide/core-library/isemailaddress/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @param value - String to validate
+ * @param value - The string to validate.
  * @example
- * if (Platform.Function.IsEmailAddress(emailInput)) {
- *     Write("Valid email");
- * } else {
- *     Write("Invalid email format");
- * }
+ * Platform.Load("core", "1.1.5");
+ * if (IsEmailAddress(emailInput)) { Write("Valid email"); }
  */
 declare function IsEmailAddress(value: string): boolean;
 /**
- * Evaluates whether a string is a valid phone number and returns a boolean. Runtime-verified (CloudPage): the accepted format is digits 0-9 only, with no spaces and no leading 0. To present any country's country code (including the US) you omit the leading 00/+ and write the country code as bare digits with no leading zero. Values containing spaces, a leading 0, or a +/00 international prefix return false, as do empty, letters, and mixed-text inputs. This is the same digits-only, no-leading-zero format that SFMC phone-number fields and the SMS (MobileConnect) service expect.
+ * Evaluates whether a string is a valid phone number and returns a boolean. Behaves identically to `Platform.Function.IsPhoneNumber()` (see that entry for the strict digits-only runtime format).
  *
- * [ssjs.guide reference](https://ssjs.guide/platform-functions/isphonenumber/)
+ * [ssjs.guide reference](https://ssjs.guide/core-library/isphonenumber/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. The official docs describe generic "valid phone number" validation, but the runtime enforces a stricter format: digits 0-9 only, no spaces, and no leading 0 — country codes must be written without the leading 00/+ (the same format SFMC phone fields and the SMS service expect).
- * @param value - String to evaluate
+ * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `IsPhoneNumber` works after `Platform.Load("core", ...)` and returns the same boolean as `Platform.Function.IsPhoneNumber()`. The official docs describe generic "valid phone number" validation; see the `Platform.Function.IsPhoneNumber` entry for the stricter runtime format details. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first.
+ * @param value - The string to validate.
  * @example
- * if (Platform.Function.IsPhoneNumber(phoneInput)) {
- *     Write("Valid phone");
- * } else {
- *     Write("Invalid phone number");
- * }
+ * Platform.Load("core", "1.1.5");
+ * if (IsPhoneNumber(phoneInput)) { Write("Valid phone"); }
  */
 declare function IsPhoneNumber(value: string): boolean;
 /**
- * Writes text to the HTTP response output. Requires `Platform.Load("core", "1.1.5")` and must be called in the same scope as `Platform.Load` (bare-name Core globals are not visible inside nested helper functions). For scope-independent output that needs no Platform.Load, use `Platform.Response.Write(text)` instead.
+ * Writes text to the HTTP response output. For scope-independent output that needs no Platform.Load, use `Platform.Response.Write(text)` instead.
  *
  * [ssjs.guide reference](https://ssjs.guide/core-library/write/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `Write` works after `Platform.Load("core", ...)` and outputs to the response. IMPORTANT SCOPE RULE: bare-name Core globals are injected ONLY into the scope where Platform.Load runs — they are NOT visible inside nested helper-function bodies or eval(). If you output from inside a helper function, use the always-available `Platform.Response.Write(text)` instead (which needs no Platform.Load and works in any scope).
  * @param text - Text to write to the response.
  * @example
  * Platform.Load("core", "1.1.5");
@@ -1466,13 +1373,12 @@ declare function IsPhoneNumber(value: string): boolean;
  */
 declare function Write(content: string): void;
 /**
- * Serializes a value to a JSON string. Requires `Platform.Load("core", "1.1.5")` before use, and must be called in the same scope as `Platform.Load` (bare-name Core globals are not visible inside nested helper functions). For scope-independent use, use `Platform.Function.Stringify(value)` instead.
+ * Serializes a value to a JSON string. For scope-independent use, use `Platform.Function.Stringify(value)` instead.
  *
  * [ssjs.guide reference](https://ssjs.guide/core-library/stringify/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `Stringify` works after `Platform.Load("core", ...)` (e.g. Stringify({a:1,b:"x"}) -> '{"a":1,"b":"x"}'). IMPORTANT SCOPE RULE: bare-name Core globals are injected ONLY into the scope where Platform.Load runs — they are NOT visible inside nested helper-function bodies or eval(). Call Stringify at the same scope as Platform.Load, or use the always-available `Platform.Function.Stringify(value)` form.
  * @param value - Value to serialize to JSON.
  * @returns JSON string representation of the value. Serializes objects, arrays, nested structures, and scalars; null and undefined both serialize to the literal string "null".
  * @example
@@ -1481,13 +1387,12 @@ declare function Write(content: string): void;
  */
 declare function Stringify(value: any): string;
 /**
- * Applies a formatting rule to a string or numeric value. Requires `Platform.Load("core", "1.1.5")` before use, and must be called in the same scope as `Platform.Load` (bare-name Core globals are not visible inside nested helper functions). Use format codes such as `C` (currency), `D` (decimal), `N` (number with separators), `P` (percentage), `O` (ISO 8601 date), `s` (sortable date), `d` (short date), `t` (12-hour time), etc. Append a digit to control decimal places, e.g. `C2` for two decimal places.
+ * Applies a formatting rule to a string or numeric value. Use format codes such as `C` (currency), `D` (decimal), `N` (number with separators), `P` (percentage), `O` (ISO 8601 date), `s` (sortable date), `d` (short date), `t` (12-hour time), etc. Append a digit to control decimal places, e.g. `C2` for two decimal places.
  *
  * [ssjs.guide reference](https://ssjs.guide/core-library/format/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `Format` works after `Platform.Load("core", ...)` (e.g. Format(4213.65, "C2") -> "$4,213.65"). IMPORTANT SCOPE RULE: bare-name Core globals are injected ONLY into the scope where Platform.Load runs — they are NOT visible inside nested helper-function bodies or eval(). Call Format at the same scope as Platform.Load. (Curiously, in a bare CloudPage the prefixed `Platform.Function.Format` can throw "Unable to retrieve security descriptor for this frame" while the bare-name form succeeds.)
  * @param textToFormat - The string or number to apply a formatting rule to.
  * @param formatCode - A format code to apply. Numeric: C, D, E, F, G, N, P (append digit for decimal places). Date/time: d, M, f, g, O, r, s, t, T, or a custom pattern.
  * @example
@@ -3448,29 +3353,35 @@ declare namespace DataExtension {
 }
 declare namespace DateTime {
     /**
-     * Converts a date-time value from Marketing Cloud system time (CST) to the local time of the account or user.
+     * Converts a date-time value from Marketing Cloud system time (CST) to the local time of the account or user. Returns a Date object.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/datetime/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the `DateTime.SystemDateToLocalDate` bare-name form behaves IDENTICALLY to `Platform.Function.SystemDateToLocalDate` (same value, same type). The official docs type the return as a string, but the runtime returns a genuine Date object: typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an ISO-like string when written or stringified. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load("core", ...) has run — call the load first.
      * @param dateString - Date-time string in system time (CST)
      * @example
+     * Platform.Load("core", "1.1.5");
      * var localTime = DateTime.SystemDateToLocalDate(Platform.Function.Now());
      * Write(localTime);
      */
-    function SystemDateToLocalDate(dateString: string): string;
+    function SystemDateToLocalDate(dateString: string): Date;
     /**
-     * Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST).
+     * Converts a date-time value from the local time of the account or user to Marketing Cloud system time (CST). Returns a Date object.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/datetime/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the `DateTime.LocalDateToSystemDate` bare-name form behaves IDENTICALLY to `Platform.Function.LocalDateToSystemDate` (same value, same type). The official docs type the return as a string, but the runtime returns a genuine Date object: typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an ISO-like string when written or stringified. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load("core", ...) has run — call the load first.
      * @param dateString - Date-time string in local account/user time
      * @example
+     * Platform.Load("core", "1.1.5");
      * var systemTime = DateTime.LocalDateToSystemDate("8/5/2025 12:34 PM");
      * Write(systemTime);
      */
-    function LocalDateToSystemDate(dateString: string): string;
+    function LocalDateToSystemDate(dateString: string): Date;
 }
 declare namespace DateTime.TimeZone {
     /**
@@ -3497,7 +3408,7 @@ declare namespace Attribute {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a published CloudPage: after Platform.Load("Core", ...) the Attribute object exists and Attribute.GetValue(name) executes and returns a string — it is NOT unavailable in CloudPages. When no subscriber/attribute is in context (e.g. an anonymous CloudPage GET) it returns an empty string rather than throwing. In email/triggered-send/personalized contexts it returns the actual attribute value.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a published CloudPage: after Platform.Load("Core", ...) the Attribute object exists and Attribute.GetValue(name) executes and returns a string — it is NOT unavailable in CloudPages. When no subscriber/attribute is in context (e.g. a plain CloudPage GET) it returns an empty string rather than throwing. In email/triggered-send/personalized contexts it returns the actual attribute value.
      * @param name - Name of the subscriber attribute or sendable DE field to retrieve.
      * @example
      * Platform.Load("Core", "1.1.1");
@@ -3967,18 +3878,6 @@ declare namespace Script {
              * Write(result.Status);
              */
             execute(parameters: object[], requestName: string): WSProxyResult;
-            /**
-             * Sets the maximum number of objects returned per SOAP API page (default is 2500).
-             *
-             * [ssjs.guide reference](https://ssjs.guide/wsproxy/setbatchsize/)
-             *
-             * @param batchSize - Maximum number of objects per batch
-             * @example
-             * var api = new Script.Util.WSProxy();
-             * api.setBatchSize(200);
-             * var result = api.retrieve("DataExtension", ["Name"], {});
-             */
-            setBatchSize(batchSize: number): void;
             /**
              * Sets a ClientId (impersonation) context on the WSProxy instance so subsequent operations run against another business unit. Pass an object with the MID under the "ID" key (and optionally "UserID"); the calling context must have access to the target BU.
              *
@@ -5461,6 +5360,20 @@ declare function isNaN(value: any): boolean;
  * Write(isFinite(NaN)); // false
  */
 declare function isFinite(value: any): boolean;
+/**
+ * Parses a string of JavaScript source and executes it as a script, returning the completion value of the last evaluated expression (or undefined when there is nothing to complete). A non-string argument is returned unchanged. Runtime-verified to work in SFMC SSJS: direct eval sees the surrounding local scope, and bare-name Core globals loaded via Platform.Load are visible inside the evaluated string. Use sparingly — it runs arbitrary code and is a common injection risk; prefer Platform.Function.ParseJSON for parsing data.
+ *
+ * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval)
+ *
+ * @param script - A string of JavaScript source to evaluate
+ * @example
+ * Write(eval("1 + 1")); // 2
+ * var x = 5;
+ * Write(eval("x + 10")); // 15
+ * Platform.Load("core","1.1.5");
+ * Write(eval("Stringify({a:1})")); // {"a":1}
+ */
+declare function eval(script: string): any;
 
 // ── Constructible built-ins (value + constructor declarations) ───────────────
 interface Error {

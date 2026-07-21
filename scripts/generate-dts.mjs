@@ -35,6 +35,7 @@ import {
     PLATFORM_VARIABLE_METHODS,
     PLATFORM_RESPONSE_METHODS,
     PLATFORM_REQUEST_METHODS,
+    REQUEST_UTILITY_METHODS,
     PLATFORM_RECIPIENT_METHODS,
     HTTP_METHODS,
     HTTPHEADER_METHODS,
@@ -294,6 +295,13 @@ const PLATFORM_NAMESPACE_MAP = {
     'Platform.Request': {
         methods: PLATFORM_REQUEST_METHODS,
         url: GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Request'],
+    },
+    // Core Library "Request Object Utility Functions" — the bare-name `Request`
+    // object's OWN 8-method set (distinct from Platform.Request). Members link to
+    // the dedicated /core-library/request/ page (request is in GLOBAL_FUNCTION_PAGES).
+    Request: {
+        methods: REQUEST_UTILITY_METHODS,
+        url: GUIDE_BASE_URL + globalFunctionUrl('request'),
     },
     'Platform.Recipient': {
         methods: PLATFORM_RECIPIENT_METHODS,
@@ -744,6 +752,12 @@ line(
     `${buildJsDocComment({ description: 'HTTP request reading methods and properties.' }, ' '.repeat(4), GUIDE_BASE_URL + PLATFORM_OBJECT_URLS['Platform.Request'])}    namespace Request {`,
 );
 for (const m of PLATFORM_REQUEST_METHODS) {
+    // notDefinedAtRuntime: documented but unusable at runtime (e.g. GetUserLanguages
+    // throws a frame-security error in the only frame CloudPages provide). Do NOT
+    // emit a declaration so editors never offer it as a real member.
+    if (m.notDefinedAtRuntime) {
+        continue;
+    }
     if (isPropertyEntry(m)) {
         // Request properties are read-only — no JSDoc here; just the TS declaration
         line(`        const ${m.name}: ${toTsType(m.returnType)};`);
@@ -785,10 +799,12 @@ for (const g of SSJS_GLOBALS) {
     if (g.notDefinedAtRuntime) {
         continue;
     }
-    // Namespace object (e.g. Variable alias of Platform.Variable, or Request which
-    // reuses Platform.Request's members via namespaceMethodsOf) — emit declare namespace
-    if (g.type === 'object' && (g.aliasOf || g.namespaceMethodsOf)) {
-        const ns = PLATFORM_NAMESPACE_MAP[g.aliasOf ?? g.namespaceMethodsOf];
+    // Namespace object — emit `declare namespace`. Resolve its member set from
+    // PLATFORM_NAMESPACE_MAP by aliasOf, namespaceMethodsOf, or (for objects like
+    // Request that own a dedicated map entry) the object's own name.
+    const nsKey = g.aliasOf ?? g.namespaceMethodsOf ?? g.name;
+    const ns = g.type === 'object' ? PLATFORM_NAMESPACE_MAP[nsKey] : undefined;
+    if (g.type === 'object' && (g.aliasOf || g.namespaceMethodsOf || ns)) {
         if (ns) {
             // When the bare-name global has its own dedicated page (see globalFunctionUrl),
             // link members to that page instead of the shared Platform.* namespace page.
@@ -797,7 +813,11 @@ for (const g of SSJS_GLOBALS) {
                 ? GUIDE_BASE_URL + globalFunctionUrl(gn)
                 : ns.url;
             line(`declare namespace ${g.name} {`);
-            for (const m of ns.methods) {
+            // notDefinedAtRuntime members (e.g. GetUserLanguages) are unusable at
+            // runtime — drop them from the bare-name namespace too, mirroring the
+            // Platform.Request namespace above, so editors never offer them.
+            const runtimeMembers = ns.methods.filter((x) => !x.notDefinedAtRuntime);
+            for (const m of runtimeMembers) {
                 line(emitNsMember(m, ' '.repeat(4), memberUrl));
             }
             line('}');
@@ -855,7 +875,10 @@ for (const g of SSJS_GLOBALS) {
         }
     }
     const comment = buildJsDocComment(effective, '', globalGuideUrl);
-    const retType = toTsType(src.returnType);
+    // Prefer the alias's OWN returnType when it deliberately diverges from the
+    // source (e.g. EndImpressionRegion returns `undefined` where the
+    // Platform.Function form returns `null`); fall back to the source otherwise.
+    const retType = toTsType(g.returnType ?? src.returnType);
     let paramStr;
     if (isVariadicMethod(src) && src.params && src.params.length > 0) {
         const restType = toTsType(src.params.at(-1).type);
