@@ -4325,6 +4325,7 @@ interface Array<T> {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/join) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param separator - Delimiter string (default: ",")
      * @example
      * var arr = ["a", "b", "c"];
@@ -4336,6 +4337,7 @@ interface Array<T> {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/push) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param element - Element to append (repeat for multiple)
      * @example
      * var arr = [1, 2];
@@ -4348,6 +4350,7 @@ interface Array<T> {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/pop) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var arr = [1, 2, 3];
      * var last = arr.pop(); // 3
@@ -4358,6 +4361,7 @@ interface Array<T> {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/shift) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var arr = [1, 2, 3];
      * var first = arr.shift(); // 1
@@ -4368,6 +4372,7 @@ interface Array<T> {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/unshift) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param element - Element to prepend (repeat for multiple)
      * @example
      * var arr = [2, 3];
@@ -4380,6 +4385,7 @@ interface Array<T> {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/concat) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param value - Array or value to concatenate
      * @example
      * var a = [1, 2];
@@ -4393,6 +4399,8 @@ interface Array<T> {
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
      *
      * @remarks ⚠️ The no-argument form arr.slice() throws in the SFMC engine. Always pass at least a start index, e.g. arr.slice(0), to copy the whole array.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies arr.slice() with no arguments returns a shallow copy of the whole array. In the SFMC SSJS engine the no-argument form throws "Index was outside the bounds of the array."; pass an explicit start index (arr.slice(0)) instead. Positive and negative indices otherwise behave per spec.
      * @param start - Start index (0-based, negative counts from end)
      * @param end - End index (exclusive)
      * @example
@@ -4406,6 +4414,8 @@ interface Array<T> {
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
      *
      * @remarks ⚠️ The no-argument form arr.sort() throws in the SFMC engine. Always pass an explicit compare function, e.g. arr.sort(function (a, b) { return a < b ? -1 : a > b ? 1 : 0; }).
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies arr.sort() with no comparator sorts elements as strings. In the SFMC SSJS engine the no-argument form throws "Failed to compare two elements in the array."; always pass an explicit compare function. A supplied comparator otherwise sorts per spec.
      * @param compareFn - Optional comparison function (a, b) returning negative, 0, or positive
      * @example
      * var arr = [3, 1, 2];
@@ -4417,6 +4427,7 @@ interface Array<T> {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reverse) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var arr = [1, 2, 3];
      * arr.reverse(); // [3, 2, 1]
@@ -4427,6 +4438,7 @@ interface Array<T> {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/length) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var arr = [1, 2, 3];
      * Write(arr.length); // 3
@@ -4437,6 +4449,7 @@ interface Array<T> {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toLocaleString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/array-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var arr = [1, 2, 3];
      * Write(arr.toLocaleString()); // "1,2,3"
@@ -4451,6 +4464,8 @@ interface String {
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/charAt) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
      * @remarks ⚠️ Out-of-range indices are broken in the SFMC engine: instead of the spec-mandated empty string "", str.charAt(i) for i >= str.length returns the LAST character of the string (e.g. "Hello".charAt(99) returns "o"). Guard the index against str.length before calling. Bracket access str[i] for an out-of-range index throws "Index was outside the bounds of the array" rather than returning undefined.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies str.charAt(index) returns an empty string when index is out of range. In the SFMC Jint engine an out-of-range index returns the LAST character instead of "" (e.g. "abc".charAt(99) returns "c"). Guard the index against str.length before calling.
      * @param index - Zero-based character index
      * @example
      * var str = "Hello";
@@ -4462,6 +4477,7 @@ interface String {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/charCodeAt) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param index - Zero-based character index
      * @example
      * var str = "A";
@@ -4473,6 +4489,7 @@ interface String {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/indexOf) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param searchValue - Substring to search for
      * @param fromIndex - Index to start the search from
      * @example
@@ -4485,6 +4502,7 @@ interface String {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/lastIndexOf) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param searchValue - Substring to search for
      * @param fromIndex - Index to search backwards from
      * @example
@@ -4497,6 +4515,8 @@ interface String {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/match) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies str.match(regex) returns null when there is no match, and match objects carry an .index property. In the SFMC Jint engine a no-match returns an empty array [] (not null), and returned matches expose no .index. Test result.length rather than comparing against null.
      * @param regexp - Regular expression to match against
      * @example
      * var str = "test@example.com";
@@ -4509,6 +4529,7 @@ interface String {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param searchValue - Substring or RegExp to find
      * @param replaceValue - Replacement string
      * @example
@@ -4522,6 +4543,8 @@ interface String {
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/search) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
      * @remarks ⚠️ String.search is unreliable in the SFMC engine: a no-match returns 0 instead of the spec-mandated -1, and some real matches return the wrong index (observed returning 0 or -1 where the match is elsewhere). Use String.match or RegExp.test to detect a match, or apply the search polyfill.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies str.search(regex) returns -1 when there is no match. In the SFMC Jint engine a no-match returns 0 (not -1) and some real matches return the wrong index, so search is unreliable for locating substrings. Use indexOf or a match-based approach instead.
      * @param regexp - Regular expression to search for
      * @example
      * var str = "foo123bar";
@@ -4533,6 +4556,7 @@ interface String {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/slice) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param start - Start index (negative counts from end)
      * @param end - End index (exclusive)
      * @example
@@ -4546,6 +4570,8 @@ interface String {
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
      * @remarks ⚠️ The empty-separator form str.split("") does NOT split into characters in the SFMC engine (it returns the whole string as a single element). To get characters, loop with charAt.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies str.split("") splits a string into an array of its individual characters. In the SFMC Jint engine the empty-separator form does NOT split into characters ("abc".split("") returns ["abc"]). Split on a real separator, or iterate with charAt for per-character access.
      * @param separator - String or RegExp to split on
      * @param limit - Maximum number of substrings to return
      * @example
@@ -4558,6 +4584,7 @@ interface String {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substring) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param start - Start index (inclusive)
      * @param end - End index (exclusive)
      * @example
@@ -4570,6 +4597,7 @@ interface String {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/toLowerCase) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var str = "Hello World";
      * Write(str.toLowerCase()); // "hello world"
@@ -4606,6 +4634,7 @@ interface String {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/toUpperCase) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var str = "Hello World";
      * Write(str.toUpperCase()); // "HELLO WORLD"
@@ -4616,6 +4645,7 @@ interface String {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/concat) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param string - String to append (repeat for multiple)
      * @example
      * var str = "Hello";
@@ -4627,6 +4657,7 @@ interface String {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param compareString - The string to compare against
      * @example
      * Write('a'.localeCompare('b')); // -1
@@ -4637,6 +4668,7 @@ interface String {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/length) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var str = "Hello";
      * Write(str.length); // 5
@@ -4650,6 +4682,7 @@ interface Number {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param fractionDigits - Number of digits after the decimal point (0–20, default 0)
      * @example
      * var price = 9.99;
@@ -4662,6 +4695,8 @@ interface Number {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toExponential) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies toExponential() with no argument uses the minimal number of significand digits needed. In the SFMC Jint engine the no-argument form pads the significand with trailing zeros (e.g. (3.14159).toExponential() returns "3.1415900000000000e+0"). Always pass an explicit fractionDigits count.
      * @param fractionDigits - Digits after the decimal point in the significand (0–20)
      * @example
      * Write((123456).toExponential(2)); // "1.23e+5"
@@ -4672,6 +4707,7 @@ interface Number {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toPrecision) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param precision - Number of significant digits (1–21)
      * @example
      * Write((123.456).toPrecision(5)); // "123.46"
@@ -4682,6 +4718,8 @@ interface Number {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies Number.prototype.toString(radix) accepts any radix from 2 to 36. In the SFMC Jint engine only radixes 2, 8, 10, and 16 work; any other base throws "Invalid Base." (e.g. (35).toString(36)). Fractional values are also truncated to their integer part before non-decimal conversion ((3.5).toString(2) returns "100", not "11.1").
      * @param radix - Base for the conversion. SFMC only accepts 2, 8, 10, or 16; other values throw "Invalid Base."
      * @example
      * Write((255).toString(16)); // "ff"
@@ -4694,6 +4732,7 @@ interface Number {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/valueOf) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * Write((42).valueOf()); // 42
      */
@@ -4720,6 +4759,7 @@ interface Object {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwnProperty) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/object-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param v - Property name to test
      * @example
      * var obj = {a: 1};
@@ -4733,6 +4773,7 @@ interface Object {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/toString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/object-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var obj = {a: 1};
      * Write(obj.toString()); // "[object Object]"
@@ -4744,6 +4785,7 @@ interface Object {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/valueOf) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/object-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var obj = {a: 1};
      * Write(obj.valueOf() === obj); // true
@@ -4757,6 +4799,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getFullYear) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date();
      * Write(d.getFullYear()); // e.g. 2026
@@ -4767,6 +4810,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getMonth) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date(2026, 5, 1);
      * Write(d.getMonth()); // 5 (June, 0-based)
@@ -4777,6 +4821,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getDate) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date(2026, 0, 15);
      * Write(d.getDate()); // 15
@@ -4787,6 +4832,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getHours) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date(2026, 0, 1, 13);
      * Write(d.getHours()); // 13
@@ -4797,6 +4843,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getTime) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date(2021, 0, 1);
      * Write(d.getTime()); // milliseconds since epoch
@@ -4807,6 +4854,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getTimezoneOffset) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date();
      * Write(d.getTimezoneOffset()); // minutes offset from UTC
@@ -4817,6 +4865,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getMinutes) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date();
      * Write(d.getMinutes());
@@ -4827,6 +4876,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getSeconds) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date();
      * Write(d.getSeconds());
@@ -4837,6 +4887,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getDay) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date();
      * Write(d.getDay()); // 0–6
@@ -4848,6 +4899,8 @@ interface Date {
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getMilliseconds) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
      * @remarks ⚠️ In the SFMC engine this is frequently off by one (e.g. a date constructed with 123 ms reports 122). Do not rely on millisecond precision; round or avoid sub-second comparisons.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies getMilliseconds() returns the exact milliseconds (0-999) of the Date. In the SFMC Jint engine it is frequently off by one: constructing a date with 123 ms reports 122, 555 reports 554, 666 reports 665. Some values (0, 111, 888, 999) are exact. Never rely on sub-second precision; round or avoid milliseconds.
      * @example
      * var d = new Date();
      * Write(d.getMilliseconds()); // may be off by one in SFMC
@@ -4858,6 +4911,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date(0);
      * Write(d.toString());
@@ -4868,6 +4922,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toDateString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date(0);
      * Write(d.toDateString()); // "Wed, 31 Dec 1969" (locale-dependent)
@@ -4878,6 +4933,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toUTCString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date(0);
      * Write(d.toUTCString()); // "Thu, 01 Jan 1970 00:00:00 UTC"
@@ -4888,6 +4944,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/valueOf) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date(0);
      * Write(d.valueOf()); // 0
@@ -4898,6 +4955,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCFullYear) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date(0);
      * Write(d.getUTCFullYear()); // 1970
@@ -4908,6 +4966,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCMonth) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date(0);
      * Write(d.getUTCMonth()); // 0
@@ -4918,6 +4977,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCDate) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date(0);
      * Write(d.getUTCDate()); // 1
@@ -4928,6 +4988,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCDay) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date(0);
      * Write(d.getUTCDay()); // 4 (Thursday)
@@ -4938,6 +4999,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCHours) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date(0);
      * Write(d.getUTCHours()); // 0
@@ -4948,6 +5010,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCMinutes) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date(0);
      * Write(d.getUTCMinutes()); // 0
@@ -4958,6 +5021,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCSeconds) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date(0);
      * Write(d.getUTCSeconds()); // 0
@@ -4968,6 +5032,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getUTCMilliseconds) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date(0);
      * Write(d.getUTCMilliseconds()); // 0
@@ -4978,6 +5043,7 @@ interface Date {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toTimeString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var d = new Date(0);
      * Write(d.toTimeString());
@@ -5281,6 +5347,7 @@ interface RegExp {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/test) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/regular-expressions/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param string - The string to test against the regular expression
      * @example
      * var emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -5295,6 +5362,8 @@ interface RegExp {
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/regular-expressions/)
      *
      * @remarks ⚠️ In the SFMC engine capture groups are broken: result[0] (the full match), result.index, and result.input work, but result[1], result[2], … are undefined. result.length is always 3 regardless of group count, so it cannot be used to count captures. Likewise the g-flag lastIndex does not advance between calls. Use the full match plus String.split/substring to extract sub-parts instead of capture groups.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies exec() returns an array whose capture groups occupy result[1], result[2], ... and, with the g flag, advances lastIndex so a while-loop can iterate all matches. In the SFMC Jint engine result[0] (full match), result.index and result.input work, but capture groups result[1]+ are always undefined, result.length is always 3 regardless of group count, and lastIndex never advances (the g-flag exec loop never terminates). Use String.match(/.../g) to collect matches and non-global String.match to read capture groups.
      * @param string - The string to search
      * @example
      * var re = /\d{4}-\d{2}-\d{2}/;
@@ -5309,6 +5378,7 @@ interface RegExp {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/source) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/regular-expressions/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var re = /hello/gi;
      * Write(re.source); // "hello"
@@ -5319,6 +5389,7 @@ interface RegExp {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/global) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/regular-expressions/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var re = /hello/g;
      * Write(re.global); // true
@@ -5330,6 +5401,8 @@ interface RegExp {
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/lastIndex) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/regular-expressions/)
      *
      * @remarks ⚠️ In the SFMC engine lastIndex does NOT advance after exec()/test() with the g flag, so it cannot be used to iterate matches. Setting lastIndex manually is also ignored — the next exec() still matches from the start. Use String.match(/.../g) to get all matches at once instead.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies lastIndex is updated by exec()/test() when the g (or y) flag is set, enabling stateful iteration. In the SFMC Jint engine lastIndex NEVER advances after exec()/test() with the g flag (stays 0), and setting it manually is ignored (the next exec still matches from the start). Use String.match(/.../g) to get all matches at once.
      * @example
      * var re = /\d+/g;
      * re.exec("abc 123 def 456");
@@ -5345,6 +5418,7 @@ interface Function {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/function-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param thisArg - The value to use as `this` when calling the function
      * @param arg - Argument passed to the function (repeat for multiple)
      * @example
@@ -5357,6 +5431,7 @@ interface Function {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/function-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param thisArg - The value to use as `this` when calling the function
      * @param argsArray - Array of arguments to pass to the function
      * @example
@@ -5369,6 +5444,7 @@ interface Function {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/toString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/function-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: unlike standard JavaScript (which returns the function source), fn.toString() returns the generic "[object Function]" object tag in the SFMC Jint engine. String(fn) / ("" + fn) yield "function" instead. Do not rely on function source introspection.
      * @example
      * function greet() {}
@@ -5384,6 +5460,8 @@ interface Function {
  * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt)
  *
  * @remarks ⚠️ Unlike the spec, the SFMC engine returns NaN when the string has trailing non-numeric characters (e.g. parseInt("10px", 10) is NaN, not 10). Strip non-digits before parsing.
+ * @remarks ✅ Runtime-verified in a live SFMC test.
+ * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies the global parseInt(str[, radix]) parses the leading numeric portion and ignores trailing non-numeric characters (parseInt("10px", 10) is 10). In the SFMC Jint engine a string with trailing non-numeric characters returns NaN (parseInt("10px", 10) is NaN). Radix parsing otherwise follows the spec. Strip non-digits before parsing.
  * @param string - The string to parse
  * @param radix - Base of the numeral system (2–36); use 10 for decimal
  * @example
@@ -5398,6 +5476,8 @@ declare function parseInt(string: string, radix?: number): number;
  * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseFloat)
  *
  * @remarks ⚠️ Unlike the spec, the SFMC engine returns NaN when the string has trailing non-numeric characters (e.g. parseFloat("1.5kg") is NaN, not 1.5). Also note the returned value uses 32-bit float precision (parseFloat("3.14") === 3.14 is false); compare with a tolerance.
+ * @remarks ✅ Runtime-verified in a live SFMC test.
+ * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies the global parseFloat(str) parses the leading numeric portion and ignores trailing non-numeric characters. In the SFMC Jint engine a string with trailing non-numeric characters returns NaN (parseFloat("1.5kg") is NaN), and results use 32-bit precision (parseFloat("3.14") is 3.14000010490417, so parseFloat("3.14") === 3.14 is false). Compare parsed floats with a tolerance, never with ===.
  * @param string - The string to parse
  * @example
  * Write(parseFloat("3.14")); // 3.14 (32-bit precision)
@@ -5410,6 +5490,7 @@ declare function parseFloat(string: string): number;
  *
  * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/isNaN)
  *
+ * @remarks ✅ Runtime-verified in a live SFMC test.
  * @param value - Value to test
  * @example
  * Write(isNaN(NaN)); // true
@@ -5422,6 +5503,7 @@ declare function isNaN(value: any): boolean;
  *
  * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/isFinite)
  *
+ * @remarks ✅ Runtime-verified in a live SFMC test.
  * @param value - Value to test
  * @example
  * Write(isFinite(42)); // true
@@ -5434,6 +5516,7 @@ declare function isFinite(value: any): boolean;
  *
  * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval)
  *
+ * @remarks ✅ Runtime-verified in a live SFMC test.
  * @param script - A string of JavaScript source to evaluate
  * @example
  * Write(eval("1 + 1")); // 2
@@ -5449,6 +5532,7 @@ declare function eval(script: string): any;
  * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURI)
  *
  * @remarks ⚠️ Space is encoded as "+" instead of "%20", and percent-escapes use lowercase hex, unlike the ECMAScript spec.
+ * @remarks ✅ Runtime-verified in a live SFMC test.
  * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies encodeURI encodes a space as "%20" with uppercase hex; the SFMC Jint engine encodes a space as "+" and emits lowercase hex escapes.
  * @param uri - The URI string to encode
  * @example
@@ -5461,6 +5545,7 @@ declare function encodeURI(uri: string): string;
  * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent)
  *
  * @remarks ⚠️ Space -> "+" and lowercase hex (e.g. "/" -> "%2f") instead of the spec's "%20" / "%2F".
+ * @remarks ✅ Runtime-verified in a live SFMC test.
  * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies a space encodes as "%20" with uppercase hex; the SFMC Jint engine encodes a space as "+" and emits lowercase hex (e.g. "/" -> "%2f").
  * @param str - The component string to encode
  * @example
@@ -5472,6 +5557,7 @@ declare function encodeURIComponent(str: string): string;
  *
  * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/decodeURI)
  *
+ * @remarks ✅ Runtime-verified in a live SFMC test.
  * @param uri - The encoded URI string to decode
  * @example
  * Write(decodeURI("a%20b/c")); // "a b/c"
@@ -5483,6 +5569,7 @@ declare function decodeURI(uri: string): string;
  * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/decodeURIComponent)
  *
  * @remarks ⚠️ A literal "+" is decoded to a space, unlike the ECMAScript spec (which leaves it).
+ * @remarks ✅ Runtime-verified in a live SFMC test.
  * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies decodeURIComponent leaves a literal "+" unchanged; the SFMC Jint engine decodes "+" to a space, matching application/x-www-form-urlencoded.
  * @param str - The encoded component string to decode
  * @example
@@ -5546,6 +5633,8 @@ declare namespace Error {
     /**
      * The base Error constructor works in SSJS. new Error(message) creates an error object with a message property that can be thrown and caught in try/catch.
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies new Error(message) stores the argument in error.message. In the SFMC Jint engine a JS-constructed new Error("msg") does NOT expose the message via .message (reads back undefined); recover it with String(e) or ("" + e). The no-new form Error("msg") and engine-raised errors do carry a readable message. .name works ("Error"); .stack is unavailable.
      * @param message - A human-readable description of the error
      * @example
      * try {
@@ -5677,6 +5766,7 @@ interface ObjectConstructor {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/object-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param obj - The object on which to define the property
      * @param prop - The name of the property to define
      * @param descriptor - Property descriptor (value, enumerable, writable, configurable, get, set)
@@ -5691,6 +5781,7 @@ interface ObjectConstructor {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/object-methods/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param obj - The object whose prototype to return
      * @example
      * var proto = Object.getPrototypeOf({ a: 1 }); // returns the object prototype
@@ -5709,6 +5800,8 @@ interface DateConstructor {
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/UTC) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
      * @remarks ⚠️ Runtime-verified: with year + month (and beyond) it returns the correct UTC timestamp, but the year-only form Date.UTC(2026) returns a nonsense small number (observed -21597974) instead of treating the month as 0 — always pass at least year and month, e.g. Date.UTC(2026, 0, 1).
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies Date.UTC(year[, month...]) accepts a year-only call. In the SFMC Jint engine the year-only form Date.UTC(2026) returns a nonsense small number (observed -21597974) rather than a valid timestamp or NaN. Always pass at least year and month, e.g. Date.UTC(2026, 0, 1); with two or more components it returns the correct UTC timestamp.
      * @param year - Full year
      * @param month - Month (0–11)
      * @param day - Day of the month (1–31)
@@ -5726,6 +5819,8 @@ interface DateConstructor {
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
      * @remarks ⚠️ Runtime-verified: unlike the spec, an unparseable or invalid string (e.g. "garbage", "", "2021-13-45") returns 0 — the Unix epoch — instead of NaN, so isNaN() cannot detect a bad date and invalid input silently becomes 1970-01-01. Also, a date-only ISO string such as "2026-06-18" is parsed as LOCAL midnight, not UTC (contrary to the ES5+ spec). Validate input yourself; do not rely on NaN for error detection.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies Date.parse(str) returns NaN for unparseable strings and treats date-only ISO forms as UTC. In the SFMC Jint engine invalid strings return 0 (the epoch), NEVER NaN, so isNaN() cannot detect a bad date; and date-only strings like "2026-06-18" parse as LOCAL midnight, not UTC. Validate input yourself before trusting the result.
      * @param dateString - A date string (ISO 8601 is the most portable form)
      * @example
      * Write(Date.parse('2021-01-01T00:00:00Z')); // 1609459200000
@@ -5737,6 +5832,8 @@ interface DateConstructor {
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
      * @remarks ⚠️ Runtime-verified: unlike the spec (which returns a Number), Date.now() returns a Date object (typeof "object") that stringifies to a date-time string. Numeric coercion (Date.now() + 0, Date.now() * 1) yields the epoch milliseconds, but code expecting a number will break. Prefer new Date().getTime(), which returns a clean number.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies Date.now() returns a Number (milliseconds since the Unix epoch). In the SFMC Jint engine it returns a Date OBJECT instead (typeof Date.now() is "object"). Numeric coercion (Date.now() + 0) recovers the epoch ms, but code expecting a plain number breaks. Prefer new Date().getTime() for a clean number.
      * @example
      * var ms = new Date().getTime(); // clean epoch milliseconds (Date.now() returns a Date object in SFMC)
      */

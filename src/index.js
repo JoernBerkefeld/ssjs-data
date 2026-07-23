@@ -8457,6 +8457,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'join',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Joins all array elements into a string, separated by the specified delimiter.',
@@ -8475,6 +8476,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'push',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Appends one or more elements to the end of an array and returns the new length.',
@@ -8492,6 +8494,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'pop',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Removes and returns the last element from an array.',
         params: [],
@@ -8502,6 +8505,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'shift',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Removes and returns the first element from an array.',
         params: [],
@@ -8512,6 +8516,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'unshift',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Inserts one or more elements at the start of an array and returns the new length.',
@@ -8529,6 +8534,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'concat',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns a new array formed by merging this array with other arrays or values.',
@@ -8540,6 +8546,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'slice',
         owner: 'Array.prototype',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies arr.slice() with no arguments returns a shallow copy of the whole array. In the SFMC SSJS engine the no-argument form throws "Index was outside the bounds of the array."; pass an explicit start index (arr.slice(0)) instead. Positive and negative indices otherwise behave per spec.',
         esVersion: 3,
         description: 'Returns a shallow copy of a portion of an array.',
         caveat: 'The no-argument form arr.slice() throws in the SFMC engine. Always pass at least a start index, e.g. arr.slice(0), to copy the whole array.',
@@ -8558,6 +8568,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'sort',
         owner: 'Array.prototype',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies arr.sort() with no comparator sorts elements as strings. In the SFMC SSJS engine the no-argument form throws "Failed to compare two elements in the array."; always pass an explicit compare function. A supplied comparator otherwise sorts per spec.',
         esVersion: 3,
         description: 'Sorts the array in place and returns it. Default sort is lexicographic.',
         caveat: 'The no-argument form arr.sort() throws in the SFMC engine. Always pass an explicit compare function, e.g. arr.sort(function (a, b) { return a < b ? -1 : a > b ? 1 : 0; }).',
@@ -8577,6 +8591,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'reverse',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Reverses the elements of an array in place.',
         params: [],
@@ -8587,6 +8602,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'length',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the number of elements in the array.',
         params: [],
@@ -8597,6 +8613,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'toLocaleString',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns a string representing the array elements, joined by a locale-specific separator.',
@@ -8609,6 +8626,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'charAt',
         owner: 'String.prototype',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies str.charAt(index) returns an empty string when index is out of range. In the SFMC Jint engine an out-of-range index returns the LAST character instead of "" (e.g. "abc".charAt(99) returns "c"). Guard the index against str.length before calling.',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the character at the specified index.',
         caveat: 'Out-of-range indices are broken in the SFMC engine: instead of the spec-mandated empty string "", str.charAt(i) for i >= str.length returns the LAST character of the string (e.g. "Hello".charAt(99) returns "o"). Guard the index against str.length before calling. Bracket access str[i] for an out-of-range index throws "Index was outside the bounds of the array" rather than returning undefined.',
@@ -8620,6 +8641,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'charCodeAt',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the UTF-16 code unit at the specified index.',
         params: [{ name: 'index', description: 'Zero-based character index', type: 'number' }],
@@ -8630,6 +8652,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'indexOf',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns the index of the first occurrence of a substring, or -1 if not found.',
@@ -8649,6 +8672,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'lastIndexOf',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the index of the last occurrence of a substring, or -1 if not found.',
         params: [
@@ -8667,6 +8691,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'match',
         owner: 'String.prototype',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies str.match(regex) returns null when there is no match, and match objects carry an .index property. In the SFMC Jint engine a no-match returns an empty array [] (not null), and returned matches expose no .index. Test result.length rather than comparing against null.',
         esVersion: 3,
         description: 'Matches a string against a regular expression and returns the matches array.',
         params: [
@@ -8680,6 +8708,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'replace',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns a new string with matches replaced by a replacement string or function.',
@@ -8695,6 +8724,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'search',
         owner: 'String.prototype',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies str.search(regex) returns -1 when there is no match. In the SFMC Jint engine a no-match returns 0 (not -1) and some real matches return the wrong index, so search is unreliable for locating substrings. Use indexOf or a match-based approach instead.',
         esVersion: 3,
         description: 'Searches for a match and returns the index of the first match, or -1.',
         caveat: 'String.search is unreliable in the SFMC engine: a no-match returns 0 instead of the spec-mandated -1, and some real matches return the wrong index (observed returning 0 or -1 where the match is elsewhere). Use String.match or RegExp.test to detect a match, or apply the search polyfill.',
@@ -8708,6 +8741,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'slice',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Extracts a section of a string and returns it as a new string.',
         params: [
@@ -8725,6 +8759,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'split',
         owner: 'String.prototype',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies str.split("") splits a string into an array of its individual characters. In the SFMC Jint engine the empty-separator form does NOT split into characters ("abc".split("") returns ["abc"]). Split on a real separator, or iterate with charAt for per-character access.',
         esVersion: 3,
         description: 'Splits a string into an array of substrings using a separator.',
         caveat: 'The empty-separator form str.split("") does NOT split into characters in the SFMC engine (it returns the whole string as a single element). To get characters, loop with charAt.',
@@ -8744,6 +8782,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'substring',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the characters between two indices of a string.',
         params: [
@@ -8757,6 +8796,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'toLowerCase',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the string converted to lowercase.',
         params: [],
@@ -8799,6 +8839,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'toUpperCase',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the string converted to uppercase.',
         params: [],
@@ -8809,6 +8850,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'concat',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns a new string formed by concatenating this string with one or more additional strings.',
@@ -8826,6 +8868,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'localeCompare',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Compares this string with another and returns a negative number if it sorts before, a positive number if it sorts after, or 0 if they are equivalent.',
@@ -8839,6 +8882,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'length',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the number of characters in the string.',
         params: [],
@@ -9137,6 +9181,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'toFixed',
         owner: 'Number.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns a string representing the number in fixed-point notation with the given number of decimal places.',
@@ -9156,6 +9201,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'toExponential',
         owner: 'Number.prototype',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies toExponential() with no argument uses the minimal number of significand digits needed. In the SFMC Jint engine the no-argument form pads the significand with trailing zeros (e.g. (3.14159).toExponential() returns "3.1415900000000000e+0"). Always pass an explicit fractionDigits count.',
         esVersion: 3,
         description:
             'Returns a string representing the number in exponential notation. ' +
@@ -9177,6 +9226,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'toPrecision',
         owner: 'Number.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns a string representing the number to the specified number of significant digits.',
@@ -9195,6 +9245,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'toString',
         owner: 'Number.prototype',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies Number.prototype.toString(radix) accepts any radix from 2 to 36. In the SFMC Jint engine only radixes 2, 8, 10, and 16 work; any other base throws "Invalid Base." (e.g. (35).toString(36)). Fractional values are also truncated to their integer part before non-decimal conversion ((3.5).toString(2) returns "100", not "11.1").',
         esVersion: 3,
         description:
             'Returns a string representing the number. In the SFMC Jint engine the optional radix only supports 2, 8, 10, and 16 — any other base throws "Invalid Base." (standard JS supports 2–36). Fractional values are truncated to their integer part before non-decimal conversion.',
@@ -9215,6 +9269,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'valueOf',
         owner: 'Number.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the primitive number value of a Number object.',
         params: [],
@@ -9332,6 +9387,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'hasOwnProperty',
         owner: 'Object.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns true if the object has the specified property as its own (not inherited) property. ' +
@@ -9348,6 +9404,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'toString',
         owner: 'Object.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns a string representation of the object. For a plain object it returns "[object Object]". ' +
@@ -9363,6 +9420,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'valueOf',
         owner: 'Object.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns the primitive value of the object. For a plain object it returns the object itself.',
@@ -9375,6 +9433,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'parseInt',
         owner: 'Global',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies the global parseInt(str[, radix]) parses the leading numeric portion and ignores trailing non-numeric characters (parseInt("10px", 10) is 10). In the SFMC Jint engine a string with trailing non-numeric characters returns NaN (parseInt("10px", 10) is NaN). Radix parsing otherwise follows the spec. Strip non-digits before parsing.',
         esVersion: 3,
         description:
             'Parses a string and returns an integer in the specified radix (base). ' +
@@ -9400,6 +9462,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'parseFloat',
         owner: 'Global',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies the global parseFloat(str) parses the leading numeric portion and ignores trailing non-numeric characters. In the SFMC Jint engine a string with trailing non-numeric characters returns NaN (parseFloat("1.5kg") is NaN), and results use 32-bit precision (parseFloat("3.14") is 3.14000010490417, so parseFloat("3.14") === 3.14 is false). Compare parsed floats with a tolerance, never with ===.',
         esVersion: 3,
         description:
             'Parses a string and returns a floating-point number. ' +
@@ -9417,6 +9483,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'isNaN',
         owner: 'Global',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns true if the value is NaN (Not-a-Number) after applying ToNumber conversion. ' +
@@ -9432,6 +9499,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'isFinite',
         owner: 'Global',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns true if the value is a finite number (not NaN, +Infinity, or -Infinity) ' +
@@ -9447,6 +9515,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'eval',
         owner: 'Global',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Parses a string of JavaScript source and executes it as a script, returning the completion ' +
@@ -9476,6 +9545,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'encodeURI',
         owner: 'Global',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Encodes a complete URI, leaving reserved characters (/ ? : @ & = + $ #) intact. ' +
@@ -9496,6 +9566,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'encodeURIComponent',
         owner: 'Global',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Encodes a URI component, escaping reserved characters as well. Runtime-verified to ' +
@@ -9514,6 +9585,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'decodeURI',
         owner: 'Global',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Decodes a URI previously encoded by encodeURI, converting percent-escapes back to ' +
@@ -9527,6 +9599,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'decodeURIComponent',
         owner: 'Global',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Decodes a URI component previously encoded by encodeURIComponent, converting all ' +
@@ -9552,6 +9625,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'RegExp',
         owner: 'Global',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Creates a regular expression object for pattern matching. ' +
@@ -9584,6 +9658,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'test',
         owner: 'RegExp',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Tests whether the string matches the pattern. ' +
@@ -9609,6 +9684,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'exec',
         owner: 'RegExp',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies exec() returns an array whose capture groups occupy result[1], result[2], ... and, with the g flag, advances lastIndex so a while-loop can iterate all matches. In the SFMC Jint engine result[0] (full match), result.index and result.input work, but capture groups result[1]+ are always undefined, result.length is always 3 regardless of group count, and lastIndex never advances (the g-flag exec loop never terminates). Use String.match(/.../g) to collect matches and non-global String.match to read capture groups.',
         esVersion: 3,
         description:
             'Executes a search for a match in the string. ' +
@@ -9639,6 +9718,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'source',
         owner: 'RegExp',
+        isConfirmed: true,
         esVersion: 3,
         isProperty: true,
         description: 'The text of the pattern, excluding the enclosing slashes and any flags.',
@@ -9650,6 +9730,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'global',
         owner: 'RegExp',
+        isConfirmed: true,
         esVersion: 3,
         isProperty: true,
         description:
@@ -9662,6 +9743,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'lastIndex',
         owner: 'RegExp',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies lastIndex is updated by exec()/test() when the g (or y) flag is set, enabling stateful iteration. In the SFMC Jint engine lastIndex NEVER advances after exec()/test() with the g flag (stays 0), and setting it manually is ignored (the next exec still matches from the start). Use String.match(/.../g) to get all matches at once.',
         esVersion: 3,
         isProperty: true,
         description:
@@ -9681,6 +9766,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'getFullYear',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the four-digit year of the date according to local time.',
         params: [],
@@ -9691,6 +9777,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'getMonth',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns the month (0 = January … 11 = December) of the date according to local time.',
@@ -9702,6 +9789,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'getDate',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the day of the month (1–31) of the date according to local time.',
         params: [],
@@ -9712,6 +9800,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'getHours',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the hour (0–23) of the date according to local time.',
         params: [],
@@ -9722,6 +9811,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'getTime',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns the numeric timestamp (milliseconds since 1970-01-01T00:00:00 UTC) for the date.',
@@ -9733,6 +9823,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'getTimezoneOffset',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns the difference, in minutes, between this date evaluated in UTC and in the host local time zone.',
@@ -9744,6 +9835,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'getMinutes',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the minutes (0–59) of the date according to local time.',
         params: [],
@@ -9754,6 +9846,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'getSeconds',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the seconds (0–59) of the date according to local time.',
         params: [],
@@ -9764,6 +9857,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'getDay',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns the day of the week (0 = Sunday … 6 = Saturday) according to local time.',
@@ -9775,6 +9869,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'getMilliseconds',
         owner: 'Date.prototype',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies getMilliseconds() returns the exact milliseconds (0-999) of the Date. In the SFMC Jint engine it is frequently off by one: constructing a date with 123 ms reports 122, 555 reports 554, 666 reports 665. Some values (0, 111, 888, 999) are exact. Never rely on sub-second precision; round or avoid milliseconds.',
         esVersion: 3,
         description: 'Returns the milliseconds (0–999) of the date according to local time.',
         caveat: 'In the SFMC engine this is frequently off by one (e.g. a date constructed with 123 ms reports 122). Do not rely on millisecond precision; round or avoid sub-second comparisons.',
@@ -9786,6 +9884,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'toString',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns a human-readable string representing the date.',
         params: [],
@@ -9796,6 +9895,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'toDateString',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the date portion of the date as a human-readable string.',
         params: [],
@@ -9807,6 +9907,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'toUTCString',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the date as a string using the UTC time zone.',
         params: [],
@@ -9817,6 +9918,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'valueOf',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns the primitive value of the date as the number of milliseconds since the Unix epoch.',
@@ -9828,6 +9930,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'getUTCFullYear',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the four-digit year of the date according to universal time (UTC).',
         params: [],
@@ -9838,6 +9941,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'getUTCMonth',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns the month (0 = January … 11 = December) of the date according to universal time (UTC).',
@@ -9849,6 +9953,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'getUTCDate',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns the day of the month (1–31) of the date according to universal time (UTC).',
@@ -9860,6 +9965,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'getUTCDay',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns the day of the week (0 = Sunday … 6 = Saturday) according to universal time (UTC).',
@@ -9871,6 +9977,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'getUTCHours',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the hour (0–23) of the date according to universal time (UTC).',
         params: [],
@@ -9881,6 +9988,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'getUTCMinutes',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the minutes (0–59) of the date according to universal time (UTC).',
         params: [],
@@ -9891,6 +9999,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'getUTCSeconds',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the seconds (0–59) of the date according to universal time (UTC).',
         params: [],
@@ -9901,6 +10010,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'getUTCMilliseconds',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns the milliseconds (0–999) of the date according to universal time (UTC).',
@@ -9912,6 +10022,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'toTimeString',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the time portion of the date as a human-readable string.',
         params: [],
@@ -9943,6 +10054,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'UTC',
         owner: 'Date',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies Date.UTC(year[, month...]) accepts a year-only call. In the SFMC Jint engine the year-only form Date.UTC(2026) returns a nonsense small number (observed -21597974) rather than a valid timestamp or NaN. Always pass at least year and month, e.g. Date.UTC(2026, 0, 1); with two or more components it returns the correct UTC timestamp.',
         esVersion: 3,
         isStatic: true,
         description:
@@ -9969,6 +10084,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'parse',
         owner: 'Date',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies Date.parse(str) returns NaN for unparseable strings and treats date-only ISO forms as UTC. In the SFMC Jint engine invalid strings return 0 (the epoch), NEVER NaN, so isNaN() cannot detect a bad date; and date-only strings like "2026-06-18" parse as LOCAL midnight, not UTC. Validate input yourself before trusting the result.',
         esVersion: 3,
         isStatic: true,
         description:
@@ -9988,6 +10107,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'now',
         owner: 'Date',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies Date.now() returns a Number (milliseconds since the Unix epoch). In the SFMC Jint engine it returns a Date OBJECT instead (typeof Date.now() is "object"). Numeric coercion (Date.now() + 0) recovers the epoch ms, but code expecting a plain number breaks. Prefer new Date().getTime() for a clean number.',
         esVersion: 5,
         isStatic: true,
         description:
@@ -10003,6 +10126,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'defineProperty',
         owner: 'Object',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: true,
         description:
@@ -10029,6 +10153,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'getPrototypeOf',
         owner: 'Object',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: true,
         description:
@@ -10055,6 +10180,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'call',
         owner: 'Function.prototype',
+        isConfirmed: true,
         esVersion: 3,
         minArgs: 1,
         description:
@@ -10080,6 +10206,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'apply',
         owner: 'Function.prototype',
+        isConfirmed: true,
         esVersion: 3,
         minArgs: 1,
         description:
@@ -10104,6 +10231,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'toString',
         owner: 'Function.prototype',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns a string representing the function. In the SFMC engine this returns the generic "[object Function]" tag, NOT the function source code the spec produces.',
@@ -10122,6 +10250,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'boolean-coercion',
         owner: 'Boolean',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Called as a plain function, Boolean(value) returns a primitive boolean reflecting the value truthiness. Works correctly in the SFMC engine.',
@@ -10139,6 +10268,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'boolean-boxed',
         owner: 'Boolean',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'new Boolean(value) creates a boxed Boolean object (typeof "object"). The boxed form works but is a footgun and its string form is capitalized in the SFMC engine — prefer Boolean(value) or !!value.',
@@ -10159,6 +10289,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'boolean-prototype',
         owner: 'Boolean',
+        isConfirmed: true,
         esVersion: 3,
         isProperty: true,
         description:
@@ -10175,6 +10306,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'Error',
         owner: 'Error',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies new Error(message) stores the argument in error.message. In the SFMC Jint engine a JS-constructed new Error("msg") does NOT expose the message via .message (reads back undefined); recover it with String(e) or ("" + e). The no-new form Error("msg") and engine-raised errors do carry a readable message. .name works ("Error"); .stack is unavailable.',
         esVersion: 3,
         description:
             'The base Error constructor works in SSJS. new Error(message) creates an error object with a message property that can be thrown and caught in try/catch.',
@@ -10194,6 +10329,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'EvalError',
         owner: 'ErrorTypes',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'typeof EvalError is function and new EvalError(...) constructs an object with a working .name, but like Error the .message from new EvalError("msg") reads back undefined (recover via String(e)).',
         esVersion: 3,
         description:
             'The EvalError subtype constructor is present in SSJS. It creates an error object you can throw and catch, though the engine itself rarely raises it.',
@@ -10212,6 +10351,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'RangeError',
         owner: 'ErrorTypes',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'typeof RangeError is function and new RangeError(...) constructs an object with a working .name, but like Error the .message from new RangeError("msg") reads back undefined (recover via String(e)).',
         esVersion: 3,
         description:
             'The RangeError subtype constructor is present in SSJS. It signals that a value is outside the allowed range and can be thrown and caught.',
@@ -10230,6 +10373,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'ReferenceError',
         owner: 'ErrorTypes',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'typeof ReferenceError is function and new ReferenceError(...) constructs an object with a working .name, but like Error the .message from new ReferenceError("msg") reads back undefined (recover via String(e)).',
         esVersion: 3,
         description:
             'The ReferenceError subtype constructor is present in SSJS. It signals a reference to an undeclared variable and can be thrown and caught.',
@@ -10248,6 +10395,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'SyntaxError',
         owner: 'ErrorTypes',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'typeof SyntaxError is function and new SyntaxError(...) constructs an object with a working .name, but like Error the .message from new SyntaxError("msg") reads back undefined (recover via String(e)).',
         esVersion: 3,
         description:
             'The SyntaxError subtype constructor is present in SSJS. It signals a syntax problem and can be thrown and caught.',
@@ -10266,6 +10417,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'TypeError',
         owner: 'ErrorTypes',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'typeof TypeError is function and new TypeError(...) constructs an object with a working .name, but like Error the .message from new TypeError("msg") reads back undefined (recover via String(e)).',
         esVersion: 3,
         description:
             'The TypeError subtype constructor is present in SSJS. It signals that a value is not of the expected type and can be thrown and caught.',
@@ -10284,6 +10439,10 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'URIError',
         owner: 'ErrorTypes',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'typeof URIError is function and new URIError(...) constructs an object with a working .name, but like Error the .message from new URIError("msg") reads back undefined (recover via String(e)).',
         esVersion: 3,
         description:
             'The URIError subtype constructor is present in SSJS. It signals malformed URI handling and can be thrown and caught.',
@@ -10306,6 +10465,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'undefined',
         owner: 'GlobalValues',
+        isConfirmed: true,
         esVersion: 3,
         isProperty: true,
         description:
@@ -10337,6 +10497,10 @@ export const ECMASCRIPT_BUILTINS = [
 export const CONSTRUCTIBLE_BUILTINS = [
     {
         name: 'Error',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'new Error("msg") constructs an object but (new Error(...)) instanceof Error is false (instanceof link broken) and .message reads back undefined (recover via String(e)). Detect caught errors by shape/String(e), not instanceof Error.',
         // No Error.prototype methods are catalogued; declare the instance shape here.
         instanceMembers: [
             { name: 'message', type: 'string' },
@@ -10440,6 +10604,10 @@ export const CONSTRUCTIBLE_BUILTINS = [
     },
     {
         name: 'String',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'new String("hi") constructs a boxed object (typeof "object", coerces to "hi"), but reading .length on the boxed String THROWS "String". Use string primitives ("hi") rather than new String(...); primitive .length works.',
         // Instance members come from ECMASCRIPT_BUILTINS owner `String.prototype`.
         construct: { params: [{ name: 'value', type: 'any', optional: true }], returns: '$iface' },
         call: { params: [{ name: 'value', type: 'any', optional: true }], returns: 'string' },
@@ -10455,6 +10623,10 @@ export const CONSTRUCTIBLE_BUILTINS = [
     },
     {
         name: 'Array',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN: new Array(n) with a single number pre-allocates length n; new Array() instanceof Array is true. In the SFMC Jint engine new Array(3).length is 1 (the number is treated as a single element, not a length), and (new Array()) instanceof Array is false. The literal [] and new Array(1,2,3) (multiple args) work correctly. Prefer array literals; never use new Array(n) for preallocation.',
         interfaceName: 'Array<T>',
         // Instance members come from ECMASCRIPT_BUILTINS owner `Array.prototype`.
         construct: {
@@ -10471,6 +10643,7 @@ export const CONSTRUCTIBLE_BUILTINS = [
     },
     {
         name: 'Number',
+        isConfirmed: true,
         // Instance members come from ECMASCRIPT_BUILTINS owner `Number.prototype`.
         construct: { params: [{ name: 'value', type: 'any', optional: true }], returns: '$iface' },
         call: { params: [{ name: 'value', type: 'any', optional: true }], returns: 'number' },
@@ -10478,6 +10651,7 @@ export const CONSTRUCTIBLE_BUILTINS = [
     },
     {
         name: 'Boolean',
+        isConfirmed: true,
         // Runtime-verified on ssjs/MCDEV_Training_QA: Boolean(value) coercion returns a
         // primitive boolean correctly. The boxed `new Boolean()` object stringifies to a
         // CAPITALIZED "True"/"False" in the Jint engine (differs from spec) — prefer the
@@ -10488,6 +10662,7 @@ export const CONSTRUCTIBLE_BUILTINS = [
     },
     {
         name: 'Object',
+        isConfirmed: true,
         // Instance members come from ECMASCRIPT_BUILTINS owner `Object.prototype`.
         // Statics (e.g. Object.defineProperty) remain in the `declare namespace Object`.
         construct: { params: [{ name: 'value', type: 'any', optional: true }], returns: '$iface' },
@@ -10498,6 +10673,7 @@ export const CONSTRUCTIBLE_BUILTINS = [
     },
     {
         name: 'Date',
+        isConfirmed: true,
         // Instance members come from ECMASCRIPT_BUILTINS owner `Date.prototype`.
         // Statics (e.g. Date.UTC) remain in the `declare namespace Date`.
         construct: {
@@ -10518,6 +10694,7 @@ export const CONSTRUCTIBLE_BUILTINS = [
     },
     {
         name: 'RegExp',
+        isConfirmed: true,
         // Instance members (test, exec, source, global, …) come from
         // ECMASCRIPT_BUILTINS owner `RegExp`, emitted as `interface RegExp`.
         // SSJS supports `new RegExp(pattern[, flags])` for dynamic patterns, so it
@@ -10547,12 +10724,14 @@ export const CONSTRUCTIBLE_BUILTINS = [
 export const UNSUPPORTED_SYNTAX = [
     {
         feature: 'ArrowFunctionExpression',
+        isConfirmed: true,
         label: 'arrow functions',
         suggestion: 'Use a regular function expression instead.',
         nodeType: 'ArrowFunctionExpression',
     },
     {
         feature: 'LetDeclaration',
+        isConfirmed: true,
         label: "'let' declarations",
         suggestion: "Use 'var' instead.",
         nodeType: 'VariableDeclaration',
@@ -10560,6 +10739,7 @@ export const UNSUPPORTED_SYNTAX = [
     },
     {
         feature: 'ConstDeclaration',
+        isConfirmed: true,
         label: "'const' declarations",
         suggestion: "Use 'var' instead.",
         nodeType: 'VariableDeclaration',
@@ -10567,60 +10747,70 @@ export const UNSUPPORTED_SYNTAX = [
     },
     {
         feature: 'TemplateLiteral',
+        isConfirmed: true,
         label: 'template literals',
         suggestion: 'Use string concatenation instead.',
         nodeType: 'TemplateLiteral',
     },
     {
         feature: 'ClassDeclaration',
+        isConfirmed: true,
         label: 'class declarations',
         suggestion: 'Use constructor functions with prototypes instead.',
         nodeType: 'ClassDeclaration',
     },
     {
         feature: 'ClassExpression',
+        isConfirmed: true,
         label: 'class expressions',
         suggestion: 'Use constructor functions with prototypes instead.',
         nodeType: 'ClassExpression',
     },
     {
         feature: 'ForOfStatement',
+        isConfirmed: true,
         label: "'for...of' loops",
         suggestion: "Use a standard 'for' loop or 'for...in' instead.",
         nodeType: 'ForOfStatement',
     },
     {
         feature: 'SpreadElement',
+        isConfirmed: true,
         label: 'spread syntax',
         suggestion: 'Use Array.prototype.concat or manual iteration instead.',
         nodeType: 'SpreadElement',
     },
     {
         feature: 'RestElement',
+        isConfirmed: true,
         label: 'rest parameters',
         suggestion: "Use the 'arguments' object instead.",
         nodeType: 'RestElement',
     },
     {
         feature: 'ObjectDestructuring',
+        isConfirmed: true,
         label: 'destructuring assignment',
         suggestion: 'Access object properties individually instead.',
         nodeType: 'ObjectPattern',
     },
     {
         feature: 'ArrayDestructuring',
+        isConfirmed: true,
         label: 'destructuring assignment',
         suggestion: 'Access array elements by index instead.',
         nodeType: 'ArrayPattern',
     },
     {
         feature: 'DefaultParameter',
+        isConfirmed: true,
         label: 'default parameter values',
         suggestion: 'Check for undefined inside the function body instead.',
         nodeType: 'AssignmentPattern',
     },
     {
         feature: 'AsyncFunction',
+        isConfirmed: true,
         label: 'async functions',
         suggestion: 'SFMC SSJS does not support Promises or async/await.',
         nodeType: 'FunctionDeclaration',
@@ -10628,6 +10818,7 @@ export const UNSUPPORTED_SYNTAX = [
     },
     {
         feature: 'AsyncFunctionExpression',
+        isConfirmed: true,
         label: 'async functions',
         suggestion: 'SFMC SSJS does not support Promises or async/await.',
         nodeType: 'FunctionExpression',
@@ -10635,12 +10826,14 @@ export const UNSUPPORTED_SYNTAX = [
     },
     {
         feature: 'AwaitExpression',
+        isConfirmed: true,
         label: 'await expressions',
         suggestion: 'SFMC SSJS does not support Promises or async/await.',
         nodeType: 'AwaitExpression',
     },
     {
         feature: 'Generator',
+        isConfirmed: true,
         label: 'generator functions',
         suggestion: 'Use regular iteration patterns instead.',
         nodeType: 'FunctionDeclaration',
@@ -10648,36 +10841,42 @@ export const UNSUPPORTED_SYNTAX = [
     },
     {
         feature: 'YieldExpression',
+        isConfirmed: true,
         label: 'yield expressions',
         suggestion: 'Use regular iteration patterns instead.',
         nodeType: 'YieldExpression',
     },
     {
         feature: 'ImportDeclaration',
+        isConfirmed: true,
         label: 'ES module imports',
         suggestion: 'SFMC SSJS does not support ES modules.',
         nodeType: 'ImportDeclaration',
     },
     {
         feature: 'ExportNamedDeclaration',
+        isConfirmed: true,
         label: 'ES module exports',
         suggestion: 'SFMC SSJS does not support ES modules.',
         nodeType: 'ExportNamedDeclaration',
     },
     {
         feature: 'ExportDefaultDeclaration',
+        isConfirmed: true,
         label: 'ES module exports',
         suggestion: 'SFMC SSJS does not support ES modules.',
         nodeType: 'ExportDefaultDeclaration',
     },
     {
         feature: 'OptionalChaining',
+        isConfirmed: true,
         label: 'optional chaining (?.)',
         suggestion: 'Use explicit null checks instead.',
         nodeType: 'ChainExpression',
     },
     {
         feature: 'NullishCoalescing',
+        isConfirmed: true,
         label: 'nullish coalescing (??)',
         suggestion: 'Use a ternary or logical OR (||) instead.',
         nodeType: 'LogicalExpression',
@@ -10685,6 +10884,7 @@ export const UNSUPPORTED_SYNTAX = [
     },
     {
         feature: 'DirectObjectReturn',
+        isConfirmed: true,
         label: 'direct object literal returns',
         suggestion: 'Assign the object to a variable first, then return the variable.',
         nodeType: 'ReturnStatement',
@@ -10692,6 +10892,7 @@ export const UNSUPPORTED_SYNTAX = [
     },
     {
         feature: 'NewExpression',
+        isConfirmed: true,
         label: "the 'new' operator on user-defined constructors",
         suggestion:
             'May cause a 500 if the function uses the revealing module pattern ' +
@@ -10705,6 +10906,7 @@ export const UNSUPPORTED_SYNTAX = [
     },
     {
         feature: 'BigIntLiteral',
+        isConfirmed: true,
         label: 'BigInt literals (10n)',
         suggestion:
             'BigInt is unsupported in SFMC (ES2020). Remove the n suffix and use a Number, ' +
@@ -10741,6 +10943,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'copyWithin',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -10765,6 +10968,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'entries',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -10791,6 +10995,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'fill',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -10816,6 +11021,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'filter',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: false,
         category: 'unavailable',
@@ -10839,6 +11045,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'find',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -10861,6 +11068,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'findIndex',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -10883,6 +11091,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'forEach',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: false,
         category: 'unavailable',
@@ -10904,6 +11113,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'includes',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -10925,6 +11135,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'indexOf',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: false,
         category: 'unavailable',
@@ -10948,6 +11159,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'lastIndexOf',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: false,
         category: 'broken',
@@ -10972,6 +11184,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'map',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: false,
         category: 'unavailable',
@@ -10995,6 +11208,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'reduce',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: false,
         category: 'unavailable',
@@ -11020,6 +11234,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'reduceRight',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: false,
         category: 'unavailable',
@@ -11045,6 +11260,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'some',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: false,
         category: 'unavailable',
@@ -11067,6 +11283,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'every',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: false,
         category: 'unavailable',
@@ -11089,6 +11306,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'splice',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 3,
         isStatic: false,
         category: 'broken',
@@ -11133,6 +11351,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'trim',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: false,
         category: 'unavailable',
@@ -11150,6 +11369,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'startsWith',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -11170,6 +11390,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'endsWith',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -11202,6 +11423,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'bind',
         owner: 'Function.prototype',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: false,
         category: 'unavailable',
@@ -11230,6 +11452,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'toISOString',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: false,
         category: 'unavailable',
@@ -11253,6 +11476,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'isArray',
         owner: 'Array',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: true,
         category: 'unavailable',
@@ -11271,6 +11495,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'of',
         owner: 'Array',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -11293,6 +11518,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'substr',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 3,
         isStatic: false,
         category: 'unavailable',
@@ -11312,182 +11538,6 @@ export const POLYFILLABLE_METHODS = [
             '    var from = start < 0 ? Math.max(len + start, 0) : Math.min(start, len);\n' +
             '    var to = length === undefined ? len : from + (length < 0 ? 0 : length);\n' +
             '    return this.substring(from, to);\n' +
-            '};',
-    },
-    {
-        method: 'slice',
-        owner: 'Array.prototype',
-        esVersion: 3,
-        isStatic: false,
-        category: 'broken',
-        ambiguousWithString: true,
-        description:
-            'Array.prototype.slice exists in SFMC SSJS and handles positive and negative indices correctly (slice(1, 3), slice(-2), slice(1, -1) all work), but the no-argument form slice() throws "Index was outside the bounds of the array." This polyfill reimplements slice in pure JS so slice() (whole-array copy) also works; always pass at least a start index (e.g. slice(0)) if you avoid the polyfill. Verified on a CloudPage.',
-        polyfill:
-            '/**\n' +
-            ' * Polyfill for Array.prototype.slice (SFMC SSJS).\n' +
-            ' * @param {number} [start] - index to start extracting from (default 0; negative counts from the end)\n' +
-            ' * @param {number} [end] - index to stop before (default array length; negative counts from the end)\n' +
-            ' * @returns {Array} a new array with the extracted elements\n' +
-            ' */\n' +
-            'Array.prototype.slice = function (start, end) {\n' +
-            '    var len = this.length;\n' +
-            '    var s = (start === undefined) ? 0 : Number(start);\n' +
-            '    var e = (end === undefined) ? len : Number(end);\n' +
-            '    if (s !== s) { s = 0; }\n' +
-            '    if (e !== e) { e = 0; }\n' +
-            '    if (s < 0) { s = len + s; if (s < 0) { s = 0; } } else if (s > len) { s = len; }\n' +
-            '    if (e < 0) { e = len + e; if (e < 0) { e = 0; } } else if (e > len) { e = len; }\n' +
-            '    var out = [];\n' +
-            '    for (var i = s; i < e; i++) { out.push(this[i]); }\n' +
-            '    return out;\n' +
-            '};',
-    },
-    {
-        method: 'sort',
-        owner: 'Array.prototype',
-        esVersion: 3,
-        isStatic: false,
-        category: 'broken',
-        ambiguousWithString: false,
-        description:
-            'Array.prototype.sort works in SFMC SSJS when called with a compare function (arr.sort(fn)), but the no-argument form arr.sort() throws, and the native sort cannot be re-invoked via a captured reference. This polyfill is a pure-JS in-place insertion sort so arr.sort() (default lexicographic order) and arr.sort(compareFn) both work. Verified on a CloudPage.',
-        polyfill:
-            '/**\n' +
-            ' * Polyfill for Array.prototype.sort (SFMC SSJS).\n' +
-            ' * @param {Function} [compareFn] - comparator returning <0, 0, or >0; defaults to lexicographic order\n' +
-            ' * @returns {Array} the array sorted in place\n' +
-            ' */\n' +
-            'Array.prototype.sort = function (compareFn) {\n' +
-            "    var cmp = (typeof compareFn === 'function')\n" +
-            '        ? compareFn\n' +
-            '        : function (a, b) {\n' +
-            '            var sa = String(a);\n' +
-            '            var sb = String(b);\n' +
-            '            return sa < sb ? -1 : (sa > sb ? 1 : 0);\n' +
-            '        };\n' +
-            '    var len = this.length;\n' +
-            '    for (var i = 1; i < len; i++) {\n' +
-            '        var current = this[i];\n' +
-            '        var j = i - 1;\n' +
-            '        while (j >= 0 && cmp(this[j], current) > 0) {\n' +
-            '            this[j + 1] = this[j];\n' +
-            '            j--;\n' +
-            '        }\n' +
-            '        this[j + 1] = current;\n' +
-            '    }\n' +
-            '    return this;\n' +
-            '};',
-    },
-    {
-        method: 'search',
-        owner: 'String.prototype',
-        esVersion: 3,
-        isStatic: false,
-        category: 'broken',
-        ambiguousWithString: false,
-        description:
-            'String.prototype.search exists in SFMC SSJS but always returns -1 (or 0) regardless of the match. This polyfill delegates to String.match (passing the regex straight through, since "regexp instanceof RegExp" returns false here and reconstructing via new RegExp() breaks matching) and returns the index via indexOf of the matched text, or -1 on no match. Verified on a CloudPage.',
-        polyfill:
-            '/**\n' +
-            ' * Polyfill for String.prototype.search (SFMC SSJS).\n' +
-            ' * @param {RegExp} regexp - the pattern to search for\n' +
-            ' * @returns {number} the index of the first match, or -1\n' +
-            ' */\n' +
-            'String.prototype.search = function (regexp) {\n' +
-            '    var str = "" + this;\n' +
-            '    var m = str.match(regexp);\n' +
-            '    if (m === null || m.length === 0) { return -1; }\n' +
-            '    return str.indexOf(m[0]);\n' +
-            '};',
-    },
-    {
-        method: 'split',
-        owner: 'String.prototype',
-        esVersion: 3,
-        isStatic: false,
-        category: 'broken',
-        ambiguousWithString: false,
-        description:
-            'String.prototype.split works in SFMC SSJS for normal separators, but the empty-string separator ("") does NOT split into individual characters as the spec requires. This polyfill handles the "" case with a manual character loop (honouring an optional limit) and delegates all other separators to the native split. Verified on a CloudPage.',
-        polyfill:
-            '/**\n' +
-            ' * Polyfill for String.prototype.split (SFMC SSJS) — fixes the empty-string separator.\n' +
-            ' * @param {string|RegExp} separator - the separator to split on\n' +
-            ' * @param {number} [limit] - maximum number of splits to include\n' +
-            ' * @returns {Array} the array of substrings\n' +
-            ' */\n' +
-            'String.prototype.split = (function () {\n' +
-            '    var nativeSplit = String.prototype.split;\n' +
-            '    return function (separator, limit) {\n' +
-            '        var str = String(this);\n' +
-            "        if (separator === '') {\n" +
-            '            var out = [];\n' +
-            '            for (var i = 0; i < str.length; i++) {\n' +
-            '                if (limit !== undefined && out.length >= limit) { break; }\n' +
-            '                out.push(str.charAt(i));\n' +
-            '            }\n' +
-            '            return out;\n' +
-            '        }\n' +
-            '        if (limit === undefined) { return nativeSplit.call(str, separator); }\n' +
-            '        return nativeSplit.call(str, separator, limit);\n' +
-            '    };\n' +
-            '})();',
-    },
-    {
-        method: 'max',
-        owner: 'Math',
-        isConfirmed: true,
-        esVersion: 3,
-        isStatic: true,
-        category: 'broken',
-        ambiguousWithString: false,
-        description:
-            'Math.max in SFMC SSJS throws when given three or more arguments and returns 0 (not -Infinity) with no arguments. This polyfill is a pure-JS variadic fold that handles any argument count and propagates NaN per spec. Note: the no-argument result is Number.NEGATIVE_INFINITY; the engine mis-renders the sign of Infinity when stringified, but the numeric value is correct. Verified on a CloudPage.',
-        polyfill:
-            '/**\n' +
-            ' * Polyfill for Math.max (SFMC SSJS) — handles any argument count.\n' +
-            ' * @param {...number} [values] - numbers to compare\n' +
-            ' * @returns {number} the largest value, or NaN if any value is NaN\n' +
-            ' */\n' +
-            'Math.max = function () {\n' +
-            '    if (arguments.length === 0) { return Number.NEGATIVE_INFINITY; }\n' +
-            '    var best = Number(arguments[0]);\n' +
-            '    if (best !== best) { return NaN; }\n' +
-            '    for (var i = 1; i < arguments.length; i++) {\n' +
-            '        var v = Number(arguments[i]);\n' +
-            '        if (v !== v) { return NaN; }\n' +
-            '        if (v > best) { best = v; }\n' +
-            '    }\n' +
-            '    return best;\n' +
-            '};',
-    },
-    {
-        method: 'min',
-        owner: 'Math',
-        isConfirmed: true,
-        esVersion: 3,
-        isStatic: true,
-        category: 'broken',
-        ambiguousWithString: false,
-        description:
-            'Math.min in SFMC SSJS throws when given three or more arguments and returns 0 (not Infinity) with no arguments. This polyfill is a pure-JS variadic fold that handles any argument count and propagates NaN per spec. Note: the no-argument result is Number.POSITIVE_INFINITY; the engine mis-renders the sign of Infinity when stringified, but the numeric value is correct. Verified on a CloudPage.',
-        polyfill:
-            '/**\n' +
-            ' * Polyfill for Math.min (SFMC SSJS) — handles any argument count.\n' +
-            ' * @param {...number} [values] - numbers to compare\n' +
-            ' * @returns {number} the smallest value, or NaN if any value is NaN\n' +
-            ' */\n' +
-            'Math.min = function () {\n' +
-            '    if (arguments.length === 0) { return Number.POSITIVE_INFINITY; }\n' +
-            '    var best = Number(arguments[0]);\n' +
-            '    if (best !== best) { return NaN; }\n' +
-            '    for (var i = 1; i < arguments.length; i++) {\n' +
-            '        var v = Number(arguments[i]);\n' +
-            '        if (v !== v) { return NaN; }\n' +
-            '        if (v < best) { best = v; }\n' +
-            '    }\n' +
-            '    return best;\n' +
             '};',
     },
 ];
@@ -12057,6 +12107,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'ignoreCase',
         owner: 'RegExp',
+        isConfirmed: true,
         esVersion: 3,
         isStatic: false,
         isProperty: true,
@@ -12068,6 +12119,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'multiline',
         owner: 'RegExp',
+        isConfirmed: true,
         esVersion: 3,
         isStatic: false,
         isProperty: true,
@@ -12079,6 +12131,10 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'instanceof',
         owner: 'RegExp',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies re instanceof RegExp returns true for any RegExp object, including new RegExp(...). In the SFMC Jint engine it is ALWAYS false, even for new RegExp(...). Unlike Function (where instanceof works but .constructor is broken), for RegExp the reverse holds: re.constructor === RegExp correctly returns true. Use the constructor comparison to detect a RegExp.',
         esVersion: 3,
         isStatic: false,
         isProperty: false,
@@ -12091,6 +12147,10 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'length',
         owner: 'Function.prototype',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies fn.length returns the arity (number of declared parameters). In the SFMC Jint engine reading fn.length THROWS "Object reference not set to an instance of an object." and fn.hasOwnProperty("length") returns false. There is no way to read a function\'s declared parameter count at runtime.',
         esVersion: 3,
         isStatic: false,
         isProperty: true,
@@ -12102,6 +12162,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'name',
         owner: 'Function.prototype',
+        isConfirmed: true,
         esVersion: 3,
         isStatic: false,
         isProperty: true,
@@ -12113,6 +12174,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'caller',
         owner: 'Function.prototype',
+        isConfirmed: true,
         esVersion: 3,
         isStatic: false,
         isProperty: true,
@@ -12123,18 +12185,9 @@ export const KNOWN_UNSUPPORTED = [
     },
     // ── Confirmed-missing Date members ───────────────────────────────────────
     {
-        member: 'toISOString',
-        owner: 'Date.prototype',
-        esVersion: 5,
-        isStatic: false,
-        category: 'unavailable',
-        hasPolyfill: false,
-        suggestion:
-            'Date.prototype.toISOString is unavailable in SFMC. Build the ISO string manually from the get* methods, or use Platform.Function.SystemDateToLocalDate.',
-    },
-    {
         member: 'toJSON',
         owner: 'Date.prototype',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: false,
         category: 'unavailable',
@@ -12146,6 +12199,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'parse',
         owner: 'JSON',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: true,
         category: 'unavailable',
@@ -12157,6 +12211,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'stringify',
         owner: 'JSON',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: true,
         category: 'unavailable',
@@ -12169,6 +12224,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'isPrototypeOf',
         owner: 'Object.prototype',
+        isConfirmed: true,
         esVersion: 3,
         isStatic: false,
         category: 'broken',
@@ -12179,6 +12235,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'propertyIsEnumerable',
         owner: 'Object.prototype',
+        isConfirmed: true,
         esVersion: 3,
         isStatic: false,
         category: 'broken',
@@ -12190,6 +12247,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'keys',
         owner: 'Object',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: true,
         category: 'unavailable',
@@ -12199,6 +12257,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'values',
         owner: 'Object',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -12209,6 +12268,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'entries',
         owner: 'Object',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -12219,6 +12279,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'assign',
         owner: 'Object',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -12229,6 +12290,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'create',
         owner: 'Object',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: true,
         category: 'unavailable',
@@ -12239,6 +12301,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'freeze',
         owner: 'Object',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: true,
         category: 'unavailable',
@@ -12249,6 +12312,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'getOwnPropertyNames',
         owner: 'Object',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: true,
         category: 'unavailable',
@@ -12259,6 +12323,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'defineProperties',
         owner: 'Object',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: true,
         category: 'unavailable',
@@ -12269,6 +12334,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'getOwnPropertyDescriptor',
         owner: 'Object',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: true,
         category: 'unavailable',
@@ -12279,6 +12345,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'isFrozen',
         owner: 'Object',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: true,
         category: 'unavailable',
@@ -12289,6 +12356,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'seal',
         owner: 'Object',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: true,
         category: 'unavailable',
@@ -12299,6 +12367,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'isSealed',
         owner: 'Object',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: true,
         category: 'unavailable',
@@ -12308,6 +12377,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'preventExtensions',
         owner: 'Object',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: true,
         category: 'unavailable',
@@ -12318,6 +12388,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'isExtensible',
         owner: 'Object',
+        isConfirmed: true,
         esVersion: 5,
         isStatic: true,
         category: 'unavailable',
@@ -12329,6 +12400,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'trimStart',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -12338,6 +12410,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'trimEnd',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -12347,6 +12420,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'padStart',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -12357,6 +12431,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'padEnd',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -12367,6 +12442,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'repeat',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -12377,6 +12453,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'includes',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -12386,6 +12463,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'codePointAt',
         owner: 'String.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -12397,6 +12475,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'flat',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -12407,6 +12486,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'flatMap',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -12417,6 +12497,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'findLast',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -12427,6 +12508,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'at',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -12437,6 +12519,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'keys',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -12446,6 +12529,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'values',
         owner: 'Array.prototype',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: false,
         category: 'unavailable',
@@ -12455,6 +12539,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'from',
         owner: 'Array',
+        isConfirmed: true,
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
