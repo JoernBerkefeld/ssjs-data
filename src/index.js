@@ -1962,7 +1962,7 @@ export const PLATFORM_FUNCTIONS = [
             {
                 name: 'status',
                 description:
-                    'Array that receives the status message and request ID of the API call (e.g. [0, 0]); status[0] is the message string ("OK" / "Error: ..."), status[1] the request ID (GUID string)',
+                    'Status out-parameter required by the signature, but inert at runtime — it is never populated (stays empty even on success, so status[0] and status[1] are undefined). Pass an array (e.g. [0, 0]); read the returned array for results.',
                 type: 'array',
             },
         ],
@@ -1978,7 +1978,7 @@ export const PLATFORM_FUNCTIONS = [
     {
         name: 'InvokePerform',
         ampscriptEquivalent: 'InvokePerform',
-        minArgs: 4,
+        minArgs: 3,
         maxArgs: 4,
         isConfirmed: true,
         differsFromOfficialDocs: true,
@@ -1998,12 +1998,13 @@ export const PLATFORM_FUNCTIONS = [
             {
                 name: 'options',
                 description:
-                    'API configure options to include in the call. Can contain a null value.',
+                    'API configure options to include in the call. Can be omitted or null.',
                 type: 'object',
+                optional: true,
             },
         ],
         returnType: 'string',
-        syntax: 'Platform.Function.InvokePerform(apiObject, method, status, options)',
+        syntax: 'Platform.Function.InvokePerform(apiObject, method, status[, options])',
         example:
             'var StatusAndRequestID = [0, 0, 0];\n' +
             'var result = Platform.Function.InvokePerform(APIObject, "Validate", StatusAndRequestID, null);\n' +
@@ -2060,7 +2061,7 @@ export const PLATFORM_FUNCTIONS = [
             {
                 name: 'status',
                 description:
-                    'Array that receives the status and request ID of the API call (e.g. [0, 0])',
+                    'Status out-parameter required by the signature, but inert at runtime — it is never populated (stays empty even on success). Pass an array (e.g. [0, 0]); read the returned array for results, where each element may carry its own StatusCode/StatusMessage/ErrorCode as data.',
                 type: 'array',
             },
         ],
@@ -2069,8 +2070,7 @@ export const PLATFORM_FUNCTIONS = [
         example:
             'var StatusAndRequestID = [0, 0];\n' +
             'var result = Platform.Function.InvokeExecute(ExecuteRequest, StatusAndRequestID);\n' +
-            'var status = StatusAndRequestID[0];\n' +
-            'var requestID = StatusAndRequestID[1];',
+            'var firstResult = result[0];',
     },
     {
         name: 'InvokeExtract',
@@ -2080,9 +2080,9 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs list a third options argument and type the return value as an object, but at runtime the call takes exactly two arguments (apiObject, statusArray) and returns the OverallStatus message as a string.',
+            'The official docs list a third options argument and type the return value as an object; at runtime the call takes exactly two arguments (a third throws) and the statusArray is inert (never populated). The documented OverallStatus string return could not be reproduced from a CloudPage even against real saved Data Extract definitions (the invoke throws a catchable NullReferenceException), so the string return type is per-docs and unproven at runtime.',
         description:
-            'Invokes the Extract SOAP API method on the specified object and returns the OverallStatus message as a string.',
+            'Invokes the Extract SOAP API method on the specified object. The docs describe the return as the OverallStatus message string; that string was not reproducible from a CloudPage invoke.',
         params: [
             {
                 name: 'apiObject',
@@ -2091,14 +2091,15 @@ export const PLATFORM_FUNCTIONS = [
             },
             {
                 name: 'statusArray',
-                description: 'Array that receives the status and RequestID of the API call',
+                description:
+                    'Status out-parameter required by the signature, but inert at runtime — it is never populated. Pass an array (e.g. [0, 0]).',
                 type: 'array',
             },
         ],
         returnType: 'string',
         syntax: 'Platform.Function.InvokeExtract(apiObject, statusArray)',
         example:
-            'var statusArr = [];\nvar result = Platform.Function.InvokeExtract(extractObj, statusArr);\nWrite(result);',
+            'var statusArr = [0, 0];\nvar result = Platform.Function.InvokeExtract(extractObj, statusArr);\nWrite(result);',
     },
     {
         name: 'InvokeSchedule',

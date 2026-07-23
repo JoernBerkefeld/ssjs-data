@@ -544,7 +544,7 @@ declare namespace Platform {
          * @remarks ✅ Runtime-verified in a live SFMC test.
          * @remarks ⚠️ Differs from the official Salesforce docs. The official docs do not mention the null return: at runtime the call returns an array of result objects when records match, but returns null on error or when no records match.
          * @param apiObject - SOAP API RetrieveRequest object instance
-         * @param status - Array that receives the status message and request ID of the API call (e.g. [0, 0]); status[0] is the message string ("OK" / "Error: ..."), status[1] the request ID (GUID string)
+         * @param status - Status out-parameter required by the signature, but inert at runtime — it is never populated (stays empty even on success, so status[0] and status[1] are undefined). Pass an array (e.g. [0, 0]); read the returned array for results.
          * @example
          * var RetrieveRequest = Platform.Function.CreateObject("RetrieveRequest");
          * Platform.Function.SetObjectProperty(RetrieveRequest, "ObjectType", "Email");
@@ -563,7 +563,7 @@ declare namespace Platform {
          * @param apiObject - SOAP API object instance
          * @param method - Method to perform on the object
          * @param status - Array that receives the status, error code, and perform response of the API call (e.g. [0, 0, 0])
-         * @param options - API configure options to include in the call. Can contain a null value.
+         * @param options - API configure options to include in the call. Can be omitted or null.
          * @example
          * var StatusAndRequestID = [0, 0, 0];
          * var result = Platform.Function.InvokePerform(APIObject, "Validate", StatusAndRequestID, null);
@@ -571,7 +571,7 @@ declare namespace Platform {
          * var errorCode = StatusAndRequestID[1];
          * var performResponse = StatusAndRequestID[2];
          */
-        function InvokePerform(apiObject: object, method: string, status: any[], options: object): string;
+        function InvokePerform(apiObject: object, method: string, status: any[], options?: object): string;
         /**
          * Executes a SOAP API Configure call on an API object and returns the OverallStatus message as a string.
          *
@@ -596,25 +596,24 @@ declare namespace Platform {
          * @remarks ✅ Runtime-verified in a live SFMC test.
          * @remarks ⚠️ Differs from the official Salesforce docs. The official docs list three arguments (including an options object) and type the return value as an object, but at runtime the call takes exactly two arguments (apiObject, status) — passing the documented third argument throws "Unable to retrieve security descriptor for this frame." — and returns an array of result objects.
          * @param apiObject - SOAP API object instance
-         * @param status - Array that receives the status and request ID of the API call (e.g. [0, 0])
+         * @param status - Status out-parameter required by the signature, but inert at runtime — it is never populated (stays empty even on success). Pass an array (e.g. [0, 0]); read the returned array for results, where each element may carry its own StatusCode/StatusMessage/ErrorCode as data.
          * @example
          * var StatusAndRequestID = [0, 0];
          * var result = Platform.Function.InvokeExecute(ExecuteRequest, StatusAndRequestID);
-         * var status = StatusAndRequestID[0];
-         * var requestID = StatusAndRequestID[1];
+         * var firstResult = result[0];
          */
         function InvokeExecute(apiObject: object, status: any[]): object[];
         /**
-         * Invokes the Extract SOAP API method on the specified object and returns the OverallStatus message as a string.
+         * Invokes the Extract SOAP API method on the specified object. The docs describe the return as the OverallStatus message string; that string was not reproducible from a CloudPage invoke.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeextract/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs list a third options argument and type the return value as an object, but at runtime the call takes exactly two arguments (apiObject, statusArray) and returns the OverallStatus message as a string.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs list a third options argument and type the return value as an object; at runtime the call takes exactly two arguments (a third throws) and the statusArray is inert (never populated). The documented OverallStatus string return could not be reproduced from a CloudPage even against real saved Data Extract definitions (the invoke throws a catchable NullReferenceException), so the string return type is per-docs and unproven at runtime.
          * @param apiObject - SOAP API object on which to invoke Extract
-         * @param statusArray - Array that receives the status and RequestID of the API call
+         * @param statusArray - Status out-parameter required by the signature, but inert at runtime — it is never populated. Pass an array (e.g. [0, 0]).
          * @example
-         * var statusArr = [];
+         * var statusArr = [0, 0];
          * var result = Platform.Function.InvokeExtract(extractObj, statusArr);
          * Write(result);
          */
