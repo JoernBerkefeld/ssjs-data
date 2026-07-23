@@ -4576,15 +4576,31 @@ interface String {
      */
     toLowerCase(): string;
     /**
-     * Returns the string converted to lowercase according to host locale mappings.
+     * Returns the string converted to lowercase. Runtime-verified in SFMC; it behaves like toLowerCase() (locale mappings are not applied).
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/toLocaleLowerCase) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
+     * @remarks ⚠️ The locale argument is ignored — it behaves exactly like toLowerCase(). "ABC".toLocaleLowerCase() returns "abc" with no locale-specific casing.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: "ABC".toLocaleLowerCase() === "abc". The SFMC Jint engine applies no locale-specific mappings, so this is a plain toLowerCase() alias rather than the locale-aware method the spec describes.
      * @example
      * var str = "AbC";
      * Write(str.toLocaleLowerCase()); // "abc"
      */
     toLocaleLowerCase(): string;
+    /**
+     * Returns the string converted to uppercase. Runtime-verified in SFMC; it behaves like toUpperCase() (locale mappings are not applied).
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/toLocaleUpperCase) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
+     *
+     * @remarks ⚠️ The locale argument is ignored — it behaves exactly like toUpperCase(). "abc".toLocaleUpperCase() returns "ABC" with no locale-specific casing.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: "abc".toLocaleUpperCase() === "ABC". The SFMC Jint engine applies no locale-specific mappings, so this is a plain toUpperCase() alias rather than the locale-aware method the spec describes.
+     * @example
+     * var str = "abc";
+     * Write(str.toLocaleUpperCase()); // "ABC"
+     */
+    toLocaleUpperCase(): string;
     /**
      * Returns the string converted to uppercase.
      *
@@ -4682,6 +4698,20 @@ interface Number {
      * Write((42).valueOf()); // 42
      */
     valueOf(): number;
+    /**
+     * Returns a string representation of the number. Runtime-verified in SFMC: the locale argument is ignored and no grouping separators are applied — it behaves like a plain toString(). Use Platform.Function.FormatNumber for real locale formatting.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toLocaleString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
+     *
+     * @remarks ⚠️ The locale argument is ignored — (123456.789).toLocaleString("de-DE") returns "123456.789", not the grouped "123.456,789".
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies locale-aware formatting with grouping separators; the SFMC Jint engine ignores the locale/options arguments and returns the plain number string (no grouping).
+     * @param locales - Ignored in SFMC
+     * @param options - Ignored in SFMC
+     * @example
+     * Write((123456.789).toLocaleString("de-DE")); // "123456.789" (locale ignored)
+     */
+    toLocaleString(locales?: string, options?: object): string;
 }
 
 interface Object {
@@ -4953,6 +4983,21 @@ interface Date {
      * Write(d.toTimeString());
      */
     toTimeString(): string;
+    /**
+     * Returns the date portion as a string. Runtime-verified in SFMC: the locale argument is ignored and a fixed English-style format is returned (e.g. "Wed, 15 Jan 2020"). Use Platform.Function.FormatDate for locale-aware output.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
+     *
+     * @remarks ⚠️ The locale argument is ignored — output is a fixed English format like "Wed, 15 Jan 2020", not locale-specific.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies locale-aware date formatting; the SFMC Jint engine ignores the locale/options arguments and returns a fixed English-style string (e.g. "Wed, 15 Jan 2020").
+     * @param locales - Ignored in SFMC
+     * @param options - Ignored in SFMC
+     * @example
+     * var d = new Date(2020, 0, 15);
+     * Write(d.toLocaleDateString()); // "Wed, 15 Jan 2020" (locale ignored)
+     */
+    toLocaleDateString(locales?: string, options?: object): string;
 }
 
 declare namespace Math {
@@ -4961,6 +5006,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/abs) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param x - A number
      * @example
      * Write(Math.abs(-5)); // 5
@@ -4971,6 +5017,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/ceil) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param x - A number
      * @example
      * Write(Math.ceil(4.1)); // 5
@@ -4981,6 +5028,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/floor) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param x - A number
      * @example
      * Write(Math.floor(4.9)); // 4
@@ -4992,6 +5040,7 @@ declare namespace Math {
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/max) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
      * @remarks ⚠️ The variadic form throws in the SFMC engine when passed 3+ arguments, and the no-argument Math.max() returns 0 instead of -Infinity. Compare two values at a time, e.g. Math.max(Math.max(a, b), c), or fold with a loop.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param values - Numbers to compare (variadic)
      * @example
      * Write(Math.max(1, 5)); // 5
@@ -5003,6 +5052,7 @@ declare namespace Math {
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/min) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
      * @remarks ⚠️ The variadic form throws in the SFMC engine when passed 3+ arguments, and the no-argument Math.min() returns 0 instead of +Infinity. Compare two values at a time, e.g. Math.min(Math.min(a, b), c), or fold with a loop.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param values - Numbers to compare (variadic)
      * @example
      * Write(Math.min(1, 5)); // 1
@@ -5013,6 +5063,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/pow) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param base - The base number
      * @param exponent - The exponent
      * @example
@@ -5024,6 +5075,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var r = Math.random();
      * Write(Math.floor(r * 100)); // random 0–99
@@ -5034,6 +5086,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/round) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param x - A number
      * @example
      * Write(Math.round(4.5)); // 5
@@ -5044,6 +5097,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/sqrt) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param x - A non-negative number
      * @example
      * Write(Math.sqrt(16)); // 4
@@ -5054,6 +5108,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/sin) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param x - Angle in radians
      * @example
      * Write(Math.sin(Math.PI / 2)); // 1
@@ -5064,6 +5119,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/cos) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param x - Angle in radians
      * @example
      * Write(Math.cos(0)); // 1
@@ -5074,6 +5130,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/tan) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param x - Angle in radians
      * @example
      * Write(Math.tan(Math.PI / 4)); // ~1
@@ -5084,6 +5141,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/asin) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param x - A number between -1 and 1
      * @example
      * Write(Math.asin(1)); // ~1.5708 (π/2)
@@ -5094,6 +5152,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/acos) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param x - A number between -1 and 1
      * @example
      * Write(Math.acos(1)); // 0
@@ -5104,6 +5163,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/atan) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param x - A number
      * @example
      * Write(Math.atan(1)); // ~0.7854 (π/4)
@@ -5114,6 +5174,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/atan2) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param y - Y coordinate
      * @param x - X coordinate
      * @example
@@ -5125,6 +5186,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/exp) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param x - The exponent
      * @example
      * Write(Math.exp(1)); // ~2.71828 (e)
@@ -5135,6 +5197,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/log) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param x - A positive number
      * @example
      * Write(Math.log(Math.E)); // 1
@@ -5145,6 +5208,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/PI) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * var area = Math.PI * r * r;
      */
@@ -5154,6 +5218,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/E) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * Write(Math.E); // ~2.71828
      */
@@ -5163,6 +5228,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/LN2) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * Write(Math.LN2); // ~0.693
      */
@@ -5172,6 +5238,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/LN10) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * Write(Math.LN10); // ~2.303
      */
@@ -5181,6 +5248,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/LOG2E) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * Write(Math.LOG2E); // ~1.443
      */
@@ -5190,6 +5258,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/SQRT2) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * Write(Math.SQRT2); // ~1.414
      */
@@ -5199,6 +5268,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/SQRT1_2) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @example
      * Write(Math.SQRT1_2); // ~0.707
      */
@@ -5373,6 +5443,104 @@ declare function isFinite(value: any): boolean;
  * Write(eval("Stringify({a:1})")); // {"a":1}
  */
 declare function eval(script: string): any;
+/**
+ * Encodes a complete URI, leaving reserved characters (/ ? : @ & = + $ #) intact. Runtime-verified to work in SFMC SSJS, but the Jint engine encodes a space as "+" (not "%20") and emits lowercase hex escapes.
+ *
+ * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURI)
+ *
+ * @remarks ⚠️ Space is encoded as "+" instead of "%20", and percent-escapes use lowercase hex, unlike the ECMAScript spec.
+ * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies encodeURI encodes a space as "%20" with uppercase hex; the SFMC Jint engine encodes a space as "+" and emits lowercase hex escapes.
+ * @param uri - The URI string to encode
+ * @example
+ * Write(encodeURI("a b/c?d=1")); // "a+b/c?d=1" in SFMC (spec: "a%20b/c?d=1")
+ */
+declare function encodeURI(uri: string): string;
+/**
+ * Encodes a URI component, escaping reserved characters as well. Runtime-verified to work in SFMC SSJS, but the Jint engine encodes a space as "+" (not "%20") and emits lowercase hex escapes (e.g. "/" becomes "%2f", not "%2F").
+ *
+ * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent)
+ *
+ * @remarks ⚠️ Space -> "+" and lowercase hex (e.g. "/" -> "%2f") instead of the spec's "%20" / "%2F".
+ * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies a space encodes as "%20" with uppercase hex; the SFMC Jint engine encodes a space as "+" and emits lowercase hex (e.g. "/" -> "%2f").
+ * @param str - The component string to encode
+ * @example
+ * Write(encodeURIComponent("a b/c")); // "a+b%2fc" in SFMC (spec: "a%20b%2Fc")
+ */
+declare function encodeURIComponent(str: string): string;
+/**
+ * Decodes a URI previously encoded by encodeURI, converting percent-escapes back to their characters while leaving reserved characters intact. Runtime-verified to work in SFMC SSJS.
+ *
+ * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/decodeURI)
+ *
+ * @param uri - The encoded URI string to decode
+ * @example
+ * Write(decodeURI("a%20b/c")); // "a b/c"
+ */
+declare function decodeURI(uri: string): string;
+/**
+ * Decodes a URI component previously encoded by encodeURIComponent, converting all percent-escapes back to characters. Runtime-verified to work in SFMC SSJS, but the Jint engine decodes a literal "+" to a space (form-urlencoded behaviour), unlike the spec.
+ *
+ * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/decodeURIComponent)
+ *
+ * @remarks ⚠️ A literal "+" is decoded to a space, unlike the ECMAScript spec (which leaves it).
+ * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies decodeURIComponent leaves a literal "+" unchanged; the SFMC Jint engine decodes "+" to a space, matching application/x-www-form-urlencoded.
+ * @param str - The encoded component string to decode
+ * @example
+ * Write(decodeURIComponent("a%20b%2Fc")); // "a b/c"
+ * Write(decodeURIComponent("+")); // " " in SFMC (spec: "+")
+ */
+declare function decodeURIComponent(str: string): string;
+
+declare namespace Number {
+    /**
+     * The largest positive finite value representable by a Number. Runtime-verified present in SFMC (typeof number). The value is correct (~1.7976931348623157e308) but note the sibling constants MIN_VALUE and the INFINITY constants are broken in this engine.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @example
+     * Write(Number.MAX_VALUE > 0); // true
+     */
+    var MAX_VALUE: number;
+    /**
+     * Standard ES3 exposes the smallest positive representable Number (~5e-324). Runtime-verified present in SFMC (typeof number) but WRONG: the SFMC Jint engine returns the negative of MAX_VALUE (-1.7976931348623157e308) instead, so Number.MIN_VALUE > 0 is false. Use the literal 5e-324 if you need the true smallest positive value.
+     *
+     * @remarks ⚠️ Broken in SFMC: Number.MIN_VALUE returns -MAX_VALUE (a large negative number), not the ES3 smallest-positive value 5e-324. Number.MIN_VALUE > 0 is false. Use the literal 5e-324.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN/ES3 define Number.MIN_VALUE as the smallest positive value (~5e-324); the SFMC Jint engine instead returns -Number.MAX_VALUE, so it is negative and MIN_VALUE > 0 evaluates to false.
+     * @example
+     * Write(Number.MIN_VALUE > 0); // false (returns -MAX_VALUE in SFMC)
+     */
+    var MIN_VALUE: number;
+    /**
+     * The Not-a-Number value. Runtime-verified present in SFMC (typeof number); NaN !== NaN holds as expected. Note it stringifies as lowercase "nan" (not "NaN") in this engine.
+     *
+     * @remarks ⚠️ Stringifies as lowercase "nan" in SFMC (String(Number.NaN) === "nan"), unlike the standard "NaN". The value still compares as not-equal to itself.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: the value is present and behaves as NaN for comparisons, but String(Number.NaN) yields lowercase "nan" instead of the standard "NaN".
+     * @example
+     * Write(Number.NaN !== Number.NaN); // true
+     */
+    var NaN: number;
+    /**
+     * Standard ES3 exposes positive infinity. Runtime-verified present in SFMC (typeof number) but BROKEN: it stringifies as "-infinity" and Number.POSITIVE_INFINITY > 0 is false. The global Infinity is equally unreliable in this engine.
+     *
+     * @remarks ⚠️ Broken in SFMC: Number.POSITIVE_INFINITY stringifies as "-infinity" and Number.POSITIVE_INFINITY > 0 is false (sign inverted). Avoid infinity constants; guard with explicit finite bounds instead.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN defines this as +Infinity; the SFMC Jint engine returns a value that stringifies as "-infinity" and for which > 0 is false (sign inverted). The global Infinity is likewise unreliable.
+     * @example
+     * Write(Number.POSITIVE_INFINITY > 0); // false (sign inverted in SFMC)
+     */
+    var POSITIVE_INFINITY: number;
+    /**
+     * Standard ES3 exposes negative infinity. Runtime-verified present in SFMC (typeof number) but BROKEN: it stringifies as "infinity" and Number.NEGATIVE_INFINITY < 0 is false (sign inverted).
+     *
+     * @remarks ⚠️ Broken in SFMC: Number.NEGATIVE_INFINITY stringifies as "infinity" and Number.NEGATIVE_INFINITY < 0 is false (sign inverted). Avoid infinity constants; guard with explicit finite bounds instead.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN defines this as -Infinity; the SFMC Jint engine returns a value that stringifies as "infinity" and for which < 0 is false (sign inverted).
+     * @example
+     * Write(Number.NEGATIVE_INFINITY < 0); // false (sign inverted in SFMC)
+     */
+    var NEGATIVE_INFINITY: number;
+}
 
 // ── Constructible built-ins (value + constructor declarations) ───────────────
 interface Error {
@@ -5385,6 +5553,72 @@ interface ErrorConstructor {
     readonly prototype: Error;
 }
 declare var Error: ErrorConstructor;
+
+interface EvalError {
+    message: string;
+    name: string;
+}
+interface EvalErrorConstructor {
+    new (message?: string): EvalError;
+    (message?: string): EvalError;
+    readonly prototype: EvalError;
+}
+declare var EvalError: EvalErrorConstructor;
+
+interface RangeError {
+    message: string;
+    name: string;
+}
+interface RangeErrorConstructor {
+    new (message?: string): RangeError;
+    (message?: string): RangeError;
+    readonly prototype: RangeError;
+}
+declare var RangeError: RangeErrorConstructor;
+
+interface ReferenceError {
+    message: string;
+    name: string;
+}
+interface ReferenceErrorConstructor {
+    new (message?: string): ReferenceError;
+    (message?: string): ReferenceError;
+    readonly prototype: ReferenceError;
+}
+declare var ReferenceError: ReferenceErrorConstructor;
+
+interface SyntaxError {
+    message: string;
+    name: string;
+}
+interface SyntaxErrorConstructor {
+    new (message?: string): SyntaxError;
+    (message?: string): SyntaxError;
+    readonly prototype: SyntaxError;
+}
+declare var SyntaxError: SyntaxErrorConstructor;
+
+interface TypeError {
+    message: string;
+    name: string;
+}
+interface TypeErrorConstructor {
+    new (message?: string): TypeError;
+    (message?: string): TypeError;
+    readonly prototype: TypeError;
+}
+declare var TypeError: TypeErrorConstructor;
+
+interface URIError {
+    message: string;
+    name: string;
+}
+interface URIErrorConstructor {
+    new (message?: string): URIError;
+    (message?: string): URIError;
+    readonly prototype: URIError;
+}
+declare var URIError: URIErrorConstructor;
 
 interface StringConstructor {
     new (value?: any): String;
@@ -5412,6 +5646,13 @@ interface NumberConstructor {
     readonly prototype: Number;
 }
 declare var Number: NumberConstructor;
+
+interface BooleanConstructor {
+    new (value?: any): Boolean;
+    (value?: any): boolean;
+    readonly prototype: Boolean;
+}
+declare var Boolean: BooleanConstructor;
 
 interface ObjectConstructor {
     new (value?: any): Object;

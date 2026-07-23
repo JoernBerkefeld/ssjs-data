@@ -31,6 +31,38 @@ const MDN_GLOBAL_CONSTRUCTORS = new Set([
     'Boolean',
     'Function',
     'JSON',
+    'Symbol',
+    'BigInt',
+    // Keyed collections, reflection, and async/iteration (ES6+, absent in SSJS)
+    'Map',
+    'Set',
+    'WeakMap',
+    'WeakSet',
+    'Proxy',
+    'Reflect',
+    'Promise',
+    // Typed arrays and binary buffers (ES6+, absent in SSJS)
+    'ArrayBuffer',
+    'SharedArrayBuffer',
+    'DataView',
+    'Atomics',
+    'Int8Array',
+    'Uint8Array',
+    'Uint8ClampedArray',
+    'Int16Array',
+    'Uint16Array',
+    'Int32Array',
+    'Uint32Array',
+    'Float16Array',
+    'Float32Array',
+    'Float64Array',
+    'BigInt64Array',
+    'BigUint64Array',
+    // Memory management (ES2021, absent in SSJS)
+    'WeakRef',
+    'FinalizationRegistry',
+    // Internationalization (ES2015, absent in SSJS)
+    'Intl',
 ]);
 
 /** Top-level global functions/values that MDN documents under Global_Objects/<member>. */
@@ -44,6 +76,12 @@ export const MDN_GLOBAL_FUNCTIONS = new Set([
     'decodeURI',
     'encodeURIComponent',
     'decodeURIComponent',
+    'escape',
+    'unescape',
+    'undefined',
+    'NaN',
+    'Infinity',
+    'globalThis',
 ]);
 
 /**
@@ -123,6 +161,43 @@ export const wsproxyMethodUrl = (name) => `/wsproxy/${name.toLowerCase()}/`;
 const ECMASCRIPT_GLOBAL_URLS = {
     string: '/ecmascript-builtins/string-methods/#string-constructor',
     error: '/ecmascript-builtins/error/',
+    boolean: '/ecmascript-builtins/boolean/',
+    symbol: '/ecmascript-builtins/symbol/',
+    bigint: '/ecmascript-builtins/bigint/',
+    // Global URI functions and the missing escape/unescape live on one page.
+    encodeuri: '/ecmascript-builtins/global-functions/#encodeuri',
+    encodeuricomponent: '/ecmascript-builtins/global-functions/#encodeuricomponent',
+    decodeuri: '/ecmascript-builtins/global-functions/#decodeuri',
+    decodeuricomponent: '/ecmascript-builtins/global-functions/#decodeuricomponent',
+    escape: '/ecmascript-builtins/global-functions/#escape',
+    unescape: '/ecmascript-builtins/global-functions/#unescape',
+    // Global value properties.
+    undefined: '/ecmascript-builtins/global-values/#undefined',
+    nan: '/ecmascript-builtins/global-values/#nan',
+    infinity: '/ecmascript-builtins/global-values/#infinity',
+    globalthis: '/ecmascript-builtins/global-values/#globalthis',
+    // Typed arrays and binary buffers (all absent).
+    arraybuffer: '/ecmascript-builtins/typed-arrays/#arraybuffer',
+    sharedarraybuffer: '/ecmascript-builtins/typed-arrays/#sharedarraybuffer',
+    dataview: '/ecmascript-builtins/typed-arrays/#dataview',
+    atomics: '/ecmascript-builtins/typed-arrays/#atomics',
+    int8array: '/ecmascript-builtins/typed-arrays/#int8array',
+    uint8array: '/ecmascript-builtins/typed-arrays/#uint8array',
+    uint8clampedarray: '/ecmascript-builtins/typed-arrays/#uint8array',
+    int16array: '/ecmascript-builtins/typed-arrays/#int16array',
+    uint16array: '/ecmascript-builtins/typed-arrays/#int16array',
+    int32array: '/ecmascript-builtins/typed-arrays/#int32array',
+    uint32array: '/ecmascript-builtins/typed-arrays/#int32array',
+    float16array: '/ecmascript-builtins/typed-arrays/#float32array',
+    float32array: '/ecmascript-builtins/typed-arrays/#float32array',
+    float64array: '/ecmascript-builtins/typed-arrays/#float32array',
+    bigint64array: '/ecmascript-builtins/typed-arrays/#bigint64array',
+    biguint64array: '/ecmascript-builtins/typed-arrays/#bigint64array',
+    // Memory management (absent).
+    weakref: '/ecmascript-builtins/memory-management/#weakref',
+    finalizationregistry: '/ecmascript-builtins/memory-management/#finalizationregistry',
+    // Internationalization (absent).
+    intl: '/ecmascript-builtins/internationalization/#intl',
 };
 
 /**
@@ -249,6 +324,13 @@ export const ECMASCRIPT_URLS = {
     Date: '/ecmascript-builtins/date-methods/',
     RegExp: '/ecmascript-builtins/regular-expressions/',
     JSON: '/ecmascript-builtins/json/',
+    Boolean: '/ecmascript-builtins/boolean/',
+    'Boolean.prototype': '/ecmascript-builtins/boolean/',
+    Symbol: '/ecmascript-builtins/symbol/',
+    BigInt: '/ecmascript-builtins/bigint/',
+    // Global owner: URI functions/escape live on global-functions; value
+    // properties (undefined/NaN/Infinity/globalThis) on global-values.
+    Global: '/ecmascript-builtins/global-functions/',
 };
 
 /**

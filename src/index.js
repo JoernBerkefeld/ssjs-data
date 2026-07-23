@@ -8768,11 +8768,33 @@ export const ECMASCRIPT_BUILTINS = [
         name: 'toLocaleLowerCase',
         owner: 'String.prototype',
         esVersion: 3,
-        description: 'Returns the string converted to lowercase according to host locale mappings.',
+        description:
+            'Returns the string converted to lowercase. Runtime-verified in SFMC; it behaves like toLowerCase() (locale mappings are not applied).',
         params: [],
         returnType: 'string',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        caveat: 'The locale argument is ignored — it behaves exactly like toLowerCase(). "ABC".toLocaleLowerCase() returns "abc" with no locale-specific casing.',
+        officialDocsNote:
+            'Runtime-verified: "ABC".toLocaleLowerCase() === "abc". The SFMC Jint engine applies no locale-specific mappings, so this is a plain toLowerCase() alias rather than the locale-aware method the spec describes.',
         syntax: 'String.toLocaleLowerCase()',
         example: 'var str = "AbC";\nWrite(str.toLocaleLowerCase()); // "abc"',
+    },
+    {
+        name: 'toLocaleUpperCase',
+        owner: 'String.prototype',
+        esVersion: 3,
+        description:
+            'Returns the string converted to uppercase. Runtime-verified in SFMC; it behaves like toUpperCase() (locale mappings are not applied).',
+        params: [],
+        returnType: 'string',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        caveat: 'The locale argument is ignored — it behaves exactly like toUpperCase(). "abc".toLocaleUpperCase() returns "ABC" with no locale-specific casing.',
+        officialDocsNote:
+            'Runtime-verified: "abc".toLocaleUpperCase() === "ABC". The SFMC Jint engine applies no locale-specific mappings, so this is a plain toUpperCase() alias rather than the locale-aware method the spec describes.',
+        syntax: 'String.toLocaleUpperCase()',
+        example: 'var str = "abc";\nWrite(str.toLocaleUpperCase()); // "ABC"',
     },
     {
         name: 'toUpperCase',
@@ -8828,6 +8850,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'abs',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the absolute value of a number.',
         params: [{ name: 'x', description: 'A number', type: 'number' }],
@@ -8838,6 +8861,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'ceil',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Rounds a number up to the next integer.',
         params: [{ name: 'x', description: 'A number', type: 'number' }],
@@ -8848,6 +8872,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'floor',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Rounds a number down to the nearest integer.',
         params: [{ name: 'x', description: 'A number', type: 'number' }],
@@ -8858,6 +8883,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'max',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the largest of the supplied numbers.',
         caveat: 'The variadic form throws in the SFMC engine when passed 3+ arguments, and the no-argument Math.max() returns 0 instead of -Infinity. Compare two values at a time, e.g. Math.max(Math.max(a, b), c), or fold with a loop.',
@@ -8869,6 +8895,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'min',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the smallest of the supplied numbers.',
         caveat: 'The variadic form throws in the SFMC engine when passed 3+ arguments, and the no-argument Math.min() returns 0 instead of +Infinity. Compare two values at a time, e.g. Math.min(Math.min(a, b), c), or fold with a loop.',
@@ -8880,6 +8907,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'pow',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the base raised to the exponent power.',
         params: [
@@ -8893,6 +8921,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'random',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns a pseudo-random floating-point number in [0, 1).',
         params: [],
@@ -8903,6 +8932,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'round',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Rounds a number to the nearest integer.',
         params: [{ name: 'x', description: 'A number', type: 'number' }],
@@ -8913,6 +8943,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'sqrt',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the square root of a number.',
         params: [{ name: 'x', description: 'A non-negative number', type: 'number' }],
@@ -8923,6 +8954,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'sin',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the sine of an angle given in radians.',
         params: [{ name: 'x', description: 'Angle in radians', type: 'number' }],
@@ -8933,6 +8965,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'cos',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the cosine of an angle given in radians.',
         params: [{ name: 'x', description: 'Angle in radians', type: 'number' }],
@@ -8943,6 +8976,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'tan',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the tangent of an angle given in radians.',
         params: [{ name: 'x', description: 'Angle in radians', type: 'number' }],
@@ -8953,6 +8987,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'asin',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the arc sine (in radians) of a number in the range [-1, 1].',
         params: [{ name: 'x', description: 'A number between -1 and 1', type: 'number' }],
@@ -8963,6 +8998,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'acos',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the arc cosine (in radians) of a number in the range [-1, 1].',
         params: [{ name: 'x', description: 'A number between -1 and 1', type: 'number' }],
@@ -8973,6 +9009,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'atan',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the arc tangent (in radians) of a number.',
         params: [{ name: 'x', description: 'A number', type: 'number' }],
@@ -8983,6 +9020,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'atan2',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description:
             'Returns the angle (in radians) from the positive x-axis to the point (x, y). ' +
@@ -8998,6 +9036,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'exp',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns e raised to the power of x (e^x).',
         params: [{ name: 'x', description: 'The exponent', type: 'number' }],
@@ -9008,6 +9047,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'log',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'Returns the natural logarithm (base e) of a number.',
         params: [{ name: 'x', description: 'A positive number', type: 'number' }],
@@ -9019,6 +9059,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'PI',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: "The ratio of a circle's circumference to its diameter (~3.14159).",
         params: [],
@@ -9029,6 +9070,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'E',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: "Euler's number, the base of the natural logarithm (~2.71828).",
         params: [],
@@ -9039,6 +9081,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'LN2',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'The natural logarithm of 2 (~0.69315).',
         params: [],
@@ -9049,6 +9092,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'LN10',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'The natural logarithm of 10 (~2.30259).',
         params: [],
@@ -9059,6 +9103,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'LOG2E',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'The base-2 logarithm of e (~1.44270).',
         params: [],
@@ -9069,6 +9114,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'SQRT2',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'The square root of 2 (~1.41421).',
         params: [],
@@ -9079,6 +9125,7 @@ export const ECMASCRIPT_BUILTINS = [
     {
         name: 'SQRT1_2',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         description: 'The square root of 1/2 (~0.70711); equivalent to 1/Math.SQRT2.',
         params: [],
@@ -9174,6 +9221,112 @@ export const ECMASCRIPT_BUILTINS = [
         returnType: 'number',
         syntax: 'Number.valueOf()',
         example: 'Write((42).valueOf()); // 42',
+    },
+    {
+        name: 'toLocaleString',
+        owner: 'Number.prototype',
+        esVersion: 3,
+        description:
+            'Returns a string representation of the number. Runtime-verified in SFMC: the locale argument is ignored and no grouping separators are applied — it behaves like a plain toString(). Use Platform.Function.FormatNumber for real locale formatting.',
+        caveat: 'The locale argument is ignored — (123456.789).toLocaleString("de-DE") returns "123456.789", not the grouped "123.456,789".',
+        params: [
+            { name: 'locales', description: 'Ignored in SFMC', type: 'string', optional: true },
+            { name: 'options', description: 'Ignored in SFMC', type: 'object', optional: true },
+        ],
+        returnType: 'string',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified: MDN specifies locale-aware formatting with grouping separators; the SFMC Jint engine ignores the locale/options arguments and returns the plain number string (no grouping).',
+        syntax: 'Number.toLocaleString([locales[, options]])',
+        example: 'Write((123456.789).toLocaleString("de-DE")); // "123456.789" (locale ignored)',
+    },
+    // ── Number static constants (ES3) — present but buggy in the SFMC Jint engine ──
+    {
+        name: 'MAX_VALUE',
+        owner: 'Number',
+        esVersion: 3,
+        isStatic: true,
+        isProperty: true,
+        description:
+            'The largest positive finite value representable by a Number. Runtime-verified present in SFMC (typeof number). The value is correct (~1.7976931348623157e308) but note the sibling constants MIN_VALUE and the INFINITY constants are broken in this engine.',
+        params: [],
+        returnType: 'number',
+        isConfirmed: true,
+        syntax: 'Number.MAX_VALUE',
+        example: 'Write(Number.MAX_VALUE > 0); // true',
+    },
+    {
+        name: 'MIN_VALUE',
+        owner: 'Number',
+        esVersion: 3,
+        isStatic: true,
+        isProperty: true,
+        description:
+            'Standard ES3 exposes the smallest positive representable Number (~5e-324). Runtime-verified present in SFMC (typeof number) but WRONG: the SFMC Jint engine returns the negative of MAX_VALUE (-1.7976931348623157e308) instead, so Number.MIN_VALUE > 0 is false. Use the literal 5e-324 if you need the true smallest positive value.',
+        caveat: 'Broken in SFMC: Number.MIN_VALUE returns -MAX_VALUE (a large negative number), not the ES3 smallest-positive value 5e-324. Number.MIN_VALUE > 0 is false. Use the literal 5e-324.',
+        params: [],
+        returnType: 'number',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified: MDN/ES3 define Number.MIN_VALUE as the smallest positive value (~5e-324); the SFMC Jint engine instead returns -Number.MAX_VALUE, so it is negative and MIN_VALUE > 0 evaluates to false.',
+        syntax: 'Number.MIN_VALUE',
+        example: 'Write(Number.MIN_VALUE > 0); // false (returns -MAX_VALUE in SFMC)',
+    },
+    {
+        name: 'NaN',
+        owner: 'Number',
+        esVersion: 3,
+        isStatic: true,
+        isProperty: true,
+        description:
+            'The Not-a-Number value. Runtime-verified present in SFMC (typeof number); NaN !== NaN holds as expected. Note it stringifies as lowercase "nan" (not "NaN") in this engine.',
+        caveat: 'Stringifies as lowercase "nan" in SFMC (String(Number.NaN) === "nan"), unlike the standard "NaN". The value still compares as not-equal to itself.',
+        params: [],
+        returnType: 'number',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified: the value is present and behaves as NaN for comparisons, but String(Number.NaN) yields lowercase "nan" instead of the standard "NaN".',
+        syntax: 'Number.NaN',
+        example: 'Write(Number.NaN !== Number.NaN); // true',
+    },
+    {
+        name: 'POSITIVE_INFINITY',
+        owner: 'Number',
+        esVersion: 3,
+        isStatic: true,
+        isProperty: true,
+        description:
+            'Standard ES3 exposes positive infinity. Runtime-verified present in SFMC (typeof number) but BROKEN: it stringifies as "-infinity" and Number.POSITIVE_INFINITY > 0 is false. The global Infinity is equally unreliable in this engine.',
+        caveat: 'Broken in SFMC: Number.POSITIVE_INFINITY stringifies as "-infinity" and Number.POSITIVE_INFINITY > 0 is false (sign inverted). Avoid infinity constants; guard with explicit finite bounds instead.',
+        params: [],
+        returnType: 'number',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified: MDN defines this as +Infinity; the SFMC Jint engine returns a value that stringifies as "-infinity" and for which > 0 is false (sign inverted). The global Infinity is likewise unreliable.',
+        syntax: 'Number.POSITIVE_INFINITY',
+        example: 'Write(Number.POSITIVE_INFINITY > 0); // false (sign inverted in SFMC)',
+    },
+    {
+        name: 'NEGATIVE_INFINITY',
+        owner: 'Number',
+        esVersion: 3,
+        isStatic: true,
+        isProperty: true,
+        description:
+            'Standard ES3 exposes negative infinity. Runtime-verified present in SFMC (typeof number) but BROKEN: it stringifies as "infinity" and Number.NEGATIVE_INFINITY < 0 is false (sign inverted).',
+        caveat: 'Broken in SFMC: Number.NEGATIVE_INFINITY stringifies as "infinity" and Number.NEGATIVE_INFINITY < 0 is false (sign inverted). Avoid infinity constants; guard with explicit finite bounds instead.',
+        params: [],
+        returnType: 'number',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified: MDN defines this as -Infinity; the SFMC Jint engine returns a value that stringifies as "infinity" and for which < 0 is false (sign inverted).',
+        syntax: 'Number.NEGATIVE_INFINITY',
+        example: 'Write(Number.NEGATIVE_INFINITY < 0); // false (sign inverted in SFMC)',
     },
     // ── Object.prototype ─────────────────────────────────────────────────────
     {
@@ -9315,6 +9468,83 @@ export const ECMASCRIPT_BUILTINS = [
             'Write(eval("1 + 1")); // 2\n' +
             'var x = 5;\nWrite(eval("x + 10")); // 15\n' +
             'Platform.Load("core","1.1.5");\nWrite(eval("Stringify({a:1})")); // {"a":1}',
+    },
+    // ── Global URI functions ──────────────────────────────────────────────────
+    // Runtime-verified on ssjs/MCDEV_Training_QA: present and callable, but the
+    // Jint engine encodes like application/x-www-form-urlencoded (space -> +,
+    // lowercase hex) rather than RFC 3986.
+    {
+        name: 'encodeURI',
+        owner: 'Global',
+        esVersion: 3,
+        description:
+            'Encodes a complete URI, leaving reserved characters (/ ? : @ & = + $ #) intact. ' +
+            'Runtime-verified to work in SFMC SSJS, but the Jint engine encodes a space as "+" ' +
+            '(not "%20") and emits lowercase hex escapes.',
+        caveat:
+            'Space is encoded as "+" instead of "%20", and percent-escapes use lowercase hex, ' +
+            'unlike the ECMAScript spec.',
+        params: [{ name: 'uri', description: 'The URI string to encode', type: 'string' }],
+        returnType: 'string',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified: MDN specifies encodeURI encodes a space as "%20" with uppercase hex; ' +
+            'the SFMC Jint engine encodes a space as "+" and emits lowercase hex escapes.',
+        syntax: 'encodeURI(uri)',
+        example: 'Write(encodeURI("a b/c?d=1")); // "a+b/c?d=1" in SFMC (spec: "a%20b/c?d=1")',
+    },
+    {
+        name: 'encodeURIComponent',
+        owner: 'Global',
+        esVersion: 3,
+        description:
+            'Encodes a URI component, escaping reserved characters as well. Runtime-verified to ' +
+            'work in SFMC SSJS, but the Jint engine encodes a space as "+" (not "%20") and emits ' +
+            'lowercase hex escapes (e.g. "/" becomes "%2f", not "%2F").',
+        caveat: 'Space -> "+" and lowercase hex (e.g. "/" -> "%2f") instead of the spec\'s "%20" / "%2F".',
+        params: [{ name: 'str', description: 'The component string to encode', type: 'string' }],
+        returnType: 'string',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified: MDN specifies a space encodes as "%20" with uppercase hex; the SFMC ' +
+            'Jint engine encodes a space as "+" and emits lowercase hex (e.g. "/" -> "%2f").',
+        syntax: 'encodeURIComponent(str)',
+        example: 'Write(encodeURIComponent("a b/c")); // "a+b%2fc" in SFMC (spec: "a%20b%2Fc")',
+    },
+    {
+        name: 'decodeURI',
+        owner: 'Global',
+        esVersion: 3,
+        description:
+            'Decodes a URI previously encoded by encodeURI, converting percent-escapes back to ' +
+            'their characters while leaving reserved characters intact. Runtime-verified to work ' +
+            'in SFMC SSJS.',
+        params: [{ name: 'uri', description: 'The encoded URI string to decode', type: 'string' }],
+        returnType: 'string',
+        syntax: 'decodeURI(uri)',
+        example: 'Write(decodeURI("a%20b/c")); // "a b/c"',
+    },
+    {
+        name: 'decodeURIComponent',
+        owner: 'Global',
+        esVersion: 3,
+        description:
+            'Decodes a URI component previously encoded by encodeURIComponent, converting all ' +
+            'percent-escapes back to characters. Runtime-verified to work in SFMC SSJS, but the ' +
+            'Jint engine decodes a literal "+" to a space (form-urlencoded behaviour), unlike the spec.',
+        caveat: 'A literal "+" is decoded to a space, unlike the ECMAScript spec (which leaves it).',
+        params: [
+            { name: 'str', description: 'The encoded component string to decode', type: 'string' },
+        ],
+        returnType: 'string',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified: MDN specifies decodeURIComponent leaves a literal "+" unchanged; the ' +
+            'SFMC Jint engine decodes "+" to a space, matching application/x-www-form-urlencoded.',
+        syntax: 'decodeURIComponent(str)',
+        example:
+            'Write(decodeURIComponent("a%20b%2Fc")); // "a b/c"\n' +
+            'Write(decodeURIComponent("+")); // " " in SFMC (spec: "+")',
     },
     // ── RegExp constructor ────────────────────────────────────────────────────
     // Emitted as `declare function RegExp(...)` so that `new RegExp(...)` and
@@ -9689,6 +9919,26 @@ export const ECMASCRIPT_BUILTINS = [
         syntax: 'Date.toTimeString()',
         example: 'var d = new Date(0);\nWrite(d.toTimeString());',
     },
+    {
+        name: 'toLocaleDateString',
+        owner: 'Date.prototype',
+        esVersion: 3,
+        description:
+            'Returns the date portion as a string. Runtime-verified in SFMC: the locale argument is ignored and a fixed English-style format is returned (e.g. "Wed, 15 Jan 2020"). Use Platform.Function.FormatDate for locale-aware output.',
+        caveat: 'The locale argument is ignored — output is a fixed English format like "Wed, 15 Jan 2020", not locale-specific.',
+        params: [
+            { name: 'locales', description: 'Ignored in SFMC', type: 'string', optional: true },
+            { name: 'options', description: 'Ignored in SFMC', type: 'object', optional: true },
+        ],
+        returnType: 'string',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified: MDN specifies locale-aware date formatting; the SFMC Jint engine ignores the locale/options arguments and returns a fixed English-style string (e.g. "Wed, 15 Jan 2020").',
+        syntax: 'Date.toLocaleDateString([locales[, options]])',
+        example:
+            'var d = new Date(2020, 0, 15);\nWrite(d.toLocaleDateString()); // "Wed, 15 Jan 2020" (locale ignored)',
+    },
     // ── Date statics ───────────────────────────────────────────────────────────
     {
         name: 'UTC',
@@ -9900,6 +10150,95 @@ export const CONSTRUCTIBLE_BUILTINS = [
         call: { params: [{ name: 'message', type: 'string', optional: true }], returns: '$iface' },
         prototype: '$iface',
     },
+    // Legacy Error subtypes (ES3). All are present and constructible in SFMC and share the
+    // base Error behaviour (including the engine quirks: instance .message/.description are
+    // undefined, `instanceof Error` returns false, and Stringify(err) yields ""). The three
+    // newer error types (AggregateError ES2021, SuppressedError ES2026, non-standard
+    // InternalError) are absent — see KNOWN_UNSUPPORTED.
+    {
+        name: 'EvalError',
+        isConfirmed: true,
+        instanceMembers: [
+            { name: 'message', type: 'string' },
+            { name: 'name', type: 'string' },
+        ],
+        construct: {
+            params: [{ name: 'message', type: 'string', optional: true }],
+            returns: '$iface',
+        },
+        call: { params: [{ name: 'message', type: 'string', optional: true }], returns: '$iface' },
+        prototype: '$iface',
+    },
+    {
+        name: 'RangeError',
+        isConfirmed: true,
+        instanceMembers: [
+            { name: 'message', type: 'string' },
+            { name: 'name', type: 'string' },
+        ],
+        construct: {
+            params: [{ name: 'message', type: 'string', optional: true }],
+            returns: '$iface',
+        },
+        call: { params: [{ name: 'message', type: 'string', optional: true }], returns: '$iface' },
+        prototype: '$iface',
+    },
+    {
+        name: 'ReferenceError',
+        isConfirmed: true,
+        instanceMembers: [
+            { name: 'message', type: 'string' },
+            { name: 'name', type: 'string' },
+        ],
+        construct: {
+            params: [{ name: 'message', type: 'string', optional: true }],
+            returns: '$iface',
+        },
+        call: { params: [{ name: 'message', type: 'string', optional: true }], returns: '$iface' },
+        prototype: '$iface',
+    },
+    {
+        name: 'SyntaxError',
+        isConfirmed: true,
+        instanceMembers: [
+            { name: 'message', type: 'string' },
+            { name: 'name', type: 'string' },
+        ],
+        construct: {
+            params: [{ name: 'message', type: 'string', optional: true }],
+            returns: '$iface',
+        },
+        call: { params: [{ name: 'message', type: 'string', optional: true }], returns: '$iface' },
+        prototype: '$iface',
+    },
+    {
+        name: 'TypeError',
+        isConfirmed: true,
+        instanceMembers: [
+            { name: 'message', type: 'string' },
+            { name: 'name', type: 'string' },
+        ],
+        construct: {
+            params: [{ name: 'message', type: 'string', optional: true }],
+            returns: '$iface',
+        },
+        call: { params: [{ name: 'message', type: 'string', optional: true }], returns: '$iface' },
+        prototype: '$iface',
+    },
+    {
+        name: 'URIError',
+        isConfirmed: true,
+        instanceMembers: [
+            { name: 'message', type: 'string' },
+            { name: 'name', type: 'string' },
+        ],
+        construct: {
+            params: [{ name: 'message', type: 'string', optional: true }],
+            returns: '$iface',
+        },
+        call: { params: [{ name: 'message', type: 'string', optional: true }], returns: '$iface' },
+        prototype: '$iface',
+    },
     {
         name: 'String',
         // Instance members come from ECMASCRIPT_BUILTINS owner `String.prototype`.
@@ -9936,6 +10275,16 @@ export const CONSTRUCTIBLE_BUILTINS = [
         // Instance members come from ECMASCRIPT_BUILTINS owner `Number.prototype`.
         construct: { params: [{ name: 'value', type: 'any', optional: true }], returns: '$iface' },
         call: { params: [{ name: 'value', type: 'any', optional: true }], returns: 'number' },
+        prototype: '$iface',
+    },
+    {
+        name: 'Boolean',
+        // Runtime-verified on ssjs/MCDEV_Training_QA: Boolean(value) coercion returns a
+        // primitive boolean correctly. The boxed `new Boolean()` object stringifies to a
+        // CAPITALIZED "True"/"False" in the Jint engine (differs from spec) — prefer the
+        // call form Boolean(value) or !!value. See ssjs.guide/ecmascript-builtins/boolean.
+        construct: { params: [{ name: 'value', type: 'any', optional: true }], returns: '$iface' },
+        call: { params: [{ name: 'value', type: 'any', optional: true }], returns: 'boolean' },
         prototype: '$iface',
     },
     {
@@ -10154,6 +10503,15 @@ export const UNSUPPORTED_SYNTAX = [
             const NATIVE = ['Date', 'RegExp', 'Error', 'Object', 'Array'];
             return node.callee.type === 'Identifier' && !NATIVE.includes(node.callee.name);
         },
+    },
+    {
+        feature: 'BigIntLiteral',
+        label: 'BigInt literals (10n)',
+        suggestion:
+            'BigInt is unsupported in SFMC (ES2020). Remove the n suffix and use a Number, ' +
+            'or keep large exact integers as strings.',
+        nodeType: 'Literal',
+        test: (node) => typeof node.bigint === 'string' || typeof node.value === 'bigint',
     },
 ];
 
@@ -10880,6 +11238,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'max',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         isStatic: true,
         category: 'broken',
@@ -10907,6 +11266,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'min',
         owner: 'Math',
+        isConfirmed: true,
         esVersion: 3,
         isStatic: true,
         category: 'broken',
@@ -10964,6 +11324,525 @@ for (const entry of POLYFILLABLE_METHODS) {
 
 /** @type {{member: string, owner: string, esVersion: 3 | 5 | 6, isStatic: boolean, isProperty?: boolean, category: 'unavailable' | 'broken', hasPolyfill: boolean, suggestion: string, replacement?: string}[]} */
 export const KNOWN_UNSUPPORTED = [
+    // ── Confirmed-missing / broken global identifiers ────────────────────────
+    // Runtime-verified absent on ssjs/MCDEV_Training_QA (typeof === "undefined").
+    {
+        member: 'escape',
+        owner: 'Global',
+        esVersion: 3,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'The legacy escape() function is undefined in SFMC (calling it throws "Object expected"). Use encodeURIComponent() instead.',
+    },
+    {
+        member: 'unescape',
+        owner: 'Global',
+        esVersion: 3,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'The legacy unescape() function is undefined in SFMC (calling it throws "Object expected"). Use decodeURIComponent() instead.',
+    },
+    {
+        member: 'globalThis',
+        owner: 'Global',
+        esVersion: 2020,
+        isStatic: false,
+        isProperty: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'globalThis is undefined in SFMC (ES2020). There is no standard global-object reference; top-level this is unusable. Reference specific globals (Platform, Variable, …) directly.',
+    },
+    {
+        member: 'Symbol',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'Symbol is undefined in SFMC (ES6). No unique-primitive type and no well-known symbols (Symbol.iterator), so there is no iterator protocol. Use namespaced string keys and classic index loops.',
+    },
+    {
+        member: 'BigInt',
+        owner: 'Global',
+        esVersion: 2020,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'BigInt is undefined in SFMC (ES2020) and the 10n literal is a syntax error. All numbers are IEEE-754 doubles; keep large exact integers as strings.',
+    },
+    {
+        member: 'Map',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'Map is undefined in SFMC (ES6); new Map() throws "Unknown type: Map". Use a plain object as a string-keyed dictionary (obj[key] = value).',
+    },
+    {
+        member: 'Set',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'Set is undefined in SFMC (ES6); new Set() throws "Unknown type: Set". Use a plain object whose keys are the members (obj[member] = true).',
+    },
+    {
+        member: 'WeakMap',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'WeakMap is undefined in SFMC (ES6); new WeakMap() throws "Unknown type: WeakMap". No weak-reference collections exist; use a plain object dictionary and delete keys manually.',
+    },
+    {
+        member: 'WeakSet',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'WeakSet is undefined in SFMC (ES6); new WeakSet() throws "Unknown type: WeakSet". No weak-reference collections exist.',
+    },
+    {
+        member: 'Promise',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'Promise is undefined in SFMC (ES6); new Promise() throws "Unknown type: Promise". The engine runs synchronously with no event loop; all Platform/HTTP calls block and return values directly.',
+    },
+    {
+        member: 'Iterator',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'Iterator is undefined in SFMC (ES6). With no Symbol.iterator there is no iteration protocol; for…of, spread, and destructuring over iterables are unavailable. Use classic index loops.',
+    },
+    {
+        member: 'Generator',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'Generator is undefined in SFMC (ES6); function* / yield syntax is a parse error. Return a fully-materialised array instead of yielding lazily.',
+    },
+    {
+        member: 'GeneratorFunction',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'GeneratorFunction is undefined in SFMC (ES6). Generator functions are not supported by the parser.',
+    },
+    {
+        member: 'AsyncFunction',
+        owner: 'Global',
+        esVersion: 2017,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'AsyncFunction is undefined in SFMC (ES2017); async/await is unsupported. The engine is synchronous — model async work as ordinary blocking calls.',
+    },
+    {
+        member: 'AsyncGenerator',
+        owner: 'Global',
+        esVersion: 2018,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion: 'AsyncGenerator is undefined in SFMC (ES2018); async iteration is unsupported.',
+    },
+    {
+        member: 'AsyncGeneratorFunction',
+        owner: 'Global',
+        esVersion: 2018,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'AsyncGeneratorFunction is undefined in SFMC (ES2018); async generator functions are unsupported.',
+    },
+    {
+        member: 'AsyncIterator',
+        owner: 'Global',
+        esVersion: 2018,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion: 'AsyncIterator is undefined in SFMC (ES2018); async iteration is unsupported.',
+    },
+    {
+        member: 'Proxy',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'Proxy is undefined in SFMC (ES6); new Proxy() throws "Unknown type: Proxy". There is no trap-based interception; wrap objects in explicit accessor functions.',
+    },
+    {
+        member: 'Reflect',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'Reflect is undefined in SFMC (ES6). Use ES5 equivalents: Reflect.has → k in o, Reflect.get → o[k], Reflect.set → o[k]=v, Reflect.deleteProperty → delete o[k], Reflect.ownKeys → Object.keys(o).',
+    },
+    {
+        member: 'AggregateError',
+        owner: 'Global',
+        esVersion: 2021,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'AggregateError is undefined in SFMC (ES2021); new AggregateError() throws "Unknown type: AggregateError". Use the base Error constructor with a combined message.',
+    },
+    {
+        member: 'SuppressedError',
+        owner: 'Global',
+        esVersion: 2026,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'SuppressedError is undefined in SFMC (ES2026); it does not exist in this engine. Use the base Error constructor.',
+    },
+    {
+        member: 'InternalError',
+        owner: 'Global',
+        esVersion: 0,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'InternalError is a non-standard Mozilla-only error and is undefined in SFMC. Use the base Error constructor.',
+    },
+    // ── Typed arrays / binary buffers (ES6+) — runtime-verified absent ────────
+    {
+        member: 'ArrayBuffer',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'ArrayBuffer is undefined in SFMC (ES6). There is no raw byte-buffer type; use a plain Array for numeric lists or Base64 strings (Platform.Function.Base64Encode/Decode) for binary payloads.',
+    },
+    {
+        member: 'SharedArrayBuffer',
+        owner: 'Global',
+        esVersion: 2017,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'SharedArrayBuffer is undefined in SFMC (ES2017). The engine is single-threaded and synchronous, so there is no shared memory.',
+    },
+    {
+        member: 'DataView',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'DataView is undefined in SFMC (ES6). With no ArrayBuffer there is nothing to read/write; handle binary data as Base64 strings instead.',
+    },
+    {
+        member: 'Atomics',
+        owner: 'Global',
+        esVersion: 2017,
+        isStatic: false,
+        isProperty: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'Atomics is undefined in SFMC (ES2017). Atomic operations require shared memory, which does not exist in this single-threaded engine.',
+    },
+    {
+        member: 'Int8Array',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'Int8Array is undefined in SFMC (ES6). Typed-array views are unavailable (no ArrayBuffer); use a plain Array of numbers and enforce ranges yourself.',
+    },
+    {
+        member: 'Uint8Array',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'Uint8Array is undefined in SFMC (ES6). Typed-array views are unavailable (no ArrayBuffer); use a plain Array of numbers and enforce ranges yourself.',
+    },
+    {
+        member: 'Uint8ClampedArray',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'Uint8ClampedArray is undefined in SFMC (ES6). Typed-array views are unavailable (no ArrayBuffer); use a plain Array and clamp values (0–255) yourself.',
+    },
+    {
+        member: 'Int16Array',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'Int16Array is undefined in SFMC (ES6). Typed-array views are unavailable (no ArrayBuffer); use a plain Array of numbers.',
+    },
+    {
+        member: 'Uint16Array',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'Uint16Array is undefined in SFMC (ES6). Typed-array views are unavailable (no ArrayBuffer); use a plain Array of numbers.',
+    },
+    {
+        member: 'Int32Array',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'Int32Array is undefined in SFMC (ES6). Typed-array views are unavailable (no ArrayBuffer); use a plain Array of numbers.',
+    },
+    {
+        member: 'Uint32Array',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'Uint32Array is undefined in SFMC (ES6). Typed-array views are unavailable (no ArrayBuffer); use a plain Array of numbers.',
+    },
+    {
+        member: 'Float16Array',
+        owner: 'Global',
+        esVersion: 2025,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'Float16Array is undefined in SFMC (ES2025). Typed-array views are unavailable (no ArrayBuffer); use a plain Array of numbers.',
+    },
+    {
+        member: 'Float32Array',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'Float32Array is undefined in SFMC (ES6). Typed-array views are unavailable (no ArrayBuffer); use a plain Array of numbers.',
+    },
+    {
+        member: 'Float64Array',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'Float64Array is undefined in SFMC (ES6). Typed-array views are unavailable (no ArrayBuffer); use a plain Array of numbers.',
+    },
+    {
+        member: 'BigInt64Array',
+        owner: 'Global',
+        esVersion: 2020,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'BigInt64Array is undefined in SFMC (ES2020). Typed-array views are unavailable (no ArrayBuffer), and it also requires BigInt, which is likewise absent.',
+    },
+    {
+        member: 'BigUint64Array',
+        owner: 'Global',
+        esVersion: 2020,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'BigUint64Array is undefined in SFMC (ES2020). Typed-array views are unavailable (no ArrayBuffer), and it also requires BigInt, which is likewise absent.',
+    },
+    // ── Memory management (ES2021) — runtime-verified absent ──────────────────
+    {
+        member: 'WeakRef',
+        owner: 'Global',
+        esVersion: 2021,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'WeakRef is undefined in SFMC (ES2021). There is no weak-reference mechanism; hold a normal variable, which is released when the request-scoped script ends.',
+    },
+    {
+        member: 'FinalizationRegistry',
+        owner: 'Global',
+        esVersion: 2021,
+        isStatic: false,
+        isProperty: false,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'FinalizationRegistry is undefined in SFMC (ES2021). You cannot register garbage-collection callbacks; perform cleanup explicitly at the end of the script.',
+    },
+    // ── Internationalization (ES2015) — runtime-verified absent ───────────────
+    {
+        member: 'Intl',
+        owner: 'Global',
+        esVersion: 2015,
+        isStatic: false,
+        isProperty: true,
+        category: 'unavailable',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'Intl is undefined in SFMC (ES2015); none of its formatters (NumberFormat, DateTimeFormat, Collator, …) exist. The toLocale* methods also ignore locale arguments. Use Platform.Function.FormatNumber / FormatDate with a culture code for locale-aware formatting.',
+    },
+    {
+        member: 'Infinity',
+        owner: 'Global',
+        esVersion: 3,
+        isStatic: false,
+        isProperty: true,
+        category: 'broken',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'The Infinity global is broken in SFMC: its sign is inverted in comparisons and string coercion (Infinity > 0 is false, String(Infinity) is "-infinity"). Compare against a concrete numeric literal instead of Infinity/-Infinity.',
+    },
+    {
+        member: 'NaN',
+        owner: 'Global',
+        esVersion: 3,
+        isStatic: false,
+        isProperty: true,
+        category: 'broken',
+        hasPolyfill: false,
+        isConfirmed: true,
+        suggestion:
+            'The NaN global compares correctly (NaN === NaN is false; isNaN(NaN) is true) but String(NaN) is the lowercase "nan" instead of "NaN".',
+    },
     // ── Confirmed-missing properties/constants ───────────────────────────────
     {
         member: 'LOG10E',
@@ -10973,6 +11852,7 @@ export const KNOWN_UNSUPPORTED = [
         isProperty: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion: 'Math.LOG10E is undefined in SFMC. Use the literal 0.4342944819032518.',
     },
     {
@@ -11391,6 +12271,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion:
             'Number.isInteger is unavailable in SFMC. Use typeof n === "number" && Math.floor(n) === n.',
     },
@@ -11401,6 +12282,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion: 'Number.isNaN is unavailable in SFMC. Use the global isNaN(value).',
     },
     {
@@ -11410,6 +12292,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion: 'Number.isFinite is unavailable in SFMC. Use the global isFinite(value).',
     },
     {
@@ -11419,6 +12302,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion: 'Number.parseInt is unavailable in SFMC. Use the global parseInt(string, 10).',
     },
     {
@@ -11429,6 +12313,7 @@ export const KNOWN_UNSUPPORTED = [
         isProperty: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion:
             'Number.MAX_SAFE_INTEGER is undefined in SFMC. Use the literal 9007199254740991.',
     },
@@ -11439,6 +12324,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion:
             'Number.isSafeInteger is unavailable in SFMC. Compare Math.abs(n) against the literal 9007199254740991 after confirming n is an integer.',
     },
@@ -11449,6 +12335,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion: 'Number.parseFloat is unavailable in SFMC. Use the global parseFloat(string).',
     },
     {
@@ -11459,6 +12346,7 @@ export const KNOWN_UNSUPPORTED = [
         isProperty: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion:
             'Number.MIN_SAFE_INTEGER is undefined in SFMC. Use the literal -9007199254740991.',
     },
@@ -11470,63 +12358,8 @@ export const KNOWN_UNSUPPORTED = [
         isProperty: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion: 'Number.EPSILON is undefined in SFMC. Use the literal 2.220446049250313e-16.',
-    },
-    // ── Number classic constants (ES3) — undefined in the SFMC Jint engine ───
-    {
-        member: 'MAX_VALUE',
-        owner: 'Number',
-        esVersion: 3,
-        isStatic: true,
-        isProperty: true,
-        category: 'unavailable',
-        hasPolyfill: false,
-        suggestion:
-            'Number.MAX_VALUE is undefined in SFMC (unlike standard ES3). Use the literal 1.7976931348623157e308.',
-    },
-    {
-        member: 'MIN_VALUE',
-        owner: 'Number',
-        esVersion: 3,
-        isStatic: true,
-        isProperty: true,
-        category: 'unavailable',
-        hasPolyfill: false,
-        suggestion:
-            'Number.MIN_VALUE is undefined in SFMC (unlike standard ES3). Use the literal 5e-324.',
-    },
-    {
-        member: 'NaN',
-        owner: 'Number',
-        esVersion: 3,
-        isStatic: true,
-        isProperty: true,
-        category: 'unavailable',
-        hasPolyfill: false,
-        suggestion:
-            'Number.NaN is undefined in SFMC (unlike standard ES3). Use the global NaN identifier or the expression 0/0.',
-    },
-    {
-        member: 'POSITIVE_INFINITY',
-        owner: 'Number',
-        esVersion: 3,
-        isStatic: true,
-        isProperty: true,
-        category: 'unavailable',
-        hasPolyfill: false,
-        suggestion:
-            'Number.POSITIVE_INFINITY is undefined in SFMC (unlike standard ES3). Note the global Infinity is also unreliable — comparisons like (Infinity > 0) return false and it stringifies with an inverted sign.',
-    },
-    {
-        member: 'NEGATIVE_INFINITY',
-        owner: 'Number',
-        esVersion: 3,
-        isStatic: true,
-        isProperty: true,
-        category: 'unavailable',
-        hasPolyfill: false,
-        suggestion:
-            'Number.NEGATIVE_INFINITY is undefined in SFMC (unlike standard ES3). The global Infinity is also unreliable in this engine.',
     },
     // ── Math ES6 methods confirmed missing ───────────────────────────────────
     {
@@ -11536,6 +12369,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion: 'Math.trunc is unavailable in SFMC. Use x < 0 ? Math.ceil(x) : Math.floor(x).',
     },
     {
@@ -11545,6 +12379,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion: 'Math.sign is unavailable in SFMC. Use x > 0 ? 1 : x < 0 ? -1 : 0.',
     },
     {
@@ -11554,6 +12389,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion: 'Math.cbrt is unavailable in SFMC. Use Math.pow(x, 1 / 3) for non-negative x.',
     },
     {
@@ -11563,6 +12399,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion: 'Math.log2 is unavailable in SFMC. Use Math.log(x) / Math.LN2.',
     },
     {
@@ -11572,6 +12409,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion: 'Math.log10 is unavailable in SFMC. Use Math.log(x) / Math.LN10.',
     },
     {
@@ -11581,6 +12419,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion: 'Math.hypot is unavailable in SFMC. Use Math.sqrt(a * a + b * b).',
     },
     {
@@ -11590,6 +12429,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion: 'Math.expm1 is unavailable in SFMC. Use Math.exp(x) - 1.',
     },
     {
@@ -11599,6 +12439,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion: 'Math.log1p is unavailable in SFMC. Use Math.log(1 + x).',
     },
     {
@@ -11608,6 +12449,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion: 'Math.sinh is unavailable in SFMC. Use (Math.exp(x) - Math.exp(-x)) / 2.',
     },
     {
@@ -11617,6 +12459,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion: 'Math.cosh is unavailable in SFMC. Use (Math.exp(x) + Math.exp(-x)) / 2.',
     },
     {
@@ -11626,6 +12469,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion:
             'Math.tanh is unavailable in SFMC. Use (Math.exp(2 * x) - 1) / (Math.exp(2 * x) + 1).',
     },
@@ -11636,6 +12480,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion: 'Math.asinh is unavailable in SFMC. Use Math.log(x + Math.sqrt(x * x + 1)).',
     },
     {
@@ -11645,6 +12490,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion: 'Math.acosh is unavailable in SFMC. Use Math.log(x + Math.sqrt(x * x - 1)).',
     },
     {
@@ -11654,6 +12500,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion: 'Math.atanh is unavailable in SFMC. Use Math.log((1 + x) / (1 - x)) / 2.',
     },
     {
@@ -11663,6 +12510,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion:
             'Math.clz32 is unavailable in SFMC. Count leading zero bits manually over a 32-bit unsigned value.',
     },
@@ -11673,6 +12521,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion:
             'Math.fround is unavailable in SFMC. There is no ES3-safe equivalent; keep values as doubles.',
     },
@@ -11683,6 +12532,7 @@ export const KNOWN_UNSUPPORTED = [
         isStatic: true,
         category: 'unavailable',
         hasPolyfill: false,
+        isConfirmed: true,
         suggestion:
             'Math.imul is unavailable in SFMC. Emulate 32-bit integer multiplication with bitwise operations if needed.',
     },
