@@ -328,6 +328,12 @@ export const ECMASCRIPT_URLS = {
     'Boolean.prototype': '/ecmascript-builtins/boolean/',
     Symbol: '/ecmascript-builtins/symbol/',
     BigInt: '/ecmascript-builtins/bigint/',
+    // Base Error constructor page.
+    Error: '/ecmascript-builtins/error/',
+    // Native Error subtypes (EvalError, RangeError, TypeError, …) share one page.
+    ErrorTypes: '/ecmascript-builtins/error-types/',
+    // Present global value properties (undefined) live on the global-values page.
+    GlobalValues: '/ecmascript-builtins/global-values/',
     // Global owner: URI functions/escape live on global-functions; value
     // properties (undefined/NaN/Infinity/globalThis) on global-values.
     Global: '/ecmascript-builtins/global-functions/',

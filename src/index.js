@@ -10116,6 +10116,205 @@ export const ECMASCRIPT_BUILTINS = [
         example:
             'function greet() {}\nWrite(greet.toString()); // "[object Function]" in SFMC (not the source)',
     },
+    // ── Boolean constructor ───────────────────────────────────────────────────
+    // Owner 'Boolean' maps to /ecmascript-builtins/boolean/. Member names are the
+    // page's H2 anchor slugs so each entry deep-links to the matching heading.
+    {
+        name: 'boolean-coercion',
+        owner: 'Boolean',
+        esVersion: 3,
+        description:
+            'Called as a plain function, Boolean(value) returns a primitive boolean reflecting the value truthiness. Works correctly in the SFMC engine.',
+        params: [
+            {
+                name: 'value',
+                description: 'The value to coerce to a boolean',
+                type: 'any',
+            },
+        ],
+        returnType: 'boolean',
+        syntax: 'Boolean(value)',
+        example: 'Write(Boolean(1)); // true\nWrite(Boolean("")); // false',
+    },
+    {
+        name: 'boolean-boxed',
+        owner: 'Boolean',
+        esVersion: 3,
+        description:
+            'new Boolean(value) creates a boxed Boolean object (typeof "object"). The boxed form works but is a footgun and its string form is capitalized in the SFMC engine — prefer Boolean(value) or !!value.',
+        params: [
+            {
+                name: 'value',
+                description: 'The value to box as a Boolean object',
+                type: 'any',
+            },
+        ],
+        returnType: 'object',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified: MDN specifies a boxed Boolean stringifies to lowercase "true"/"false"; the SFMC Jint engine capitalizes the first letter ("True"/"False").',
+        syntax: 'new Boolean(value)',
+        example: 'var b = new Boolean(true);\nWrite(String(b)); // "True" in SFMC (spec: "true")',
+    },
+    {
+        name: 'boolean-prototype',
+        owner: 'Boolean',
+        esVersion: 3,
+        isProperty: true,
+        description:
+            'Boolean.prototype exists and exposes the toString and valueOf methods on boxed boolean instances.',
+        params: [],
+        returnType: 'object',
+        syntax: 'Boolean.prototype',
+        example: 'Write(typeof Boolean.prototype.toString); // "function"',
+    },
+    // ── Error and its native subtypes ─────────────────────────────────────────
+    // Base Error (owner 'Error' → /ecmascript-builtins/error/) and the six present
+    // subtypes (owner 'ErrorTypes' → /ecmascript-builtins/error-types/). Member
+    // names are the pages' anchor slugs (e.g. TypeError → #typeerror).
+    {
+        name: 'Error',
+        owner: 'Error',
+        esVersion: 3,
+        description:
+            'The base Error constructor works in SSJS. new Error(message) creates an error object with a message property that can be thrown and caught in try/catch.',
+        params: [
+            {
+                name: 'message',
+                description: 'A human-readable description of the error',
+                type: 'string',
+                optional: true,
+            },
+        ],
+        returnType: 'object',
+        syntax: 'new Error([message])',
+        example:
+            'try {\n    throw new Error("Something failed");\n} catch (e) {\n    Write(e.message); // "Something failed"\n}',
+    },
+    {
+        name: 'EvalError',
+        owner: 'ErrorTypes',
+        esVersion: 3,
+        description:
+            'The EvalError subtype constructor is present in SSJS. It creates an error object you can throw and catch, though the engine itself rarely raises it.',
+        params: [
+            {
+                name: 'message',
+                description: 'A human-readable description of the error',
+                type: 'string',
+                optional: true,
+            },
+        ],
+        returnType: 'object',
+        syntax: 'new EvalError([message])',
+        example: 'throw new EvalError("bad eval");',
+    },
+    {
+        name: 'RangeError',
+        owner: 'ErrorTypes',
+        esVersion: 3,
+        description:
+            'The RangeError subtype constructor is present in SSJS. It signals that a value is outside the allowed range and can be thrown and caught.',
+        params: [
+            {
+                name: 'message',
+                description: 'A human-readable description of the error',
+                type: 'string',
+                optional: true,
+            },
+        ],
+        returnType: 'object',
+        syntax: 'new RangeError([message])',
+        example: 'throw new RangeError("value out of range");',
+    },
+    {
+        name: 'ReferenceError',
+        owner: 'ErrorTypes',
+        esVersion: 3,
+        description:
+            'The ReferenceError subtype constructor is present in SSJS. It signals a reference to an undeclared variable and can be thrown and caught.',
+        params: [
+            {
+                name: 'message',
+                description: 'A human-readable description of the error',
+                type: 'string',
+                optional: true,
+            },
+        ],
+        returnType: 'object',
+        syntax: 'new ReferenceError([message])',
+        example: 'throw new ReferenceError("undeclared variable");',
+    },
+    {
+        name: 'SyntaxError',
+        owner: 'ErrorTypes',
+        esVersion: 3,
+        description:
+            'The SyntaxError subtype constructor is present in SSJS. It signals a syntax problem and can be thrown and caught.',
+        params: [
+            {
+                name: 'message',
+                description: 'A human-readable description of the error',
+                type: 'string',
+                optional: true,
+            },
+        ],
+        returnType: 'object',
+        syntax: 'new SyntaxError([message])',
+        example: 'throw new SyntaxError("invalid syntax");',
+    },
+    {
+        name: 'TypeError',
+        owner: 'ErrorTypes',
+        esVersion: 3,
+        description:
+            'The TypeError subtype constructor is present in SSJS. It signals that a value is not of the expected type and can be thrown and caught.',
+        params: [
+            {
+                name: 'message',
+                description: 'A human-readable description of the error',
+                type: 'string',
+                optional: true,
+            },
+        ],
+        returnType: 'object',
+        syntax: 'new TypeError([message])',
+        example: 'throw new TypeError("expected a string");',
+    },
+    {
+        name: 'URIError',
+        owner: 'ErrorTypes',
+        esVersion: 3,
+        description:
+            'The URIError subtype constructor is present in SSJS. It signals malformed URI handling and can be thrown and caught.',
+        params: [
+            {
+                name: 'message',
+                description: 'A human-readable description of the error',
+                type: 'string',
+                optional: true,
+            },
+        ],
+        returnType: 'object',
+        syntax: 'new URIError([message])',
+        example: 'throw new URIError("malformed URI");',
+    },
+    // ── Global value properties (present/working) ─────────────────────────────
+    // Owner 'GlobalValues' maps to /ecmascript-builtins/global-values/. Only the
+    // present value `undefined` is added here; NaN/Infinity/globalThis are tracked
+    // in KNOWN_UNSUPPORTED.
+    {
+        name: 'undefined',
+        owner: 'GlobalValues',
+        esVersion: 3,
+        isProperty: true,
+        description:
+            'The global undefined value is available in SSJS. It is the value of unassigned variables and missing object properties; compare with === undefined or typeof x === "undefined".',
+        params: [],
+        returnType: 'undefined',
+        syntax: 'undefined',
+        example: 'var x;\nWrite(x === undefined); // true',
+    },
 ];
 
 // ── Constructible ECMAScript built-ins ───────────────────────────────────────
@@ -11352,7 +11551,7 @@ export const KNOWN_UNSUPPORTED = [
     },
     {
         member: 'globalThis',
-        owner: 'Global',
+        owner: 'GlobalValues',
         esVersion: 2020,
         isStatic: false,
         isProperty: true,
@@ -11821,7 +12020,7 @@ export const KNOWN_UNSUPPORTED = [
     },
     {
         member: 'Infinity',
-        owner: 'Global',
+        owner: 'GlobalValues',
         esVersion: 3,
         isStatic: false,
         isProperty: true,
@@ -11833,7 +12032,7 @@ export const KNOWN_UNSUPPORTED = [
     },
     {
         member: 'NaN',
-        owner: 'Global',
+        owner: 'GlobalValues',
         esVersion: 3,
         isStatic: false,
         isProperty: true,

@@ -5542,6 +5542,21 @@ declare namespace Number {
     var NEGATIVE_INFINITY: number;
 }
 
+declare namespace Error {
+    /**
+     * The base Error constructor works in SSJS. new Error(message) creates an error object with a message property that can be thrown and caught in try/catch.
+     *
+     * @param message - A human-readable description of the error
+     * @example
+     * try {
+     *     throw new Error("Something failed");
+     * } catch (e) {
+     *     Write(e.message); // "Something failed"
+     * }
+     */
+    function Error(message?: string): object;
+}
+
 // ── Constructible built-ins (value + constructor declarations) ───────────────
 interface Error {
     message: string;

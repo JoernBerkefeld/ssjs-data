@@ -1491,6 +1491,15 @@ const constructibleStatics = new Map();
         'RegExp',
         'Function.prototype',
         'Global',
+        // Site-index-only synthetic owners. These group ECMASCRIPT_BUILTINS entries
+        // solely to drive their ssjs.guide deep-link URLs (Boolean/error-types/
+        // global-values pages). Their real .d.ts declarations already come from
+        // CONSTRUCTIBLE_BUILTINS (Boolean constructor, EvalError/RangeError/… ) and
+        // top-level `declare const` (NaN/Infinity), so they must NOT be re-emitted
+        // here as bogus namespaces (e.g. `declare namespace ErrorTypes`).
+        'Boolean',
+        'ErrorTypes',
+        'GlobalValues',
     ]);
     for (const [owner, members] of byOwner) {
         if (HANDLED_OWNERS.has(owner)) {
