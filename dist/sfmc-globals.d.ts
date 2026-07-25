@@ -895,6 +895,7 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param headerName - Name of the response header.
          * @param value - Value for the response header.
          * @example
@@ -907,40 +908,45 @@ declare namespace Platform {
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param headerName - Name of the HTTP response header to remove.
          * @example
          * Platform.Response.RemoveResponseHeader("X-Powered-By");
          */
         function RemoveResponseHeader(headerName: string): void;
         /**
-         * Redirects the current page to a new URL. Pass false for a 302 temporary redirect or true for a 301 permanent redirect. Do not use 301 if you want browsers to re-check the original URL later.
+         * Redirects the current page to a new URL and stops script execution immediately. Pass false for a 302 temporary redirect or true for a 301 permanent redirect; omitting the flag also yields a 302. Do not use 301 if you want browsers to re-check the original URL later.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage). Two behaviours the official docs do not state: the second argument is optional — a single-argument call produces a 302 with the Location header set; and the redirect terminates the script immediately, so statements after the call never run, not even when the call sits inside a try/catch (no catchable exception is raised). Any response body already written before the call is discarded in favour of the redirect payload.
          * @param url - URL to redirect to.
-         * @param movedPermanently - True for 301 permanent redirect, false for 302 temporary.
+         * @param movedPermanently - True for 301 permanent redirect, false for 302 temporary. Defaults to a 302 when omitted.
          * @example
          * Platform.Response.Redirect("https://pub.pages.example.com/thank-you", false);
          */
-        function Redirect(url: string, movedPermanently: boolean): void;
+        function Redirect(url: string, movedPermanently?: boolean): void;
         /**
          * Sets a cookie on the client browser response.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param name - Name of the cookie to set.
          * @param value - Value to store in the cookie.
-         * @param expires - Expiration date/time for the cookie.
+         * @param expires - Expiration date/time for the cookie. Accepts a date string or a JavaScript Date object.
          * @param secure - If true, the cookie is only sent over HTTPS.
          * @example
          * Platform.Response.SetCookie("userId", subscriberKey, "12/31/2025", true);
          */
-        function SetCookie(name: string, value: string, expires?: string, secure?: boolean): void;
+        function SetCookie(name: string, value: string, expires?: string | Date, secure?: boolean): void;
         /**
          * Removes a cookie from the client browser by setting its expiration to a past date.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
          *
+         * @remarks ✅ Runtime-verified in a live SFMC test.
          * @param name - Name of the cookie to remove.
          * @example
          * Platform.Response.RemoveCookie("userId");
@@ -958,8 +964,8 @@ declare namespace Platform {
          * Platform.Response.Write(Stringify(data));
          */
         function Write(content: string): void;
-        var ContentType: string;
-        var CharacterSet: string;
+        var ContentType: void;
+        var CharacterSet: void;
     }
     /**
      * HTTP request reading methods and properties.
@@ -1751,8 +1757,9 @@ declare namespace Account {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Proven at runtime on the Parent BU (MID 7281698): Account.Init returns the same instance regardless of the key passed — a CustomerKey GUID, a numeric MID (7281698), a Name ("SFMC2Slack"), or a nonsense key all yield an identical stub exposing only an Update function ({"Update":"function"}). No account properties are readable from the instance (ID/Name/CustomerKey return undefined), so Init does not itself confirm whether the key resolves to a real account.
      * @param key - External key of the account.
-     * @returns An initialized Account bound to the specified external key.
+     * @returns An Account instance. Proven at runtime on the Parent BU (MID 7281698): the returned object exposes a single enumerable member, the Update method (Stringifies as {"Update":"function"}). It carries no readable account fields — inst.ID, inst.Name and inst.CustomerKey all read back undefined — and the same stub is returned for any key value (the running account's CustomerKey GUID, a numeric MID such as 7281698, a Name such as "SFMC2Slack", or a nonsense string). Use the returned instance to call <AccountInstance>.Update(...); use Account.Retrieve to read account fields.
      * @example
      * Platform.Load("core", "1.1.5");
      * var myAccount = Account.Init("MyCustomerKey");
@@ -1765,11 +1772,14 @@ declare namespace Account {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Proven at runtime on the Parent BU (MID 7281698): Account.Retrieve resolves only the running session's own account, and it does so via Property "Name", "ID", or "CustomerKey". For "ID", both the numeric form (7281698) and the string form ("7281698") of the running account resolved. Requests for any other (child) business unit returned a zero-length collection for every property and value tried — by Name ("Retail Test"), by ID (7316951), and by CustomerKey (both GUID keys and plain-string keys such as "DEV"). The properties "MID", "AccountID" and "BusinessUnitID" are not recognized and always returned empty. The no-match return is not a real array: it Stringifies as [] but has no .length, .push, or enumerable keys, so guard with a truthy .length check before indexing.
      * @param filter - Criteria used to search for the account. Use a filter expression or a JSON object containing filter and additional search parameters.
-     * @returns Array of account rows matching the filter; an empty array (which is falsy in this engine) when nothing matches.
+     * @returns On a match returns an array-like collection of account rows (proven at runtime: exposes .length and .push and Stringifies as a JSON array with length 1), though it is not an instanceof Array in this engine. On no match returns a distinct empty object that Stringifies as [] and has NO .length, NO .push and no enumerable keys. Proven at runtime on the Parent BU (MID 7281698): filtering by Property "Name" (equals "Accenture SFMC Global"), "ID" (equals 7281698 or greaterThan 0), or "CustomerKey" (equals the account CustomerKey GUID) each returned the running BU's own account row. Filtering for any child BU — by Name, by ID, or by CustomerKey (GUID or plain-string key) — returned the empty [] shape, as did unrecognized properties "MID" and "AccountID". Only the running session's own account resolves. A matched row exposes the full Account SOAP object; observed fields include AccountType, ParentID, BrandID, PrivateLabelID, ReportingParentID, Name, Email, FromName, BusinessName, Phone, Address, Fax, City, State, Zip, Country, IsActive, IsTestAccount, OrgID, DBID, ParentName, CustomerID, DeletedDate, EditionID, Children, Subscription, PrivateLabels, BusinessRules, AccountUsers, InheritAddress, IsTrialAccount, Locale, ParentAccount, TimeZone (a nested object with ID/Name/CustomerKey), Roles, StackID, SalesForceID, LanguageLocale, IndustryCode, Edition, SalesforceOrgID, AccountState, SubscriptionRestrictionFlags, Client, PartnerKey, PartnerProperties, CreatedDate, ModifiedDate, ID, ObjectID, CustomerKey, Owner, CorrelationID, ObjectState and IsPlatformObject, plus a *Specified boolean companion for many numeric/date fields.
      * @example
      * Platform.Load("core", "1.1.5");
-     * var getAcct = Account.Retrieve({Property:"CustomerKey",SimpleOperator:"equals",Value:"MyAccount"});
+     * // Resolves the running session's own account by Name, ID, or CustomerKey
+     * var getAcct = Account.Retrieve({Property:"CustomerKey",SimpleOperator:"equals",Value:"MyAccountCustomerKey"});
+     * if (getAcct && getAcct.length) { Platform.Response.Write(getAcct[0].Name); }
      */
     function Retrieve(filter: object): object[];
 }
@@ -1780,9 +1790,11 @@ interface AccountInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/account/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs state the call throws on failure, but at runtime it returns the plain string "Error" instead of throwing.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Proven at runtime on the Parent BU (MID 7281698) against the running session's own account, resolved via Account.Init(<self CustomerKey GUID>): <AccountInstance>.Update(...) returned the plain string "Error" (typeof "string") for every real single-field payload tried — { CustomerKey }, { FromName }, { BusinessName }, a CustomerKey-only object, an empty object {}, and an { ID, CustomerKey } object. Set/verify/restore cycles confirmed none of these writes persisted: reading each field back by ID after the call showed the original value unchanged (CustomerKey stayed "D61BC7A3-E557-4ABD-B8E0-B73B7202C1BC", FromName stayed "Accenture SFMC Global", BusinessName stayed "Accenture"). The user confirmed CustomerKey is a safe, IsUpdatable field, yet updating it via the Init stub still returned "Error" and did not persist. The only object that carries an Update method is the Account.Init(...) stub; the row objects returned by Account.Retrieve have no Update method (typeof row.Update is "undefined"), and calling row.Update(...) throws a Jint "Object expected: Update" exception. A { Description } payload throws the plain string "Error Updating Account." instead of returning "Error" (Description is not a real SOAP Account field). The official-doc "OK" success return was not reproduced for any payload. Separately, "MCDEV Training - QA" (MID 518005426) could not be resolved from the current session (Account.Retrieve returned the empty [] shape) and Account.Init("MCDEV Training - QA").Update(...) also returned "Error".
+     * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @param properties - Account attributes to change.
-     * @returns Returns the string "OK" on success. On failure it returns the string "Error" (proven at runtime) rather than throwing.
+     * @returns Returns a string. On failure it returns the plain string "Error"; for one payload shape it instead throws the plain string "Error Updating Account." (both proven at runtime; which one occurs depends on the payload). The documented success return is the string "OK"; a success return was not reproduced at runtime in this project, and set/re-read cycles on the running BU showed no field change persisted. Because it can throw a plain string, wrap the call in try/catch and treat any non-"OK" return — and any throw — as failure.
      * @example
      * Platform.Load("core", "1.1.5");
      * var myAccount = Account.Init("MyCustomerKey");
@@ -1799,7 +1811,7 @@ declare namespace Account.Tracking {
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - Criteria used to search for the account.
-     * @returns Array of tracking rows; each row exposes Sends, Bounces, Clicks, Opens and Unsubscribes counters (each an object such as {"Total":N}).
+     * @returns Array-like collection of tracking rows (proven at runtime with .length and JSON like [{"Sends":{"Total":0},"Bounces":{"Total":0,"HardBounces":0,"SoftBounces":0,"BlockBounces":0,"TechnicalBounces":0,"UnknownBounces":0},"Clicks":{"Total":0,"Unique":0},"Opens":{"Total":0,"Unique":0},"Unsubscribes":{"Unique":0}}]). Each row exposes Sends, Bounces, Clicks, Opens and Unsubscribes counter objects.
      * @example
      * Platform.Load("core", "1.1.5");
      * var acctTracking = Account.Tracking.Retrieve({Property:"CustomerKey",SimpleOperator:"equals",Value:"MyAccount"});
@@ -1828,8 +1840,11 @@ declare namespace AccountUser {
      * [ssjs.guide reference](https://ssjs.guide/core-library/accountuser/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs state Add returns "OK" on success or throws on failure. No working invocation of Add was found: in our runtime tests the write method does not work. Tested on a Parent BU session (the correct context for AccountUser edits): a short payload returned the plain string "Error" (it did NOT throw); a full payload (Name/UserID/Password/Email/CustomerKey/ClientID/DefaultBusinessUnit/AssociatedBusinessUnits) threw "Error adding AccountUser". A control WSProxy createItem("AccountUser", ...) on the same run returned StatusCode "Error", ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <Parent BU>." On the same run Subscriber.Add and DataExtension.Retrieve both succeeded, so the run had a working write/read path for other object types — the account-user create call itself produced no working invocation. The success ("OK") path could not be reproduced in our tests. Treat any non-"OK" return as failure.
+     * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @param properties - JSON object describing the new account user (Name, UserID, Password, Email, ClientID, DefaultBusinessUnitKey, AssociatedBusinessUnits, ...).
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
      * Platform.Load("core", "1.1.5");
      * var newUser = {
@@ -1866,8 +1881,11 @@ interface AccountUserInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/accountuser/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. No working invocation of Update was found: in our runtime tests the write method does not work. Tested on a Parent BU session (the correct context for AccountUser edits): AccountUser.Init(key, <Parent BU>).Update({ Name: ... }) returned the plain string "Error" (it did NOT throw). A control WSProxy createItem("AccountUser", ...) on the same run returned ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <Parent BU>.", while Subscriber writes and DataExtension.Retrieve on the same run succeeded — the account-user update call produced no working invocation. The success ("OK") path could not be reproduced in our tests.
+     * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @param properties - Attributes of the account user to change.
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Documented to return "OK" on success. Observed at runtime returning the plain string "Error" on failure (not a throw).
      * @example
      * Platform.Load("core", "1.1.5");
      * var acctUser = AccountUser.Init("myAccountUser", 123456789);
@@ -1880,7 +1898,10 @@ interface AccountUserInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/accountuser/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @returns Returns "OK" on success or throws on failure.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. No working invocation of Activate was found: in our runtime tests the write method does not work. Tested on a Parent BU session (the correct context for AccountUser edits): AccountUser.Init(key, <Parent BU>).Activate() returned the plain string "Error" (it did NOT throw). A control WSProxy createItem("AccountUser", ...) on the same run returned ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <Parent BU>.", while Subscriber writes and DataExtension.Retrieve on the same run succeeded — the account-user activate call produced no working invocation. The success ("OK") path could not be reproduced in our tests.
+     * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
+     * @returns Documented to return "OK" on success. Observed at runtime returning the plain string "Error" on failure (not a throw).
      * @example
      * Platform.Load("core", "1.1.5");
      * var acctUser = AccountUser.Init("myAccountUser", 123456789);
@@ -1893,7 +1914,10 @@ interface AccountUserInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/accountuser/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @returns Returns "OK" on success or throws on failure.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. No working invocation of Deactivate was found: in our runtime tests the write method does not work. Tested on a Parent BU session (the correct context for AccountUser edits): AccountUser.Init(key, <Parent BU>).Deactivate() returned the plain string "Error" (it did NOT throw). A control WSProxy createItem("AccountUser", ...) on the same run returned ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <Parent BU>.", while Subscriber writes and DataExtension.Retrieve on the same run succeeded — the account-user deactivate call produced no working invocation. The success ("OK") path could not be reproduced in our tests.
+     * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
+     * @returns Documented to return "OK" on success. Observed at runtime returning the plain string "Error" on failure (not a throw).
      * @example
      * Platform.Load("core", "1.1.5");
      * var acctUser = AccountUser.Init("myAccountUser", 123456789);
@@ -1924,7 +1948,8 @@ declare namespace Portfolio {
      *
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. The official docs state Add returns "OK" on success or throws on failure. Runtime-verification of the success path was BLOCKED: no portfolio item could be created on the test BU (no valid category/file to reference) — every Add attempt (including a full DisplayName/CustomerKey/FileName/FileLocation payload) returned the plain string "Error" and did NOT throw. Treat any non-"OK" return as failure.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. Runtime-verified: a full payload of DisplayName + CustomerKey + CategoryID + FileName + FileLocation creates the item and returns the string "OK". The docs say failures throw — they do NOT: calling Add with zero arguments returns the plain string "Error" instead of throwing, so always compare the return value against "OK" rather than relying on try/catch. CategoryID must reference an existing media/portfolio folder and FileLocation must be a reachable URL whose file type matches the FileName extension; a mismatched extension makes the call return "Error". A surplus second argument is accepted and ignored. Re-adding the same CustomerKey returns "OK" without creating a duplicate.
      * @param properties - JSON object describing the new portfolio item (DisplayName, CustomerKey, CategoryID, FileName, FileLocation).
      * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
@@ -1946,7 +1971,8 @@ declare namespace Portfolio {
      *
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. The official docs type the return as an array of portfolio objects. Runtime-verification was BLOCKED: no portfolio item could be created on the test BU (no valid category/file to reference; see Add), so a populated array could not be produced. Against an empty account the call returned an `object` with no `.length` property (not a JS array), so the documented `object[]` shape could not be confirmed.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. Runtime-verified: the return value is array-LIKE but NOT a real JS array — `instanceof Array` is false even though `.length`, `.push` and `.slice` are present and index access works, so avoid `instanceof` checks and iterate with a classic for-loop over `.length`. A filter matching nothing yields a zero-length collection (never null), so test `.length` rather than truthiness. Each item is a SOAP Portfolio object exposing Source, CategoryID, FileName, DisplayName, Description, FileSizeKB, FileURL, ThumbURL, Client, CreatedDate, ModifiedDate, ID, ObjectID, CustomerKey and the matching *Specified booleans. The filter argument is optional in practice — calling Retrieve with no arguments returns every item, and a surplus second argument is ignored — but passing a non-object (e.g. a string) throws "Error Retrieving Portfolios".
      * @param filter - Criteria used to search for portfolio objects. PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
      * @returns List of portfolio objects matching the filter.
      * @example
@@ -1963,7 +1989,9 @@ interface PortfolioInstance {
      *
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. The official docs state Update returns "OK" on success or throws on failure. Runtime-verification was BLOCKED: no portfolio item could be created on the test BU (no valid category/file to reference; see Add), so Update could not be exercised against a real item. Against a non-existent key it returned the string "Error" (not "OK") and did not throw.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. The official docs state Update returns "OK" on success or throws on failure. No working invocation was found at runtime, even though Init, Add, Retrieve and Remove all work on the same item: every attempt either returned the string "Error" or threw "Error Updating Portfolio", and the stored record never changed. Attempts covered instances created via Init(CustomerKey) and Init(ObjectID), payloads with a single field ({DisplayName} / {Description}), payloads repeating the identifying fields ({CustomerKey, DisplayName, CategoryID}), payloads carrying the ObjectID, the full Add-shaped payload including FileName + FileLocation, an array-wrapped payload, and a no-op update writing the current DisplayName back onto a pre-existing (non-probe) portfolio item. There is no static Portfolio.Update — that identifier is undefined. Treat the method as non-functional: to change a portfolio item, Remove it and Add it again, or use the Content Builder Asset REST endpoints.
+     * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @param properties - Attributes to change on the portfolio object.
      * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
@@ -1979,7 +2007,8 @@ interface PortfolioInstance {
      *
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. The official docs state Remove returns "OK" on success or throws on failure. Runtime-verification was BLOCKED: no portfolio item could be created on the test BU (no valid category/file to reference; see Add), so Remove could not be exercised against a real item. Against a non-existent key it returned the string "Error" (not "OK") and did not throw.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. Runtime-verified: deleting an existing item returns "OK" and a follow-up Retrieve confirms it is gone. The return value is not a reliable success signal, however — calling Remove again on the already-deleted item, or on an instance built from a key that never existed, still returns "OK" instead of "Error" or a throw, so verify deletion with a Retrieve rather than trusting the return value. A surplus argument is accepted and ignored.
      * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -2409,9 +2438,10 @@ declare namespace SendClassification {
      * [ssjs.guide reference](https://ssjs.guide/core-library/sendclassification/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verification of the success path was BLOCKED on the test BU. The official docs state Add returns "OK" or throws. Confirmed discrepancy: on failure the Core-library method throws an engine error whose `.message` is `undefined` and whose `String()` is "Error adding SendClassification." (no useful `.message`). Even with the account's own proven-valid `Default` SenderProfile + `Default` DeliveryProfile, `SendClassification.Add` threw "Error adding SendClassification." A direct WSProxy `createItem("SendClassification")` with `SenderProfile.CustomerKey = "Default"` returned Status=Error, StatusMessage="SenderProfile given an invalid identifier.", ErrorCode=24101 — the SOAP path needs the SenderProfile ObjectID, not its CustomerKey, so a new SendClassification could not be created from SSJS to confirm the "OK" success return.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified working on a live CloudPage against real, owned SenderProfile (`ssjs-senderprofile`) and DeliveryProfile (`ssjs-deliveryprofile`) keys: `SendClassification.Add()` creates the object and returns a CLR object (`typeof` is `clr`; it stringifies to `ExactTarget.Integration.WSDL.SenderProfile`), NOT the string "OK" the docs imply. The returned CLR object is opaque from SSJS — enumerating its keys with `for..in` yields none — so treat any non-throwing return as success and read the created record back with `SendClassification.Retrieve` (a Retrieve immediately after Add returned the new record). The `SenderProfileKey` and `DeliveryProfileKey` in `properties` must reference existing profiles by external key; an unresolvable profile key makes the Add fail. This mirrors DeliveryProfile.Add and SenderProfile.Add.
      * @param properties - JSON object describing the new send classification (CustomerKey, Name, Description, SenderProfileKey, DeliveryProfileKey).
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns a CLR SenderProfile object (opaque from SSJS) on success; throws on failure. Not the "OK" string the docs imply.
      * @example
      * Platform.Load("core", "1.1.5");
      * var newSC = {
@@ -2423,7 +2453,7 @@ declare namespace SendClassification {
      * };
      * SendClassification.Add(newSC);
      */
-    function Add(properties: object): string;
+    function Add(properties: object): object;
     /**
      * Returns an array of send classifications matching the specified filter.
      *
@@ -2446,6 +2476,7 @@ interface SendClassificationInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/sendclassification/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - Attributes to change. Must include `SenderProfileKey` and `DeliveryProfileKey`.
      * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
@@ -2465,6 +2496,7 @@ interface SendClassificationInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/sendclassification/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -2489,22 +2521,22 @@ declare namespace FilterDefinition {
      */
     function Init(key: string): FilterDefinitionInstance;
     /**
-     * Creates a new filter definition from the supplied properties. The `Filter` field accepts either a simple `{Property, SimpleOperator, Value}` filter or a complex filter with `LeftOperand`, `LogicalOperator`, `RightOperand`. `DataSource.Type` must be `"SubscriberList"` or `"DataExtension"`. On failure the Core library returns the string "Error" rather than throwing.
+     * Creates a new filter definition from the supplied properties. For a SIMPLE (single-property) filter, supply a `Filter` field with `{Property, SimpleOperator, Value}` and a top-level `DataSource: { Type: "DataExtension", CustomerKey }`. This shape is confirmed working at runtime against an owned source DE and returns the string "OK". COMPLEX filters (multiple conditions joined by `LeftOperand`/`LogicalOperator`/`RightOperand`) are NOT supported by this Core method and throw the raw string "Error adding FilterDefinition" — build those via `Platform.Function.CreateObject("ComplexFilterPart"…)` + `InvokeCreate`, or via a SOAP create over `HTTP.Post`.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/filterdefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verification of the success path was BLOCKED: a valid FilterDefinition could not be created on the test BU (creating one requires an audience/DataSource configuration the test account could not satisfy). Confirmed discrepancy: on failure the Core-library method returns the string "Error" (not "OK"), and it does NOT throw — the official docs state it returns "OK" or throws. Attempted with SubscriberList (by Type, and by real "All Subscribers" list ID) and DataExtension (by CustomerKey and by Name) DataSources; every attempt returned the string "Error". A direct WSProxy createItem("FilterDefinition") throws with SOAP inner exception "Invalid property name: Type" on DataSource.
-     * @param properties - JSON object describing the new filter definition (Name, CustomerKey, Filter, DataSource).
-     * @returns Returns "OK" on success. On failure the Core library returns the string "Error" (it does not throw).
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified against a real, owned source DE (`SSJSGUIDE_TYPES`) on the QA BU. `Add` is CONFIRMED WORKING at runtime with the SIMPLE-filter shape: a `Filter` field with `{Property, SimpleOperator, Value}` plus a top-level `DataSource: { Type: "DataExtension", CustomerKey }`. In that shape `FilterDefinition.Add()` creates the object and returns the string "OK". COMPLEX/multi-condition filters (conditions joined by `LeftOperand`/`LogicalOperator`/`RightOperand`, i.e. a `DataFilter`/`ComplexFilterPart` shape) are NOT supported by this Core method: at runtime `FilterDefinition.Add()` throws a raw string thrown value — `typeof e === "string"` with `String(e) === "Error adding FilterDefinition"` (no `.message`, `.description`, or `.name`). Build complex filters via `Platform.Function.CreateObject("SimpleFilterPart"/"ComplexFilterPart"/"FilterDefinition")` + `SetObjectProperty` + `InvokeCreate(filterDef, result, null)`, or via a hand-rolled SOAP create over `HTTP.Post`. Confirmed discrepancy vs docs: the return/throw contract is shape-dependent. For a valid simple-filter payload `Add()` returns the string "OK"; for an unsupported complex shape it throws the plain string "Error adding FilterDefinition" rather than returning "OK" or throwing an Error object as the docs imply. Note: `Add` is a STATIC method on `FilterDefinition`; the instance returned by `Init()` exposes only `Update` and `Remove`.
+     * @param properties - JSON object describing the new filter definition (Name, CustomerKey, a simple `Filter: {Property, SimpleOperator, Value}`, and a `DataSource: {Type, CustomerKey}`).
+     * @returns Returns the string "OK" on success (confirmed working at runtime with the simple-filter shape). An unsupported complex-filter payload throws the raw string "Error adding FilterDefinition" instead.
      * @example
-     * Platform.Load("core", "1.1.5");
-     * var filterObj = { Property: "LuckyNumber", SimpleOperator: "equals", Value: 77 };
+     * Platform.Load("core", "1");
      * var newFD = {
      *     Name: "SSJS Filter Definition",
      *     CustomerKey: "myFilterDef",
-     *     Filter: filterObj,
-     *     DataSource: { Type: "SubscriberList", CustomerKey: "example_list_key" }
+     *     Filter: { Property: "Pk", SimpleOperator: "equals", Value: "test" },
+     *     DataSource: { Type: "DataExtension", CustomerKey: "SSJSGUIDE_TYPES" }
      * };
      * var status = FilterDefinition.Add(newFD);
      */
@@ -2526,18 +2558,27 @@ declare namespace FilterDefinition {
 }
 interface FilterDefinitionInstance {
     /**
-     * Updates the filter definition with the supplied attributes. On failure the Core library returns the string "Error" rather than throwing.
+     * Updates the filter definition with the supplied attributes. On failure the Core library either returns the string "Error" (metadata-only payload) or throws the raw string "Error updating FilterDefinition" (when a `Filter` is included).
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/filterdefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verification was BLOCKED: no valid FilterDefinition could be created on the test BU (see Add), so Update could not be exercised against a real definition. Against a non-existent definition the Core library returned the string "Error" (not "OK") and did not throw — the official docs state it returns "OK" or throws.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Read path verified: `FilterDefinition.Init("ssjs-datafilter-test")` returns an instance that exposes `Update` (`typeof === "function"`). No working invocation of `Update` was found: in our runtime tests the write method does not work. Runtime-tested against the OWNED, existing filter `ssjs-datafilter-test` with three payload shapes — so the failure is not a single malformed/incomplete payload; the method simply did not succeed with any shape tried: (1) a FULL Add-style payload (Name + CustomerKey + Description + `Filter: {Property, SimpleOperator, Value}` + `DataSource: {Type, CustomerKey}`) THREW the raw string "Error updating FilterDefinition" (`typeof === "string"`); (2) the same payload WITHOUT `DataSource` also THREW the raw string "Error updating FilterDefinition"; (3) a metadata-only payload (Name + CustomerKey + Description, no Filter/DataSource) returned the string "Error" (`typeof === "string"`, no throw). After each attempt a follow-up `FilterDefinition.Retrieve` confirmed Description was NOT changed (stayed empty) and the ObjectID was unchanged. Observed WSProxy fact (reported, not interpreted as a cause): the equivalent `updateItem("FilterDefinition", { CustomerKey: "ssjs-datafilter-test", Description: "..." })` returned `Status="Error"`. Note the SOAP describe (`mcdev soap FilterDefinition`) reports Name/Description/CustomerKey/DataFilter as `IsUpdatable: true`, i.e. the SOAP schema marks these fields editable, yet no working `Update` invocation was reproduced at runtime. The official docs imply Update returns "OK" or throws; the success ("OK") path could not be reproduced in our tests. On failure the return form varies: a payload containing `Filter` throws the raw string "Error updating FilterDefinition", while a metadata-only payload returns the string "Error".
+     * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @param properties - Attributes to change on the filter definition.
-     * @returns Returns "OK" on success. On failure the Core library returns the string "Error" (it does not throw).
+     * @returns Returns "OK" on success. On failure the Core library returns the string "Error" for a metadata-only payload, or throws the raw string "Error updating FilterDefinition" when the payload includes a `Filter`.
      * @example
      * Platform.Load("core", "1.1.5");
-     * var fd = FilterDefinition.Init("myFilterDef");
-     * var status = fd.Update({ Name: "Updated Name" });
+     * var fd = FilterDefinition.Init("ssjs-datafilter-test");
+     * // Full definition shape (Name + CustomerKey + Filter + DataSource, plus any fields to change):
+     * var status = fd.Update({
+     *     Name: "ssjs-datafilter-test",
+     *     CustomerKey: "ssjs-datafilter-test",
+     *     Description: "Updated description",
+     *     Filter: { Property: "Pk", SimpleOperator: "equals", Value: "test" },
+     *     DataSource: { Type: "DataExtension", CustomerKey: "SSJSGUIDE_TYPES" }
+     * });
      */
     Update(properties: object): string;
     /**
@@ -2546,11 +2587,13 @@ interface FilterDefinitionInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/filterdefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verification was BLOCKED: no valid FilterDefinition could be created on the test BU (see Add), so Remove could not be exercised against a real definition. Against a non-existent definition the Core library returned the string "Error" (not "OK") and did not throw — the official docs state it returns "OK" or throws.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Read path verified: `FilterDefinition.Init("ssjs-datafilter-test")` returns an instance that exposes `Remove` (`typeof === "function"`). No working invocation of `Remove` was found: in our runtime tests the write method does not work. Runtime-tested against the OWNED, existing filter `ssjs-datafilter-test`: `<instance>.Remove()` returns the string "Error" (`typeof === "string"`) and does NOT throw, and a follow-up `FilterDefinition.Retrieve` confirms the object was NOT deleted (still returned, same ObjectID). The object was then restored from mcdev source to its original `Pk Equals "test"` condition. Observed WSProxy fact (reported, not interpreted as a cause): the equivalent `deleteItem("FilterDefinition", …)` returned `Status="Error"`. The success ("OK") path could not be reproduced in our tests. Consistent with the sibling write methods, failure surfaces as the string "Error" rather than the docs' "OK"/throw.
+     * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @returns Returns "OK" on success. On failure the Core library returns the string "Error" (it does not throw).
      * @example
      * Platform.Load("core", "1.1.5");
-     * var myFD = FilterDefinition.Init("myFilterDef");
+     * var myFD = FilterDefinition.Init("ssjs-datafilter-test");
      * myFD.Remove();
      */
     Remove(): string;
@@ -2745,8 +2788,9 @@ declare namespace Subscriber {
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - JSON object describing the new subscriber (EmailAddress, SubscriberKey, EmailTypePreference, Attributes, Lists, ...).
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns the string "OK" on success. Returns the string "Error" when the create is rejected, for example an EmailAddress on a spam-blocked domain (WSProxy reports ErrorCode 12002 "TriggeredSpamFilter").
      * @example
      * Platform.Load("core", "1.1.5");
      * var newSubscriber = {
@@ -2781,7 +2825,8 @@ interface SubscriberInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Official docs document a static Subscriber.Upsert(properties); at runtime Subscriber.Upsert is undefined — the method lives on the instance (Subscriber.Init(key).Upsert(properties)). The instance-method location is proven, but the write itself could not be verified: the QA test BU rejects programmatic Subscriber writes via its spam-filter guardrail (SOAP fault `TriggeredSpamFilter`, ErrorCode 12002).
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Official docs document a static Subscriber.Upsert(properties); at runtime the static Subscriber.Upsert is undefined and calling it throws "Object expected: Upsert" — the method lives on the instance (Subscriber.Init(key).Upsert(properties)). Runtime-proven: <SubscriberInstance>.Upsert({ EmailAddress: ... }) on a new key returned typeof "string" value "OK" and the subscriber was read back afterwards. Use a real deliverable EmailAddress; a spam-blocked domain returns "Error".
      * @param properties - JSON object describing the subscriber (EmailAddress, SubscriberKey, Attributes, ...).
      * @returns Returns "OK" on success or throws on failure.
      * @example
@@ -2795,14 +2840,14 @@ interface SubscriberInstance {
      */
     Upsert(properties: object): string;
     /**
-     * Retrieves statistical data for the initialized subscriber (sends, opens, clicks, bounces, unsubscribes).
+     * Retrieves statistical data for the initialized subscriber (sends, opens, clicks).
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Official docs document a static Subscriber.Statistics(subscriberKey); at runtime Subscriber.Statistics is undefined — the method lives on the instance (Subscriber.Init(key).Statistics()).
-     * @returns A single object with subscriber statistics (not an array).
+     * @remarks ⚠️ Differs from the official Salesforce docs. Official docs document a static Subscriber.Statistics(subscriberKey); at runtime the static Subscriber.Statistics is undefined and calling it throws "Object expected: Statistics" — the method lives on the instance (Subscriber.Init(key).Statistics()). Runtime-proven: <SubscriberInstance>.Statistics() returned typeof "object" with string-valued keys OpenEmailName, SendEmailName, ClickCount, ClickLinkAlias, SendCount, OpenCount, ClickURL (counts are returned as strings, for example SendCount "0").
+     * @returns A single object (not an array) with string-valued fields: OpenEmailName, SendEmailName, ClickCount, ClickLinkAlias, SendCount, OpenCount, ClickURL.
      * @example
      * Platform.Load("core", "1.1.5");
      * var subObj = Subscriber.Init("test@example.com");
@@ -2815,6 +2860,7 @@ interface SubscriberInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - Subscriber properties to change.
      * @returns Returns "OK" on success or throws on failure.
      * @example
@@ -2829,6 +2875,7 @@ interface SubscriberInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @returns Returns "OK" on success or throws on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -2842,6 +2889,7 @@ interface SubscriberInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/subscriber/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
      * @returns Returns "OK" on success or throws on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3107,53 +3155,65 @@ declare namespace Send.Definition {
      * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-proven working. A successful call returns a CLR object, not the string `"OK"` the docs imply: `typeof` is `"clr"` and `String(result)` is `"ExactTarget.Integration.WSDL.EmailSendDefinition"`. The created send definition is immediately retrievable via `Send.Definition.Retrieve`. All four documented arguments are required and `listIds` must be an array of real list IDs — passing a list ID that does not exist makes the call throw the string `"Error adding EmailSendDefinition."` and nothing is created. The thrown value is a plain string (`typeof ex === "string"`), so `ex.message` is undefined; catch it as a string.
      * @param esdParams - Object with CustomerKey, Name, EmailSubject for the new send definition.
      * @param sendClassificationKey - CustomerKey of the related send classification.
      * @param emailKey - CustomerKey of the email message to use.
      * @param listIds - Array of list IDs targeted by the send definition.
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns a CLR EmailSendDefinition object on success (`typeof` `"clr"`, stringifies to `"ExactTarget.Integration.WSDL.EmailSendDefinition"`). Throws the string `"Error adding EmailSendDefinition."` on failure.
      * @example
      * Platform.Load("core", "1");
      * var esdParams = { CustomerKey: "example_esd", Name: "Example Send Definition", EmailSubject: "Sent By Example Send Definition" };
      * Send.Definition.Add(esdParams, "example_sc_key", "example_email_key", [12345, 12346]);
      */
-    function Add(esdParams: object, sendClassificationKey: string, emailKey: string, listIds: any[]): string;
+    function Add(esdParams: object, sendClassificationKey: string, emailKey: string, listIds: any[]): object;
     /**
      * Creates a new send definition that targets a sendable Data Extension.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-proven working, but only with **four** arguments — the documented fifth `publicationListKey` argument breaks the call. `AddWithDE(esdParams, sendClassificationKey, emailKey, sendableDataExtensionKey)` succeeds and the send definition is immediately retrievable via `Send.Definition.Retrieve`. Supplying a fifth argument throws the string `"Error adding EmailSendDefinition."` and creates nothing — this was observed with a publication list name, a numeric list ID, and the Data Extension key repeated. A successful call returns a CLR object, not the string `"OK"` the docs imply: `typeof` is `"clr"` and `String(result)` is `"ExactTarget.Integration.WSDL.EmailSendDefinition"`. The thrown failure value is a plain string (`typeof ex === "string"`), so `ex.message` is undefined.
      * @param esdParams - Object with CustomerKey, Name, EmailSubject for the new send definition.
      * @param sendClassificationKey - CustomerKey of the related send classification.
      * @param emailKey - CustomerKey of the email message to use.
      * @param sendableDataExtensionKey - CustomerKey of the sendable Data Extension.
-     * @param publicationListKey - CustomerKey of the publication list to associate.
-     * @returns Returns "OK" on success or throws on failure.
+     * @param publicationListKey - CustomerKey of the publication list to associate. Documented as required, but supplying it makes the call fail at runtime — omit it.
+     * @returns Returns a CLR EmailSendDefinition object on success (`typeof` `"clr"`, stringifies to `"ExactTarget.Integration.WSDL.EmailSendDefinition"`). Throws the string `"Error adding EmailSendDefinition."` on failure.
      * @example
      * Platform.Load("core", "1.1.5");
      * var esdParams = { CustomerKey: "ssjs_de_esd_1c", Name: "SSJS DE Test ESD3", EmailSubject: "Third send By Test DE Send Definition" };
-     * var status = Send.Definition.AddWithDE(esdParams, "scKey", "test_email", "deKey", "myPubList");
+     * // omit the documented publicationListKey - passing it makes the call throw
+     * var esd = Send.Definition.AddWithDE(esdParams, "scKey", "test_email", "deKey");
      */
-    function AddWithDE(esdParams: object, sendClassificationKey: string, emailKey: string, sendableDataExtensionKey: string, publicationListKey: string): string;
+    function AddWithDE(esdParams: object, sendClassificationKey: string, emailKey: string, sendableDataExtensionKey: string, publicationListKey?: string): object;
     /**
      * Creates a new send definition that targets the audience defined by a filter definition.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime behaviour differs sharply from the docs: the call **always throws** the string `"Error adding EmailSendDefinition."`, yet the send definition **is created anyway** and is immediately retrievable via `Send.Definition.Retrieve` on the same page. This was reproduced with a valid filter definition key plus a real list ID, with the list ID passed as a number and as a single-element array, with a publication list name, with a Data Extension key, and with the fifth argument omitted — every shape threw, and the shapes using a valid list ID still created the object. Because the throw is indistinguishable from a genuine failure, the only reliable success check is to call `Send.Definition.Retrieve` for the new key after catching. No invocation shape was found that returns normally.
      * @param esdParams - Object with CustomerKey, Name, EmailSubject for the new send definition.
      * @param sendClassificationKey - CustomerKey of the related send classification.
      * @param emailKey - CustomerKey of the email message to use.
      * @param filterDefinitionKey - CustomerKey of the filter definition.
      * @param listId - ID of the list targeted by the filter.
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Never returns normally — always throws the string `"Error adding EmailSendDefinition."`, even when the send definition is created successfully. Verify by retrieving the new key afterwards.
      * @example
      * Platform.Load("core", "1.1.5");
      * var esdParams = { CustomerKey: "filterDef_esd", Name: "Example Filtered Send Definition", EmailSubject: "Sent By Filtered Send Definition" };
-     * var status = Send.Definition.AddWithFilterDefinition(esdParams, "scKey", "test_email", "fdKey", 144);
+     * try {
+     *     Send.Definition.AddWithFilterDefinition(esdParams, "scKey", "test_email", "fdKey", 144);
+     * } catch (ex) {
+     *     // always throws "Error adding EmailSendDefinition." - check whether it was created anyway
+     * }
+     * var created = Send.Definition.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "filterDef_esd" }).length > 0;
      */
-    function AddWithFilterDefinition(esdParams: object, sendClassificationKey: string, emailKey: string, filterDefinitionKey: string, listId: number): string;
+    function AddWithFilterDefinition(esdParams: object, sendClassificationKey: string, emailKey: string, filterDefinitionKey: string, listId?: number): any;
     /**
      * Returns an array of send definitions, optionally filtered. When no filter is supplied, all send definitions are returned.
      *
@@ -3162,7 +3222,7 @@ declare namespace Send.Definition {
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - Optional WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
-     * @returns List of send definitions matching the filter (or all when no filter is supplied).
+     * @returns List of send definitions matching the filter (or all when no filter is supplied). Returns an empty array when nothing matches — it does not throw and does not return null.
      * @example
      * Platform.Load("core", "1.1.5");
      * var esd = Send.Definition.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "ssjs_test_esd" });
@@ -3190,6 +3250,9 @@ declare namespace TriggeredSend {
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Exists and resolves (`typeof TriggeredSend.Add === "function"`) but no working invocation was found. Every invocation of `TriggeredSend.Add` throws the string `Error adding TSD.`; `TriggeredSend.LastMessage` is then either `An error occurred when attempting to evaluate a SetObjectProperty function call.  See inner exception for details.` (whenever the payload contains any nested object such as `Email`, `List` or `SendClassification`) or the same `Error adding TSD.` with `LastErrorCode` 17014 / 2 (flat-only payloads). Proven with a fully valid, publishable definition on the QA BU (Email.ID 769268, List.ID 72164, SendClassification "Default Transactional" / ObjectID 2147aac4-35f1-ec11-b846-48df37d1dcc7, CategoryID 734919). Payload shapes swept without a single success: nested SOAP shape (`Email: {ID}`, `List: {ID}`, `SendClassification: {CustomerKey|ObjectID}`), the documented flat shape (`EmailID`, `ListID`, `SendClassificationID`), dotted keys (`"Email.ID"`), flat-scalar-only payloads, typed Core Library objects (`Email.Init()`, `List.Init()`, `SendClassification.Init()`), and the CLR object returned by `TriggeredSend.Retrieve` with its `CustomerKey` mutated. String and two-argument forms fail earlier with `Invalid cast from 'Char' to 'Double'.". Decisive control: in the same request, `Script.Util.WSProxy().createItem("TriggeredSendDefinition", payload)` with the identical payload returns `Status: "OK"`, `ErrorCode: 0`, `StatusMessage: "TriggeredSendDefinition created"`, and the resulting definition then publishes, starts, sends, pauses and updates normally. Use WSProxy `createItem` instead; no working invocation of `TriggeredSend.Add` was found.
+     * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @param properties - JSON object describing the new triggered send definition (Name, CustomerKey, FromName, FromAddress, EmailID, SendClassificationID, ...).
      * @returns An initialized TriggeredSend bound to the newly-created triggered send definition.
      * @example
@@ -3227,20 +3290,24 @@ interface TriggeredSendInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param properties - Attributes to change on the triggered send definition.
-     * @returns Returns "OK" on success or throws on failure.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Confirmed at runtime: returns the string `"OK"` and `LastMessage` `TriggeredSendDefinition updated` when the definition is NOT Active. Undocumented state requirement: calling it on an Active definition returns the string `"Error"` with `LastMessage` `An active TriggeredSendDefinition can not be updated or have it's content refreshed` and `LastErrorCode` 17003 — call `Pause()` first. Also undocumented: the `properties` argument is effectively optional — `Update()` with no arguments returns `"OK"`. Passing a non-object (e.g. a string) throws `Error Updating TSD.` with `LastMessage` `Invalid cast from 'Char' to 'Double'.".
+     * @param properties - Attributes to change on the triggered send definition. Optional at runtime — omitting it returns "OK" without changes.
+     * @returns Returns "OK" on success, or "Error" when the definition is Active (LastErrorCode 17003).
      * @example
      * Platform.Load("core", "1.1.5");
      * var tsd = TriggeredSend.Init("triggeredSend");
      * var status = tsd.Update({ Name: "Updated TSD Name" });
      */
-    Update(properties: object): string;
+    Update(properties?: object): string;
     /**
      * Starts (reactivates) a paused triggered send definition.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Confirmed at runtime: returns the string `"OK"` with `LastMessage` `TriggeredSendDefinition updated`, and the definition moves to `TriggeredSendStatus: "Active"` (verified by a follow-up WSProxy retrieve). Undocumented: extra arguments are ignored rather than rejected — `Start("x")` also returns `"OK"`.
      * @returns Returns "OK" on success or throws on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3254,6 +3321,8 @@ interface TriggeredSendInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Confirmed at runtime: returns the string `"OK"` with `LastMessage` `TriggeredSendDefinition updated`, and the definition moves to `TriggeredSendStatus: "Inactive"` (verified by a follow-up WSProxy retrieve) — note the resulting status is `Inactive`, not `Paused`. Undocumented: extra arguments are ignored rather than rejected — `Pause("x")` also returns `"OK"`.
      * @returns Returns "OK" on success or throws on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3267,6 +3336,8 @@ interface TriggeredSendInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Confirmed at runtime: returns the string `"OK"` with `LastMessage` `TriggeredSendDefinition updated`. Undocumented behaviour: `Publish()` does NOT by itself move the definition to Active — a follow-up WSProxy retrieve showed the status still `New` after `Publish()` returned `"OK"`; the subsequent `Start()` is what set `TriggeredSendStatus: "Active"`. Extra arguments are ignored rather than rejected — `Publish("x")` also returns `"OK"`.
      * @returns Returns "OK" on success or throws on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3280,16 +3351,19 @@ interface TriggeredSendInstance {
      * [ssjs.guide reference](https://ssjs.guide/core-library/triggeredsend/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Confirmed at runtime with real sends: returns the string `"OK"` with `LastMessage` `Created TriggeredSend`. Several undocumented details. (1) A third argument is accepted — `Send(emailAddress, sendTimeAttributes, subscriberKey)` returns `"OK"`; surplus arguments beyond that are ignored (a 4-argument call also returns `"OK"`). (2) The definition does not have to be Active: a `Send` against an `Inactive` definition still returned `"OK"` / `Created TriggeredSend`. (3) An invalid address does not throw — it returns the string `"Error"` with `LastMessage` `Unable to queue Triggered Send request.  There are no valid subscribers.`. (4) Calling `Send()` with no arguments throws the usage string `Usage: Send(EmailAddress [, sendTimeAttributes])`. (5) `LastRequestID` was `0` after a successful send.
      * @param emailAddress - Email address to send to. SubscriberKey is **not** supported.
      * @param sendTimeAttributes - Optional object with dynamic attributes to include in the send.
-     * @returns Returns "OK" on success or "Error"; throws on a hard failure.
+     * @param subscriberKey - Undocumented third argument accepted at runtime — subscriber key to associate with the send.
+     * @returns Returns "OK" on success or "Error" when the request cannot be queued; throws on a hard failure.
      * @example
      * Platform.Load("core", "1.1.5");
      * var ts = TriggeredSend.Init("triggeredSend");
      * var status = ts.Send("aruiz@example.com", { FirstName: "Angel", CouponCode: "AA1AF" });
      * if (status != "OK") { var message = ts.LastMessage; }
      */
-    Send(emailAddress: string, sendTimeAttributes?: object): string;
+    Send(emailAddress: string, sendTimeAttributes?: object, subscriberKey?: string): string;
     readonly Tracking: TriggeredSendTrackingInstance;
 }
 declare namespace DataExtension {
@@ -3389,13 +3463,14 @@ declare namespace DateTime.TimeZone {
      * [ssjs.guide reference](https://ssjs.guide/core-library/datetime/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
-     * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @param filter - Filter criteria object with properties: `Property`, `SimpleOperator`, `Value`. Omit it to retrieve every time zone.
      * @example
      * Platform.Load("core", "1.1.5");
      * var timezones = DateTime.TimeZone.Retrieve({ Property: "ID", SimpleOperator: "equals", Value: 1 });
      * Write(Stringify(timezones));
      */
-    function Retrieve(filter: object): object[];
+    function Retrieve(filter?: object): object[];
 }
 
 // ── Standalone Core Library globals ──────────────────────────────────────────
@@ -4286,35 +4361,39 @@ interface HttpResponseInstance {
 
 // ── WSProxy per-item result entry ───────────────────────────────────────────
 interface WspResult {
-    /** Per-item status: "OK" or "Error". */
+    /** Per-item status: "OK" on success, "Error" on failure. Present on create/update/delete/perform entries; absent on rows returned by retrieve()/getNextBatch(). */
     readonly StatusCode?: string;
-    /** Per-item human-readable status message. */
+    /** Per-item human-readable message. Populated on success too (e.g. "QueryDefinition deleted"), not only on failure. This — not the top-level StatusMessage — carries the real error text. */
     readonly StatusMessage?: string;
-    /** Zero-based index of the input item this entry corresponds to. */
+    /** Zero-based index of the input item this entry corresponds to. Always 0 for the single-item methods (createItem/updateItem/deleteItem/performItem). */
     readonly OrdinalID?: number;
-    /** Error code when the item failed; absent/empty on success. */
-    readonly ErrorCode?: string;
-    /** Server-assigned ID of a newly created object, when applicable. */
+    /** Numeric error code. Present as 0 on success AND on many failures — it is not a reliable failure signal; use StatusCode instead. */
+    readonly ErrorCode?: number;
+    /** Numeric ID assigned to a newly created object. Only present on create results; undefined on update, delete, perform and retrieve entries. */
     readonly NewID?: number;
-    /** Wrapper carrying the affected object as returned by the API. */
+    /** GUID assigned to a newly created object. Only present on create results for object types that use ObjectID keys; undefined on update, delete, perform and retrieve entries. */
+    readonly NewObjectID?: string;
+    /** Echo of the affected object as returned by the API — the payload you sent plus server-populated fields (ObjectID, CreatedDate, ModifiedDate, Client, PartnerKey, ObjectState, …). Present on both success and failure entries. */
     readonly Object?: object;
-    /** perform-only: async task descriptor (carries InteractionObjectID). Present for performItem()/performBatch(). */
+    /** perform-only: async task descriptor with StatusCode, StatusMessage, OrdinalID, ErrorCode, ID, TblAsyncID and InteractionObjectID. Present for performItem()/performBatch(); undefined elsewhere. */
     readonly Task?: object;
+    /** Per-entry request identifier. Observed as null on every result entry at runtime — read the top-level RequestID instead. */
+    readonly RequestID?: string;
     /** retrieve()/getNextBatch(): retrieved-row fields keyed by column name. */
     readonly [column: string]: any;
 }
 
 // ── WSProxy result object ───────────────────────────────────────────────────
 interface WSProxyResult {
-    /** Overall result status: "OK" or "Error". */
+    /** Overall result status. More than the documented two values: "OK", "MoreDataAvailable" (paged retrieve), "InvalidRequest" (request rejected), "Error", or a full sentence carrying the failure text. */
     readonly Status: string;
-    /** Server-assigned request identifier. */
+    /** Server-assigned request identifier (GUID). Always present, including on failed calls; getNextBatch() echoes the same value for every page of one retrieve. */
     readonly RequestID: string;
-    /** Array of per-object result entries (or retrieved rows for retrieve()). */
+    /** Array-like collection of per-object result entries (or retrieved rows for retrieve()). Null when the request itself was rejected. */
     readonly Results: WspResult[];
-    /** For retrieve()/getNextBatch(): true when more rows exist — call getNextBatch() with RequestID. */
+    /** retrieve()/getNextBatch() only: true when more rows exist — call getNextBatch() with the same RequestID. Absent (undefined) on create/update/delete/perform results. */
     readonly HasMoreRows?: boolean;
-    /** Human-readable status message when present. */
+    /** Human-readable status message. Rarely populated at the top level — usually undefined even on failures, where the real message sits on Results[i].StatusMessage. */
     readonly StatusMessage?: string;
 }
 

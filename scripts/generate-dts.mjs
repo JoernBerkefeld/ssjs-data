@@ -369,6 +369,14 @@ function buildJsDocComment(m, indent = ' '.repeat(4), guideUrl = null, mdnUrl = 
         const note = m.officialDocsNote ? ` ${m.officialDocsNote}` : '';
         lines.push(`${indent} * @remarks ⚠️ Differs from the official Salesforce docs.${note}`);
     }
+    // nonFunctionalAtRuntime: the member EXISTS/RESOLVES at runtime but has no known
+    // working invocation (every tested call fails). The declaration is KEPT (unlike
+    // notDefinedAtRuntime) so editors still offer it; this @remarks conveys the caveat.
+    if (m.nonFunctionalAtRuntime) {
+        lines.push(
+            `${indent} * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).`,
+        );
+    }
 
     // ── @param ────────────────────────────────────────────────────────────────
     const params = m.params ?? [];
