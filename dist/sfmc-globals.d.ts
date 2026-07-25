@@ -1925,6 +1925,9 @@ interface AccountUserInstance {
      */
     Deactivate(): string;
 }
+/**
+ * @deprecated
+ */
 declare namespace Portfolio {
     /**
      * Initializes a Portfolio instance bound to the specified external key. Required before invoking any other Portfolio method on the returned instance. DEPRECATED — Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
@@ -1981,6 +1984,9 @@ declare namespace Portfolio {
      */
     function Retrieve(filter: object): object[];
 }
+/**
+ * @deprecated
+ */
 interface PortfolioInstance {
     /**
      * Updates the portfolio object with the supplied attributes. DEPRECATED — Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
@@ -2017,6 +2023,9 @@ interface PortfolioInstance {
      */
     Remove(): string;
 }
+/**
+ * @deprecated
+ */
 declare namespace ContentAreaObj {
     /**
      * Initializes a ContentAreaObj instance bound to the specified external key. DEPRECATED — Content Areas are a legacy Classic Content feature; prefer Content Builder assets for new work.
@@ -2073,6 +2082,9 @@ declare namespace ContentAreaObj {
      */
     function Retrieve(filter: object): object[];
 }
+/**
+ * @deprecated
+ */
 interface ContentAreaObjInstance {
     /**
      * Updates the content area with the supplied attributes. DEPRECATED — Content Areas are a legacy Classic Content feature.
@@ -2214,12 +2226,16 @@ interface FolderInstance {
      */
     SetID(id: number): void;
 }
+/**
+ * @deprecated
+ */
 declare namespace Template {
     /**
-     * Initializes a Template instance bound to the specified external key. Required before invoking any other Template method on the returned instance.
+     * Initializes a Template instance bound to the specified external key. Required before invoking any other Template method on the returned instance. Deprecated — Template is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/template/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param key - External key of the template.
@@ -2230,10 +2246,11 @@ declare namespace Template {
      */
     function Init(key: string): TemplateInstance;
     /**
-     * Creates a new template from the supplied properties.
+     * Creates a new template from the supplied properties. Deprecated — Template is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/template/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - JSON object describing the new template (CustomerKey, TemplateName, LayoutHTML).
@@ -2249,10 +2266,11 @@ declare namespace Template {
      */
     function Add(properties: object): string;
     /**
-     * Returns an array of templates matching the specified filter. Pass `{ Filter: { Property, SimpleOperator, Value }, QueryAllAccounts: true }` to query across all accessible accounts.
+     * Returns an array of templates matching the specified filter. Pass `{ Filter: { Property, SimpleOperator, Value }, QueryAllAccounts: true }` to query across all accessible accounts. Deprecated — Template is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/template/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - PascalCase WSProxy-style filter object, optionally wrapped with `QueryAllAccounts: true`.
@@ -2263,12 +2281,16 @@ declare namespace Template {
      */
     function Retrieve(filter: object): object[];
 }
+/**
+ * @deprecated
+ */
 interface TemplateInstance {
     /**
-     * Updates the template with the supplied attributes.
+     * Updates the template with the supplied attributes. Deprecated — Template is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/template/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - Attributes to change on the template.
@@ -2900,6 +2922,9 @@ interface SubscriberInstance {
     readonly Attributes: SubscriberAttributesInstance;
     readonly Lists: SubscriberListsInstance;
 }
+/**
+ * @deprecated
+ */
 declare namespace Email {
     /**
      * Initializes an Email instance bound to the specified external key. Required before invoking any other Email method on the returned instance. External keys cannot be set in the UI — set one via SOAP API, or look up the value via `Email.Retrieve()`. Deprecated — operates on classic Email Studio emails; prefer Content Builder assets for new work.
@@ -2956,6 +2981,9 @@ declare namespace Email {
      */
     function Retrieve(filter: object): object[];
 }
+/**
+ * @deprecated
+ */
 interface EmailInstance {
     /**
      * Updates the classic email message with the supplied attributes. Deprecated — operates on classic Email Studio emails; prefer Content Builder assets for new work.
@@ -3024,12 +3052,16 @@ interface EmailInstance {
      */
     CheckContent(): object;
 }
+/**
+ * @deprecated
+ */
 declare namespace Send {
     /**
-     * Initializes a Send instance bound to the specified send ID. Required before invoking any other Send method on the returned instance.
+     * Initializes a Send instance bound to the specified send ID. Required before invoking any other Send method on the returned instance. Deprecated — Send is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param id - Numeric ID of the send.
@@ -3040,10 +3072,11 @@ declare namespace Send {
      */
     function Init(id: number): SendInstance;
     /**
-     * Creates a new send to the specified email and list(s). Pass an `options` object to override From name, From address, subject, send time, etc.
+     * Creates a new send to the specified email and list(s). Pass an `options` object to override From name, From address, subject, send time, etc. Deprecated — Send is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param emailKey - CustomerKey of the email message to associate with the send.
@@ -3058,10 +3091,11 @@ declare namespace Send {
      */
     function Add(emailKey: string, listIds: any[], options?: object): string;
     /**
-     * Returns an array of sends matching the specified filter.
+     * Returns an array of sends matching the specified filter. Deprecated — Send is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - PascalCase WSProxy-style filter object — simple or compound with `LeftOperand`/`LogicalOperator`/`RightOperand`.
@@ -3072,10 +3106,11 @@ declare namespace Send {
      */
     function Retrieve(filter: object): object[];
     /**
-     * Returns information about the lists targeted by a send. Filter must restrict results to specific send ID(s).
+     * Returns information about the lists targeted by a send. Filter must restrict results to specific send ID(s). Deprecated — Send is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - WSProxy-style filter restricting results to specific send ID(s).
@@ -3086,12 +3121,16 @@ declare namespace Send {
      */
     function RetrieveLists(filter: object): object[];
 }
+/**
+ * @deprecated
+ */
 interface SendInstance {
     /**
-     * Removes the previously initialized send.
+     * Removes the previously initialized send. Deprecated — Send is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @returns Returns "OK" on success or throws on failure.
@@ -3102,10 +3141,11 @@ interface SendInstance {
      */
     Remove(): string;
     /**
-     * Attempts to cancel the previously initialized send.
+     * Attempts to cancel the previously initialized send. Deprecated — Send is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): `CancelSend()` returns the literal string "status" on success, not the "OK" the official docs describe. Do not compare its return value against "OK".
@@ -3134,12 +3174,16 @@ declare namespace Send.Tracking {
      */
     function Retrieve(filter: object): object[];
 }
+/**
+ * @deprecated
+ */
 declare namespace Send.Definition {
     /**
-     * Initializes a SendDefinition instance bound to the specified external key. Required before invoking any instance method on the returned object.
+     * Initializes a SendDefinition instance bound to the specified external key. Required before invoking any instance method on the returned object. Deprecated — Send.Definition is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param key - External key of the send definition.
@@ -3150,10 +3194,11 @@ declare namespace Send.Definition {
      */
     function Init(key: string): SendDefinitionInstance;
     /**
-     * Creates a new send definition.
+     * Creates a new send definition. Deprecated — Send.Definition is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-proven working. A successful call returns a CLR object, not the string `"OK"` the docs imply: `typeof` is `"clr"` and `String(result)` is `"ExactTarget.Integration.WSDL.EmailSendDefinition"`. The created send definition is immediately retrievable via `Send.Definition.Retrieve`. All four documented arguments are required and `listIds` must be an array of real list IDs — passing a list ID that does not exist makes the call throw the string `"Error adding EmailSendDefinition."` and nothing is created. The thrown value is a plain string (`typeof ex === "string"`), so `ex.message` is undefined; catch it as a string.
@@ -3169,10 +3214,11 @@ declare namespace Send.Definition {
      */
     function Add(esdParams: object, sendClassificationKey: string, emailKey: string, listIds: any[]): object;
     /**
-     * Creates a new send definition that targets a sendable Data Extension.
+     * Creates a new send definition that targets a sendable Data Extension. Deprecated — Send.Definition is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-proven working, but only with **four** arguments — the documented fifth `publicationListKey` argument breaks the call. `AddWithDE(esdParams, sendClassificationKey, emailKey, sendableDataExtensionKey)` succeeds and the send definition is immediately retrievable via `Send.Definition.Retrieve`. Supplying a fifth argument throws the string `"Error adding EmailSendDefinition."` and creates nothing — this was observed with a publication list name, a numeric list ID, and the Data Extension key repeated. A successful call returns a CLR object, not the string `"OK"` the docs imply: `typeof` is `"clr"` and `String(result)` is `"ExactTarget.Integration.WSDL.EmailSendDefinition"`. The thrown failure value is a plain string (`typeof ex === "string"`), so `ex.message` is undefined.
@@ -3190,10 +3236,11 @@ declare namespace Send.Definition {
      */
     function AddWithDE(esdParams: object, sendClassificationKey: string, emailKey: string, sendableDataExtensionKey: string, publicationListKey?: string): object;
     /**
-     * Creates a new send definition that targets the audience defined by a filter definition.
+     * Creates a new send definition that targets the audience defined by a filter definition. Deprecated — Send.Definition is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @remarks ⚠️ Differs from the official Salesforce docs. Runtime behaviour differs sharply from the docs: the call **always throws** the string `"Error adding EmailSendDefinition."`, yet the send definition **is created anyway** and is immediately retrievable via `Send.Definition.Retrieve` on the same page. This was reproduced with a valid filter definition key plus a real list ID, with the list ID passed as a number and as a single-element array, with a publication list name, with a Data Extension key, and with the fifth argument omitted — every shape threw, and the shapes using a valid list ID still created the object. Because the throw is indistinguishable from a genuine failure, the only reliable success check is to call `Send.Definition.Retrieve` for the new key after catching. No invocation shape was found that returns normally.
@@ -3215,10 +3262,11 @@ declare namespace Send.Definition {
      */
     function AddWithFilterDefinition(esdParams: object, sendClassificationKey: string, emailKey: string, filterDefinitionKey: string, listId?: number): any;
     /**
-     * Returns an array of send definitions, optionally filtered. When no filter is supplied, all send definitions are returned.
+     * Returns an array of send definitions, optionally filtered. When no filter is supplied, all send definitions are returned. Deprecated — Send.Definition is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
      *
+     * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - Optional WSProxy-style filter object: `{Property, SimpleOperator, Value}`.

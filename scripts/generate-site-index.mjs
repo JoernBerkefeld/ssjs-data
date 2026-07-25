@@ -450,13 +450,17 @@ for (const obj of CORE_LIBRARY_OBJECTS) {
         CORE_LIBRARY_URLS[obj.name] ??
         PLATFORM_OBJECT_URLS[obj.name] ??
         `/core-library/${obj.name.toLowerCase().replaceAll('.', '-')}/`;
-    index.push({
+    const objRecord = {
         name: obj.name,
         url,
         section: 'Core Library',
         type: 'object',
         description: firstSentence(obj.description),
-    });
+    };
+    if (obj.deprecated) {
+        objRecord.deprecated = true;
+    }
+    index.push(objRecord);
 }
 
 // ── ECMAScript builtins ────────────────────────────────────────────────────

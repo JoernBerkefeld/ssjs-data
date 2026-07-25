@@ -83,12 +83,18 @@ import {
     TRIGGERED_SEND_TRACKING_METHODS,
     TRIGGERED_SEND_TRACKING_CLICKS_METHODS,
     TRIGGERED_SEND_TRACKING_TOTAL_BY_INTERVAL_METHODS,
+    CORE_LIBRARY_OBJECTS,
     platformFunctionLookup,
     platformResponseLookup,
     platformVariableLookup,
     platformRequestLookup,
     platformRecipientLookup,
 } from '../src/index.js';
+
+/** Maps a Core Library class name (e.g. "Portfolio") to its `deprecated` flag. */
+const coreObjectDeprecated = new Map(
+    CORE_LIBRARY_OBJECTS.map((o) => [o.name, Boolean(o.deprecated)]),
+);
 
 // ── Type helpers ──────────────────────────────────────────────────────────────
 
@@ -1085,6 +1091,11 @@ for (const [nsName, methods, guideUrl] of CORE_CLASS_MAP) {
     // isStatic:false methods must NOT appear here — they are only callable on an
     // instance returned by Init(), not directly on the class namespace.
     if (staticMethods.length > 0) {
+        if (coreObjectDeprecated.get(nsName)) {
+            line('/**');
+            line(' * @deprecated');
+            line(' */');
+        }
         line(`declare namespace ${nsName} {`);
         for (const m of staticMethods) {
             line(emitNsMember(m, ' '.repeat(4), guideUrl));
@@ -1099,6 +1110,11 @@ for (const [nsName, methods, guideUrl] of CORE_CLASS_MAP) {
     if (!nsName.includes('.') && nsName !== 'DataExtension') {
         const subProps = INSTANCE_SUB_NAMESPACES[nsName] ?? [];
         if (instanceMethods.length > 0 || subProps.length > 0) {
+            if (coreObjectDeprecated.get(nsName)) {
+                line('/**');
+                line(' * @deprecated');
+                line(' */');
+            }
             line(`interface ${nsName}Instance {`);
             for (const m of instanceMethods) {
                 line(emitIfaceMember(m, ' '.repeat(4), guideUrl));

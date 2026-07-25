@@ -43,6 +43,7 @@ import {
   coreObjectLookup,
   coreMethodArityLookup,
   coreNonFunctionalMethodLookup,
+  coreDeprecatedMethodLookup,
   // HTTP + HTTPHeader
   HTTP_METHODS,
   httpMethodNames,
@@ -395,12 +396,17 @@ Each WSProxy-accessible object has its own named export. These follow the same s
 | `TRIGGERED_SEND_TRACKING_CLICKS_METHODS`            | `TriggeredSend.Tracking.Clicks`          |
 | `TRIGGERED_SEND_TRACKING_TOTAL_BY_INTERVAL_METHODS` | `TriggeredSend.Tracking.TotalByInterval` |
 
-### `ssjsGlobalsLookup` / `coreMethodArityLookup` / `coreNonFunctionalMethodLookup`
+### `ssjsGlobalsLookup` / `coreMethodArityLookup` / `coreNonFunctionalMethodLookup` / `coreDeprecatedMethodLookup`
 
 Additional O(1) lookup maps:
 
 ```js
-import { ssjsGlobalsLookup, coreMethodArityLookup, coreNonFunctionalMethodLookup } from 'ssjs-data';
+import {
+  ssjsGlobalsLookup,
+  coreMethodArityLookup,
+  coreNonFunctionalMethodLookup,
+  coreDeprecatedMethodLookup,
+} from 'ssjs-data';
 
 // Lookup a global by lowercase name
 const writeGlobal = ssjsGlobalsLookup.get('write');
@@ -415,6 +421,12 @@ const brokenOnFilterDefinition = coreNonFunctionalMethodLookup.get('filterdefini
 const update = brokenOnFilterDefinition && brokenOnFilterDefinition.get('update');
 // update.nonFunctionalAtRuntime === true
 // update.officialDocsNote explains what was observed on the live account
+
+// Core methods that still work but are deprecated (superseded by newer functionality,
+// e.g. Content Builder assets replacing Classic Content). Same nested-map shape.
+const deprecatedOnSend = coreDeprecatedMethodLookup.get('send.definition');
+const add = deprecatedOnSend && deprecatedOnSend.get('add');
+// add.deprecated === true
 ```
 
 ### `SCRIPT_UTIL_CONSTRUCTORS` / `SCRIPT_UTIL_REQUEST_METHODS`

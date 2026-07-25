@@ -2776,7 +2776,11 @@ export const CORE_LIBRARY_OBJECTS = [
         methods: ['Init', 'Add', 'Retrieve', 'RetrieveLists', 'Remove', 'CancelSend'],
         requiresCoreLoad: true,
         isConfirmed: true,
-        description: 'Manages email sends.',
+        deprecated: true,
+        description:
+            'Manages email sends. ' +
+            'Deprecated — operates on the legacy (classic) send type, not Content Builder assets. ' +
+            'Still works at runtime; prefer Content Builder assets and the modern send methods for new development.',
     },
     {
         name: 'Send.Tracking',
@@ -2813,15 +2817,22 @@ export const CORE_LIBRARY_OBJECTS = [
         ],
         requiresCoreLoad: true,
         isConfirmed: true,
+        deprecated: true,
         description:
-            'Manages reusable Send Definition configurations that define all parameters for a send including content, audience, and delivery settings.',
+            'Manages reusable Send Definition configurations that define all parameters for a send including content, audience, and delivery settings. ' +
+            'Deprecated — operates on the legacy (classic) send type, not Content Builder assets. ' +
+            'Still works at runtime; prefer Content Builder assets and the modern send methods for new development.',
     },
     {
         name: 'Template',
         methods: ['Init', 'Add', 'Retrieve', 'Update'],
         requiresCoreLoad: true,
         isConfirmed: true,
-        description: 'Manages email template definitions.',
+        deprecated: true,
+        description:
+            'Manages email template definitions. ' +
+            'Deprecated — operates on legacy Classic Content / Classic Email Studio templates, not Content Builder assets. ' +
+            'Still works at runtime; prefer Content Builder assets for new development.',
     },
     {
         name: 'DeliveryProfile',
@@ -2882,7 +2893,11 @@ export const CORE_LIBRARY_OBJECTS = [
         methods: ['Init', 'Add', 'Retrieve', 'Update', 'Remove'],
         requiresCoreLoad: true,
         isConfirmed: true,
-        description: 'Manages portfolio (file) items in the account.',
+        deprecated: true,
+        description:
+            'Manages portfolio (file) items in the account. ' +
+            'Deprecated — operates on legacy Classic Content / Classic Email Studio file storage, not Content Builder assets. ' +
+            'Still works at runtime; prefer Content Builder assets for new development.',
     },
     {
         name: 'BounceEvent',
@@ -3762,13 +3777,15 @@ export const TEMPLATE_METHODS = [
     {
         name: 'Init',
         isStatic: true,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
             'Initializes a Template instance bound to the specified external key. ' +
-            'Required before invoking any other Template method on the returned instance.',
+            'Required before invoking any other Template method on the returned instance. ' +
+            'Deprecated — Template is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [{ name: 'key', description: 'External key of the template.', type: 'string' }],
         returnType: 'TemplateInstance',
         returnDescription: 'An initialized Template bound to the specified external key.',
@@ -3778,11 +3795,14 @@ export const TEMPLATE_METHODS = [
     {
         name: 'Add',
         isStatic: true,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
-        description: 'Creates a new template from the supplied properties.',
+        description:
+            'Creates a new template from the supplied properties. ' +
+            'Deprecated — Template is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [
             {
                 name: 'properties',
@@ -3807,13 +3827,15 @@ export const TEMPLATE_METHODS = [
     {
         name: 'Retrieve',
         isStatic: true,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
             'Returns an array of templates matching the specified filter. ' +
-            'Pass `{ Filter: { Property, SimpleOperator, Value }, QueryAllAccounts: true }` to query across all accessible accounts.',
+            'Pass `{ Filter: { Property, SimpleOperator, Value }, QueryAllAccounts: true }` to query across all accessible accounts. ' +
+            'Deprecated — Template is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [
             {
                 name: 'filter',
@@ -3832,11 +3854,14 @@ export const TEMPLATE_METHODS = [
     {
         name: 'Update',
         isStatic: false,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
-        description: 'Updates the template with the supplied attributes.',
+        description:
+            'Updates the template with the supplied attributes. ' +
+            'Deprecated — Template is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [
             {
                 name: 'properties',
@@ -5226,13 +5251,15 @@ export const SEND_METHODS = [
     {
         name: 'Init',
         isStatic: true,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
             'Initializes a Send instance bound to the specified send ID. ' +
-            'Required before invoking any other Send method on the returned instance.',
+            'Required before invoking any other Send method on the returned instance. ' +
+            'Deprecated — Send is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [{ name: 'id', description: 'Numeric ID of the send.', type: 'number' }],
         returnType: 'SendInstance',
         returnDescription: 'An initialized Send bound to the specified send ID.',
@@ -5242,13 +5269,15 @@ export const SEND_METHODS = [
     {
         name: 'Add',
         isStatic: true,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
         minArgs: 2,
         maxArgs: 3,
         description:
             'Creates a new send to the specified email and list(s). ' +
-            'Pass an `options` object to override From name, From address, subject, send time, etc.',
+            'Pass an `options` object to override From name, From address, subject, send time, etc. ' +
+            'Deprecated — Send is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [
             {
                 name: 'emailKey',
@@ -5277,11 +5306,14 @@ export const SEND_METHODS = [
     {
         name: 'Retrieve',
         isStatic: true,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
-        description: 'Returns an array of sends matching the specified filter.',
+        description:
+            'Returns an array of sends matching the specified filter. ' +
+            'Deprecated — Send is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [
             {
                 name: 'filter',
@@ -5300,13 +5332,15 @@ export const SEND_METHODS = [
     {
         name: 'RetrieveLists',
         isStatic: true,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
             'Returns information about the lists targeted by a send. ' +
-            'Filter must restrict results to specific send ID(s).',
+            'Filter must restrict results to specific send ID(s). ' +
+            'Deprecated — Send is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [
             {
                 name: 'filter',
@@ -5325,11 +5359,14 @@ export const SEND_METHODS = [
     {
         name: 'Remove',
         isStatic: false,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
         minArgs: 0,
         maxArgs: 0,
-        description: 'Removes the previously initialized send.',
+        description:
+            'Removes the previously initialized send. ' +
+            'Deprecated — Send is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [],
         returnType: 'string',
         returnEnum: ['OK'],
@@ -5340,6 +5377,7 @@ export const SEND_METHODS = [
     {
         name: 'CancelSend',
         isStatic: false,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
         differsFromOfficialDocs: true,
@@ -5348,7 +5386,9 @@ export const SEND_METHODS = [
             'not the "OK" the official docs describe. Do not compare its return value against "OK".',
         minArgs: 0,
         maxArgs: 0,
-        description: 'Attempts to cancel the previously initialized send.',
+        description:
+            'Attempts to cancel the previously initialized send. ' +
+            'Deprecated — Send is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [],
         returnType: 'string',
         returnEnum: ['status'],
@@ -5470,13 +5510,15 @@ export const SEND_DEFINITION_METHODS = [
     {
         name: 'Init',
         isStatic: true,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
         description:
             'Initializes a SendDefinition instance bound to the specified external key. ' +
-            'Required before invoking any instance method on the returned object.',
+            'Required before invoking any instance method on the returned object. ' +
+            'Deprecated — Send.Definition is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [
             { name: 'key', description: 'External key of the send definition.', type: 'string' },
         ],
@@ -5488,6 +5530,7 @@ export const SEND_DEFINITION_METHODS = [
     {
         name: 'Add',
         isStatic: true,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
         differsFromOfficialDocs: true,
@@ -5501,7 +5544,9 @@ export const SEND_DEFINITION_METHODS = [
             'undefined; catch it as a string.',
         minArgs: 4,
         maxArgs: 4,
-        description: 'Creates a new send definition.',
+        description:
+            'Creates a new send definition. ' +
+            'Deprecated — Send.Definition is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [
             {
                 name: 'esdParams',
@@ -5539,6 +5584,7 @@ export const SEND_DEFINITION_METHODS = [
     {
         name: 'AddWithDE',
         isStatic: true,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
         differsFromOfficialDocs: true,
@@ -5553,7 +5599,9 @@ export const SEND_DEFINITION_METHODS = [
             'plain string (`typeof ex === "string"`), so `ex.message` is undefined.',
         minArgs: 4,
         maxArgs: 5,
-        description: 'Creates a new send definition that targets a sendable Data Extension.',
+        description:
+            'Creates a new send definition that targets a sendable Data Extension. ' +
+            'Deprecated — Send.Definition is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [
             {
                 name: 'esdParams',
@@ -5600,6 +5648,7 @@ export const SEND_DEFINITION_METHODS = [
     {
         name: 'AddWithFilterDefinition',
         isStatic: true,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
         differsFromOfficialDocs: true,
@@ -5616,7 +5665,8 @@ export const SEND_DEFINITION_METHODS = [
         minArgs: 4,
         maxArgs: 5,
         description:
-            'Creates a new send definition that targets the audience defined by a filter definition.',
+            'Creates a new send definition that targets the audience defined by a filter definition. ' +
+            'Deprecated — Send.Definition is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [
             {
                 name: 'esdParams',
@@ -5664,13 +5714,15 @@ export const SEND_DEFINITION_METHODS = [
     {
         name: 'Retrieve',
         isStatic: true,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
         minArgs: 0,
         maxArgs: 1,
         description:
             'Returns an array of send definitions, optionally filtered. ' +
-            'When no filter is supplied, all send definitions are returned.',
+            'When no filter is supplied, all send definitions are returned. ' +
+            'Deprecated — Send.Definition is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [
             {
                 name: 'filter',
@@ -5692,6 +5744,7 @@ export const SEND_DEFINITION_METHODS = [
     {
         name: 'Update',
         isStatic: false,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
         differsFromOfficialDocs: true,
@@ -5705,7 +5758,9 @@ export const SEND_DEFINITION_METHODS = [
             'operation itself.',
         minArgs: 1,
         maxArgs: 1,
-        description: 'Updates the previously initialized send definition.',
+        description:
+            'Updates the previously initialized send definition. ' +
+            'Deprecated — Send.Definition is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [
             {
                 name: 'properties',
@@ -5729,6 +5784,7 @@ export const SEND_DEFINITION_METHODS = [
     {
         name: 'Remove',
         isStatic: false,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
         officialDocsNote:
@@ -5738,7 +5794,9 @@ export const SEND_DEFINITION_METHODS = [
             'WSProxy `createItem` on `EmailSendDefinition`.',
         minArgs: 0,
         maxArgs: 0,
-        description: 'Deletes the previously initialized send definition.',
+        description:
+            'Deletes the previously initialized send definition. ' +
+            'Deprecated — Send.Definition is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [],
         returnType: 'string',
         returnEnum: ['OK'],
@@ -5753,6 +5811,7 @@ export const SEND_DEFINITION_METHODS = [
     {
         name: 'Send',
         isStatic: false,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
         differsFromOfficialDocs: true,
@@ -5769,7 +5828,8 @@ export const SEND_DEFINITION_METHODS = [
         minArgs: 0,
         maxArgs: 0,
         description:
-            'Sends email messages to the lists associated with the previously initialized send definition.',
+            'Sends email messages to the lists associated with the previously initialized send definition. ' +
+            'Deprecated — Send.Definition is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [],
         returnType: 'string',
         returnEnum: ['OK'],
@@ -5789,6 +5849,7 @@ export const SEND_DEFINITION_METHODS = [
     {
         name: 'TestSend',
         isStatic: false,
+        deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
         nonFunctionalAtRuntime: true,
@@ -5807,7 +5868,8 @@ export const SEND_DEFINITION_METHODS = [
         maxArgs: 1,
         description:
             'Sends a test version of the previously initialized send definition. Undocumented and non-functional ' +
-            'in testing.',
+            'in testing. ' +
+            'Deprecated — Send.Definition is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [
             {
                 name: 'emailAddress',
@@ -13399,4 +13461,32 @@ for (const m of EVENT_METHODS) {
         coreNonFunctionalMethodLookup.set(key, new Map());
     }
     coreNonFunctionalMethodLookup.get(key).set(m.name.toLowerCase(), m);
+}
+
+// ── Core Library deprecated-method lookup ─────────────────────────────────────
+// Maps class name (lowercase) → Map<method name (lowercase), entry> for Core methods
+// flagged deprecated === true (still work at runtime, but superseded by newer
+// functionality such as Content Builder assets). Mirrors coreNonFunctionalMethodLookup's
+// shape. Classes with no flagged methods are omitted entirely.
+export const coreDeprecatedMethodLookup = new Map();
+for (const [className, methods] of CORE_METHOD_ARRAYS) {
+    const flagged = methods.filter((m) => m.deprecated === true);
+    if (flagged.length > 0) {
+        coreDeprecatedMethodLookup.set(
+            className.toLowerCase(),
+            new Map(flagged.map((m) => [m.name.toLowerCase(), m])),
+        );
+    }
+}
+// Event objects (EVENT_METHODS) — parity with coreMethodArityLookup. None are
+// flagged today, but keep the grouping consistent so a future flag is picked up.
+for (const m of EVENT_METHODS) {
+    if (m.deprecated !== true) {
+        continue;
+    }
+    const key = m.owner.toLowerCase();
+    if (!coreDeprecatedMethodLookup.has(key)) {
+        coreDeprecatedMethodLookup.set(key, new Map());
+    }
+    coreDeprecatedMethodLookup.get(key).set(m.name.toLowerCase(), m);
 }
