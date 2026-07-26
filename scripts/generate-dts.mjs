@@ -1053,6 +1053,16 @@ const SUB_NS_IFACE_DEFS = [
     ],
 ];
 
+/**
+ * Dotted CORE_CLASS_MAP entries that are actually their OWN top-level class —
+ * they have their own `Init()` returning their OWN instance type directly —
+ * despite the dot in their name looking like a sub-namespace. Contrast with
+ * genuine dotted sub-namespaces (Send.Tracking, List.Subscribers, …) which are
+ * only reached via a property on their PARENT class's instance and are declared
+ * in SUB_NS_IFACE_DEFS instead.
+ */
+const DOTTED_TOP_LEVEL_INSTANCE_CLASSES = new Set(['Send.Definition']);
+
 /** Sub-namespace properties to inject into top-level instance interfaces. */
 const INSTANCE_SUB_NAMESPACES = {
     List: [{ prop: 'Subscribers', type: 'ListSubscribersInstance' }],
@@ -1102,12 +1112,16 @@ for (const [nsName, methods, guideUrl] of CORE_CLASS_MAP) {
         }
         line('}');
     }
-    // Emit a matching instance interface for top-level classes (no dot in name).
-    // Dotted sub-namespace paths (e.g. DataExtension.Fields, List.Subscribers) are
-    // accessed via their parent class instance; their instance interfaces are declared
-    // in the SUB_NS_IFACE_DEFS block above and injected as typed properties below.
+    // Emit a matching instance interface for top-level classes (no dot in name),
+    // PLUS the dotted entries in DOTTED_TOP_LEVEL_INSTANCE_CLASSES below — those
+    // have their OWN `Init()` returning their OWN instance type directly (e.g.
+    // `Send.Definition.Init(key)` → `SendDefinitionInstance`), unlike a genuine
+    // dotted sub-namespace (DataExtension.Fields, List.Subscribers, Send.Tracking, …)
+    // which is only reached via a property on its PARENT class's instance and
+    // whose interface is declared in the SUB_NS_IFACE_DEFS block above instead.
     // DataExtensionInstance is already emitted explicitly above — skip it here.
-    if (!nsName.includes('.') && nsName !== 'DataExtension') {
+    const isDottedTopLevelInstance = DOTTED_TOP_LEVEL_INSTANCE_CLASSES.has(nsName);
+    if ((!nsName.includes('.') || isDottedTopLevelInstance) && nsName !== 'DataExtension') {
         const subProps = INSTANCE_SUB_NAMESPACES[nsName] ?? [];
         if (instanceMethods.length > 0 || subProps.length > 0) {
             if (coreObjectDeprecated.get(nsName)) {
@@ -1115,7 +1129,8 @@ for (const [nsName, methods, guideUrl] of CORE_CLASS_MAP) {
                 line(' * @deprecated');
                 line(' */');
             }
-            line(`interface ${nsName}Instance {`);
+            const ifaceName = isDottedTopLevelInstance ? nsName.replaceAll('.', '') : nsName;
+            line(`interface ${ifaceName}Instance {`);
             for (const m of instanceMethods) {
                 line(emitIfaceMember(m, ' '.repeat(4), guideUrl));
             }
@@ -1524,6 +1539,17 @@ const constructibleStatics = new Map();
         'Boolean',
         'ErrorTypes',
         'GlobalValues',
+        // 'Error' (the base constructor's own ECMASCRIPT_BUILTINS entry) and
+        // 'Number' (its static constants MAX_VALUE/MIN_VALUE/NaN/…) are
+        // self-named owners whose real .d.ts declarations already come from the
+        // constructible-built-ins block below (`interface ErrorConstructor` /
+        // `interface NumberConstructor` + `declare var Error`/`declare var
+        // Number`). Emitting them again here as `declare namespace Error { … }`
+        // / `declare namespace Number { … }` creates a duplicate value
+        // declaration that shadows the constructor and breaks `new Error(...)`
+        // (TS2351 "has no construct signatures").
+        'Error',
+        'Number',
     ]);
     for (const [owner, members] of byOwner) {
         if (HANDLED_OWNERS.has(owner)) {

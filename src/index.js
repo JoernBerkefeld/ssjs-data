@@ -2814,6 +2814,7 @@ export const CORE_LIBRARY_OBJECTS = [
             'Update',
             'Remove',
             'Send',
+            'TestSend',
         ],
         requiresCoreLoad: true,
         isConfirmed: true,

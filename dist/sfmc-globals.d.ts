@@ -3277,6 +3277,81 @@ declare namespace Send.Definition {
      */
     function Retrieve(filter?: object): object[];
 }
+/**
+ * @deprecated
+ */
+interface SendDefinitionInstance {
+    /**
+     * Updates the previously initialized send definition. Deprecated — Send.Definition is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
+     *
+     * @deprecated
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-proven working for scalar properties only. Updating simple values such as `Description` or `TestEmailAddr` returns the string `"OK"` and the change persists (confirmed by re-reading the record). Updating nested/complex properties fails: `Update({ Email: { ID: <id> } })` and `Update({ SendDefinitionList: [...] })` both throw `"Error Updating ESD."`. The equivalent WSProxy `updateItem` calls for those same nested properties return `Status: "OK"` with StatusMessage `"EmailSendDefinition updated"`, so the limitation is specific to this Core method rather than to the operation itself.
+     * @param properties - Properties to update. Only scalar properties work; nested objects such as `Email` or `SendDefinitionList` throw.
+     * @returns Returns "OK" when scalar properties are updated. Throws `"Error Updating ESD."` when the payload contains nested properties such as `Email` or `SendDefinitionList`.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var sendDef = Send.Definition.Init("MY_SEND_DEF_KEY");
+     * var result = sendDef.Update({ Name: "Updated Send Definition Name" });
+     */
+    Update(properties: object): string;
+    /**
+     * Deletes the previously initialized send definition. Deprecated — Send.Definition is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
+     *
+     * @deprecated
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @returns Returns "OK" on success; the record is no longer returned by `Send.Definition.Retrieve` afterwards.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var esd = Send.Definition.Init("myESD");
+     * var status = esd.Remove();
+     */
+    Remove(): string;
+    /**
+     * Sends email messages to the lists associated with the previously initialized send definition. Deprecated — Send.Definition is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
+     *
+     * @deprecated
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-proven to reach the send pipeline: the call returns a multi-line **error string** rather than throwing, so a caller that only wraps it in `try/catch` will treat a rejected send as success. Observed returns include `"An EmailSendDefinition must have an audience to be sent."` when no audience is attached, and `"The following email validation errors need addressed before the email can be sent."` followed by the offending tokens once an audience is present. Always compare the returned string to `"OK"` instead of relying on `try/catch`. A WSProxy `performItem("EmailSendDefinition", …, "start")` control returned the identical validation text, confirming the Core method dispatches the same operation. A fully clean `"OK"` return was not observed here because the test email itself never passed content validation.
+     * @returns Returns "OK" when the send is accepted. Returns a descriptive error string (it does not throw) when the send definition has no audience or the email fails content validation.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var esd = Send.Definition.Init("myESD");
+     * var status = esd.Send();
+     * if (status !== "OK") {
+     *     // Send() returns the error text instead of throwing
+     *     Write("send rejected: " + status);
+     * }
+     */
+    Send(): string;
+    /**
+     * Sends a test version of the previously initialized send definition. Undocumented and non-functional in testing. Deprecated — Send.Definition is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/senddefinition/)
+     *
+     * @deprecated
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Undocumented instance method that exists at runtime on the object returned by `Send.Definition.Init(key)`. No working invocation was found. Calling it with no arguments returns `"An EmailSendDefinition cannot be used in a test send to a list or group without a test email address."` even after a test address was stored on the record — set both through this object's own `Update({ TestEmailAddr: … })` (which returned `"OK"`) and through a WSProxy `updateItem("EmailSendDefinition", …)` control (which returned `Status: "OK"`, StatusMessage `"EmailSendDefinition updated"`). Passing an address directly as an argument bypasses that message but then returns the same email content validation error string as `Send()`. Like `Send()`, it returns error text rather than throwing.
+     * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
+     * @param emailAddress - Address to receive the test send.
+     * @returns Expected to return "OK". In testing it only ever returned error text describing a missing test email address or failed email content validation.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var esd = Send.Definition.Init("myESD");
+     * var status = esd.TestSend("test@example.com");
+     */
+    TestSend(emailAddress?: string): string;
+}
 declare namespace TriggeredSend {
     /**
      * Initializes a TriggeredSend instance bound to the specified external key. Required before invoking any instance method on the returned object. Note: TriggeredSend methods cannot be used in the context of an email message or email preview.
@@ -5704,74 +5779,6 @@ declare function decodeURI(uri: string): string;
  * Write(decodeURIComponent("+")); // " " in SFMC (spec: "+")
  */
 declare function decodeURIComponent(str: string): string;
-
-declare namespace Number {
-    /**
-     * The largest positive finite value representable by a Number. Runtime-verified present in SFMC (typeof number). The value is correct (~1.7976931348623157e308) but note the sibling constants MIN_VALUE and the INFINITY constants are broken in this engine.
-     *
-     * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @example
-     * Write(Number.MAX_VALUE > 0); // true
-     */
-    var MAX_VALUE: number;
-    /**
-     * Standard ES3 exposes the smallest positive representable Number (~5e-324). Runtime-verified present in SFMC (typeof number) but WRONG: the SFMC Jint engine returns the negative of MAX_VALUE (-1.7976931348623157e308) instead, so Number.MIN_VALUE > 0 is false. Use the literal 5e-324 if you need the true smallest positive value.
-     *
-     * @remarks ⚠️ Broken in SFMC: Number.MIN_VALUE returns -MAX_VALUE (a large negative number), not the ES3 smallest-positive value 5e-324. Number.MIN_VALUE > 0 is false. Use the literal 5e-324.
-     * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN/ES3 define Number.MIN_VALUE as the smallest positive value (~5e-324); the SFMC Jint engine instead returns -Number.MAX_VALUE, so it is negative and MIN_VALUE > 0 evaluates to false.
-     * @example
-     * Write(Number.MIN_VALUE > 0); // false (returns -MAX_VALUE in SFMC)
-     */
-    var MIN_VALUE: number;
-    /**
-     * The Not-a-Number value. Runtime-verified present in SFMC (typeof number); NaN !== NaN holds as expected. Note it stringifies as lowercase "nan" (not "NaN") in this engine.
-     *
-     * @remarks ⚠️ Stringifies as lowercase "nan" in SFMC (String(Number.NaN) === "nan"), unlike the standard "NaN". The value still compares as not-equal to itself.
-     * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: the value is present and behaves as NaN for comparisons, but String(Number.NaN) yields lowercase "nan" instead of the standard "NaN".
-     * @example
-     * Write(Number.NaN !== Number.NaN); // true
-     */
-    var NaN: number;
-    /**
-     * Standard ES3 exposes positive infinity. Runtime-verified present in SFMC (typeof number) but BROKEN: it stringifies as "-infinity" and Number.POSITIVE_INFINITY > 0 is false. The global Infinity is equally unreliable in this engine.
-     *
-     * @remarks ⚠️ Broken in SFMC: Number.POSITIVE_INFINITY stringifies as "-infinity" and Number.POSITIVE_INFINITY > 0 is false (sign inverted). Avoid infinity constants; guard with explicit finite bounds instead.
-     * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN defines this as +Infinity; the SFMC Jint engine returns a value that stringifies as "-infinity" and for which > 0 is false (sign inverted). The global Infinity is likewise unreliable.
-     * @example
-     * Write(Number.POSITIVE_INFINITY > 0); // false (sign inverted in SFMC)
-     */
-    var POSITIVE_INFINITY: number;
-    /**
-     * Standard ES3 exposes negative infinity. Runtime-verified present in SFMC (typeof number) but BROKEN: it stringifies as "infinity" and Number.NEGATIVE_INFINITY < 0 is false (sign inverted).
-     *
-     * @remarks ⚠️ Broken in SFMC: Number.NEGATIVE_INFINITY stringifies as "infinity" and Number.NEGATIVE_INFINITY < 0 is false (sign inverted). Avoid infinity constants; guard with explicit finite bounds instead.
-     * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN defines this as -Infinity; the SFMC Jint engine returns a value that stringifies as "infinity" and for which < 0 is false (sign inverted).
-     * @example
-     * Write(Number.NEGATIVE_INFINITY < 0); // false (sign inverted in SFMC)
-     */
-    var NEGATIVE_INFINITY: number;
-}
-
-declare namespace Error {
-    /**
-     * The base Error constructor works in SSJS. new Error(message) creates an error object with a message property that can be thrown and caught in try/catch.
-     *
-     * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies new Error(message) stores the argument in error.message. In the SFMC Jint engine a JS-constructed new Error("msg") does NOT expose the message via .message (reads back undefined); recover it with String(e) or ("" + e). The no-new form Error("msg") and engine-raised errors do carry a readable message. .name works ("Error"); .stack is unavailable.
-     * @param message - A human-readable description of the error
-     * @example
-     * try {
-     *     throw new Error("Something failed");
-     * } catch (e) {
-     *     Write(e.message); // "Something failed"
-     * }
-     */
-    function Error(message?: string): object;
-}
 
 // ── Constructible built-ins (value + constructor declarations) ───────────────
 interface Error {
