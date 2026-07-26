@@ -11169,6 +11169,10 @@ export const CONSTRUCTIBLE_BUILTINS = [
         // primitive boolean correctly. The boxed `new Boolean()` object stringifies to a
         // CAPITALIZED "True"/"False" in the Jint engine (differs from spec) — prefer the
         // call form Boolean(value) or !!value. See ssjs.guide/ecmascript-builtins/boolean.
+        // Boxed instances expose valueOf() (unlike prototype methods for other builtins,
+        // there is no separate `Boolean.prototype` owner group in ECMASCRIPT_BUILTINS, so
+        // the shape is declared here directly).
+        instanceMembers: [{ name: 'valueOf', type: 'boolean', isMethod: true }],
         construct: { params: [{ name: 'value', type: 'any', optional: true }], returns: '$iface' },
         call: { params: [{ name: 'value', type: 'any', optional: true }], returns: 'boolean' },
         prototype: '$iface',

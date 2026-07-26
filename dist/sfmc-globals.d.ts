@@ -1691,6 +1691,45 @@ interface SubscriberListsInstance {
      */
     Retrieve(): object[];
 }
+interface SendTrackingClicksInstance {
+    /**
+     * Returns click tracking data for the previously initialized send.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
+     *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Salesforce docs (and older references) document click tracking as `<SendInstance>.Tracking.ClickRetrieve(filter)`. At runtime that name is `undefined`; the working member is `<SendInstance>.Tracking.Clicks.Retrieve(filter)` (a `Clicks` sub-object with a `Retrieve` method), matching the TriggeredSend.Tracking.Clicks pattern.
+     * @param filter - WSProxy-style filter restricting results.
+     * @returns List of click tracking records matching the filter.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var singleSend = Send.Init(12345);
+     * var results = singleSend.Tracking.Clicks.Retrieve({ Property: "ID", SimpleOperator: "equals", Value: 12345 });
+     */
+    Retrieve(filter: object): object[];
+}
+interface SendTrackingTotalByIntervalInstance {
+    /**
+     * Returns aggregated tracking data for the previously initialized send. Aggregates by `type` over the date range, grouped by `groupBy`.
+     *
+     * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
+     *
+     * @remarks Requires `Platform.Load("Core", "1")` before use.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Salesforce docs (and older references) document interval aggregation as `<SendInstance>.Tracking.TotalByIntervalRetrieve(type, startDate, endDate, groupBy)`. At runtime that name is `undefined`; the working member is `<SendInstance>.Tracking.TotalByInterval.Retrieve(type, startDate, endDate, groupBy)` (a `TotalByInterval` sub-object with a `Retrieve` method), matching the TriggeredSend.Tracking.TotalByInterval pattern.
+     * @param type - Type of data to aggregate.
+     * @param startDate - Start date of the data period (MM-DD-YYYY).
+     * @param endDate - End date of the data period (MM-DD-YYYY).
+     * @param groupBy - Interval used to aggregate data.
+     * @returns List of aggregated tracking records.
+     * @example
+     * Platform.Load("core", "1.1.5");
+     * var singleSend = Send.Init(12345);
+     * var results = singleSend.Tracking.TotalByInterval.Retrieve("Click", "07-01-2010", "07-31-2010", "day");
+     */
+    Retrieve(type: string, startDate: string, endDate: string, groupBy: string): object[];
+}
 interface TriggeredSendTrackingClicksInstance {
     /**
      * Returns click tracking information for the previously initialized triggered send definition.
@@ -1727,6 +1766,10 @@ interface TriggeredSendTrackingTotalByIntervalInstance {
      * var results = tsd.Tracking.TotalByInterval.Retrieve("Click", "07-01-2010", "07-31-2010", "day");
      */
     Retrieve(type: string, startDate: string, endDate: string, groupBy: string): object[];
+}
+interface SendTrackingInstance {
+    readonly Clicks: SendTrackingClicksInstance;
+    readonly TotalByInterval: SendTrackingTotalByIntervalInstance;
 }
 interface TriggeredSendTrackingInstance {
     /**
@@ -6072,6 +6115,9 @@ interface NumberConstructor {
 }
 declare var Number: NumberConstructor;
 
+interface Boolean {
+    valueOf(): boolean;
+}
 interface BooleanConstructor {
     /**
      * new Boolean(value) creates a boxed Boolean object (typeof "object"). The boxed form works but is a footgun and its string form is capitalized in the SFMC engine — prefer Boolean(value) or !!value.

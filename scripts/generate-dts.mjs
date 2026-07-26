@@ -78,6 +78,8 @@ import {
     EMAIL_METHODS,
     SEND_METHODS,
     SEND_TRACKING_METHODS,
+    SEND_TRACKING_CLICKS_METHODS,
+    SEND_TRACKING_TOTAL_BY_INTERVAL_METHODS,
     SEND_DEFINITION_METHODS,
     TRIGGERED_SEND_METHODS,
     TRIGGERED_SEND_TRACKING_METHODS,
@@ -1056,7 +1058,18 @@ const SUB_NS_IFACE_DEFS = [
         g(CORE_LIBRARY_URLS, 'Subscriber.Lists'),
         [],
     ],
-    ['SendTrackingInstance', SEND_TRACKING_METHODS, g(CORE_LIBRARY_URLS, 'Send.Tracking'), []],
+    [
+        'SendTrackingClicksInstance',
+        SEND_TRACKING_CLICKS_METHODS,
+        g(CORE_LIBRARY_URLS, 'Send.Tracking.Clicks'),
+        [],
+    ],
+    [
+        'SendTrackingTotalByIntervalInstance',
+        SEND_TRACKING_TOTAL_BY_INTERVAL_METHODS,
+        g(CORE_LIBRARY_URLS, 'Send.Tracking.TotalByInterval'),
+        [],
+    ],
     [
         'TriggeredSendTrackingClicksInstance',
         TRIGGERED_SEND_TRACKING_CLICKS_METHODS,
@@ -1070,6 +1083,15 @@ const SUB_NS_IFACE_DEFS = [
         [],
     ],
     // Parent-level (reference the leaf interfaces above)
+    [
+        'SendTrackingInstance',
+        SEND_TRACKING_METHODS,
+        g(CORE_LIBRARY_URLS, 'Send.Tracking'),
+        [
+            { prop: 'Clicks', type: 'SendTrackingClicksInstance' },
+            { prop: 'TotalByInterval', type: 'SendTrackingTotalByIntervalInstance' },
+        ],
+    ],
     [
         'TriggeredSendTrackingInstance',
         TRIGGERED_SEND_TRACKING_METHODS,
@@ -1614,7 +1636,11 @@ for (const c of CONSTRUCTIBLE_BUILTINS) {
     if (Array.isArray(c.instanceMembers) && c.instanceMembers.length > 0) {
         line(`interface ${c.interfaceName ?? c.name} {`);
         for (const m of c.instanceMembers) {
-            line(`    ${m.name}: ${toTsType(m.type)};`);
+            if (m.isMethod) {
+                line(`    ${m.name}(): ${toTsType(m.type)};`);
+            } else {
+                line(`    ${m.name}: ${toTsType(m.type)};`);
+            }
         }
         line('}');
     }
