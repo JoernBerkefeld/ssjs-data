@@ -5786,7 +5786,33 @@ interface Error {
     name: string;
 }
 interface ErrorConstructor {
+    /**
+     * The base Error constructor works in SSJS. new Error(message) creates an error object with a message property that can be thrown and caught in try/catch.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies new Error(message) stores the argument in error.message. In the SFMC Jint engine a JS-constructed new Error("msg") does NOT expose the message via .message (reads back undefined); recover it with String(e) or ("" + e). The no-new form Error("msg") and engine-raised errors do carry a readable message. .name works ("Error"); .stack is unavailable.
+     * @param message - A human-readable description of the error
+     * @example
+     * try {
+     *     throw new Error("Something failed");
+     * } catch (e) {
+     *     Write(e.message); // "Something failed"
+     * }
+     */
     new (message?: string): Error;
+    /**
+     * The base Error constructor works in SSJS. new Error(message) creates an error object with a message property that can be thrown and caught in try/catch.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies new Error(message) stores the argument in error.message. In the SFMC Jint engine a JS-constructed new Error("msg") does NOT expose the message via .message (reads back undefined); recover it with String(e) or ("" + e). The no-new form Error("msg") and engine-raised errors do carry a readable message. .name works ("Error"); .stack is unavailable.
+     * @param message - A human-readable description of the error
+     * @example
+     * try {
+     *     throw new Error("Something failed");
+     * } catch (e) {
+     *     Write(e.message); // "Something failed"
+     * }
+     */
     (message?: string): Error;
     readonly prototype: Error;
 }
@@ -5797,7 +5823,25 @@ interface EvalError {
     name: string;
 }
 interface EvalErrorConstructor {
+    /**
+     * The EvalError subtype constructor is present in SSJS. It creates an error object you can throw and catch, though the engine itself rarely raises it.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. typeof EvalError is function and new EvalError(...) constructs an object with a working .name, but like Error the .message from new EvalError("msg") reads back undefined (recover via String(e)).
+     * @param message - A human-readable description of the error
+     * @example
+     * throw new EvalError("bad eval");
+     */
     new (message?: string): EvalError;
+    /**
+     * The EvalError subtype constructor is present in SSJS. It creates an error object you can throw and catch, though the engine itself rarely raises it.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. typeof EvalError is function and new EvalError(...) constructs an object with a working .name, but like Error the .message from new EvalError("msg") reads back undefined (recover via String(e)).
+     * @param message - A human-readable description of the error
+     * @example
+     * throw new EvalError("bad eval");
+     */
     (message?: string): EvalError;
     readonly prototype: EvalError;
 }
@@ -5808,7 +5852,25 @@ interface RangeError {
     name: string;
 }
 interface RangeErrorConstructor {
+    /**
+     * The RangeError subtype constructor is present in SSJS. It signals that a value is outside the allowed range and can be thrown and caught.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. typeof RangeError is function and new RangeError(...) constructs an object with a working .name, but like Error the .message from new RangeError("msg") reads back undefined (recover via String(e)).
+     * @param message - A human-readable description of the error
+     * @example
+     * throw new RangeError("value out of range");
+     */
     new (message?: string): RangeError;
+    /**
+     * The RangeError subtype constructor is present in SSJS. It signals that a value is outside the allowed range and can be thrown and caught.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. typeof RangeError is function and new RangeError(...) constructs an object with a working .name, but like Error the .message from new RangeError("msg") reads back undefined (recover via String(e)).
+     * @param message - A human-readable description of the error
+     * @example
+     * throw new RangeError("value out of range");
+     */
     (message?: string): RangeError;
     readonly prototype: RangeError;
 }
@@ -5819,7 +5881,25 @@ interface ReferenceError {
     name: string;
 }
 interface ReferenceErrorConstructor {
+    /**
+     * The ReferenceError subtype constructor is present in SSJS. It signals a reference to an undeclared variable and can be thrown and caught.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. typeof ReferenceError is function and new ReferenceError(...) constructs an object with a working .name, but like Error the .message from new ReferenceError("msg") reads back undefined (recover via String(e)).
+     * @param message - A human-readable description of the error
+     * @example
+     * throw new ReferenceError("undeclared variable");
+     */
     new (message?: string): ReferenceError;
+    /**
+     * The ReferenceError subtype constructor is present in SSJS. It signals a reference to an undeclared variable and can be thrown and caught.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. typeof ReferenceError is function and new ReferenceError(...) constructs an object with a working .name, but like Error the .message from new ReferenceError("msg") reads back undefined (recover via String(e)).
+     * @param message - A human-readable description of the error
+     * @example
+     * throw new ReferenceError("undeclared variable");
+     */
     (message?: string): ReferenceError;
     readonly prototype: ReferenceError;
 }
@@ -5830,7 +5910,25 @@ interface SyntaxError {
     name: string;
 }
 interface SyntaxErrorConstructor {
+    /**
+     * The SyntaxError subtype constructor is present in SSJS. It signals a syntax problem and can be thrown and caught.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. typeof SyntaxError is function and new SyntaxError(...) constructs an object with a working .name, but like Error the .message from new SyntaxError("msg") reads back undefined (recover via String(e)).
+     * @param message - A human-readable description of the error
+     * @example
+     * throw new SyntaxError("invalid syntax");
+     */
     new (message?: string): SyntaxError;
+    /**
+     * The SyntaxError subtype constructor is present in SSJS. It signals a syntax problem and can be thrown and caught.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. typeof SyntaxError is function and new SyntaxError(...) constructs an object with a working .name, but like Error the .message from new SyntaxError("msg") reads back undefined (recover via String(e)).
+     * @param message - A human-readable description of the error
+     * @example
+     * throw new SyntaxError("invalid syntax");
+     */
     (message?: string): SyntaxError;
     readonly prototype: SyntaxError;
 }
@@ -5841,7 +5939,25 @@ interface TypeError {
     name: string;
 }
 interface TypeErrorConstructor {
+    /**
+     * The TypeError subtype constructor is present in SSJS. It signals that a value is not of the expected type and can be thrown and caught.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. typeof TypeError is function and new TypeError(...) constructs an object with a working .name, but like Error the .message from new TypeError("msg") reads back undefined (recover via String(e)).
+     * @param message - A human-readable description of the error
+     * @example
+     * throw new TypeError("expected a string");
+     */
     new (message?: string): TypeError;
+    /**
+     * The TypeError subtype constructor is present in SSJS. It signals that a value is not of the expected type and can be thrown and caught.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. typeof TypeError is function and new TypeError(...) constructs an object with a working .name, but like Error the .message from new TypeError("msg") reads back undefined (recover via String(e)).
+     * @param message - A human-readable description of the error
+     * @example
+     * throw new TypeError("expected a string");
+     */
     (message?: string): TypeError;
     readonly prototype: TypeError;
 }
@@ -5852,7 +5968,25 @@ interface URIError {
     name: string;
 }
 interface URIErrorConstructor {
+    /**
+     * The URIError subtype constructor is present in SSJS. It signals malformed URI handling and can be thrown and caught.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. typeof URIError is function and new URIError(...) constructs an object with a working .name, but like Error the .message from new URIError("msg") reads back undefined (recover via String(e)).
+     * @param message - A human-readable description of the error
+     * @example
+     * throw new URIError("malformed URI");
+     */
     new (message?: string): URIError;
+    /**
+     * The URIError subtype constructor is present in SSJS. It signals malformed URI handling and can be thrown and caught.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. typeof URIError is function and new URIError(...) constructs an object with a working .name, but like Error the .message from new URIError("msg") reads back undefined (recover via String(e)).
+     * @param message - A human-readable description of the error
+     * @example
+     * throw new URIError("malformed URI");
+     */
     (message?: string): URIError;
     readonly prototype: URIError;
 }
@@ -5876,17 +6010,89 @@ declare var Array: ArrayConstructor;
 interface NumberConstructor {
     new (value?: any): Number;
     (value?: any): number;
+    /**
+     * The largest positive finite value representable by a Number. Runtime-verified present in SFMC (typeof number). The value is correct (~1.7976931348623157e308) but note the sibling constants MIN_VALUE and the INFINITY constants are broken in this engine.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_VALUE) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @example
+     * Write(Number.MAX_VALUE > 0); // true
+     */
     readonly MAX_VALUE: number;
+    /**
+     * Standard ES3 exposes the smallest positive representable Number (~5e-324). Runtime-verified present in SFMC (typeof number) but WRONG: the SFMC Jint engine returns the negative of MAX_VALUE (-1.7976931348623157e308) instead, so Number.MIN_VALUE > 0 is false. Use the literal 5e-324 if you need the true smallest positive value.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MIN_VALUE) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
+     *
+     * @remarks ⚠️ Broken in SFMC: Number.MIN_VALUE returns -MAX_VALUE (a large negative number), not the ES3 smallest-positive value 5e-324. Number.MIN_VALUE > 0 is false. Use the literal 5e-324.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN/ES3 define Number.MIN_VALUE as the smallest positive value (~5e-324); the SFMC Jint engine instead returns -Number.MAX_VALUE, so it is negative and MIN_VALUE > 0 evaluates to false.
+     * @example
+     * Write(Number.MIN_VALUE > 0); // false (returns -MAX_VALUE in SFMC)
+     */
     readonly MIN_VALUE: number;
+    /**
+     * The Not-a-Number value. Runtime-verified present in SFMC (typeof number); NaN !== NaN holds as expected. Note it stringifies as lowercase "nan" (not "NaN") in this engine.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/NaN) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
+     *
+     * @remarks ⚠️ Stringifies as lowercase "nan" in SFMC (String(Number.NaN) === "nan"), unlike the standard "NaN". The value still compares as not-equal to itself.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: the value is present and behaves as NaN for comparisons, but String(Number.NaN) yields lowercase "nan" instead of the standard "NaN".
+     * @example
+     * Write(Number.NaN !== Number.NaN); // true
+     */
     readonly NaN: number;
-    readonly NEGATIVE_INFINITY: number;
+    /**
+     * Standard ES3 exposes positive infinity. Runtime-verified present in SFMC (typeof number) but BROKEN: it stringifies as "-infinity" and Number.POSITIVE_INFINITY > 0 is false. The global Infinity is equally unreliable in this engine.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/POSITIVE_INFINITY) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
+     *
+     * @remarks ⚠️ Broken in SFMC: Number.POSITIVE_INFINITY stringifies as "-infinity" and Number.POSITIVE_INFINITY > 0 is false (sign inverted). Avoid infinity constants; guard with explicit finite bounds instead.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN defines this as +Infinity; the SFMC Jint engine returns a value that stringifies as "-infinity" and for which > 0 is false (sign inverted). The global Infinity is likewise unreliable.
+     * @example
+     * Write(Number.POSITIVE_INFINITY > 0); // false (sign inverted in SFMC)
+     */
     readonly POSITIVE_INFINITY: number;
+    /**
+     * Standard ES3 exposes negative infinity. Runtime-verified present in SFMC (typeof number) but BROKEN: it stringifies as "infinity" and Number.NEGATIVE_INFINITY < 0 is false (sign inverted).
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/NEGATIVE_INFINITY) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
+     *
+     * @remarks ⚠️ Broken in SFMC: Number.NEGATIVE_INFINITY stringifies as "infinity" and Number.NEGATIVE_INFINITY < 0 is false (sign inverted). Avoid infinity constants; guard with explicit finite bounds instead.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN defines this as -Infinity; the SFMC Jint engine returns a value that stringifies as "infinity" and for which < 0 is false (sign inverted).
+     * @example
+     * Write(Number.NEGATIVE_INFINITY < 0); // false (sign inverted in SFMC)
+     */
+    readonly NEGATIVE_INFINITY: number;
     readonly prototype: Number;
 }
 declare var Number: NumberConstructor;
 
 interface BooleanConstructor {
+    /**
+     * new Boolean(value) creates a boxed Boolean object (typeof "object"). The boxed form works but is a footgun and its string form is capitalized in the SFMC engine — prefer Boolean(value) or !!value.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies a boxed Boolean stringifies to lowercase "true"/"false"; the SFMC Jint engine capitalizes the first letter ("True"/"False").
+     * @param value - The value to box as a Boolean object
+     * @example
+     * var b = new Boolean(true);
+     * Write(String(b)); // "True" in SFMC (spec: "true")
+     */
     new (value?: any): Boolean;
+    /**
+     * Called as a plain function, Boolean(value) returns a primitive boolean reflecting the value truthiness. Works correctly in the SFMC engine.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @param value - The value to coerce to a boolean
+     * @example
+     * Write(Boolean(1)); // true
+     * Write(Boolean("")); // false
+     */
     (value?: any): boolean;
     readonly prototype: Boolean;
 }
@@ -5977,7 +6183,31 @@ interface DateConstructor {
 declare var Date: DateConstructor;
 
 interface RegExpConstructor {
+    /**
+     * Creates a regular expression object for pattern matching. Prefer the literal syntax (/pattern/flags) when the pattern is known at write time. Use the constructor when the pattern must be built dynamically at runtime.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @param pattern - Regular expression pattern string
+     * @param flags - Optional flags: g (global), i (case-insensitive), m (multiline)
+     * @example
+     * var fieldName = "email";
+     * var re = new RegExp(fieldName + "=([^&]+)", "i");
+     * var match = queryString.match(re);
+     * if (match) { Write(match[1]); }
+     */
     new (pattern: string, flags?: string): RegExp;
+    /**
+     * Creates a regular expression object for pattern matching. Prefer the literal syntax (/pattern/flags) when the pattern is known at write time. Use the constructor when the pattern must be built dynamically at runtime.
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @param pattern - Regular expression pattern string
+     * @param flags - Optional flags: g (global), i (case-insensitive), m (multiline)
+     * @example
+     * var fieldName = "email";
+     * var re = new RegExp(fieldName + "=([^&]+)", "i");
+     * var match = queryString.match(re);
+     * if (match) { Write(match[1]); }
+     */
     (pattern: string, flags?: string): RegExp;
     readonly prototype: RegExp;
 }

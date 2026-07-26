@@ -612,14 +612,35 @@ function resolveBuiltinRef(ref, ifaceType) {
 }
 
 /**
+ * Find the ECMASCRIPT_BUILTINS entry (if any) that documents constructing or
+ * calling a given constructible built-in by name, matched via its recorded
+ * `syntax` string (e.g. `new Error([message])`, `Boolean(value)`). This is
+ * independent of the entry's `owner` grouping — self-named owners (`Error`),
+ * multi-constructor synthetic owners (`ErrorTypes`), and `Global` (`RegExp`)
+ * all resolve the same way, so their rich description/`@remarks`/`@param`/
+ * `@example` JSDoc survives even though the owner itself is excluded from the
+ * generic `declare namespace` pass (see HANDLED_OWNERS below) to avoid
+ * shadowing the constructor.
+ *
+ * @param {string} name - constructible built-in name (e.g. 'Error', 'Boolean')
+ * @param {'construct'|'call'} kind - which signature form to find a doc for
+ * @returns {object|null} the matching ECMASCRIPT_BUILTINS entry, or null
+ */
+function findBuiltinSignatureDoc(name, kind) {
+    const prefix = kind === 'construct' ? `new ${name}(` : `${name}(`;
+    return ECMASCRIPT_BUILTINS.find((m) => m.syntax && m.syntax.startsWith(prefix)) ?? null;
+}
+
+/**
  * Emit the constructor interface + value declaration for one constructible
  * built-in. Instance members live in the matching `interface <name>` emitted by
  * the ECMASCRIPT_BUILTINS block (or, for Error, in `extraInstanceMembers`).
  *
  * @param {object} c - a CONSTRUCTIBLE_BUILTINS entry
  * @param {object[]} [extraStatics] - additional static members (from ECMASCRIPT_BUILTINS
- * owner groups such as `Date` or `Object`) emitted onto the constructor interface so
- * they do not require a conflicting `declare namespace` that would break `new X()`.
+ * owner groups such as `Date`, `Object`, or `Number`) emitted onto the constructor
+ * interface so they do not require a conflicting `declare namespace` that would break
+ * `new X()`.
  * @returns {void}
  */
 function emitConstructibleBuiltin(c, extraStatics = []) {
@@ -629,23 +650,36 @@ function emitConstructibleBuiltin(c, extraStatics = []) {
     const protoType = resolveBuiltinRef(c.prototype, ifaceType);
     const ctorName = `${c.name}Constructor`;
 
+    // Restore the description/@remarks/@param/@example JSDoc that used to live on
+    // a (now-removed) `declare namespace <name> { function <name>(...) }` — see
+    // findBuiltinSignatureDoc. When only one of construct/call has its own
+    // documented entry (e.g. Error, RegExp — a single `syntax` covers both forms),
+    // reuse it for the other signature so both `new X(...)` and bare `X(...)`
+    // hovers surface the same runtime-verified notes.
+    const constructDoc = findBuiltinSignatureDoc(c.name, 'construct');
+    const callDoc = findBuiltinSignatureDoc(c.name, 'call');
+    const newSignatureDoc = constructDoc ?? callDoc;
+    const callSignatureDoc = callDoc ?? constructDoc;
+
     line(`interface ${ctorName} {`);
     if (c.construct) {
         const p = buildExplicitParamStr(c.construct.params, c.construct.rest);
-        line(`    new (${p}): ${resolveBuiltinRef(c.construct.returns, ifaceType)};`);
+        const comment = newSignatureDoc ? buildJsDocComment(newSignatureDoc, ' '.repeat(4)) : '';
+        line(`${comment}    new (${p}): ${resolveBuiltinRef(c.construct.returns, ifaceType)};`);
     }
     if (c.call) {
         const p = buildExplicitParamStr(c.call.params, c.call.rest);
-        line(`    (${p}): ${resolveBuiltinRef(c.call.returns, ifaceType)};`);
+        const comment = callSignatureDoc ? buildJsDocComment(callSignatureDoc, ' '.repeat(4)) : '';
+        line(`${comment}    (${p}): ${resolveBuiltinRef(c.call.returns, ifaceType)};`);
     }
     const statics = c.statics ?? [];
     for (const s of statics) {
         const p = buildExplicitParamStr(s.params, s.rest);
         line(`    ${s.name}(${p}): ${resolveBuiltinRef(s.returns, ifaceType)};`);
     }
-    // ECMASCRIPT_BUILTINS statics (e.g. Date.UTC, Object.defineProperty) live on the
-    // constructor interface — not a separate namespace — so `new Date()` keeps its
-    // construct signature.
+    // ECMASCRIPT_BUILTINS statics (e.g. Date.UTC, Object.defineProperty, Number.MAX_VALUE)
+    // live on the constructor interface — not a separate namespace — so `new Date()` /
+    // `new Number()` keep their construct signature.
     const cGuidePath = ECMASCRIPT_URLS[c.name];
     const staticGuideUrl = cGuidePath ? GUIDE_BASE_URL + cGuidePath : null;
     for (const m of extraStatics) {
@@ -655,18 +689,12 @@ function emitConstructibleBuiltin(c, extraStatics = []) {
             staticGuideUrl,
             mdnBuiltinUrl(c.name, m.name),
         );
-        const paramStr = buildParamStr(m.params, ecmaBuiltinMinArgs(m));
-        line(`${comment}    ${m.name}(${paramStr}): ${toTsType(m.returnType)};`);
-    }
-    // The Number constructor exposes ES numeric constants in the SFMC engine.
-    // These are referenced by the shipped Math.max/Math.min polyfills, so declare
-    // them to avoid spurious ts2339 "Property does not exist on NumberConstructor".
-    if (c.name === 'Number') {
-        line('    readonly MAX_VALUE: number;');
-        line('    readonly MIN_VALUE: number;');
-        line('    readonly NaN: number;');
-        line('    readonly NEGATIVE_INFINITY: number;');
-        line('    readonly POSITIVE_INFINITY: number;');
+        if (isPropertyEntry(m)) {
+            line(`${comment}    readonly ${m.name}: ${toTsType(m.returnType)};`);
+        } else {
+            const paramStr = buildParamStr(m.params, ecmaBuiltinMinArgs(m));
+            line(`${comment}    ${m.name}(${paramStr}): ${toTsType(m.returnType)};`);
+        }
     }
     line(`    readonly prototype: ${protoType};`);
     line('}');
@@ -1420,6 +1448,14 @@ const constructibleStatics = new Map();
     // constructible-built-ins block below — NOT as a `declare namespace Date`, which
     // would shadow the constructor and break `new Date()`.
     constructibleStatics.set('Date', byOwner.get('Date') ?? []);
+
+    // Number statics (the ES3 numeric constants MAX_VALUE/MIN_VALUE/NaN/…) are
+    // emitted onto NumberConstructor by the constructible-built-ins block below —
+    // NOT as a `declare namespace Number`, which would shadow the constructor and
+    // break `new Number()` (see HANDLED_OWNERS below). Emitting them here (instead
+    // of the previous hardcoded no-JSDoc `readonly MAX_VALUE: number;` lines)
+    // restores their runtime-verified engine-bug documentation.
+    constructibleStatics.set('Number', byOwner.get('Number') ?? []);
 
     // Math → declare namespace Math
     const mathMembers = byOwner.get('Math') ?? [];
