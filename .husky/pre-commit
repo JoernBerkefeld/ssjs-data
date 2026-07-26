@@ -27,6 +27,16 @@ if [ "$NEEDS_REGEN" = true ]; then
   echo "[PRE-COMMIT] ✅ dist files regenerated and staged."
 fi
 
+# ── Typecheck generated .d.ts (primary enforcement) ───────────────────────────
+# Catches generator/data bugs that would ship a non-compiling sfmc-globals.d.ts.
+# Belt-and-braces: release-tracking.mdc still requires the same check before npm version.
+echo "[PRE-COMMIT] Typechecking dist/sfmc-globals.d.ts..."
+npm run typecheck:dts --no-workspaces || {
+  echo "[PRE-COMMIT] ❌ typecheck:dts failed. Fix generator or source data errors above and try again."
+  exit 1
+}
+  echo "[PRE-COMMIT] ✅ typecheck:dts passed."
+
 # ── Lint & test ───────────────────────────────────────────────────────────────
 echo "[PRE-COMMIT] Run lint-staged"
 npx lint-staged || {

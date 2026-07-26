@@ -38,6 +38,7 @@
         "generate:dts": "node scripts/generate-dts.mjs",
         "generate:index": "node scripts/generate-site-index.mjs",
         "generate:all": "node scripts/generate-dts.mjs && node scripts/generate-site-index.mjs",
+        "typecheck:dts": "npm run generate:dts && tsc --noEmit --skipLibCheck dist/sfmc-globals.d.ts",
         "lint": "eslint .",
         "lint:fix": "eslint --fix .",
         "prepare": "husky || true",
@@ -57,7 +58,8 @@
         "globals": "^17.7.0",
         "husky": "^9.1.7",
         "lint-staged": "^17.0.8",
-        "prettier": "^3.9.5"
+        "prettier": "^3.9.5",
+        "typescript": "^7.0.2"
     },
     "lint-staged": {
         "*.{js,mjs,cjs}": [
