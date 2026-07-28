@@ -4998,6 +4998,37 @@ interface Number {
     toLocaleString(locales?: string, options?: object): string;
 }
 
+interface Boolean {
+    /**
+     * Defined on Boolean.prototype, but it does NOT unwrap a boxed Boolean in the SFMC engine — it returns the boxed object itself. Called through .call() on a primitive it returns that primitive.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean/valueOf) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/boolean/)
+     *
+     * @remarks ⚠️ new Boolean(false).valueOf() returns the boxed object (typeof "object"), not the primitive. There is no reliable way to unwrap a boxed Boolean — avoid creating one and use Boolean(value) or !!value instead.
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies valueOf() returns the primitive boolean wrapped by the object. In the SFMC Jint engine box.valueOf() === box is true and typeof box.valueOf() is "object", so it does not unwrap. Boolean.prototype.valueOf.call(true) does return the primitive true.
+     * @example
+     * var b = new Boolean(false);
+     * Write(typeof b.valueOf()); // "object" in SFMC (spec: "boolean")
+     * Write(b.valueOf() === b); // true in SFMC — it does not unwrap
+     * Write(Boolean.prototype.valueOf.call(true)); // true
+     */
+    valueOf(): boolean;
+    /**
+     * Returns the string form of a boolean. In the SFMC engine the first letter is capitalized ("True" / "False") instead of the lowercase form the spec requires.
+     *
+     * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean/toString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/boolean/)
+     *
+     * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified via String(new Boolean(true)): MDN specifies the lowercase "true"/"false"; on a boxed instance the SFMC Jint engine capitalizes the first letter ("True"/"False") — in String(), in "" + x concatenation and in an explicit .toString(). Called through .call() on a PRIMITIVE it returns the correct lowercase form, which is the reliable workaround (a primitive has no .toString() of its own because there is no auto-boxing).
+     * @example
+     * var b = new Boolean(true);
+     * Write(b.toString()); // "True" in SFMC (spec: "true")
+     * Write(Boolean.prototype.toString.call(true)); // "true" (correct, lowercase)
+     */
+    toString(): string;
+}
+
 interface Object {
     /**
      * Returns true if the object has the specified property as its own (not inherited) property. Commonly used to safely iterate for...in loops.
@@ -6122,29 +6153,33 @@ interface NumberConstructor {
 }
 declare var Number: NumberConstructor;
 
-interface Boolean {
-    valueOf(): boolean;
-}
 interface BooleanConstructor {
     /**
-     * new Boolean(value) creates a boxed Boolean object (typeof "object"). The boxed form works but is a footgun and its string form is capitalized in the SFMC engine — prefer Boolean(value) or !!value.
+     * new Boolean(value) creates a boxed Boolean object (typeof "object"). Almost every observable behaviour deviates from the spec in the SFMC engine — prefer Boolean(value) or !!value.
      *
+     * @remarks ⚠️ A boxed Boolean stringifies capitalized ("True"/"False"), a boxed false is falsy in a condition, valueOf() returns the boxed object instead of the primitive, and instanceof Boolean is false. There is no reliable way to unwrap one — do not create it.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies a boxed Boolean stringifies to lowercase "true"/"false"; the SFMC Jint engine capitalizes the first letter ("True"/"False").
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies a boxed Boolean stringifies to lowercase "true"/"false", is always truthy (it is an object), unwraps via valueOf() and satisfies instanceof Boolean. The SFMC Jint engine breaks all four — String(new Boolean(true)) is "True", new Boolean(false) is falsy, valueOf() returns the boxed object itself (box.valueOf() === box), and instanceof Boolean is false although constructor === Boolean is true.
      * @param value - The value to box as a Boolean object
      * @example
-     * var b = new Boolean(true);
-     * Write(String(b)); // "True" in SFMC (spec: "true")
+     * var b = new Boolean(false);
+     * Write(String(b)); // "False" in SFMC (spec: "false")
+     * if (b) { Write("not reached in SFMC"); } // boxed false is falsy here
+     * Write(typeof b.valueOf()); // "object" in SFMC (spec: "boolean")
      */
     new (value?: any): Boolean;
     /**
-     * Called as a plain function, Boolean(value) returns a primitive boolean reflecting the value truthiness. Works correctly in the SFMC engine.
+     * Called as a plain function, Boolean(value) returns a primitive boolean reflecting the value truthiness.
      *
+     * @remarks ⚠️ The SFMC engine treats a number as truthy only when it is greater than zero, so Boolean(-1) is false. Boolean([]) is also false. The returned primitive is not auto-boxed — Boolean(1).toString() throws "Object expected"; use String(value) instead.
      * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies falsy is limited to false/0/-0/""/null/undefined/NaN and that every object is truthy. The SFMC Jint engine coerces numbers with the rule n > 0, so Boolean(-1) and Boolean(-0.5) are false; Boolean([]) is false (ToPrimitive yields ""), while Boolean([0]) is true; and the primitive result is not auto-boxed, so Boolean(1).toString() and Boolean(1).valueOf() throw "Object expected".
      * @param value - The value to coerce to a boolean
      * @example
      * Write(Boolean(1)); // true
      * Write(Boolean("")); // false
+     * Write(Boolean(-1)); // false in SFMC (spec: true)
+     * Write(Boolean([])); // false in SFMC (spec: true)
      */
     (value?: any): boolean;
     readonly prototype: Boolean;

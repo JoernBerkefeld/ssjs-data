@@ -1423,6 +1423,25 @@ const constructibleStatics = new Map();
         line('');
     }
 
+    // Boolean.prototype → interface Boolean
+    const booleanMembers = byOwner.get('Boolean.prototype') ?? [];
+    if (booleanMembers.length > 0) {
+        const booleanGuideUrl = ecmaGuideUrl('Boolean.prototype');
+        line('interface Boolean {');
+        for (const m of booleanMembers) {
+            line(
+                emitIfaceMember(
+                    m,
+                    ' '.repeat(4),
+                    booleanGuideUrl,
+                    mdnBuiltinUrl('Boolean.prototype', m.name),
+                ),
+            );
+        }
+        line('}');
+        line('');
+    }
+
     // Object.prototype → interface Object (instance members)
     const objectMembers = byOwner.get('Object.prototype') ?? [];
     if (objectMembers.length > 0) {
@@ -1587,6 +1606,7 @@ const constructibleStatics = new Map();
         'Math',
         'RegExp',
         'Function.prototype',
+        'Boolean.prototype',
         'Global',
         // Site-index-only synthetic owners. These group ECMASCRIPT_BUILTINS entries
         // solely to drive their ssjs.guide deep-link URLs (Boolean/error-types/
@@ -1636,12 +1656,10 @@ for (const c of CONSTRUCTIBLE_BUILTINS) {
     if (Array.isArray(c.instanceMembers) && c.instanceMembers.length > 0) {
         line(`interface ${c.interfaceName ?? c.name} {`);
         for (const m of c.instanceMembers) {
-            if (m.isMethod) {
-                line(`    ${m.name}(): ${toTsType(m.type)};`);
-            } else {
-                // optional: true → `prop?: T` (e.g. Error.message is often unset after `new Error(...)`)
-                line(`    ${m.name}${m.optional ? '?' : ''}: ${toTsType(m.type)};`);
-            }
+            // Data properties only — instance *methods* are authored as a
+            // `<name>.prototype` owner group in ECMASCRIPT_BUILTINS and emitted above.
+            // optional: true → `prop?: T` (e.g. Error.message is unset after `new Error(...)`)
+            line(`    ${m.name}${m.optional ? '?' : ''}: ${toTsType(m.type)};`);
         }
         line('}');
     }

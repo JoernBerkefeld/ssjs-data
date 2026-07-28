@@ -10766,7 +10766,8 @@ export const ECMASCRIPT_BUILTINS = [
         isConfirmed: true,
         esVersion: 3,
         description:
-            'Called as a plain function, Boolean(value) returns a primitive boolean reflecting the value truthiness. Works correctly in the SFMC engine.',
+            'Called as a plain function, Boolean(value) returns a primitive boolean reflecting the value truthiness.',
+        caveat: 'The SFMC engine treats a number as truthy only when it is greater than zero, so Boolean(-1) is false. Boolean([]) is also false. The returned primitive is not auto-boxed — Boolean(1).toString() throws "Object expected"; use String(value) instead.',
         params: [
             {
                 name: 'value',
@@ -10775,8 +10776,12 @@ export const ECMASCRIPT_BUILTINS = [
             },
         ],
         returnType: 'boolean',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified: MDN specifies falsy is limited to false/0/-0/""/null/undefined/NaN and that every object is truthy. The SFMC Jint engine coerces numbers with the rule n > 0, so Boolean(-1) and Boolean(-0.5) are false; Boolean([]) is false (ToPrimitive yields ""), while Boolean([0]) is true; and the primitive result is not auto-boxed, so Boolean(1).toString() and Boolean(1).valueOf() throw "Object expected".',
         syntax: 'Boolean(value)',
-        example: 'Write(Boolean(1)); // true\nWrite(Boolean("")); // false',
+        example:
+            'Write(Boolean(1)); // true\nWrite(Boolean("")); // false\nWrite(Boolean(-1)); // false in SFMC (spec: true)\nWrite(Boolean([])); // false in SFMC (spec: true)',
     },
     {
         name: 'boolean-boxed',
@@ -10784,7 +10789,8 @@ export const ECMASCRIPT_BUILTINS = [
         isConfirmed: true,
         esVersion: 3,
         description:
-            'new Boolean(value) creates a boxed Boolean object (typeof "object"). The boxed form works but is a footgun and its string form is capitalized in the SFMC engine — prefer Boolean(value) or !!value.',
+            'new Boolean(value) creates a boxed Boolean object (typeof "object"). Almost every observable behaviour deviates from the spec in the SFMC engine — prefer Boolean(value) or !!value.',
+        caveat: 'A boxed Boolean stringifies capitalized ("True"/"False"), a boxed false is falsy in a condition, valueOf() returns the boxed object instead of the primitive, and instanceof Boolean is false. There is no reliable way to unwrap one — do not create it.',
         params: [
             {
                 name: 'value',
@@ -10795,9 +10801,10 @@ export const ECMASCRIPT_BUILTINS = [
         returnType: 'object',
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified: MDN specifies a boxed Boolean stringifies to lowercase "true"/"false"; the SFMC Jint engine capitalizes the first letter ("True"/"False").',
+            'Runtime-verified: MDN specifies a boxed Boolean stringifies to lowercase "true"/"false", is always truthy (it is an object), unwraps via valueOf() and satisfies instanceof Boolean. The SFMC Jint engine breaks all four — String(new Boolean(true)) is "True", new Boolean(false) is falsy, valueOf() returns the boxed object itself (box.valueOf() === box), and instanceof Boolean is false although constructor === Boolean is true.',
         syntax: 'new Boolean(value)',
-        example: 'var b = new Boolean(true);\nWrite(String(b)); // "True" in SFMC (spec: "true")',
+        example:
+            'var b = new Boolean(false);\nWrite(String(b)); // "False" in SFMC (spec: "false")\nif (b) { Write("not reached in SFMC"); } // boxed false is falsy here\nWrite(typeof b.valueOf()); // "object" in SFMC (spec: "boolean")',
     },
     {
         name: 'boolean-prototype',
@@ -10806,11 +10813,50 @@ export const ECMASCRIPT_BUILTINS = [
         esVersion: 3,
         isProperty: true,
         description:
-            'Boolean.prototype exists and exposes the toString and valueOf methods on boxed boolean instances.',
+            'Boolean.prototype exists and exposes toString, valueOf and constructor. Because a primitive boolean is not auto-boxed in this engine, calling these through .call() is the reliable way to invoke them on a primitive — and that returns the correct lowercase spec form.',
         params: [],
         returnType: 'object',
         syntax: 'Boolean.prototype',
-        example: 'Write(typeof Boolean.prototype.toString); // "function"',
+        example:
+            'Write(typeof Boolean.prototype.toString); // "function"\nWrite(Boolean.prototype.toString.call(true)); // "true" (correct, lowercase)\nWrite(Boolean.prototype.toString.call(Boolean(1))); // "true" (works where .toString() throws)',
+    },
+    // ── Boolean.prototype (instance methods) ──────────────────────────────────
+    // Owner 'Boolean.prototype' also maps to /ecmascript-builtins/boolean/; these
+    // are the real instance methods of a boxed Boolean and drive `interface Boolean`
+    // in the generated .d.ts (the entries above with owner 'Boolean' describe the
+    // constructor's own call/new/prototype surface and are site-index-only).
+    {
+        name: 'valueOf',
+        owner: 'Boolean.prototype',
+        isConfirmed: true,
+        esVersion: 3,
+        description:
+            'Defined on Boolean.prototype, but it does NOT unwrap a boxed Boolean in the SFMC engine — it returns the boxed object itself. Called through .call() on a primitive it returns that primitive.',
+        caveat: 'new Boolean(false).valueOf() returns the boxed object (typeof "object"), not the primitive. There is no reliable way to unwrap a boxed Boolean — avoid creating one and use Boolean(value) or !!value instead.',
+        params: [],
+        returnType: 'boolean',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified: MDN specifies valueOf() returns the primitive boolean wrapped by the object. In the SFMC Jint engine box.valueOf() === box is true and typeof box.valueOf() is "object", so it does not unwrap. Boolean.prototype.valueOf.call(true) does return the primitive true.',
+        syntax: 'boxedBoolean.valueOf()',
+        example:
+            'var b = new Boolean(false);\nWrite(typeof b.valueOf()); // "object" in SFMC (spec: "boolean")\nWrite(b.valueOf() === b); // true in SFMC — it does not unwrap\nWrite(Boolean.prototype.valueOf.call(true)); // true',
+    },
+    {
+        name: 'toString',
+        owner: 'Boolean.prototype',
+        isConfirmed: true,
+        esVersion: 3,
+        description:
+            'Returns the string form of a boolean. In the SFMC engine the first letter is capitalized ("True" / "False") instead of the lowercase form the spec requires.',
+        params: [],
+        returnType: 'string',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified via String(new Boolean(true)): MDN specifies the lowercase "true"/"false"; on a boxed instance the SFMC Jint engine capitalizes the first letter ("True"/"False") — in String(), in "" + x concatenation and in an explicit .toString(). Called through .call() on a PRIMITIVE it returns the correct lowercase form, which is the reliable workaround (a primitive has no .toString() of its own because there is no auto-boxing).',
+        syntax: 'boxedBoolean.toString()',
+        example:
+            'var b = new Boolean(true);\nWrite(b.toString()); // "True" in SFMC (spec: "true")\nWrite(Boolean.prototype.toString.call(true)); // "true" (correct, lowercase)',
     },
     // ── Error and its native subtypes ─────────────────────────────────────────
     // Base Error (owner 'Error' → /ecmascript-builtins/error/) and the six present
@@ -10996,14 +11042,14 @@ export const ECMASCRIPT_BUILTINS = [
 // that user code routinely polyfills (e.g. `String.prototype.startsWith = ...`).
 //
 // The generator emits, for each entry:
-//   interface <name> { ...instanceMembers }            (the prototype/instance shape)
+//   interface <name> { ...instanceMembers }            (extra instance data properties)
 //   interface <name>Constructor { new(...): <iface>; (...): <callReturn>; statics; prototype }
 //   declare var <name>: <name>Constructor;
 //
-// Instance methods/properties for these types are still authored in
-// ECMASCRIPT_BUILTINS (owner `String.prototype`, `Date.prototype`, …); this list
-// only declares the *value* + *constructor* surface, plus any extra instance
-// members that are not represented as prototype methods (e.g. Error.message).
+// Instance *methods* for these types are always authored in ECMASCRIPT_BUILTINS
+// (owner `String.prototype`, `Date.prototype`, `Boolean.prototype`, …); this list
+// only declares the *value* + *constructor* surface, plus `instanceMembers` for
+// data properties that have no prototype method equivalent (e.g. Error.message).
 //
 // `interfaceName` lets an entry reuse the generic interface name (e.g. Array uses
 // `Array<T>`); when omitted, the interface is named after `name`.
@@ -11192,14 +11238,13 @@ export const CONSTRUCTIBLE_BUILTINS = [
     {
         name: 'Boolean',
         isConfirmed: true,
-        // Runtime-verified on ssjs/MCDEV_Training_QA: Boolean(value) coercion returns a
-        // primitive boolean correctly. The boxed `new Boolean()` object stringifies to a
-        // CAPITALIZED "True"/"False" in the Jint engine (differs from spec) — prefer the
-        // call form Boolean(value) or !!value. See ssjs.guide/ecmascript-builtins/boolean.
-        // Boxed instances expose valueOf() (unlike prototype methods for other builtins,
-        // there is no separate `Boolean.prototype` owner group in ECMASCRIPT_BUILTINS, so
-        // the shape is declared here directly).
-        instanceMembers: [{ name: 'valueOf', type: 'boolean', isMethod: true }],
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies Boolean(value) is falsy only for false/0/-0/""/null/undefined/NaN, that every object (including []) is truthy, and that a boxed Boolean stringifies to lowercase, is always truthy, unwraps via valueOf() and satisfies instanceof. The SFMC Jint engine deviates on all of these. Boolean(value) treats a number as truthy only when n > 0, so Boolean(-1) is false; Boolean([]) is false (ToPrimitive gives ""); and the returned primitive is not auto-boxed, so Boolean(1).toString() throws "Object expected". new Boolean(value) stringifies CAPITALIZED ("True"/"False"), a boxed false is falsy, valueOf() returns the boxed object itself, and instanceof Boolean is false (constructor === Boolean is true). Use Boolean(value) or !!value, compare numbers explicitly, test arrays with .length, and stringify with String(value) or Boolean.prototype.toString.call(value).',
+        // Runtime-verified on ssjs/MCDEV_Training_QA — see the per-chapter test scripts in
+        // ssjs.guide/_data/test_scripts/ecmascript-builtins--boolean.yml.
+        // Instance members (valueOf/toString) come from ECMASCRIPT_BUILTINS owner
+        // `Boolean.prototype`, like every other constructible builtin.
         construct: { params: [{ name: 'value', type: 'any', optional: true }], returns: '$iface' },
         call: { params: [{ name: 'value', type: 'any', optional: true }], returns: 'boolean' },
         prototype: '$iface',
