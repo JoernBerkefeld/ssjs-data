@@ -10822,10 +10822,10 @@ export const ECMASCRIPT_BUILTINS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'MDN specifies new Error(message) stores the argument in error.message. In the SFMC Jint engine a JS-constructed new Error("msg") does NOT expose the message via .message (reads back undefined); recover it with String(e) or ("" + e). The no-new form Error("msg") and engine-raised errors do carry a readable message. .name works ("Error"); .stack is unavailable.',
+            'MDN stores new Error(message) in .message. In SFMC Jint, new Error("msg") leaves .message undefined (not own); recover with String(e)/(""+e). Call-form Error("msg") and engine-raised errors DO set .message (engine-raised also set .description). .name works; .stack is unavailable; instanceof Error is always false (use .name / constructor === Error / String(e)).',
         esVersion: 3,
         description:
-            'The base Error constructor works in SSJS. new Error(message) creates an error object with a message property that can be thrown and caught in try/catch.',
+            'The base Error constructor works in SSJS. Prefer throw new Error(message) and recover the text with String(e) in catch — reading e.message after new Error(...) is undefined in this engine.',
         params: [
             {
                 name: 'message',
@@ -10837,7 +10837,7 @@ export const ECMASCRIPT_BUILTINS = [
         returnType: 'object',
         syntax: 'new Error([message])',
         example:
-            'try {\n    throw new Error("Something failed");\n} catch (e) {\n    Write(e.message); // "Something failed"\n}',
+            'try {\n    throw new Error("Something failed");\n} catch (e) {\n    Write(String(e)); // "Something failed" (e.message is undefined after new Error)\n}',
     },
     {
         name: 'EvalError',
@@ -10845,7 +10845,7 @@ export const ECMASCRIPT_BUILTINS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'typeof EvalError is function and new EvalError(...) constructs an object with a working .name, but like Error the .message from new EvalError("msg") reads back undefined (recover via String(e)).',
+            'Same shape quirks as Error: new EvalError("msg") leaves .message undefined (recover via String(e)); EvalError("msg") call-form sets .message; instanceof EvalError/Error is false.',
         esVersion: 3,
         description:
             'The EvalError subtype constructor is present in SSJS. It creates an error object you can throw and catch, though the engine itself rarely raises it.',
@@ -10867,7 +10867,7 @@ export const ECMASCRIPT_BUILTINS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'typeof RangeError is function and new RangeError(...) constructs an object with a working .name, but like Error the .message from new RangeError("msg") reads back undefined (recover via String(e)).',
+            'Same shape quirks as Error: new RangeError("msg") leaves .message undefined (recover via String(e)); RangeError("msg") call-form sets .message; instanceof RangeError/Error is false.',
         esVersion: 3,
         description:
             'The RangeError subtype constructor is present in SSJS. It signals that a value is outside the allowed range and can be thrown and caught.',
@@ -10889,7 +10889,7 @@ export const ECMASCRIPT_BUILTINS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'typeof ReferenceError is function and new ReferenceError(...) constructs an object with a working .name, but like Error the .message from new ReferenceError("msg") reads back undefined (recover via String(e)).',
+            'Same shape quirks as Error: new ReferenceError("msg") leaves .message undefined (recover via String(e)); ReferenceError("msg") call-form sets .message; instanceof ReferenceError/Error is false.',
         esVersion: 3,
         description:
             'The ReferenceError subtype constructor is present in SSJS. It signals a reference to an undeclared variable and can be thrown and caught.',
@@ -10911,7 +10911,7 @@ export const ECMASCRIPT_BUILTINS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'typeof SyntaxError is function and new SyntaxError(...) constructs an object with a working .name, but like Error the .message from new SyntaxError("msg") reads back undefined (recover via String(e)).',
+            'Same shape quirks as Error: new SyntaxError("msg") leaves .message undefined (recover via String(e)); SyntaxError("msg") call-form sets .message; instanceof SyntaxError/Error is false.',
         esVersion: 3,
         description:
             'The SyntaxError subtype constructor is present in SSJS. It signals a syntax problem and can be thrown and caught.',
@@ -10933,7 +10933,7 @@ export const ECMASCRIPT_BUILTINS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'typeof TypeError is function and new TypeError(...) constructs an object with a working .name, but like Error the .message from new TypeError("msg") reads back undefined (recover via String(e)).',
+            'Same shape quirks as Error: new TypeError("msg") leaves .message undefined (recover via String(e)); TypeError("msg") call-form sets .message; instanceof TypeError/Error is false. Engine-raised TypeErrors (e.g. bad Platform.Function arity) do set .message and .description.',
         esVersion: 3,
         description:
             'The TypeError subtype constructor is present in SSJS. It signals that a value is not of the expected type and can be thrown and caught.',
@@ -10955,7 +10955,7 @@ export const ECMASCRIPT_BUILTINS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'typeof URIError is function and new URIError(...) constructs an object with a working .name, but like Error the .message from new URIError("msg") reads back undefined (recover via String(e)).',
+            'Same shape quirks as Error: new URIError("msg") leaves .message undefined (recover via String(e)); URIError("msg") call-form sets .message; instanceof URIError/Error is false.',
         esVersion: 3,
         description:
             'The URIError subtype constructor is present in SSJS. It signals malformed URI handling and can be thrown and caught.',
@@ -11013,11 +11013,14 @@ export const CONSTRUCTIBLE_BUILTINS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'new Error("msg") constructs an object but (new Error(...)) instanceof Error is false (instanceof link broken) and .message reads back undefined (recover via String(e)). Detect caught errors by shape/String(e), not instanceof Error.',
-        // No Error.prototype methods are catalogued; declare the instance shape here.
+            'Instance shape includes optional message/name/description. new Error("msg") does NOT populate .message (undefined, not own) — recover via String(e); Error("msg") call-form and engine-raised errors DO set .message (engine-raised also set .description). instanceof Error is always false; for JS-constructed errors constructor === Error works. Detect via .name / String(e), not instanceof.',
+        // Instance shape only — no prototype methods here. message is optional because
+        // `new Error(msg)` leaves it unset while call-form / engine-raised populate it.
+        // description is engine-raised only.
         instanceMembers: [
-            { name: 'message', type: 'string' },
+            { name: 'message', type: 'string', optional: true },
             { name: 'name', type: 'string' },
+            { name: 'description', type: 'string', optional: true },
         ],
         construct: {
             params: [{ name: 'message', type: 'string', optional: true }],
@@ -11027,16 +11030,20 @@ export const CONSTRUCTIBLE_BUILTINS = [
         prototype: '$iface',
     },
     // Legacy Error subtypes (ES3). All are present and constructible in SFMC and share the
-    // base Error behaviour (including the engine quirks: instance .message/.description are
-    // undefined, `instanceof Error` returns false, and Stringify(err) yields ""). The three
-    // newer error types (AggregateError ES2021, SuppressedError ES2026, non-standard
+    // base Error behaviour (including the engine quirks: `new` leaves .message unset, call-form
+    // sets it, `instanceof Error`/`instanceof SubType` returns false, Stringify of `new` is {}).
+    // The three newer error types (AggregateError ES2021, SuppressedError ES2026, non-standard
     // InternalError) are absent — see KNOWN_UNSUPPORTED.
     {
         name: 'EvalError',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Same as Error: new EvalError("msg") leaves .message undefined; EvalError("msg") sets it; instanceof is false.',
         instanceMembers: [
-            { name: 'message', type: 'string' },
+            { name: 'message', type: 'string', optional: true },
             { name: 'name', type: 'string' },
+            { name: 'description', type: 'string', optional: true },
         ],
         construct: {
             params: [{ name: 'message', type: 'string', optional: true }],
@@ -11048,9 +11055,13 @@ export const CONSTRUCTIBLE_BUILTINS = [
     {
         name: 'RangeError',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Same as Error: new RangeError("msg") leaves .message undefined; RangeError("msg") sets it; instanceof is false.',
         instanceMembers: [
-            { name: 'message', type: 'string' },
+            { name: 'message', type: 'string', optional: true },
             { name: 'name', type: 'string' },
+            { name: 'description', type: 'string', optional: true },
         ],
         construct: {
             params: [{ name: 'message', type: 'string', optional: true }],
@@ -11062,9 +11073,13 @@ export const CONSTRUCTIBLE_BUILTINS = [
     {
         name: 'ReferenceError',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Same as Error: new ReferenceError("msg") leaves .message undefined; ReferenceError("msg") sets it; instanceof is false.',
         instanceMembers: [
-            { name: 'message', type: 'string' },
+            { name: 'message', type: 'string', optional: true },
             { name: 'name', type: 'string' },
+            { name: 'description', type: 'string', optional: true },
         ],
         construct: {
             params: [{ name: 'message', type: 'string', optional: true }],
@@ -11076,9 +11091,13 @@ export const CONSTRUCTIBLE_BUILTINS = [
     {
         name: 'SyntaxError',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Same as Error: new SyntaxError("msg") leaves .message undefined; SyntaxError("msg") sets it; instanceof is false.',
         instanceMembers: [
-            { name: 'message', type: 'string' },
+            { name: 'message', type: 'string', optional: true },
             { name: 'name', type: 'string' },
+            { name: 'description', type: 'string', optional: true },
         ],
         construct: {
             params: [{ name: 'message', type: 'string', optional: true }],
@@ -11090,9 +11109,13 @@ export const CONSTRUCTIBLE_BUILTINS = [
     {
         name: 'TypeError',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Same as Error: new TypeError("msg") leaves .message undefined; TypeError("msg") sets it; instanceof is false. Engine-raised TypeErrors set .message and .description.',
         instanceMembers: [
-            { name: 'message', type: 'string' },
+            { name: 'message', type: 'string', optional: true },
             { name: 'name', type: 'string' },
+            { name: 'description', type: 'string', optional: true },
         ],
         construct: {
             params: [{ name: 'message', type: 'string', optional: true }],
@@ -11104,9 +11127,13 @@ export const CONSTRUCTIBLE_BUILTINS = [
     {
         name: 'URIError',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Same as Error: new URIError("msg") leaves .message undefined; URIError("msg") sets it; instanceof is false.',
         instanceMembers: [
-            { name: 'message', type: 'string' },
+            { name: 'message', type: 'string', optional: true },
             { name: 'name', type: 'string' },
+            { name: 'description', type: 'string', optional: true },
         ],
         construct: {
             params: [{ name: 'message', type: 'string', optional: true }],

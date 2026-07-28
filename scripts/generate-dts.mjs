@@ -1639,7 +1639,8 @@ for (const c of CONSTRUCTIBLE_BUILTINS) {
             if (m.isMethod) {
                 line(`    ${m.name}(): ${toTsType(m.type)};`);
             } else {
-                line(`    ${m.name}: ${toTsType(m.type)};`);
+                // optional: true → `prop?: T` (e.g. Error.message is often unset after `new Error(...)`)
+                line(`    ${m.name}${m.optional ? '?' : ''}: ${toTsType(m.type)};`);
             }
         }
         line('}');

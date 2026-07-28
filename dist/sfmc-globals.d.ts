@@ -5825,35 +5825,36 @@ declare function decodeURIComponent(str: string): string;
 
 // ── Constructible built-ins (value + constructor declarations) ───────────────
 interface Error {
-    message: string;
+    message?: string;
     name: string;
+    description?: string;
 }
 interface ErrorConstructor {
     /**
-     * The base Error constructor works in SSJS. new Error(message) creates an error object with a message property that can be thrown and caught in try/catch.
+     * The base Error constructor works in SSJS. Prefer throw new Error(message) and recover the text with String(e) in catch — reading e.message after new Error(...) is undefined in this engine.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies new Error(message) stores the argument in error.message. In the SFMC Jint engine a JS-constructed new Error("msg") does NOT expose the message via .message (reads back undefined); recover it with String(e) or ("" + e). The no-new form Error("msg") and engine-raised errors do carry a readable message. .name works ("Error"); .stack is unavailable.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN stores new Error(message) in .message. In SFMC Jint, new Error("msg") leaves .message undefined (not own); recover with String(e)/(""+e). Call-form Error("msg") and engine-raised errors DO set .message (engine-raised also set .description). .name works; .stack is unavailable; instanceof Error is always false (use .name / constructor === Error / String(e)).
      * @param message - A human-readable description of the error
      * @example
      * try {
      *     throw new Error("Something failed");
      * } catch (e) {
-     *     Write(e.message); // "Something failed"
+     *     Write(String(e)); // "Something failed" (e.message is undefined after new Error)
      * }
      */
     new (message?: string): Error;
     /**
-     * The base Error constructor works in SSJS. new Error(message) creates an error object with a message property that can be thrown and caught in try/catch.
+     * The base Error constructor works in SSJS. Prefer throw new Error(message) and recover the text with String(e) in catch — reading e.message after new Error(...) is undefined in this engine.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies new Error(message) stores the argument in error.message. In the SFMC Jint engine a JS-constructed new Error("msg") does NOT expose the message via .message (reads back undefined); recover it with String(e) or ("" + e). The no-new form Error("msg") and engine-raised errors do carry a readable message. .name works ("Error"); .stack is unavailable.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN stores new Error(message) in .message. In SFMC Jint, new Error("msg") leaves .message undefined (not own); recover with String(e)/(""+e). Call-form Error("msg") and engine-raised errors DO set .message (engine-raised also set .description). .name works; .stack is unavailable; instanceof Error is always false (use .name / constructor === Error / String(e)).
      * @param message - A human-readable description of the error
      * @example
      * try {
      *     throw new Error("Something failed");
      * } catch (e) {
-     *     Write(e.message); // "Something failed"
+     *     Write(String(e)); // "Something failed" (e.message is undefined after new Error)
      * }
      */
     (message?: string): Error;
@@ -5862,15 +5863,16 @@ interface ErrorConstructor {
 declare var Error: ErrorConstructor;
 
 interface EvalError {
-    message: string;
+    message?: string;
     name: string;
+    description?: string;
 }
 interface EvalErrorConstructor {
     /**
      * The EvalError subtype constructor is present in SSJS. It creates an error object you can throw and catch, though the engine itself rarely raises it.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. typeof EvalError is function and new EvalError(...) constructs an object with a working .name, but like Error the .message from new EvalError("msg") reads back undefined (recover via String(e)).
+     * @remarks ⚠️ Differs from the official Salesforce docs. Same shape quirks as Error: new EvalError("msg") leaves .message undefined (recover via String(e)); EvalError("msg") call-form sets .message; instanceof EvalError/Error is false.
      * @param message - A human-readable description of the error
      * @example
      * throw new EvalError("bad eval");
@@ -5880,7 +5882,7 @@ interface EvalErrorConstructor {
      * The EvalError subtype constructor is present in SSJS. It creates an error object you can throw and catch, though the engine itself rarely raises it.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. typeof EvalError is function and new EvalError(...) constructs an object with a working .name, but like Error the .message from new EvalError("msg") reads back undefined (recover via String(e)).
+     * @remarks ⚠️ Differs from the official Salesforce docs. Same shape quirks as Error: new EvalError("msg") leaves .message undefined (recover via String(e)); EvalError("msg") call-form sets .message; instanceof EvalError/Error is false.
      * @param message - A human-readable description of the error
      * @example
      * throw new EvalError("bad eval");
@@ -5891,15 +5893,16 @@ interface EvalErrorConstructor {
 declare var EvalError: EvalErrorConstructor;
 
 interface RangeError {
-    message: string;
+    message?: string;
     name: string;
+    description?: string;
 }
 interface RangeErrorConstructor {
     /**
      * The RangeError subtype constructor is present in SSJS. It signals that a value is outside the allowed range and can be thrown and caught.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. typeof RangeError is function and new RangeError(...) constructs an object with a working .name, but like Error the .message from new RangeError("msg") reads back undefined (recover via String(e)).
+     * @remarks ⚠️ Differs from the official Salesforce docs. Same shape quirks as Error: new RangeError("msg") leaves .message undefined (recover via String(e)); RangeError("msg") call-form sets .message; instanceof RangeError/Error is false.
      * @param message - A human-readable description of the error
      * @example
      * throw new RangeError("value out of range");
@@ -5909,7 +5912,7 @@ interface RangeErrorConstructor {
      * The RangeError subtype constructor is present in SSJS. It signals that a value is outside the allowed range and can be thrown and caught.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. typeof RangeError is function and new RangeError(...) constructs an object with a working .name, but like Error the .message from new RangeError("msg") reads back undefined (recover via String(e)).
+     * @remarks ⚠️ Differs from the official Salesforce docs. Same shape quirks as Error: new RangeError("msg") leaves .message undefined (recover via String(e)); RangeError("msg") call-form sets .message; instanceof RangeError/Error is false.
      * @param message - A human-readable description of the error
      * @example
      * throw new RangeError("value out of range");
@@ -5920,15 +5923,16 @@ interface RangeErrorConstructor {
 declare var RangeError: RangeErrorConstructor;
 
 interface ReferenceError {
-    message: string;
+    message?: string;
     name: string;
+    description?: string;
 }
 interface ReferenceErrorConstructor {
     /**
      * The ReferenceError subtype constructor is present in SSJS. It signals a reference to an undeclared variable and can be thrown and caught.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. typeof ReferenceError is function and new ReferenceError(...) constructs an object with a working .name, but like Error the .message from new ReferenceError("msg") reads back undefined (recover via String(e)).
+     * @remarks ⚠️ Differs from the official Salesforce docs. Same shape quirks as Error: new ReferenceError("msg") leaves .message undefined (recover via String(e)); ReferenceError("msg") call-form sets .message; instanceof ReferenceError/Error is false.
      * @param message - A human-readable description of the error
      * @example
      * throw new ReferenceError("undeclared variable");
@@ -5938,7 +5942,7 @@ interface ReferenceErrorConstructor {
      * The ReferenceError subtype constructor is present in SSJS. It signals a reference to an undeclared variable and can be thrown and caught.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. typeof ReferenceError is function and new ReferenceError(...) constructs an object with a working .name, but like Error the .message from new ReferenceError("msg") reads back undefined (recover via String(e)).
+     * @remarks ⚠️ Differs from the official Salesforce docs. Same shape quirks as Error: new ReferenceError("msg") leaves .message undefined (recover via String(e)); ReferenceError("msg") call-form sets .message; instanceof ReferenceError/Error is false.
      * @param message - A human-readable description of the error
      * @example
      * throw new ReferenceError("undeclared variable");
@@ -5949,15 +5953,16 @@ interface ReferenceErrorConstructor {
 declare var ReferenceError: ReferenceErrorConstructor;
 
 interface SyntaxError {
-    message: string;
+    message?: string;
     name: string;
+    description?: string;
 }
 interface SyntaxErrorConstructor {
     /**
      * The SyntaxError subtype constructor is present in SSJS. It signals a syntax problem and can be thrown and caught.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. typeof SyntaxError is function and new SyntaxError(...) constructs an object with a working .name, but like Error the .message from new SyntaxError("msg") reads back undefined (recover via String(e)).
+     * @remarks ⚠️ Differs from the official Salesforce docs. Same shape quirks as Error: new SyntaxError("msg") leaves .message undefined (recover via String(e)); SyntaxError("msg") call-form sets .message; instanceof SyntaxError/Error is false.
      * @param message - A human-readable description of the error
      * @example
      * throw new SyntaxError("invalid syntax");
@@ -5967,7 +5972,7 @@ interface SyntaxErrorConstructor {
      * The SyntaxError subtype constructor is present in SSJS. It signals a syntax problem and can be thrown and caught.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. typeof SyntaxError is function and new SyntaxError(...) constructs an object with a working .name, but like Error the .message from new SyntaxError("msg") reads back undefined (recover via String(e)).
+     * @remarks ⚠️ Differs from the official Salesforce docs. Same shape quirks as Error: new SyntaxError("msg") leaves .message undefined (recover via String(e)); SyntaxError("msg") call-form sets .message; instanceof SyntaxError/Error is false.
      * @param message - A human-readable description of the error
      * @example
      * throw new SyntaxError("invalid syntax");
@@ -5978,15 +5983,16 @@ interface SyntaxErrorConstructor {
 declare var SyntaxError: SyntaxErrorConstructor;
 
 interface TypeError {
-    message: string;
+    message?: string;
     name: string;
+    description?: string;
 }
 interface TypeErrorConstructor {
     /**
      * The TypeError subtype constructor is present in SSJS. It signals that a value is not of the expected type and can be thrown and caught.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. typeof TypeError is function and new TypeError(...) constructs an object with a working .name, but like Error the .message from new TypeError("msg") reads back undefined (recover via String(e)).
+     * @remarks ⚠️ Differs from the official Salesforce docs. Same shape quirks as Error: new TypeError("msg") leaves .message undefined (recover via String(e)); TypeError("msg") call-form sets .message; instanceof TypeError/Error is false. Engine-raised TypeErrors (e.g. bad Platform.Function arity) do set .message and .description.
      * @param message - A human-readable description of the error
      * @example
      * throw new TypeError("expected a string");
@@ -5996,7 +6002,7 @@ interface TypeErrorConstructor {
      * The TypeError subtype constructor is present in SSJS. It signals that a value is not of the expected type and can be thrown and caught.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. typeof TypeError is function and new TypeError(...) constructs an object with a working .name, but like Error the .message from new TypeError("msg") reads back undefined (recover via String(e)).
+     * @remarks ⚠️ Differs from the official Salesforce docs. Same shape quirks as Error: new TypeError("msg") leaves .message undefined (recover via String(e)); TypeError("msg") call-form sets .message; instanceof TypeError/Error is false. Engine-raised TypeErrors (e.g. bad Platform.Function arity) do set .message and .description.
      * @param message - A human-readable description of the error
      * @example
      * throw new TypeError("expected a string");
@@ -6007,15 +6013,16 @@ interface TypeErrorConstructor {
 declare var TypeError: TypeErrorConstructor;
 
 interface URIError {
-    message: string;
+    message?: string;
     name: string;
+    description?: string;
 }
 interface URIErrorConstructor {
     /**
      * The URIError subtype constructor is present in SSJS. It signals malformed URI handling and can be thrown and caught.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. typeof URIError is function and new URIError(...) constructs an object with a working .name, but like Error the .message from new URIError("msg") reads back undefined (recover via String(e)).
+     * @remarks ⚠️ Differs from the official Salesforce docs. Same shape quirks as Error: new URIError("msg") leaves .message undefined (recover via String(e)); URIError("msg") call-form sets .message; instanceof URIError/Error is false.
      * @param message - A human-readable description of the error
      * @example
      * throw new URIError("malformed URI");
@@ -6025,7 +6032,7 @@ interface URIErrorConstructor {
      * The URIError subtype constructor is present in SSJS. It signals malformed URI handling and can be thrown and caught.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. typeof URIError is function and new URIError(...) constructs an object with a working .name, but like Error the .message from new URIError("msg") reads back undefined (recover via String(e)).
+     * @remarks ⚠️ Differs from the official Salesforce docs. Same shape quirks as Error: new URIError("msg") leaves .message undefined (recover via String(e)); URIError("msg") call-form sets .message; instanceof URIError/Error is false.
      * @param message - A human-readable description of the error
      * @example
      * throw new URIError("malformed URI");
