@@ -2508,7 +2508,7 @@ export const PLATFORM_FUNCTIONS = [
             'JSON string representation of the value. Serializes objects, arrays, nested structures, and scalars; null and undefined both serialize to the literal string "null".',
         syntax: 'Platform.Function.Stringify(value)',
         example:
-            'var json = Platform.Function.Stringify({ name: "Jane", age: 30 });\nPlatform.Function.Write(json);',
+            'var json = Platform.Function.Stringify({ name: "Jane", age: 30 });\nPlatform.Response.Write(json);',
         isConfirmed: true,
     },
     {
@@ -9740,20 +9740,24 @@ export const ECMASCRIPT_BUILTINS = [
         name: 'toPrecision',
         owner: 'Number.prototype',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies toPrecision(precision) formats the number to that many SIGNIFICANT digits, switching to exponential notation when needed ((123.456).toPrecision(5) is "123.46", (123.456).toPrecision(2) is "1.2e+2"). The SFMC Jint engine instead formats to a fixed number of DECIMAL PLACES equal to max(1, precision - 1), identical to toFixed(precision - 1) — (123.456).toPrecision(5) returns "123.4560" and (123.456).toPrecision(2) returns "123.5". It never switches to exponential notation. The argument is also mandatory here (omitting it throws "precision missing", whereas MDN specifies the no-argument form behaves like toString()).',
         esVersion: 3,
         description:
-            'Returns a string representing the number to the specified number of significant digits.',
+            'Returns a string representing the number. In the SFMC Jint engine the precision argument selects DECIMAL PLACES, not significant digits: the result carries max(1, precision - 1) decimals, making it equivalent to toFixed(precision - 1). The argument is mandatory (omitting it throws "precision missing") and must be 1–21 (otherwise "precision must be between 1 and 21" is thrown).',
         params: [
             {
                 name: 'precision',
-                description: 'Number of significant digits (1–21)',
+                description:
+                    'Required in SFMC, 1–21. Selects max(1, precision - 1) decimal places rather than significant digits.',
                 type: 'number',
-                optional: true,
+                optional: false,
             },
         ],
         returnType: 'string',
-        syntax: 'Number.toPrecision([precision])',
-        example: 'Write((123.456).toPrecision(5)); // "123.46"',
+        syntax: 'Number.toPrecision(precision)',
+        example: 'Write((123.456).toPrecision(5)); // "123.4560" in SFMC (spec: "123.46")',
     },
     {
         name: 'toString',
@@ -9795,7 +9799,7 @@ export const ECMASCRIPT_BUILTINS = [
         owner: 'Number.prototype',
         esVersion: 3,
         description:
-            'Returns a string representation of the number. Runtime-verified in SFMC: the locale argument is ignored and no grouping separators are applied — it behaves like a plain toString(). Use Platform.Function.FormatNumber for real locale formatting.',
+            'Returns a string representation of the number. Runtime-verified in SFMC: the locale argument is ignored and no grouping separators are applied — it behaves like a plain toString(). Use AMPscript FormatNumber via Platform.Function.TreatAsContent for real locale formatting.',
         caveat: 'The locale argument is ignored — (123456.789).toLocaleString("de-DE") returns "123456.789", not the grouped "123.456,789".',
         params: [
             { name: 'locales', description: 'Ignored in SFMC', type: 'string', optional: true },
@@ -10102,12 +10106,25 @@ export const ECMASCRIPT_BUILTINS = [
         esVersion: 3,
         description:
             'Decodes a URI previously encoded by encodeURI, converting percent-escapes back to ' +
-            'their characters while leaving reserved characters intact. Runtime-verified to work ' +
-            'in SFMC SSJS.',
+            'their characters. Runtime-verified to work in SFMC SSJS, but the Jint engine also ' +
+            'decodes escapes for the URI-syntax characters the spec preserves, and turns a ' +
+            'literal "+" into a space — making it behave like decodeURIComponent.',
+        caveat:
+            'Escapes for the reserved set ; / ? : @ & = + $ , # are decoded (the spec preserves ' +
+            'them), and a literal "+" becomes a space.',
         params: [{ name: 'uri', description: 'The encoded URI string to decode', type: 'string' }],
         returnType: 'string',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified: MDN specifies decodeURI leaves escapes for ; / ? : @ & = + $ , # ' +
+            'intact and leaves a literal "+" unchanged; the SFMC Jint engine decodes those ' +
+            'escapes and turns "+" into a space, so it is indistinguishable from ' +
+            'decodeURIComponent.',
         syntax: 'decodeURI(uri)',
-        example: 'Write(decodeURI("a%20b/c")); // "a b/c"',
+        example:
+            'Write(decodeURI("a%20b/c")); // "a b/c"\n' +
+            'Write(decodeURI("%2F")); // "/" in SFMC (spec: "%2F")\n' +
+            'Write(decodeURI("a+b")); // "a b" in SFMC (spec: "a+b")',
     },
     {
         name: 'decodeURIComponent',
@@ -10548,7 +10565,7 @@ export const ECMASCRIPT_BUILTINS = [
         owner: 'Date.prototype',
         esVersion: 3,
         description:
-            'Returns the date portion as a string. Runtime-verified in SFMC: the locale argument is ignored and a fixed English-style format is returned (e.g. "Wed, 15 Jan 2020"). Use Platform.Function.FormatDate for locale-aware output.',
+            'Returns the date portion as a string. Runtime-verified in SFMC: the locale argument is ignored and a fixed English-style format is returned (e.g. "Wed, 15 Jan 2020"). Use AMPscript FormatDate via Platform.Function.TreatAsContent for locale-aware output.',
         caveat: 'The locale argument is ignored — output is a fixed English format like "Wed, 15 Jan 2020", not locale-specific.',
         params: [
             { name: 'locales', description: 'Ignored in SFMC', type: 'string', optional: true },
@@ -12388,7 +12405,7 @@ export const KNOWN_UNSUPPORTED = [
         hasPolyfill: false,
         isConfirmed: true,
         suggestion:
-            'Reflect is undefined in SFMC (ES6). Use ES5 equivalents: Reflect.has → k in o, Reflect.get → o[k], Reflect.set → o[k]=v, Reflect.deleteProperty → delete o[k], Reflect.ownKeys → Object.keys(o).',
+            'Reflect is undefined in SFMC (ES6). Use ES5 equivalents: Reflect.has → typeof o[k] != "undefined" (the in operator is broken — do not use it), Reflect.get → o[k], Reflect.set → o[k]=v, Reflect.deleteProperty → delete o[k], Reflect.ownKeys → Object.keys(o).',
     },
     {
         member: 'AggregateError',
@@ -12655,7 +12672,7 @@ export const KNOWN_UNSUPPORTED = [
         hasPolyfill: false,
         isConfirmed: true,
         suggestion:
-            'Intl is undefined in SFMC (ES2015); none of its formatters (NumberFormat, DateTimeFormat, Collator, …) exist. The toLocale* methods also ignore locale arguments. Use Platform.Function.FormatNumber / FormatDate with a culture code for locale-aware formatting.',
+            'Intl is undefined in SFMC (ES2015); none of its formatters (NumberFormat, DateTimeFormat, Collator, …) exist. The toLocale* methods also ignore locale arguments, and the Core Format() function accepts but ignores its culture argument. Use AMPscript FormatNumber / FormatDate with a culture code via Platform.Function.TreatAsContent for locale-aware formatting.',
     },
     {
         member: 'Infinity',

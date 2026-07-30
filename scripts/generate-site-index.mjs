@@ -32,14 +32,11 @@ import {
     globalFunctionCategory,
     PLATFORM_OBJECT_URLS,
     CORE_LIBRARY_URLS,
-    ECMASCRIPT_URLS,
-    ecmascriptAnchor,
+    ecmascriptMemberLink,
     GUIDE_URLS,
     httpRequestMethodUrl,
     PLATFORM_FUNCTION_GLOBAL_ALIAS,
     GLOBAL_FUNCTION_PAGES,
-    MDN_GLOBAL_FUNCTIONS,
-    mdnBuiltinUrl,
     methodAnchor,
     eventAnchor,
 } from '../src/urls.js';
@@ -468,15 +465,15 @@ for (const obj of CORE_LIBRARY_OBJECTS) {
 // /ecmascript-builtins/array-methods/#splice — matching the per-method headings
 // rendered on those pages and the deep-link pattern used for proprietary methods.
 for (const fn of ECMASCRIPT_BUILTINS) {
-    const url = ECMASCRIPT_URLS[fn.owner];
-    if (!url) {
+    const link = ecmascriptMemberLink(fn.owner, fn.name);
+    if (!link) {
         continue;
     }
     const ownerShort = fn.owner.replace('.prototype', '');
     index.push(
         record(
             `${ownerShort}.${fn.name}`,
-            `${url}#${ecmascriptAnchor(fn.name)}`,
+            link,
             'ECMAScript Builtins',
             fn.isProperty ? 'property' : 'method',
             fn,
@@ -489,75 +486,32 @@ for (const fn of ECMASCRIPT_BUILTINS) {
 // ecmascript-builtins owner page (and on /engine-limitations/polyfills/), so
 // they must be discoverable via search and linkable from the VS Code extension.
 for (const fn of POLYFILLABLE_METHODS) {
-    const url = ECMASCRIPT_URLS[fn.owner];
-    if (!url) {
+    const link = ecmascriptMemberLink(fn.owner, fn.method);
+    if (!link) {
         continue;
     }
     const ownerShort = fn.owner.replace('.prototype', '');
-    index.push(
-        record(
-            `${ownerShort}.${fn.method}`,
-            `${url}#${ecmascriptAnchor(fn.method)}`,
-            'ECMAScript Builtins',
-            'method',
-            fn,
-        ),
-    );
+    index.push(record(`${ownerShort}.${fn.method}`, link, 'ECMAScript Builtins', 'method', fn));
 }
 
 // ── ECMAScript members confirmed unsupported (no native behavior, no polyfill) ─
 // Surfaced so searchers can FIND that a method is missing and see the suggested
 // workaround. Documented as a ❌ Missing H3 on the owner page; deep-linked to it.
 for (const fn of KNOWN_UNSUPPORTED) {
-    const url = ECMASCRIPT_URLS[fn.owner];
-    if (!url) {
+    const link = ecmascriptMemberLink(fn.owner, fn.member);
+    if (!link) {
         continue;
     }
     const ownerShort = fn.owner.replace('.prototype', '');
     index.push(
         record(
             `${ownerShort}.${fn.member}`,
-            `${url}#${ecmascriptAnchor(fn.member)}`,
+            link,
             'ECMAScript Builtins',
             fn.isProperty ? 'property' : 'method',
             { description: fn.suggestion },
         ),
     );
-}
-
-// ── ECMAScript global functions without a dedicated ssjs.guide page ─────────
-// Top-level global functions (eval, parseInt, parseFloat, isNaN, isFinite) live
-// in ECMASCRIPT_BUILTINS with owner 'Global'. They are documented by MDN rather
-// than by an ssjs.guide page, so their canonical link is the MDN deep link from
-// mdnBuiltinUrl(). Derived dynamically: any owner==='Global' builtin that MDN
-// documents as a global function (MDN_GLOBAL_FUNCTIONS) and that does not already
-// have a dedicated ssjs.guide page (GLOBAL_FUNCTION_PAGES) or a section-page entry
-// (e.g. the RegExp constructor, handled by the ECMASCRIPT_BUILTINS loop above).
-// Their MDN url is external, so they are marked `external: true` and skipped by
-// the ssjs.guide URL validation below.
-for (const fn of ECMASCRIPT_BUILTINS) {
-    if (fn.owner !== 'Global') {
-        continue;
-    }
-    const lower = fn.name.toLowerCase();
-    // Skip globals that MDN treats as constructors (RegExp, …) — those already
-    // resolve to an /ecmascript-builtins/ page via the ECMASCRIPT_BUILTINS loop.
-    if (!MDN_GLOBAL_FUNCTIONS.has(fn.name)) {
-        continue;
-    }
-    // Skip anything that already has a dedicated ssjs.guide page.
-    if (GLOBAL_FUNCTION_PAGES.has(lower)) {
-        continue;
-    }
-    const rec = record(
-        fn.name,
-        mdnBuiltinUrl(fn.owner, fn.name),
-        'ECMAScript Builtins',
-        'function',
-        fn,
-    );
-    rec.external = true;
-    index.push(rec);
 }
 
 // ── SSJS bare-name globals ─────────────────────────────────────────────────
@@ -649,16 +603,77 @@ if (requestGlobal) {
 // ── Validate URLs against ssjs.guide ──────────────────────────────────────
 
 /**
- * Walk the ssjs.guide folder and collect all known page URLs (canonical only).
+ * Reproduce kramdown's automatic heading-ID algorithm: drop leading non-letters,
+ * strip every character outside `[a-zA-Z0-9 -]`, turn spaces into hyphens and
+ * lowercase the result.
+ *
+ * @param {string} headingText - Raw heading text (without the leading `#`s)
+ * @returns {string} The auto-generated anchor slug (may be empty)
+ */
+function kramdownAutoId(headingText) {
+    return headingText
+        .replace(/^[^a-zA-Z]+/, '')
+        .replaceAll(/[^a-zA-Z0-9 -]/g, '')
+        .replaceAll(' ', '-')
+        .toLowerCase();
+}
+
+/**
+ * Collect every anchor a Markdown page renders: explicit `{#id}` heading
+ * attributes, kramdown's automatic heading IDs, and raw HTML `id="…"` values.
+ * Fenced code blocks are skipped so `# comment` lines inside samples are ignored.
+ *
+ * @param {string} content - Full Markdown file content (including frontmatter)
+ * @returns {Set.<string>} Anchor slugs available on the rendered page
+ */
+function collectPageAnchors(content) {
+    const anchors = new Set();
+    let isInFence = false;
+    for (const line of content.split(/\r?\n/)) {
+        if (/^\s*(```|~~~)/.test(line)) {
+            isInFence = !isInFence;
+            continue;
+        }
+
+        if (isInFence) {
+            continue;
+        }
+
+        const headingMatch = line.match(/^#{1,6}\s+(.*)$/);
+        if (headingMatch) {
+            const text = headingMatch[1].trim();
+            const explicit = text.match(/\{#([^}]+)\}\s*$/);
+            if (explicit) {
+                anchors.add(explicit[1].trim());
+            } else {
+                const auto = kramdownAutoId(text);
+                if (auto) {
+                    anchors.add(auto);
+                }
+            }
+        }
+
+        for (const idMatch of line.matchAll(/\bid="([^"]+)"/g)) {
+            anchors.add(idMatch[1]);
+        }
+    }
+
+    return anchors;
+}
+
+/**
+ * Walk the ssjs.guide folder and collect all known page URLs (canonical only)
+ * together with the anchors each page renders.
  * Explicit `permalink:` frontmatter values take precedence; otherwise the URL
  * is derived from the file path using Jekyll's pretty-URL rule.
  * Skips Jekyll special directories (`_*`), `assets`, `node_modules`, and `.`-prefixed dirs.
  *
  * @param {string} guideRoot - Absolute path to the ssjs.guide directory
- * @returns {Set.<string>} All known site-relative guide page URLs
+ * @returns {Map.<string, Set.<string>>} Site-relative guide page URL → anchors on that page
  */
-function collectGuideUrls(guideRoot) {
-    const urls = new Set();
+function collectGuidePages(guideRoot) {
+    /** @type {Map<string, Set.<string>>} */
+    const pages = new Map();
 
     /**
      * @param {string} dir - directory to walk
@@ -679,12 +694,13 @@ function collectGuideUrls(guideRoot) {
             } else if (entry.name.endsWith('.md')) {
                 const content = readFileSync(fullPath, 'utf8');
                 const permalinkMatch = content.match(/^permalink:\s*(\S+)\s*$/m);
+                let urlPath;
                 if (permalinkMatch) {
-                    urls.add(permalinkMatch[1].trim());
+                    urlPath = permalinkMatch[1].trim();
                 } else {
                     // Derive URL from file path — Jekyll's pretty-URLs rule
                     const relative = fullPath.slice(guideRoot.length).replaceAll('\\', '/');
-                    let urlPath = relative.replace(/\.md$/, '');
+                    urlPath = relative.replace(/\.md$/, '');
                     if (urlPath === '/index') {
                         urlPath = '/';
                     } else if (urlPath.endsWith('/index')) {
@@ -692,49 +708,77 @@ function collectGuideUrls(guideRoot) {
                     } else {
                         urlPath += '/';
                     }
-                    urls.add(urlPath);
                 }
+
+                const anchors = pages.get(urlPath) ?? new Set();
+                for (const anchor of collectPageAnchors(content)) {
+                    anchors.add(anchor);
+                }
+
+                pages.set(urlPath, anchors);
             }
         }
     }
 
     walk(guideRoot);
-    return urls;
+    return pages;
 }
 
 if (existsSync(GUIDE)) {
-    const knownUrls = collectGuideUrls(GUIDE);
-    // Validate the page portion only — deep-link entries carry a `#anchor`
-    // fragment that is not part of the page URL set. Entries flagged `external`
-    // point at off-site docs (e.g. MDN) and have no ssjs.guide page to validate.
-    const missingEntries = index.filter(
-        (entry) => !entry.external && !knownUrls.has(entry.url.split('#', 1)[0]),
+    const guidePages = collectGuidePages(GUIDE);
+    // Entries flagged `external` point at off-site docs (e.g. MDN) and have no
+    // ssjs.guide page to validate.
+    const localEntries = index.filter((entry) => !entry.external);
+
+    const missingPages = localEntries.filter(
+        (entry) => !guidePages.has(entry.url.split('#', 1)[0]),
     );
-    if (missingEntries.length > 0) {
-        const byUrl = new Map();
-        for (const entry of missingEntries) {
-            if (!byUrl.has(entry.url)) {
-                byUrl.set(entry.url, []);
+    const missingAnchors = localEntries.filter((entry) => {
+        const [page, anchor] = entry.url.split('#');
+        const anchors = guidePages.get(page);
+        return anchor && anchors && !anchors.has(anchor);
+    });
+
+    if (missingPages.length > 0 || missingAnchors.length > 0) {
+        /**
+         * @param {string} heading - error section heading
+         * @param {{url: string, name: string}[]} entries - failing index entries
+         */
+        const report = (heading, entries) => {
+            if (entries.length === 0) {
+                return;
             }
 
-            byUrl.get(entry.url).push(entry.name);
-        }
+            const byUrl = new Map();
+            for (const entry of entries) {
+                if (!byUrl.has(entry.url)) {
+                    byUrl.set(entry.url, []);
+                }
+
+                byUrl.get(entry.url).push(entry.name);
+            }
+
+            // eslint-disable-next-line no-console
+            console.error('');
+            // eslint-disable-next-line no-console
+            console.error(heading);
+            for (const [url, names] of byUrl) {
+                // eslint-disable-next-line no-console
+                console.error(`  ${url}`);
+                // eslint-disable-next-line no-console
+                console.error(`    → referenced by: ${names.join(', ')}`);
+            }
+        };
+
+        report('ERROR: Generated URLs not found in ssjs.guide:', missingPages);
+        report('ERROR: Generated anchors not found on their ssjs.guide page:', missingAnchors);
 
         // eslint-disable-next-line no-console
         console.error('');
         // eslint-disable-next-line no-console
-        console.error('ERROR: Generated URLs not found in ssjs.guide:');
-        for (const [url, names] of byUrl) {
-            // eslint-disable-next-line no-console
-            console.error(`  ${url}`);
-            // eslint-disable-next-line no-console
-            console.error(`    → referenced by: ${names.join(', ')}`);
-        }
-
+        console.error('Fix: update ssjs-data/src/urls.js to match ssjs.guide page structure');
         // eslint-disable-next-line no-console
-        console.error('');
-        // eslint-disable-next-line no-console
-        console.error('Fix: update ssjs-data/src/urls.js to match ssjs.guide page structure,');
+        console.error('     (or add the missing heading anchor to the guide page),');
         // eslint-disable-next-line no-console
         console.error('     then run: npm run generate:all');
         // eslint-disable-next-line unicorn/no-process-exit
@@ -742,7 +786,7 @@ if (existsSync(GUIDE)) {
     }
 
     // eslint-disable-next-line no-console
-    console.log(`Validated ${index.length} URLs against ssjs.guide (all present).`);
+    console.log(`Validated ${index.length} URLs and anchors against ssjs.guide (all present).`);
 }
 
 // ── Write output ───────────────────────────────────────────────────────────

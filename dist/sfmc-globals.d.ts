@@ -797,7 +797,7 @@ declare namespace Platform {
          * @returns JSON string representation of the value. Serializes objects, arrays, nested structures, and scalars; null and undefined both serialize to the literal string "null".
          * @example
          * var json = Platform.Function.Stringify({ name: "Jane", age: 30 });
-         * Platform.Function.Write(json);
+         * Platform.Response.Write(json);
          */
         function Stringify(value: any): string;
         /**
@@ -4948,16 +4948,17 @@ interface Number {
      */
     toExponential(fractionDigits?: number): string;
     /**
-     * Returns a string representing the number to the specified number of significant digits.
+     * Returns a string representing the number. In the SFMC Jint engine the precision argument selects DECIMAL PLACES, not significant digits: the result carries max(1, precision - 1) decimals, making it equivalent to toFixed(precision - 1). The argument is mandatory (omitting it throws "precision missing") and must be 1–21 (otherwise "precision must be between 1 and 21" is thrown).
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toPrecision) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @param precision - Number of significant digits (1–21)
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies toPrecision(precision) formats the number to that many SIGNIFICANT digits, switching to exponential notation when needed ((123.456).toPrecision(5) is "123.46", (123.456).toPrecision(2) is "1.2e+2"). The SFMC Jint engine instead formats to a fixed number of DECIMAL PLACES equal to max(1, precision - 1), identical to toFixed(precision - 1) — (123.456).toPrecision(5) returns "123.4560" and (123.456).toPrecision(2) returns "123.5". It never switches to exponential notation. The argument is also mandatory here (omitting it throws "precision missing", whereas MDN specifies the no-argument form behaves like toString()).
+     * @param precision - Required in SFMC, 1–21. Selects max(1, precision - 1) decimal places rather than significant digits.
      * @example
-     * Write((123.456).toPrecision(5)); // "123.46"
+     * Write((123.456).toPrecision(5)); // "123.4560" in SFMC (spec: "123.46")
      */
-    toPrecision(precision?: number): string;
+    toPrecision(precision: number): string;
     /**
      * Returns a string representing the number. In the SFMC Jint engine the optional radix only supports 2, 8, 10, and 16 — any other base throws "Invalid Base." (standard JS supports 2–36). Fractional values are truncated to their integer part before non-decimal conversion.
      *
@@ -4983,7 +4984,7 @@ interface Number {
      */
     valueOf(): number;
     /**
-     * Returns a string representation of the number. Runtime-verified in SFMC: the locale argument is ignored and no grouping separators are applied — it behaves like a plain toString(). Use Platform.Function.FormatNumber for real locale formatting.
+     * Returns a string representation of the number. Runtime-verified in SFMC: the locale argument is ignored and no grouping separators are applied — it behaves like a plain toString(). Use AMPscript FormatNumber via Platform.Function.TreatAsContent for real locale formatting.
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toLocaleString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
      *
@@ -5326,7 +5327,7 @@ interface Date {
      */
     toTimeString(): string;
     /**
-     * Returns the date portion as a string. Runtime-verified in SFMC: the locale argument is ignored and a fixed English-style format is returned (e.g. "Wed, 15 Jan 2020"). Use Platform.Function.FormatDate for locale-aware output.
+     * Returns the date portion as a string. Runtime-verified in SFMC: the locale argument is ignored and a fixed English-style format is returned (e.g. "Wed, 15 Jan 2020"). Use AMPscript FormatDate via Platform.Function.TreatAsContent for locale-aware output.
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
@@ -5829,14 +5830,18 @@ declare function encodeURI(uri: string): string;
  */
 declare function encodeURIComponent(str: string): string;
 /**
- * Decodes a URI previously encoded by encodeURI, converting percent-escapes back to their characters while leaving reserved characters intact. Runtime-verified to work in SFMC SSJS.
+ * Decodes a URI previously encoded by encodeURI, converting percent-escapes back to their characters. Runtime-verified to work in SFMC SSJS, but the Jint engine also decodes escapes for the URI-syntax characters the spec preserves, and turns a literal "+" into a space — making it behave like decodeURIComponent.
  *
  * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/decodeURI)
  *
+ * @remarks ⚠️ Escapes for the reserved set ; / ? : @ & = + $ , # are decoded (the spec preserves them), and a literal "+" becomes a space.
  * @remarks ✅ Runtime-verified in a live SFMC test.
+ * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies decodeURI leaves escapes for ; / ? : @ & = + $ , # intact and leaves a literal "+" unchanged; the SFMC Jint engine decodes those escapes and turns "+" into a space, so it is indistinguishable from decodeURIComponent.
  * @param uri - The encoded URI string to decode
  * @example
  * Write(decodeURI("a%20b/c")); // "a b/c"
+ * Write(decodeURI("%2F")); // "/" in SFMC (spec: "%2F")
+ * Write(decodeURI("a+b")); // "a b" in SFMC (spec: "a+b")
  */
 declare function decodeURI(uri: string): string;
 /**

@@ -340,18 +340,147 @@ export const ECMASCRIPT_URLS = {
 };
 
 /**
+ * Anchors that deviate from the default `member.toLowerCase()` rule.
+ * Key: `<owner>.<member>` — value: the anchor slug on the owner page.
+ *
+ * Used where a guide page groups several members under one heading because the
+ * engine's behaviour only makes sense when documented together. `boolean.md`
+ * groups `valueOf` and `toString` under the shared `Boolean.prototype` section
+ * rather than giving each its own heading.
+ *
+ * @type {Record<string, string>}
+ */
+export const ECMASCRIPT_ANCHOR_OVERRIDES = {
+    'Boolean.prototype.valueOf': 'boolean-prototype',
+    'Boolean.prototype.toString': 'boolean-prototype',
+    // number-methods.md documents the classic ES3 constants and the missing ES6
+    // statics under two shared headings instead of one heading per constant.
+    'Number.MAX_VALUE': 'constants-es3',
+    'Number.MIN_VALUE': 'constants-es3',
+    'Number.NaN': 'constants-es3',
+    'Number.POSITIVE_INFINITY': 'constants-es3',
+    'Number.NEGATIVE_INFINITY': 'constants-es3',
+    'Number.MAX_SAFE_INTEGER': 'constants-es6',
+    'Number.MIN_SAFE_INTEGER': 'constants-es6',
+    'Number.EPSILON': 'constants-es6',
+    // The global parseFloat/parseInt are documented under their "(global)"
+    // headings; the missing Number.* statics have their own sections.
+    'Global.parseFloat': 'parsefloat-global',
+    'Global.parseInt': 'parseint-global',
+    // object-methods.md groups the extensibility quartet under one heading and
+    // documents isFrozen together with freeze.
+    'Object.seal': 'extensibility',
+    'Object.isSealed': 'extensibility',
+    'Object.preventExtensions': 'extensibility',
+    'Object.isExtensible': 'extensibility',
+    'Object.isFrozen': 'freeze',
+};
+
+/**
+ * Members whose documentation lives on a different ecmascript-builtins page than
+ * `ECMASCRIPT_URLS[owner]` would suggest.
+ *
+ * Most `owner: 'Global'` entries are constructors (Map, Promise, Int8Array, …)
+ * that are documented on their topic page rather than on global-functions.
+ * Key: `<owner>.<member>` — value: the full site-relative link including anchor.
+ *
+ * @type {Record<string, string>}
+ */
+export const ECMASCRIPT_MEMBER_URLS = {
+    'Global.RegExp': '/ecmascript-builtins/regular-expressions/',
+    'Global.Symbol': '/ecmascript-builtins/symbol/',
+    'Global.BigInt': '/ecmascript-builtins/bigint/',
+    'Error.Error': '/ecmascript-builtins/error/',
+    // Keyed collections
+    'Global.Map': '/ecmascript-builtins/keyed-collections/#map',
+    'Global.Set': '/ecmascript-builtins/keyed-collections/#set',
+    'Global.WeakMap': '/ecmascript-builtins/keyed-collections/#weakmap',
+    'Global.WeakSet': '/ecmascript-builtins/keyed-collections/#weakset',
+    // Promises & iteration
+    'Global.Promise': '/ecmascript-builtins/promises-iteration/#promise',
+    'Global.Iterator': '/ecmascript-builtins/promises-iteration/#iterator',
+    'Global.Generator': '/ecmascript-builtins/promises-iteration/#generator',
+    'Global.GeneratorFunction': '/ecmascript-builtins/promises-iteration/#generatorfunction',
+    'Global.AsyncFunction': '/ecmascript-builtins/promises-iteration/#async-variants',
+    'Global.AsyncGenerator': '/ecmascript-builtins/promises-iteration/#async-variants',
+    'Global.AsyncGeneratorFunction': '/ecmascript-builtins/promises-iteration/#async-variants',
+    'Global.AsyncIterator': '/ecmascript-builtins/promises-iteration/#async-variants',
+    // Reflection
+    'Global.Proxy': '/ecmascript-builtins/reflection/#proxy',
+    'Global.Reflect': '/ecmascript-builtins/reflection/#reflect',
+    // Error subtypes that are absent from the engine
+    'Global.AggregateError': '/ecmascript-builtins/error-types/#aggregateerror',
+    'Global.SuppressedError': '/ecmascript-builtins/error-types/#suppressederror',
+    'Global.InternalError': '/ecmascript-builtins/error-types/#internalerror',
+    // Typed arrays and binary buffers
+    'Global.ArrayBuffer': '/ecmascript-builtins/typed-arrays/#arraybuffer',
+    'Global.SharedArrayBuffer': '/ecmascript-builtins/typed-arrays/#sharedarraybuffer',
+    'Global.DataView': '/ecmascript-builtins/typed-arrays/#dataview',
+    'Global.Atomics': '/ecmascript-builtins/typed-arrays/#atomics',
+    'Global.Int8Array': '/ecmascript-builtins/typed-arrays/#typedarray-views',
+    'Global.Uint8Array': '/ecmascript-builtins/typed-arrays/#typedarray-views',
+    'Global.Uint8ClampedArray': '/ecmascript-builtins/typed-arrays/#typedarray-views',
+    'Global.Int16Array': '/ecmascript-builtins/typed-arrays/#typedarray-views',
+    'Global.Uint16Array': '/ecmascript-builtins/typed-arrays/#typedarray-views',
+    'Global.Int32Array': '/ecmascript-builtins/typed-arrays/#typedarray-views',
+    'Global.Uint32Array': '/ecmascript-builtins/typed-arrays/#typedarray-views',
+    'Global.Float16Array': '/ecmascript-builtins/typed-arrays/#typedarray-views',
+    'Global.Float32Array': '/ecmascript-builtins/typed-arrays/#typedarray-views',
+    'Global.Float64Array': '/ecmascript-builtins/typed-arrays/#typedarray-views',
+    'Global.BigInt64Array': '/ecmascript-builtins/typed-arrays/#typedarray-views',
+    'Global.BigUint64Array': '/ecmascript-builtins/typed-arrays/#typedarray-views',
+    // Memory management
+    'Global.WeakRef': '/ecmascript-builtins/memory-management/#weakref',
+    'Global.FinalizationRegistry': '/ecmascript-builtins/memory-management/#finalizationregistry',
+    // Internationalization
+    'Global.Intl': '/ecmascript-builtins/internationalization/#intl',
+    'Number.prototype.toLocaleString':
+        '/ecmascript-builtins/internationalization/#tolocalestring-family',
+    'String.prototype.toLocaleUpperCase':
+        '/ecmascript-builtins/internationalization/#tolocalestring-family',
+    'Date.prototype.toLocaleDateString':
+        '/ecmascript-builtins/internationalization/#tolocalestring-family',
+    // The global numeric functions are documented on number-methods, not on
+    // global-functions (which only covers the URI helpers, eval, escape).
+    'Global.parseInt': '/ecmascript-builtins/number-methods/#parseint-global',
+    'Global.parseFloat': '/ecmascript-builtins/number-methods/#parsefloat-global',
+    'Global.isNaN': '/ecmascript-builtins/number-methods/#isnan',
+    'Global.isFinite': '/ecmascript-builtins/number-methods/#isfinite',
+};
+
+/**
+ * Resolve the full site-relative link (page + anchor) for an ECMAScript built-in
+ * member, honouring `ECMASCRIPT_MEMBER_URLS` overrides.
+ *
+ * @param {string} owner - The builtin's `owner` (e.g. 'Array.prototype', 'Global')
+ * @param {string} member - The method/property/constant name
+ * @returns {string|undefined} Site-relative link, or undefined when the owner has no page
+ */
+export const ecmascriptMemberLink = (owner, member) => {
+    const override = ECMASCRIPT_MEMBER_URLS[`${owner}.${member}`];
+    if (override) {
+        return override;
+    }
+    const url = ECMASCRIPT_URLS[owner];
+    return url ? `${url}#${ecmascriptAnchor(member, owner)}` : undefined;
+};
+
+/**
  * Derive the in-page anchor for an ECMAScript built-in member on its
  * ecmascript-builtins section page.
  *
  * Each builtin page (array-methods, string-methods, math, …) renders one H3 per
  * member with an explicit `{#anchor}` ID equal to the lowercased member name.
  * Array and String live on separate pages, so member names are unique per page
- * and no owner qualifier is needed.
+ * and no owner qualifier is needed. Pages that group members under a shared
+ * heading are listed in `ECMASCRIPT_ANCHOR_OVERRIDES`.
  *
  * @param {string} member - The method/property/constant name (e.g. 'splice', 'PI', 'toISOString')
- * @returns {string} Lowercased anchor slug (no leading '#')
+ * @param {string} [owner] - The owner field value (e.g. 'Boolean.prototype') used to resolve overrides
+ * @returns {string} Anchor slug (no leading '#')
  */
-export const ecmascriptAnchor = (member) => String(member).toLowerCase();
+export const ecmascriptAnchor = (member, owner) =>
+    ECMASCRIPT_ANCHOR_OVERRIDES[`${owner}.${member}`] ?? String(member).toLowerCase();
 
 /**
  * Split a PascalCase / camelCase identifier into lowercase hyphen-joined words.
