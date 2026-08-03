@@ -723,7 +723,7 @@ export const SSJS_GLOBALS = [
         description:
             'Evaluates whether a string is a valid phone number and returns a boolean. Behaves identically to ' +
             '`Platform.Function.IsPhoneNumber()` (see that entry for the strict digits-only runtime format).',
-        params: [{ name: 'value', description: 'The string to validate.', type: 'string' }],
+        params: [{ name: 'value', description: 'The value to validate.', type: 'string|number' }],
         returnType: 'boolean',
         syntax: 'IsPhoneNumber(value)',
         example:
@@ -795,8 +795,8 @@ export const SSJS_GLOBALS = [
             '`Object.prototype.toString` === "[object Date]", `.constructor === Date`, working `getFullYear()` etc.; ' +
             'only `instanceof Date` is false due to the engine-wide instanceof-on-builtins bug), which also coerce ' +
             'transparently to strings via `"" + value`, `String(value)`, or `Write(value)`. ' +
-            '`DateTime.TimeZone.Retrieve(filter)` returns CLR rows ' +
-            'that `Stringify()` cannot serialize (throws "Object expected"); enumerate fields with `for..in` instead.',
+            '`DateTime.TimeZone.Retrieve(filter)` returns rows carrying `ID` (number) and `Name` (string) ' +
+            'that `Stringify()` serializes normally.',
         description:
             'Namespace for time zone and date utilities. ' +
             'Access sub-namespaces such as `DateTime.TimeZone` for time zone operations.',
@@ -936,12 +936,18 @@ export const PLATFORM_METHODS = [
             { name: 'libraryName', description: 'Library to load (e.g. "core")', type: 'string' },
             { name: 'version', description: 'Library version (e.g. "1.1.5")', type: 'string' },
         ],
-        returnType: 'void',
+        returnType: 'null',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): Platform.Load("core", "1.1.5") succeeds and enables bare-name Core ' +
-            'aliases (e.g. `Variable`, `Attribute`, `DataExtension`). The `Platform.*` objects (Request, ' +
-            'Response, Variable, Recipient) are already available WITHOUT calling Platform.Load.',
+            'The docs describe Platform.Load as void, but it returns the literal null; never test the result ' +
+            'to detect success because a failed load throws. The documented required libraryName accepts an ' +
+            'empty string or null as a silent no-op, while "core" is matched case-insensitively. Accepted ' +
+            'versions include "1", "1.0", "1.1", "1.0.0" and revisions "1.1.0" through "1.1.6"; later ' +
+            'revisions and other major or minor versions are rejected. 32767 selects the newest version in ' +
+            'the minor or revision slot, but not the major slot. Loading Core enables bare-name aliases such ' +
+            'as Variable, Attribute and DataExtension; Platform.* objects are already available without it. ' +
+            'The load spans the whole request, and repeated loads are harmless.',
         syntax: 'Platform.Load(libraryName, version)',
         example:
             'Platform.Load("core", "1.1.5");\nvar de = DataExtension.Init("MyDE");\nvar rows = de.Rows.Retrieve();',
@@ -1061,7 +1067,7 @@ export const PLATFORM_FUNCTIONS = [
             {
                 name: 'count',
                 description: 'Maximum number of rows to return; values below 1 return up to 2,000',
-                type: 'number',
+                type: 'string|number',
             },
             {
                 name: 'orderBy',
@@ -1164,8 +1170,13 @@ export const PLATFORM_FUNCTIONS = [
         maxArgs: 5,
         description:
             'Modifies existing rows in a Data Extension matching filter criteria and returns the number of rows updated. ' +
-            'Recommended for non-sending contexts (CloudPages, landing pages, microsites, and SMS messages), but the *DE variants also run and commit there — see UpdateDE().',
+            'All four filter and update name/value arguments require nonempty, positionally aligned arrays. ' +
+            'The Data Extension is resolved by Name, not external key.',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs permit scalar filter names and values, but all four filter and update name/value arguments require nonempty, positionally aligned arrays at runtime.',
+        requiresCoreLoad: false,
         params: [
             {
                 name: 'deName',
@@ -1175,23 +1186,22 @@ export const PLATFORM_FUNCTIONS = [
             {
                 name: 'whereFieldNames',
                 description:
-                    'Column name(s) to identify the rows to update; use an array for multiple columns (AND logic)',
-                type: 'string|string[]',
+                    'Nonempty array of column names used to identify rows; multiple columns use positional AND logic',
+                type: 'string[]',
             },
             {
                 name: 'whereFieldValues',
-                description:
-                    'Value(s) to match in whereFieldNames; must be an array of equal length when whereFieldNames is an array',
-                type: 'string|array',
+                description: 'Nonempty array of values positionally aligned to whereFieldNames',
+                type: 'array',
             },
             {
                 name: 'fieldNames',
-                description: 'Array of column names to update',
+                description: 'Nonempty array of column names to update',
                 type: 'string[]',
             },
             {
                 name: 'fieldValues',
-                description: 'Array of new values aligned to fieldNames',
+                description: 'Nonempty array of new values positionally aligned to fieldNames',
                 type: 'array',
             },
         ],
@@ -1206,13 +1216,14 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 5,
         maxArgs: 5,
         description:
-            'Modifies existing rows in a Data Extension matching filter criteria. Returns null (no value). ' +
-            'The official docs describe this as an email-context function, but it was proven to run and commit on a CloudPage as well. ' +
-            'UpdateData() is still preferred outside email because it returns the affected-row count.',
+            'Modifies existing rows in a Data Extension matching filter criteria and returns null. ' +
+            'All four filter and update name/value arguments require nonempty, positionally aligned arrays. ' +
+            'It also executes and commits on CloudPages despite the documented email-context restriction.',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs restrict UpdateDE to email contexts, but at runtime it executes and commits its update on a CloudPage too; it returns null rather than a row count.',
+            'All four filter and update name/value arguments require nonempty, positionally aligned arrays despite the documented scalar filter forms. UpdateDE returns null rather than an affected-row count and commits on CloudPages despite the documented email-context restriction.',
+        requiresCoreLoad: false,
         params: [
             {
                 name: 'deName',
@@ -1222,30 +1233,29 @@ export const PLATFORM_FUNCTIONS = [
             {
                 name: 'whereFieldNames',
                 description:
-                    'Column name(s) to identify the rows to update; use an array for multiple columns (AND logic)',
-                type: 'string|string[]',
+                    'Nonempty array of column names used to identify rows; multiple columns use positional AND logic',
+                type: 'string[]',
             },
             {
                 name: 'whereFieldValues',
-                description:
-                    'Value(s) to match in whereFieldNames; must be an array of equal length when whereFieldNames is an array',
-                type: 'string|array',
+                description: 'Nonempty array of values positionally aligned to whereFieldNames',
+                type: 'array',
             },
             {
                 name: 'fieldNames',
-                description: 'Array of column names to update',
+                description: 'Nonempty array of column names to update',
                 type: 'string[]',
             },
             {
                 name: 'fieldValues',
-                description: 'Array of new values aligned to fieldNames',
+                description: 'Nonempty array of new values positionally aligned to fieldNames',
                 type: 'array',
             },
         ],
         returnType: 'null',
         syntax: 'Platform.Function.UpdateDE(deName, whereFieldNames, whereFieldValues, fieldNames, fieldValues)',
         example:
-            'var count = Platform.Function.UpdateDE("MyDE", ["Email"], ["jane@example.com"], ["Status"], ["inactive"]);',
+            'Platform.Function.UpdateDE("MyDE", ["Email"], ["jane@example.com"], ["Status"], ["inactive"]);',
     },
     {
         name: 'UpsertData',
@@ -1297,13 +1307,18 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 5,
         maxArgs: 5,
         description:
-            'Inserts a new row or updates an existing one in a Data Extension. Returns null (no value). ' +
-            'The official docs describe this as an email-context function, but it was proven to run and commit on a CloudPage as well. ' +
-            'UpsertData() is still preferred outside email because it returns the affected-row count.',
+            'Inserts one row when no filter match exists or updates every matching row in a Data Extension. ' +
+            'The Data Extension is resolved by Name, not external key. UpsertDE returns null, runs on ' +
+            'CloudPages despite the documented sendable-context restriction, and requires arrays even for a ' +
+            'single filter or field. UpsertData() is preferred outside email when the affected-row count is needed.',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs restrict UpsertDE to email contexts, but at runtime it executes and commits its upsert on a CloudPage too; it returns null rather than a row count.',
+            'Contrary to the official scalar-or-array types, all four filter and field name/value arguments ' +
+            'require nonempty, positionally aligned arrays. The documented numeric result is also incorrect: ' +
+            'inserts and updates return null. UpsertDE also executes and commits on CloudPages despite the ' +
+            'documented sendable-context restriction.',
+        requiresCoreLoad: false,
         params: [
             {
                 name: 'deName',
@@ -1313,23 +1328,22 @@ export const PLATFORM_FUNCTIONS = [
             {
                 name: 'whereFieldNames',
                 description:
-                    'Column name(s) to identify an existing row; use an array for multiple columns (AND logic)',
-                type: 'string|string[]',
+                    'Nonempty array of column names used to find existing rows; multiple columns use positional AND logic',
+                type: 'string[]',
             },
             {
                 name: 'whereFieldValues',
-                description:
-                    'Value(s) to match in whereFieldNames; must be an array of equal length when whereFieldNames is an array',
-                type: 'string|array',
+                description: 'Nonempty array of values positionally aligned to whereFieldNames',
+                type: 'array',
             },
             {
                 name: 'fieldNames',
-                description: 'Array of column names to insert or update',
+                description: 'Nonempty array of column names to insert or update',
                 type: 'string[]',
             },
             {
                 name: 'fieldValues',
-                description: 'Array of values aligned to fieldNames',
+                description: 'Nonempty array of values positionally aligned to fieldNames',
                 type: 'array',
             },
         ],
@@ -1509,7 +1523,11 @@ export const PLATFORM_FUNCTIONS = [
             'Runtime note: when optional arguments are supplied, every argument must be a compile-time literal.',
         isConfirmed: true,
         params: [
-            { name: 'id', description: 'Numeric ID of the Content Builder asset', type: 'number' },
+            {
+                name: 'id',
+                description: 'Numeric ID of the Content Builder asset',
+                type: 'string|number',
+            },
             {
                 name: 'regionName',
                 description: 'Impression region name for tracking',
@@ -1572,11 +1590,15 @@ export const PLATFORM_FUNCTIONS = [
             'Returns an HTML img tag for a Content Builder image identified by its numeric ID. An optional fallback ID can be supplied if the primary image is not found.',
         isConfirmed: true,
         params: [
-            { name: 'id', description: 'Numeric ID of the Content Builder image', type: 'number' },
+            {
+                name: 'id',
+                description: 'Numeric ID of the Content Builder image',
+                type: 'string|number',
+            },
             {
                 name: 'fallbackId',
                 description: 'Numeric ID of a fallback image when the primary cannot be found',
-                type: 'number',
+                type: 'string|number',
                 optional: true,
             },
         ],
@@ -1684,8 +1706,8 @@ export const PLATFORM_FUNCTIONS = [
         params: [
             {
                 name: 'dateString',
-                description: 'Date-time string in system time (CST)',
-                type: 'string',
+                description: 'Date-time value in system time (CST) (string or Date)',
+                type: 'string|Date',
             },
         ],
         returnType: 'Date',
@@ -1707,8 +1729,8 @@ export const PLATFORM_FUNCTIONS = [
         params: [
             {
                 name: 'dateString',
-                description: 'Date-time string in local account/user time',
-                type: 'string',
+                description: 'Date-time value in local account/user time (string or Date)',
+                type: 'string|Date',
             },
         ],
         returnType: 'Date',
@@ -1745,13 +1767,13 @@ export const PLATFORM_FUNCTIONS = [
             {
                 name: 'errorCode',
                 description: 'Short user-defined code identifying the error type',
-                type: 'string',
+                type: 'string|number',
                 optional: true,
             },
             {
                 name: 'errorNumber',
                 description: 'User-defined numeric error code for reference',
-                type: 'number',
+                type: 'string|number',
                 optional: true,
             },
         ],
@@ -1803,7 +1825,7 @@ export const PLATFORM_FUNCTIONS = [
             'as bare digits with no leading zero. Values containing spaces, a leading 0, or a +/00 international ' +
             'prefix return false, as do empty, letters, and mixed-text inputs. This is the same digits-only, ' +
             'no-leading-zero format that SFMC phone-number fields and the SMS (MobileConnect) service expect.',
-        params: [{ name: 'value', description: 'String to evaluate', type: 'string' }],
+        params: [{ name: 'value', description: 'Value to evaluate', type: 'string|number' }],
         returnType: 'boolean',
         isConfirmed: true,
         differsFromOfficialDocs: true,
@@ -2208,7 +2230,7 @@ export const PLATFORM_FUNCTIONS = [
                 name: 'emptyContentHandling',
                 description:
                     'How to handle a URL that returns empty content: 0 = allow empty, 1 = return error, 2 = skip subscriber. Only valid in the 6-argument form (co-required with the other trailing arguments).',
-                type: 'number',
+                type: 'string|number',
                 optional: true,
             },
             {
@@ -2306,25 +2328,30 @@ export const PLATFORM_FUNCTIONS = [
             'Runtime-verified on a CloudPage. Two corrections to the official docs: ' +
             '(1) The docs type the argument as `string or string[]` and describe passing an "array of strings"; ' +
             'at runtime passing an array (or any non-string object) throws `System.InvalidOperationException: ' +
-            'Unable to retrieve security descriptor for this frame`. Only a single string argument is accepted. ' +
+            'Unable to retrieve security descriptor for this frame`. A single string, boolean, or number is accepted: ' +
+            'a number matches ParseJSON of the equivalent numeric string; a boolean yields the CLR strings ' +
+            '"True"/"False" (not JSON boolean primitives and not equal to ParseJSON("true")/"false"). ' +
             '(2) The docs return type `object|object[]` is incomplete: only JSON objects/arrays are deserialised; ' +
             String.raw`a scalar JSON string ("42", "\"hello\"", "true", "null") is returned unchanged as a string, and ` +
             'invalid/empty/null/undefined input returns null (it does NOT throw).',
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Parses a JSON-formatted string and returns the resulting JavaScript object or array. ' +
+            'Parses a JSON-formatted string (also accepts boolean or number) and returns ' +
+            'the resulting JavaScript object or array. ' +
             'SFMC-native equivalent of JSON.parse(), which is not available in the legacy SSJS engine. ' +
             'Only single JSON object/array strings are deserialised; scalar JSON values are returned as strings ' +
             'and invalid, empty, null, or undefined input returns null (no error is thrown). ' +
-            'Passing an array or a non-string object throws a runtime error, so pass exactly one string argument.',
+            'A boolean argument yields CLR "True"/"False" strings. Passing an array or other object throws a runtime error.',
         params: [
             {
                 name: 'jsonString',
                 description:
-                    'A single valid JSON-formatted string to parse. Must be a string — passing an array or ' +
-                    'other object throws a runtime error (contrary to the official docs).',
-                type: 'string',
+                    'A JSON-formatted string, boolean, or number to parse. A number yields the same result as the ' +
+                    'equivalent numeric string. A boolean is accepted but returns CLR "True"/"False" (not JSON ' +
+                    'boolean primitives). Passing an array or other object throws a runtime error ' +
+                    '(contrary to the official docs).',
+                type: 'string|boolean|number',
             },
         ],
         // `any` (not `object`) so callers can access dynamic properties on the parsed
@@ -2377,15 +2404,19 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 1,
         maxArgs: 2,
         description:
-            'Percent-encodes a complete URL. ' +
-            'When encodeReservedKeywords is false (default), only space characters are encoded as %20. ' +
-            'When true, all URL-reserved characters are also encoded (spaces become +).',
+            'Percent-encodes only the query string after the first question mark; a URL without one is ' +
+            'returned unchanged. The default mode encodes spaces as %20. Reserved-encoding mode uses + for ' +
+            'spaces and lowercase percent escapes for characters outside alphanumerics and - _ . ! * ( ).',
         params: [
-            { name: 'url', description: 'The complete URL to encode', type: 'string' },
+            {
+                name: 'url',
+                description: 'Complete URL whose query string is encoded',
+                type: 'string',
+            },
             {
                 name: 'encodeReservedKeywords',
                 description:
-                    'When true, encodes all reserved characters; spaces become +. ' +
+                    'When true, encodes every character outside the passthrough set; spaces become +. ' +
                     'When false (default), only spaces are encoded as %20.',
                 type: 'boolean',
                 optional: true,
@@ -2394,6 +2425,13 @@ export const PLATFORM_FUNCTIONS = [
         ],
         returnType: 'string',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The documented reserved set does not match the runtime: ! * ( ) pass through, while " % < >, ' +
+            'backslash, ^ ` { | } and ~ are encoded. The effective passthrough set is alphanumerics plus - _ . ! * ( ). ' +
+            'Only the query string after the first question mark is processed, so this function cannot encode ' +
+            'an arbitrary value. Escapes use lowercase hex; non-ASCII characters are encoded as lowercase ' +
+            'UTF-8 byte escapes only in reserved-encoding mode.',
         syntax: 'Platform.Function.UrlEncode(url[, encodeReservedKeywords])',
         example:
             'var baseURL = "https://www.example.com?value=12+3 12;3";\n' +
@@ -2652,7 +2690,7 @@ export const CORE_LIBRARY_OBJECTS = [
         isConfirmed: true,
         description:
             'Manages individual rows within a Data Extension. ' +
-            'CAVEAT: Rows.Retrieve() does NOT work on CloudPages.',
+            'Runtime-verified: Rows.Retrieve() does work on CloudPages, contrary to the widely-repeated claim.',
     },
     {
         name: 'Subscriber',
@@ -3020,10 +3058,10 @@ export const ACCOUNT_METHODS = [
         ],
         returnType: 'object[]',
         returnDescription:
-            'On a match returns an array-like collection of account rows (proven at runtime: exposes .length and .push and Stringifies as a JSON array with length 1), though it is not an instanceof Array in this engine. On no match returns a distinct empty object that Stringifies as [] and has NO .length, NO .push and no enumerable keys. Proven at runtime on the Parent BU (MID 7281698): filtering by Property "Name" (equals "Accenture SFMC Global"), "ID" (equals 7281698 or greaterThan 0), or "CustomerKey" (equals the account CustomerKey GUID) each returned the running BU\'s own account row. Filtering for any child BU — by Name, by ID, or by CustomerKey (GUID or plain-string key) — returned the empty [] shape, as did unrecognized properties "MID" and "AccountID". Only the running session\'s own account resolves. A matched row exposes the full Account SOAP object; observed fields include AccountType, ParentID, BrandID, PrivateLabelID, ReportingParentID, Name, Email, FromName, BusinessName, Phone, Address, Fax, City, State, Zip, Country, IsActive, IsTestAccount, OrgID, DBID, ParentName, CustomerID, DeletedDate, EditionID, Children, Subscription, PrivateLabels, BusinessRules, AccountUsers, InheritAddress, IsTrialAccount, Locale, ParentAccount, TimeZone (a nested object with ID/Name/CustomerKey), Roles, StackID, SalesForceID, LanguageLocale, IndustryCode, Edition, SalesforceOrgID, AccountState, SubscriptionRestrictionFlags, Client, PartnerKey, PartnerProperties, CreatedDate, ModifiedDate, ID, ObjectID, CustomerKey, Owner, CorrelationID, ObjectState and IsPlatformObject, plus a *Specified boolean companion for many numeric/date fields.',
+            'On a match returns an array-like collection of account rows (proven at runtime: exposes .length and .push and Stringifies as a JSON array with length 1), though it is not an instanceof Array in this engine. On no match returns the same array-like shape with .length of 0 (it still exposes .push, Stringifies as [] and has no enumerable keys); that zero-length collection is itself falsy in this engine, so both a truthy check and a .length check reject it. Proven at runtime on the Parent BU (MID 7281698): filtering by Property "Name" (equals "Accenture SFMC Global"), "ID" (equals 7281698 or greaterThan 0), or "CustomerKey" (equals the account CustomerKey GUID) each returned the running BU\'s own account row. Filtering for any child BU — by Name, by ID, or by CustomerKey (GUID or plain-string key) — returned the empty [] shape, as did unrecognized properties "MID" and "AccountID". Only the running session\'s own account resolves. A matched row exposes the full Account SOAP object; observed fields include AccountType, ParentID, BrandID, PrivateLabelID, ReportingParentID, Name, Email, FromName, BusinessName, Phone, Address, Fax, City, State, Zip, Country, IsActive, IsTestAccount, OrgID, DBID, ParentName, CustomerID, DeletedDate, EditionID, Children, Subscription, PrivateLabels, BusinessRules, AccountUsers, InheritAddress, IsTrialAccount, Locale, ParentAccount, TimeZone (a nested object with ID/Name/CustomerKey), Roles, StackID, SalesForceID, LanguageLocale, IndustryCode, Edition, SalesforceOrgID, AccountState, SubscriptionRestrictionFlags, Client, PartnerKey, PartnerProperties, CreatedDate, ModifiedDate, ID, ObjectID, CustomerKey, Owner, CorrelationID, ObjectState and IsPlatformObject, plus a *Specified boolean companion for many numeric/date fields.',
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Proven at runtime on the Parent BU (MID 7281698): Account.Retrieve resolves only the running session\'s own account, and it does so via Property "Name", "ID", or "CustomerKey". For "ID", both the numeric form (7281698) and the string form ("7281698") of the running account resolved. Requests for any other (child) business unit returned a zero-length collection for every property and value tried — by Name ("Retail Test"), by ID (7316951), and by CustomerKey (both GUID keys and plain-string keys such as "DEV"). The properties "MID", "AccountID" and "BusinessUnitID" are not recognized and always returned empty. The no-match return is not a real array: it Stringifies as [] but has no .length, .push, or enumerable keys, so guard with a truthy .length check before indexing.',
+            'Proven at runtime on the Parent BU (MID 7281698): Account.Retrieve resolves only the running session\'s own account, and it does so via Property "Name", "ID", or "CustomerKey". For "ID", both the numeric form (7281698) and the string form ("7281698") of the running account resolved. Requests for any other (child) business unit returned a zero-length collection for every property and value tried — by Name ("Retail Test"), by ID (7316951), and by CustomerKey (both GUID keys and plain-string keys such as "DEV"). The properties "MID", "AccountID" and "BusinessUnitID" are not recognized and always returned empty. Neither the matched nor the empty collection is an instanceof Array in this engine, so guard with a truthy .length check before indexing.',
         syntax: 'Account.Retrieve(filter)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -3102,7 +3140,7 @@ export const ACCOUNT_USER_METHODS = [
             'Required before invoking any other AccountUser method on the returned instance.',
         params: [
             { name: 'targetUserKey', description: 'External key of the user.', type: 'string' },
-            { name: 'myClientID', description: 'MID of the business unit.', type: 'number' },
+            { name: 'myClientID', description: 'MID of the business unit.', type: 'string|number' },
         ],
         returnType: 'AccountUserInstance',
         returnDescription:
@@ -3569,6 +3607,8 @@ export const CONTENT_AREA_OBJ_METHODS = [
         maxArgs: 1,
         description:
             'Updates the content area with the supplied attributes. ' +
+            'WARNING: when the initialized external key does not resolve, the call returns "Error" and still creates an ' +
+            'empty content area under that key — confirm the key via ContentAreaObj.Retrieve before updating. ' +
             'DEPRECATED — Content Areas are a legacy Classic Content feature.',
         params: [
             {
@@ -3578,8 +3618,9 @@ export const CONTENT_AREA_OBJ_METHODS = [
             },
         ],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success and "Error" on failure; the call returns a status string rather than throwing.',
         syntax: '<ContentAreaObjInstance>.Update(properties)',
         example:
             'Platform.Load("core", "1.1.1");\n' +
@@ -3599,8 +3640,10 @@ export const CONTENT_AREA_OBJ_METHODS = [
             'DEPRECATED — Content Areas are a legacy Classic Content feature.',
         params: [],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success and "Error" on failure (for example when the external key does not resolve); ' +
+            'the call returns a status string rather than throwing and, unlike Update, creates nothing when it fails.',
         syntax: '<ContentAreaObjInstance>.Remove()',
         example:
             'Platform.Load("core", "1.1.1");\n' +
@@ -6613,7 +6656,7 @@ export const DATA_EXTENSION_FIELDS_METHODS = [
             { name: 'properties', description: 'Object describing the new field.', type: 'object' },
         ],
         returnType: 'string',
-        returnEnum: ['OK'],
+        returnEnum: ['OK', 'Error'],
         returnDescription:
             'Returns "OK" on success. Runtime returns the string "Error" (rather than throwing) when the field cannot be added or arguments are missing.',
         syntax: '<DataExtensionInstance>.Fields.Add(properties)',
@@ -6670,9 +6713,10 @@ export const DATA_EXTENSION_FIELDS_METHODS = [
             },
         ],
         returnType: 'string',
-        returnEnum: ['OK'],
+        returnEnum: ['OK', 'Error'],
         returnDescription:
-            'Returns "OK" on success (confirmed at runtime; the doc has no `@returns`). Returns the string "Error" instead of throwing on failure.',
+            'Returns "OK" on success (confirmed at runtime; the doc has no `@returns`). Returns the string "Error" instead of throwing on failure. ' +
+            'Runtime defect: a no-argument call returns "OK" although the mapping is unchanged, so an "OK" return alone does not prove a mapping was applied.',
         syntax: '<DataExtensionInstance>.Fields.UpdateSendableField(deFieldName, subscriberField)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -6724,7 +6768,8 @@ export const DATA_EXTENSION_ROWS_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified on a CloudPage: returns typed values (Number columns come back as number, Boolean as boolean, Date as a real Date object, unlike Retrieve which returns every field as a string). ' +
+            'Runtime-verified on a CloudPage: returns typed values (Number and Decimal columns come back as number, Boolean as boolean), unlike Retrieve which returns every field as a string. ' +
+            'Date columns are the exception: they come back as an ISO-8601 string (e.g. "2024-01-15T00:00:00.000"), NOT a Date object — the same behaviour as Platform.Function.LookupRows. ' +
             'On no match, returns `null` (not an empty array). The result is a host array where `instanceof Array` is `false`, but `.length` and index access work.',
         minArgs: 2,
         maxArgs: 4,
@@ -7519,13 +7564,13 @@ export const PLATFORM_VARIABLE_METHODS = [
         params: [
             { name: 'variableName', description: 'Name of the AMPscript variable', type: 'string' },
         ],
-        returnType: 'string',
+        returnType: 'string|number|boolean|null',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): when the variable was NEVER SET it ' +
-            'returns `null` (typeof "object"), NOT an empty string. A variable explicitly set to "" returns ' +
-            '`""`. The leading `@` is optional — GetValue("v") and GetValue("@v") return the same value.',
+            'Runtime-verified (CloudPage GET): values retain their SSJS scalar type within the request, while a ' +
+            'never-set variable returns JavaScript `null` and an explicitly empty variable returns `""`. The ' +
+            'leading `@` is optional, and variable names are case-insensitive.',
         syntax: 'Platform.Variable.GetValue(variableName)',
         example:
             'var sk = Platform.Variable.GetValue("SubscriberKey");\n' +
@@ -7539,13 +7584,19 @@ export const PLATFORM_VARIABLE_METHODS = [
         description: 'Assigns a value to an AMPscript variable from the SSJS context.',
         params: [
             { name: 'variableName', description: 'Name of the AMPscript variable', type: 'string' },
-            { name: 'value', description: 'Value to assign', type: 'string' },
+            {
+                name: 'value',
+                description: 'Scalar value to assign',
+                type: 'string|number|boolean|null|undefined',
+            },
         ],
-        returnType: 'void',
+        returnType: 'null',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the leading `@` is optional — ' +
-            'SetValue("v", x) and SetValue("@v", x) both write the same AMPscript variable.',
+            'Runtime-verified (CloudPage GET): the method returns JavaScript `null`, not void. Strings, numbers, ' +
+            'and booleans retain their SSJS scalar type in later SSJS blocks; null and undefined read back as ' +
+            '`null`. The leading `@` is optional, and values are request-local.',
         syntax: 'Platform.Variable.SetValue(variableName, value)',
         example:
             'Platform.Variable.SetValue("greeting", "Hello from SSJS");\n' +
@@ -7564,10 +7615,11 @@ export const PLATFORM_RESPONSE_METHODS = [
             { name: 'headerName', description: 'Name of the response header.', type: 'string' },
             { name: 'value', description: 'Value for the response header.', type: 'string' },
         ],
-        returnType: 'void',
+        returnType: 'null',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the header appears verbatim in the HTTP response. ' +
+            'Runtime-verified (CloudPage): the header appears verbatim in the HTTP response and the call returns JavaScript null, not void. ' +
             'Numeric values are coerced to their string form.',
         syntax: 'Platform.Response.SetResponseHeader(headerName, value)',
         example:
@@ -7585,10 +7637,11 @@ export const PLATFORM_RESPONSE_METHODS = [
                 type: 'string',
             },
         ],
-        returnType: 'void',
+        returnType: 'null',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): removes a header set earlier in the same request. ' +
+            'Runtime-verified (CloudPage): removes a header set earlier in the same request and returns JavaScript null, not void. ' +
             'Removing a header that was never set is a no-op rather than an error.',
         syntax: 'Platform.Response.RemoveResponseHeader(headerName)',
         example: 'Platform.Response.RemoveResponseHeader("X-Powered-By");',
@@ -7646,10 +7699,11 @@ export const PLATFORM_RESPONSE_METHODS = [
                 optional: true,
             },
         ],
-        returnType: 'void',
+        returnType: 'null',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): each call emits its own Set-Cookie header. ' +
+            'Runtime-verified (CloudPage): each call returns JavaScript null, not void, and emits its own Set-Cookie header. ' +
             'Without an expiry the cookie is a session cookie; a JavaScript Date object is accepted for ' +
             'the expiry alongside a date string and is rendered as a GMT timestamp.',
         syntax: 'Platform.Response.SetCookie(name, value[, expires, secure])',
@@ -7660,15 +7714,16 @@ export const PLATFORM_RESPONSE_METHODS = [
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Removes a cookie from the client browser by setting its expiration to a past date.',
+            'Attempts to remove a browser cookie from a CloudPage response. In the tested runtime it returns null but emits no deletion header; use SetCookie with an empty value and a past JavaScript Date instead.',
         params: [{ name: 'name', description: 'Name of the cookie to remove.', type: 'string' }],
-        returnType: 'void',
+        returnType: 'null',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): emits a Set-Cookie header with an expiry in the past. ' +
-            'Removing a cookie that was never set is a no-op rather than an error.',
+            'Runtime-verified on a published CloudPage GET with the named request cookie present: the call returns JavaScript null, not void, and emits no Set-Cookie header. ' +
+            'The proven workaround is SetCookie(name, "", new Date(1970, 0, 1), true), which emits an empty cookie with a past expiry and removes it from the next cookie-jar request.',
         syntax: 'Platform.Response.RemoveCookie(name)',
-        example: 'Platform.Response.RemoveCookie("userId");',
+        example: 'Platform.Response.SetCookie("userId", "", new Date(1970, 0, 1), true);',
     },
     {
         name: 'Write',
@@ -7699,16 +7754,15 @@ export const PLATFORM_RESPONSE_METHODS = [
         maxArgs: 0,
         isProperty: true,
         description:
-            'Sets the Content-Type of the HTTP response. Write-only at runtime — reading it throws.',
+            'Sets the Content-Type of the HTTP response. Reading or calling the property returns an opaque platform-managed CLR value rather than the configured MIME type.',
         params: [],
-        returnType: 'void',
+        returnType: 'clr',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): assignment works and is reflected in the HTTP Content-Type header, ' +
-            'but the property cannot be read back — every read throws a null-reference error, ' +
-            'both as the first statement of the script and after output has been written. ' +
-            'Calling it as a function throws as well. Treat it as write-only, not as a getter/setter pair.',
+            'Runtime-verified (CloudPage): assignment works and is reflected in the HTTP Content-Type header. ' +
+            'Reading or calling the property does not return the configured string; it returns an opaque CLR value with no documented caller-facing use. ' +
+            'Keep your own JavaScript variable if the value must be read later.',
         syntax: 'Platform.Response.ContentType',
         example: 'Platform.Response.ContentType = "application/json";',
     },
@@ -7718,15 +7772,15 @@ export const PLATFORM_RESPONSE_METHODS = [
         maxArgs: 0,
         isProperty: true,
         description:
-            'Sets the character set of the HTTP response. Write-only at runtime — reading it throws.',
+            'Sets the character set of the HTTP response. Reading or calling the property returns an opaque platform-managed CLR value rather than the configured character set.',
         params: [],
-        returnType: 'void',
+        returnType: 'clr',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): assignment works and is reflected in the charset of the HTTP ' +
-            'Content-Type header, but the property cannot be read back — every read throws a null-reference error. ' +
-            'Calling it as a function throws as well. Treat it as write-only, not as a getter/setter pair.',
+            'Runtime-verified (CloudPage): assignment works and is reflected in the charset parameter of the HTTP Content-Type header. ' +
+            'Reading or calling the property does not return the configured string; it returns an opaque CLR value with no documented caller-facing use. ' +
+            'Keep your own JavaScript variable if the value must be read later.',
         syntax: 'Platform.Response.CharacterSet',
         example: 'Platform.Response.CharacterSet = "UTF-8";',
     },
@@ -7745,13 +7799,14 @@ export const PLATFORM_REQUEST_METHODS = [
                 type: 'string',
             },
         ],
-        returnType: 'string',
+        returnType: 'string|null',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage GET, ?probeParam=hello): a present parameter returns its string value ' +
-            '("hello"); an ABSENT parameter returns `null` (typeof "object"), NOT an empty string. ' +
-            'Guard reads with a truthiness / `!= null` check.',
+            'Runtime-verified (CloudPage GET): an absent parameter returns strict JavaScript `null`, not an ' +
+            'empty string. Empty values return `""`; repeated values are comma-joined in URL order; names are ' +
+            'case-insensitive; plus signs, percent escapes, and UTF-8 sequences are decoded; numeric names are ' +
+            'coerced to strings. Guard reads with truthiness or `!= null`.',
         syntax: 'Platform.Request.GetQueryStringParameter(parameterName)',
         example:
             '// Page URL: /mypage?email=jane@example.com\nvar email = Platform.Request.GetQueryStringParameter("email");\nWrite(email);',
@@ -7760,16 +7815,18 @@ export const PLATFORM_REQUEST_METHODS = [
         name: 'GetFormField',
         minArgs: 1,
         maxArgs: 1,
-        description: 'Retrieves data from a named form field, including values sent via POST.',
+        description:
+            'Retrieves a named field from a submitted POST form body. On a CloudPage GET it does not fall back ' +
+            'to query parameters and returns null.',
         params: [
             { name: 'name', description: 'Name of the form field to retrieve.', type: 'string' },
         ],
-        returnType: 'string',
+        returnType: 'string|null',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): for an ABSENT field it returns `null` (typeof "object"), NOT an empty ' +
-            'string.',
+            'Runtime-verified (CloudPage GET): it returns strict JavaScript `null` for an absent field and does ' +
+            'not read a same-named query-string parameter. Use GetQueryStringParameter for URL values.',
         syntax: 'Platform.Request.GetFormField(name)',
         example: 'var email = Platform.Request.GetFormField("emailAddress");\nWrite(email);',
     },
@@ -7807,12 +7864,12 @@ export const PLATFORM_REQUEST_METHODS = [
         params: [
             { name: 'cookieName', description: 'Name of the cookie to retrieve.', type: 'string' },
         ],
-        returnType: 'string',
+        returnType: 'string|null',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): for an ABSENT cookie it returns ' +
-            '`null` (typeof "object"), NOT an empty string.',
+            'Runtime-verified (CloudPage): a supplied cookie returns its string value; an absent cookie returns ' +
+            'strict JavaScript `null`, not an empty string.',
         syntax: 'Platform.Request.GetCookieValue(cookieName)',
         example:
             'var sessionId = Platform.Request.GetCookieValue("sessionId");\nif (sessionId) { Write("Session: " + sessionId); }',
@@ -7853,11 +7910,11 @@ export const PLATFORM_REQUEST_METHODS = [
                 type: 'string',
             },
         ],
-        returnType: 'string',
+        returnType: 'string|null',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): for an ABSENT header it returns ' +
-            '`null` (typeof "object") — consistent with the official docs.',
+            'Runtime-verified (CloudPage): header names are case-insensitive; a supplied header returns its string ' +
+            'value and an absent header returns strict JavaScript `null`.',
         syntax: 'Platform.Request.GetRequestHeader(headerName)',
         example:
             'var auth = Platform.Request.GetRequestHeader("Authorization");\nif (auth) { Write("Auth: " + auth); }',
@@ -8269,8 +8326,8 @@ export const DATE_TIME_METHODS = [
         params: [
             {
                 name: 'dateString',
-                description: 'Date-time string in system time (CST)',
-                type: 'string',
+                description: 'Date-time value in system time (CST); string or Date',
+                type: 'string|Date',
             },
         ],
         returnType: 'Date',
@@ -8299,8 +8356,8 @@ export const DATE_TIME_METHODS = [
         params: [
             {
                 name: 'dateString',
-                description: 'Date-time string in local account/user time',
-                type: 'string',
+                description: 'Date-time value in local account/user time; string or Date',
+                type: 'string|Date',
             },
         ],
         returnType: 'Date',
@@ -8338,8 +8395,10 @@ export const DATE_TIME_TIMEZONE_METHODS = [
             '`DateTime` is undefined and the call throws. The filter argument is optional: calling it with no ' +
             'argument returns the full time-zone list. Each result carries `ID` (number) and `Name` (string). ' +
             'A filter that matches nothing returns an empty list rather than null, so callers can read `.length` ' +
-            'unconditionally. The returned value is a CLR collection, not a JavaScript array: it is indexable and ' +
-            'has `.length`, but `instanceof Array` is false and array methods such as `push` are absent. ' +
+            'unconditionally. The returned value behaves as a JavaScript array — it is indexable, exposes ' +
+            '`.length`, reports "[object Array]" and carries array methods such as `push` and `slice`; only ' +
+            '`instanceof Array` is false, which is the engine-wide instanceof-on-builtins bug rather than ' +
+            'anything specific to this method. ' +
             'A malformed filter (a plain string, or an object without the three filter properties) raises a ' +
             'time-zone retrieval error instead of returning an empty list.',
         description:

@@ -172,6 +172,9 @@ function toTsType(s) {
     if (s === 'RegExp') {
         return 'RegExp';
     }
+    if (s === 'Date') {
+        return 'Date';
+    }
     // Inline object-literal types like "{ Status: number, Content: string }" pass through verbatim.
     if (s.startsWith('{') && s.endsWith('}')) {
         return s;
