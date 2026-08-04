@@ -10,10 +10,14 @@
  * Prepend GUIDE_BASE_URL to produce fully-qualified links.
  */
 
-/** Base URL of the ssjs.guide documentation site. */
+/**
+ * Base URL of the ssjs.guide documentation site.
+ */
 export const GUIDE_BASE_URL = 'https://ssjs.guide';
 
-/** Base URL of the MDN JavaScript reference. */
+/**
+ * Base URL of the MDN JavaScript reference.
+ */
 export const MDN_BASE_URL = 'https://developer.mozilla.org/en-US';
 
 /**
@@ -65,7 +69,9 @@ const MDN_GLOBAL_CONSTRUCTORS = new Set([
     'Intl',
 ]);
 
-/** Top-level global functions/values that MDN documents under Global_Objects/<member>. */
+/**
+ * Top-level global functions/values that MDN documents under Global_Objects/<member>.
+ */
 export const MDN_GLOBAL_FUNCTIONS = new Set([
     'eval',
     'parseInt',
@@ -564,7 +570,9 @@ export const eventAnchor = (eventType) => kebabCase(eventType);
  * @type {Record<string, string>}
  */
 export const GUIDE_URLS = {
-    /** Attribute bare-name global page (lives under /core-library/, not /platform-objects/). */
+    /**
+     * Attribute bare-name global page (lives under /core-library/, not /platform-objects/).
+     */
     attribute: '/core-library/attribute/',
     /**
      * Shared page for all Script.Util.HttpRequest / HttpGet instance methods.
@@ -572,11 +580,17 @@ export const GUIDE_URLS = {
      * {@link httpRequestMethodUrl} to link to a specific method's anchor.
      */
     httpRequestMethods: '/http/script-util-httprequest/',
-    /** Script.Util.HttpRequest constructor overview page. */
+    /**
+     * Script.Util.HttpRequest constructor overview page.
+     */
     scriptUtilHttpRequest: '/http/script-util-httprequest/',
-    /** Script.Util.HttpGet constructor overview page. */
+    /**
+     * Script.Util.HttpGet constructor overview page.
+     */
     scriptUtilHttpGet: '/http/script-util-httpget/',
-    /** WSProxy constructor and overview page. */
+    /**
+     * WSProxy constructor and overview page.
+     */
     wsproxy: '/wsproxy/',
 };
 

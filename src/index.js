@@ -976,7 +976,9 @@ export const PLATFORM_METHODS = [
 // ── Platform.Function methods ────────────────────────────────────────────────
 // Methods available under Platform.Function.* without requiring Platform.Load.
 
-/** @type {{name: string, minArgs: number, maxArgs: number, description: string, params?: {name: string, description: string, type?: string, optional?: boolean}[], returnType?: string, syntax?: string}[]} */
+/**
+ * @type {{name: string, minArgs: number, maxArgs: number, description: string, params?: {name: string, description: string, type?: string, optional?: boolean}[], returnType?: string, syntax?: string}[]}
+ */
 export const PLATFORM_FUNCTIONS = [
     {
         name: 'Lookup',
@@ -2684,7 +2686,9 @@ export const platformFunctionNames = new Set(PLATFORM_FUNCTIONS.map((f) => f.nam
 
 const STANDARD_METHODS = ['Init', 'Add', 'Remove', 'Update', 'Retrieve'];
 
-/** @type {{name: string, methods: string[], description: string}[]} */
+/**
+ * @type {{name: string, methods: string[], description: string}[]}
+ */
 export const CORE_LIBRARY_OBJECTS = [
     {
         name: 'DataExtension',
@@ -3038,7 +3042,9 @@ export const coreObjectLookup = new Map(CORE_LIBRARY_OBJECTS.map((o) => [o.name,
 // a Core Library namespace. The matching CORE_LIBRARY_OBJECTS entry lists the
 // method names; these exports carry the rich shapes for completions and hover.
 
-/** @type {import('./declarations.js').SsjsDataMethod[]} */
+/**
+ * @type {import('./declarations.js').SsjsDataMethod[]}
+ */
 export const ACCOUNT_METHODS = [
     {
         name: 'Init',
@@ -3118,7 +3124,9 @@ export const ACCOUNT_METHODS = [
     },
 ];
 
-/** @type {import('./declarations.js').SsjsDataMethod[]} */
+/**
+ * @type {import('./declarations.js').SsjsDataMethod[]}
+ */
 export const ACCOUNT_TRACKING_METHODS = [
     {
         name: 'Retrieve',
@@ -3146,7 +3154,9 @@ export const ACCOUNT_TRACKING_METHODS = [
     },
 ];
 
-/** @type {import('./declarations.js').SsjsDataMethod[]} */
+/**
+ * @type {import('./declarations.js').SsjsDataMethod[]}
+ */
 export const ACCOUNT_USER_METHODS = [
     {
         name: 'Init',
@@ -3332,7 +3342,9 @@ export const ACCOUNT_USER_METHODS = [
     },
 ];
 
-/** @type {import('./declarations.js').SsjsDataMethod[]} */
+/**
+ * @type {import('./declarations.js').SsjsDataMethod[]}
+ */
 export const PORTFOLIO_METHODS = [
     {
         name: 'Init',
@@ -3528,7 +3540,9 @@ export const PORTFOLIO_METHODS = [
     },
 ];
 
-/** @type {import('./declarations.js').SsjsDataMethod[]} */
+/**
+ * @type {import('./declarations.js').SsjsDataMethod[]}
+ */
 export const CONTENT_AREA_OBJ_METHODS = [
     {
         name: 'Init',
@@ -3671,7 +3685,9 @@ export const CONTENT_AREA_OBJ_METHODS = [
     },
 ];
 
-/** @type {import('./declarations.js').SsjsDataMethod[]} */
+/**
+ * @type {import('./declarations.js').SsjsDataMethod[]}
+ */
 export const FOLDER_METHODS = [
     {
         name: 'Init',
@@ -3835,7 +3851,9 @@ export const FOLDER_METHODS = [
     },
 ];
 
-/** @type {import('./declarations.js').SsjsDataMethod[]} */
+/**
+ * @type {import('./declarations.js').SsjsDataMethod[]}
+ */
 export const TEMPLATE_METHODS = [
     {
         name: 'Init',
@@ -3943,7 +3961,9 @@ export const TEMPLATE_METHODS = [
     },
 ];
 
-/** @type {import('./declarations.js').SsjsDataMethod[]} */
+/**
+ * @type {import('./declarations.js').SsjsDataMethod[]}
+ */
 export const DELIVERY_PROFILE_METHODS = [
     {
         name: 'Init',
@@ -4043,7 +4063,9 @@ export const DELIVERY_PROFILE_METHODS = [
     },
 ];
 
-/** @type {import('./declarations.js').SsjsDataMethod[]} */
+/**
+ * @type {import('./declarations.js').SsjsDataMethod[]}
+ */
 export const SENDER_PROFILE_METHODS = [
     {
         name: 'Init',
@@ -4146,7 +4168,9 @@ export const SENDER_PROFILE_METHODS = [
     },
 ];
 
-/** @type {import('./declarations.js').SsjsDataMethod[]} */
+/**
+ * @type {import('./declarations.js').SsjsDataMethod[]}
+ */
 export const SEND_CLASSIFICATION_METHODS = [
     {
         name: 'Init',
@@ -4302,7 +4326,9 @@ export const SEND_CLASSIFICATION_METHODS = [
     },
 ];
 
-/** @type {import('./declarations.js').SsjsDataMethod[]} */
+/**
+ * @type {import('./declarations.js').SsjsDataMethod[]}
+ */
 export const FILTER_DEFINITION_METHODS = [
     {
         name: 'Init',
@@ -4459,7 +4485,9 @@ export const FILTER_DEFINITION_METHODS = [
     },
 ];
 
-/** @type {import('./declarations.js').SsjsDataMethod[]} */
+/**
+ * @type {import('./declarations.js').SsjsDataMethod[]}
+ */
 export const QUERY_DEFINITION_METHODS = [
     {
         name: 'Init',
@@ -7016,7 +7044,9 @@ export const DATA_EXTENSION_ROWS_METHODS = [
 
 // ── HTTP object methods ──────────────────────────────────────────────────────
 
-/** @type {{name: string, minArgs: number, maxArgs: number, description: string, params?: {name: string, description: string, type?: string, optional?: boolean}[], returnType?: string, syntax?: string}[]} */
+/**
+ * @type {{name: string, minArgs: number, maxArgs: number, description: string, params?: {name: string, description: string, type?: string, optional?: boolean}[], returnType?: string, syntax?: string}[]}
+ */
 export const HTTP_METHODS = [
     {
         name: 'Get',
@@ -7091,7 +7121,9 @@ export const httpMethodNames = new Set(HTTP_METHODS.map((m) => m.name.toLowerCas
 
 // ── WSProxy methods ──────────────────────────────────────────────────────────
 
-/** @type {{name: string, minArgs: number, maxArgs: number, description: string, params?: {name: string, description: string, type?: string, optional?: boolean}[], returnType?: string, syntax?: string}[]} */
+/**
+ * @type {{name: string, minArgs: number, maxArgs: number, description: string, params?: {name: string, description: string, type?: string, optional?: boolean}[], returnType?: string, syntax?: string}[]}
+ */
 export const WSPROXY_METHODS = [
     {
         name: 'createItem',
@@ -8597,7 +8629,9 @@ export const ERROR_UTIL_METHODS = [
 // Request handler constructors under the Script.Util namespace.
 // Instantiated with `new Script.Util.HttpRequest(url)` etc.
 
-/** @type {{name: string, minArgs: number, maxArgs: number, description: string, params?: {name: string, description: string, type?: string, optional?: boolean}[], returnType?: string, syntax?: string, example?: string}[]} */
+/**
+ * @type {{name: string, minArgs: number, maxArgs: number, description: string, params?: {name: string, description: string, type?: string, optional?: boolean}[], returnType?: string, syntax?: string, example?: string}[]}
+ */
 export const SCRIPT_UTIL_CONSTRUCTORS = [
     {
         name: 'WSProxy',
@@ -8675,7 +8709,9 @@ export const SCRIPT_UTIL_CONSTRUCTORS = [
 // Methods available on a request object returned by Script.Util.HttpRequest,
 // Methods available on a request object returned by Script.Util.HttpRequest or Script.Util.HttpGet.
 
-/** @type {{name: string, minArgs: number, maxArgs: number, description: string, params?: {name: string, description: string, type?: string, optional?: boolean}[], returnType?: string, syntax?: string, example?: string}[]} */
+/**
+ * @type {{name: string, minArgs: number, maxArgs: number, description: string, params?: {name: string, description: string, type?: string, optional?: boolean}[], returnType?: string, syntax?: string, example?: string}[]}
+ */
 export const SCRIPT_UTIL_REQUEST_METHODS = [
     {
         name: 'send',
@@ -8853,7 +8889,9 @@ export const SCRIPT_UTIL_REQUEST_PROPERTIES = [
 // HttpGet exposes a smaller property set than HttpRequest, and its
 // `emptyContentHandling` is a numeric mode (0/1/2) rather than a boolean.
 
-/** @type {{name: string, type: string, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string, valueConstraint?: {enum?: (string|number)[], enumLabels?: Object.<string, string>, numeric?: 'integer'|'number', min?: number}}[]} */
+/**
+ * @type {{name: string, type: string, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string, valueConstraint?: {enum?: (string|number)[], enumLabels?: Object.<string, string>, numeric?: 'integer'|'number', min?: number}}[]}
+ */
 export const SCRIPT_UTIL_HTTPGET_PROPERTIES = [
     {
         name: 'retries',
@@ -8899,7 +8937,9 @@ export const SCRIPT_UTIL_HTTPGET_PROPERTIES = [
 // Read-only properties on the object returned by `<HttpRequestInstance>.send()`.
 // Identical for HttpRequest and HttpGet. Source: ssjs.guide HttpResponseInstance.
 
-/** @type {{name: string, type: string, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string}[]} */
+/**
+ * @type {{name: string, type: string, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string}[]}
+ */
 export const SCRIPT_UTIL_RESPONSE_PROPERTIES = [
     {
         name: 'content',
@@ -8944,7 +8984,9 @@ export const SCRIPT_UTIL_RESPONSE_PROPERTIES = [
 // `new Script.Util.WSProxy()` instance. Source: ssjs.guide/wsproxy/*.md
 // (Return Value sections are consistent across createItem, retrieve, execute, …).
 
-/** @type {{name: string, type: string, optional?: boolean, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string}[]} */
+/**
+ * @type {{name: string, type: string, optional?: boolean, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string}[]}
+ */
 export const WSPROXY_RESULT_PROPERTIES = [
     {
         name: 'Status',
@@ -9012,7 +9054,9 @@ export const WSPROXY_RESULT_PROPERTIES = [
 // `WspResult` loosely (extra row fields are permitted via the index signature).
 // Emitted in the generated .d.ts as `interface WspResult`.
 
-/** @type {{name: string, type: string, optional?: boolean, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string}[]} */
+/**
+ * @type {{name: string, type: string, optional?: boolean, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string}[]}
+ */
 export const WSP_RESULT_ENTRY_PROPERTIES = [
     {
         name: 'StatusCode',
@@ -11711,7 +11755,9 @@ for (const entry of UNSUPPORTED_SYNTAX) {
 // Note: a member can be standardized in ES3 (e.g. Array.splice) yet still be
 // broken in the SFMC engine, which is why ES3 appears here too.
 
-/** @type {{method: string, owner: string, esVersion: 3 | 5 | 6, isStatic: boolean, category: 'unavailable' | 'broken', ambiguousWithString: boolean, description: string, polyfill: string}[]} */
+/**
+ * @type {{method: string, owner: string, esVersion: 3 | 5 | 6, isStatic: boolean, category: 'unavailable' | 'broken', ambiguousWithString: boolean, description: string, polyfill: string}[]}
+ */
 export const POLYFILLABLE_METHODS = [
     {
         method: 'copyWithin',
@@ -12344,7 +12390,9 @@ for (const entry of POLYFILLABLE_METHODS) {
 //   because a polyfill is theoretically feasible.
 // `suggestion` — short guidance shown to the user.
 
-/** @type {{member: string, owner: string, esVersion: 3 | 5 | 6, isStatic: boolean, isProperty?: boolean, category: 'unavailable' | 'broken', hasPolyfill: boolean, suggestion: string, replacement?: string}[]} */
+/**
+ * @type {{member: string, owner: string, esVersion: 3 | 5 | 6, isStatic: boolean, isProperty?: boolean, category: 'unavailable' | 'broken', hasPolyfill: boolean, suggestion: string, replacement?: string}[]}
+ */
 export const KNOWN_UNSUPPORTED = [
     // ── Confirmed-missing / broken global identifiers ────────────────────────
     // Runtime-verified absent on ssjs/MCDEV_Training_QA (typeof === "undefined").

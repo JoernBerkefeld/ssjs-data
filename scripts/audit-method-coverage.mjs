@@ -73,9 +73,13 @@ import {
     TRIGGERED_SEND_TRACKING_TOTAL_BY_INTERVAL_METHODS,
 } from '../src/index.js';
 
-/** @typedef {{ id: string, category: string, entry: object, callExpr: string, isProperty?: boolean }} CatalogEntry */
+/**
+ * @typedef {{ id: string, category: string, entry: object, callExpr: string, isProperty?: boolean }} CatalogEntry
+ */
 
-/** @type {CatalogEntry[]} */
+/**
+ * @type {CatalogEntry[]}
+ */
 const catalog = [];
 
 /**
@@ -468,7 +472,9 @@ function inDts(item) {
 
 // ── ssjs.guide gaps (curated — not auto-scanned) ─────────────────────────────
 
-/** Known guide-only APIs documented outside ssjs-data catalog */
+/**
+ * Known guide-only APIs documented outside ssjs-data catalog
+ */
 const GUIDE_ONLY_CANDIDATES = [
     {
         id: 'RegExp (constructor)',
@@ -509,7 +515,9 @@ const GUIDE_ONLY_CANDIDATES = [
 
 // ── Build report ─────────────────────────────────────────────────────────────
 
-/** Nested sub-namespace instance methods that generate-dts does not yet emit on parent interfaces. */
+/**
+ * Nested sub-namespace instance methods that generate-dts does not yet emit on parent interfaces.
+ */
 const NESTED_INSTANCE_GROUPS = [
     ['List.Subscribers', LIST_SUBSCRIBERS_METHODS, 'ListInstance', 'Subscribers'],
     [
@@ -560,7 +568,9 @@ function extractInterfaceBlock(ifaceName) {
     return dts.slice(start, end > 0 ? end : undefined);
 }
 
-/** @type {{ id: string, iface: string, propPath: string }[]} */
+/**
+ * @type {{ id: string, iface: string, propPath: string }[]}
+ */
 const nestedDtsMissing = [];
 for (const [prefix, methods, iface, propPath] of NESTED_INSTANCE_GROUPS) {
     const block = extractInterfaceBlock(iface);
@@ -596,7 +606,9 @@ const dtsCovered = catalog.filter((c) => inDts(c));
 
 const catalogIds = new Set(catalog.map((c) => c.id.split(' ', 1)[0]));
 
-/** @type {{ id: string, source: string, note: string, inSsjsData: boolean }[]} */
+/**
+ * @type {{ id: string, source: string, note: string, inSsjsData: boolean }[]}
+ */
 const guideOnly = Array.from(GUIDE_ONLY_CANDIDATES, (item) => ({
     id: item.id,
     source: item.source,

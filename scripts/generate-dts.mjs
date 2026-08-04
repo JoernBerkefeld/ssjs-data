@@ -93,14 +93,18 @@ import {
     platformRecipientLookup,
 } from '../src/index.js';
 
-/** Maps a Core Library class name (e.g. "Portfolio") to its `deprecated` flag. */
+/**
+ * Maps a Core Library class name (e.g. "Portfolio") to its `deprecated` flag.
+ */
 const coreObjectDeprecated = new Map(
     CORE_LIBRARY_OBJECTS.map((o) => [o.name, Boolean(o.deprecated)]),
 );
 
 // ── Type helpers ──────────────────────────────────────────────────────────────
 
-/** Maps ssjs-data instance-type strings to their TypeScript names. */
+/**
+ * Maps ssjs-data instance-type strings to their TypeScript names.
+ */
 const INSTANCE_TYPE_MAP = {
     Date: 'Date',
     DataExtensionInstance: 'DataExtensionInstance',
@@ -354,7 +358,7 @@ function buildJsDocComment(m, indent = ' '.repeat(4), guideUrl = null, mdnUrl = 
     if (linkParts.length > 0) {
         lines.push(`${indent} * ${linkParts.join(' / ')}`);
     }
-    if (m.description || guideUrl || mdnUrl) {
+    if (guideUrl || mdnUrl || m.description) {
         lines.push(`${indent} *`);
     }
 
@@ -525,7 +529,9 @@ function resolveAlias(aliasOf) {
 
 // ── Array<T> specialisation ───────────────────────────────────────────────────
 
-/** Return-type overrides that use the generic type parameter T for Array<T>. */
+/**
+ * Return-type overrides that use the generic type parameter T for Array<T>.
+ */
 const ARRAY_T_RETURNS = {
     pop: 'T',
     shift: 'T',
@@ -536,7 +542,9 @@ const ARRAY_T_RETURNS = {
     splice: 'T[]',
 };
 
-/** For these array methods the variadic/element parameter should be typed as T. */
+/**
+ * For these array methods the variadic/element parameter should be typed as T.
+ */
 const ARRAY_T_ELEMENT_METHODS = new Set(['push', 'unshift', 'concat', 'splice']);
 
 /**
@@ -709,7 +717,9 @@ function emitConstructibleBuiltin(c, extraStatics = []) {
 
 // ── Build output ──────────────────────────────────────────────────────────────
 
-/** Lines of the generated .d.ts file. */
+/**
+ * Lines of the generated .d.ts file.
+ */
 const out = [];
 
 function line(s = '') {
@@ -851,7 +861,7 @@ for (const g of SSJS_GLOBALS) {
     // Request that own a dedicated map entry) the object's own name.
     const nsKey = g.aliasOf ?? g.namespaceMethodsOf ?? g.name;
     const ns = g.type === 'object' ? PLATFORM_NAMESPACE_MAP[nsKey] : undefined;
-    if (g.type === 'object' && (g.aliasOf || g.namespaceMethodsOf || ns)) {
+    if (g.type === 'object' && (ns || g.aliasOf || g.namespaceMethodsOf)) {
         if (ns) {
             // When the bare-name global has its own dedicated page (see globalFunctionUrl),
             // link members to that page instead of the shared Platform.* namespace page.
@@ -912,7 +922,7 @@ for (const g of SSJS_GLOBALS) {
         globalGuideUrl = GUIDE_BASE_URL + globalFunctionUrl(gn);
     } else {
         // Fall back to the canonical Platform namespace URL derived from aliasOf
-        const [, ns, fnName] = (g.aliasOf ?? '').split('.');
+        const [, ns, fnName] = (g.aliasOf ?? '').split('.', 3);
         if (ns === 'Function') {
             globalGuideUrl = GUIDE_BASE_URL + platformFunctionUrl(fnName);
         } else if (ns === 'Response') {
@@ -1116,7 +1126,9 @@ const SUB_NS_IFACE_DEFS = [
  */
 const DOTTED_TOP_LEVEL_INSTANCE_CLASSES = new Set(['Send.Definition']);
 
-/** Sub-namespace properties to inject into top-level instance interfaces. */
+/**
+ * Sub-namespace properties to inject into top-level instance interfaces.
+ */
 const INSTANCE_SUB_NAMESPACES = {
     List: [{ prop: 'Subscribers', type: 'ListSubscribersInstance' }],
     Subscriber: [
@@ -1174,7 +1186,7 @@ for (const [nsName, methods, guideUrl] of CORE_CLASS_MAP) {
     // whose interface is declared in the SUB_NS_IFACE_DEFS block above instead.
     // DataExtensionInstance is already emitted explicitly above — skip it here.
     const isDottedTopLevelInstance = DOTTED_TOP_LEVEL_INSTANCE_CLASSES.has(nsName);
-    if ((!nsName.includes('.') || isDottedTopLevelInstance) && nsName !== 'DataExtension') {
+    if (nsName !== 'DataExtension' && (isDottedTopLevelInstance || !nsName.includes('.'))) {
         const subProps = INSTANCE_SUB_NAMESPACES[nsName] ?? [];
         if (instanceMethods.length > 0 || subProps.length > 0) {
             if (coreObjectDeprecated.get(nsName)) {

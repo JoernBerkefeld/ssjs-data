@@ -544,7 +544,7 @@ for (const g of SSJS_GLOBALS) {
     } else {
         // Alias fallback: the bare-name global has no dedicated page, so point
         // it at the aliased Platform page (mirrors the generate-dts fallback).
-        const [, ns, fnName] = g.aliasOf.split('.');
+        const [, ns, fnName] = g.aliasOf.split('.', 3);
         if (ns === 'Function') {
             url = platformFunctionUrl(fnName);
             category = 'Platform Functions';
@@ -672,7 +672,9 @@ function collectPageAnchors(content) {
  * @returns {Map.<string, Set.<string>>} Site-relative guide page URL → anchors on that page
  */
 function collectGuidePages(guideRoot) {
-    /** @type {Map<string, Set.<string>>} */
+    /**
+     * @type {Map<string, Set.<string>>}
+     */
     const pages = new Map();
 
     /**
@@ -734,7 +736,7 @@ if (existsSync(GUIDE)) {
         (entry) => !guidePages.has(entry.url.split('#', 1)[0]),
     );
     const missingAnchors = localEntries.filter((entry) => {
-        const [page, anchor] = entry.url.split('#');
+        const [page, anchor] = entry.url.split('#', 2);
         const anchors = guidePages.get(page);
         return anchor && anchors && !anchors.has(anchor);
     });
