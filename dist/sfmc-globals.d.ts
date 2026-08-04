@@ -336,15 +336,15 @@ declare namespace Platform {
          * Write(footerContent);
          * Platform.Function.EndImpressionRegion();
          */
-        function EndImpressionRegion(closeAll?: boolean): null;
+        function EndImpressionRegion(closeAll?: string | boolean | number): null;
         /**
          * Returns the current server date/time as a Date object (in the account timezone, Central by default), or the timestamp of the triggering send when called with true. Concatenating it to a string yields an RFC 2822-style value such as "Tue, 14 Jul 2026 17:59:40 GMT-06:00".
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/now/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the official docs describe the return as an RFC 2822-compliant date-time string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug (also affects Array/RegExp/Function) — detect via `.constructor === Date`, not `instanceof`. It coerces to an RFC 2822-style string during output.
-         * @param useContextTime - When true, returns the time the triggering send or activity was initiated. When false or omitted, returns the current system clock time.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the official docs describe the return as an RFC 2822-compliant date-time string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug (also affects Array/RegExp/Function) — detect via `.constructor === Date`, not `instanceof`. It coerces to an RFC 2822-style string during output. useContextTime also accepts number 0/1 and the strings "true"/"false".
+         * @param useContextTime - When true, returns the time the triggering send or activity was initiated. When false or omitted, returns the current system clock time. Also accepts number 0/1 and the strings "true"/"false".
          * @example
          * var current = Platform.Function.Now();
          * Write(current); // e.g. "Tue, 14 Jul 2026 17:59:40 GMT-06:00"
@@ -355,7 +355,7 @@ declare namespace Platform {
          * // Use context time during triggered sends:
          * var sendTime = Platform.Function.Now(true);
          */
-        function Now(useContextTime?: boolean): Date;
+        function Now(useContextTime?: string | boolean | number): Date;
         /**
          * Converts a date-time value from Marketing Cloud system time (CST, without daylight saving) to the local time of the account or user. Returns a Date object (not a string).
          *
@@ -926,7 +926,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage). Two behaviours the official docs do not state: the second argument is optional — a single-argument call produces a 302 with the Location header set; and the redirect terminates the script immediately, so statements after the call never run, not even when the call sits inside a try/catch (no catchable exception is raised). Any response body already written before the call is discarded in favour of the redirect payload.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage). Behaviours the official docs do not state: the second argument is optional — a single-argument call produces a 302 with the Location header set; a successful redirect discards any response body already written; and a redirect inside try is catchable — the catch runs and can call Redirect again, overriding the Location (keep redirects out of try, or guard the catch).
          * @param url - URL to redirect to.
          * @param movedPermanently - True for 301 permanent redirect, false for 302 temporary. Defaults to a 302 when omitted.
          * @example
@@ -961,7 +961,7 @@ declare namespace Platform {
          */
         function RemoveCookie(name: string): null;
         /**
-         * Writes content to the HTTP response output. Distinct from the bare-name `Write()``, which write to the rendered page output.
+         * Writes content to the HTTP response output. Distinct from the bare-name `Write()`, which also writes to the response after Core load. Non-string values use CLR stringification (not JS toString); use Stringify for objects.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
          *
@@ -1198,9 +1198,9 @@ declare namespace Request {
      * var sku = Request.GetQueryStringParameter("sku");
      * if (sku) { Write("SKU: " + sku); }
      */
-    function GetQueryStringParameter(name: string): string;
+    function GetQueryStringParameter(name: string | number): string;
     /**
-     * Returns the value of a named form field submitted with the current request (including POST data), or null when the field is absent. Also reads GET query string values.
+     * Returns the value of a named form field submitted with the current request (POST form data), or null when the field is absent. Does not read GET query string parameters — use Request.GetQueryStringParameter for those.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/request/)
      *
@@ -1304,22 +1304,22 @@ declare function BeginImpressionRegion(name: string): void;
  * Platform.Load("core", "1.1.5");
  * EndImpressionRegion(); // returns undefined (Platform.Function form returns null)
  */
-declare function EndImpressionRegion(closeAll?: boolean): any;
+declare function EndImpressionRegion(closeAll?: string | boolean | number): any;
 /**
- * Returns the current server date/time as a Date object (in the account timezone, Central by default), or the timestamp of the triggering send when called with `true`. Behaves identically to `Platform.Function.Now()`.
+ * Returns the current server date/time as a Date object (in the account timezone, Central by default), or the timestamp of the triggering send when called with `true`. Same return shape as `Platform.Function.Now()`; surplus arguments are ignored (the qualified form throws on arity 2+).
  *
  * [ssjs.guide reference](https://ssjs.guide/core-library/now/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `Now` works after `Platform.Load("core", ...)` and returns the same value as `Platform.Function.Now()` — a genuine Date object: typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an RFC 2822-style string such as "Tue, 21 Jul 2026 10:18:24 GMT-06:00" during output. The official docs describe the return as an RFC 2822-compliant date-time string. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first.
- * @param useContextTime - Pass `true` to return the timestamp of the triggering send instead of the current time.
+ * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `Now` works after `Platform.Load("core", ...)` and returns the same kind of value as `Platform.Function.Now()` — a genuine Date object: typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an RFC 2822-style string such as "Tue, 21 Jul 2026 10:18:24 GMT-06:00" during output. The official docs describe the return as an RFC 2822-compliant date-time string. Surplus arguments beyond maxArgs 1 are silently ignored on the bare form; `Platform.Function.Now(...)` throws on arity 2+. useContextTime also accepts number 0/1 and the strings "true"/"false". SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first.
+ * @param useContextTime - Pass `true` to return the timestamp of the triggering send instead of the current time. Also accepts number 0/1 and the strings "true"/"false".
  * @example
  * Platform.Load("core", "1.1.5");
  * var current = Now(); // e.g. "Tue, 21 Jul 2026 10:18:24 GMT-06:00"
  * Write(current.getFullYear()); // 2026
  */
-declare function Now(useContextTime?: boolean): Date;
+declare function Now(useContextTime?: string | boolean | number): Date;
 /**
  * Redirects the browser to another address. For scope-independent use that needs no Platform.Load, use `Platform.Response.Redirect(url, movedPermanently)`. Meaningful only in CloudPage context.
  *
@@ -1328,14 +1328,14 @@ declare function Now(useContextTime?: boolean): Date;
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
  * @param url - The address to send the browser to.
- * @param movedPermanently - Pass `true` for an HTTP 301 (permanent) redirect or `false` for a 302 (temporary) redirect.
+ * @param movedPermanently - Pass `true` / `1` / `"true"` for an HTTP 301 (permanent) redirect or `false` / `0` / `"false"` for a 302 (temporary) redirect.
  * @example
  * Platform.Load("core", "1.1.5");
  * Redirect("https://www.example.com", false); // or, scope-independent: Platform.Response.Redirect("https://www.example.com", false);
  */
-declare function Redirect(url: string, movedPermanently: boolean): void;
+declare function Redirect(url: string, movedPermanently: string | boolean | number): void;
 /**
- * Generates a new globally unique identifier as a lowercase canonical UUID v4 string (36 characters). Behaves identically to `Platform.Function.GUID()`.
+ * Generates a new globally unique identifier as a lowercase canonical UUID v4 string (36 characters). Requires Platform.Load("core"). Same return shape as Platform.Function.GUID(); surplus arguments are ignored (the qualified form throws).
  *
  * [ssjs.guide reference](https://ssjs.guide/core-library/guid/)
  *
@@ -1347,7 +1347,7 @@ declare function Redirect(url: string, movedPermanently: boolean): void;
  */
 declare function GUID(): string;
 /**
- * Checks whether a string is a valid email address format. Behaves identically to `Platform.Function.IsEmailAddress()`.
+ * Checks whether a string is a valid email address format. Same boolean answers as `Platform.Function.IsEmailAddress()` for one string argument; arity 0 returns false and surplus arguments are ignored (the qualified form throws).
  *
  * [ssjs.guide reference](https://ssjs.guide/core-library/isemailaddress/)
  *
@@ -1360,13 +1360,13 @@ declare function GUID(): string;
  */
 declare function IsEmailAddress(value: string): boolean;
 /**
- * Evaluates whether a string is a valid phone number and returns a boolean. Behaves identically to `Platform.Function.IsPhoneNumber()` (see that entry for the strict digits-only runtime format).
+ * Checks whether a value is a valid North American Numbering Plan (NANP) phone number. Same boolean answers as `Platform.Function.IsPhoneNumber()` for one argument; arity 0 returns false and surplus arguments are ignored (the qualified form throws). See that entry for the NANP format details.
  *
  * [ssjs.guide reference](https://ssjs.guide/core-library/isphonenumber/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `IsPhoneNumber` works after `Platform.Load("core", ...)` and returns the same boolean as `Platform.Function.IsPhoneNumber()`. The official docs describe generic "valid phone number" validation; see the `Platform.Function.IsPhoneNumber` entry for the stricter runtime format details. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first.
+ * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `IsPhoneNumber` works after `Platform.Load("core", ...)` and returns the same boolean as `Platform.Function.IsPhoneNumber()` for the documented 1-argument form. Calling with no arguments returns false (does not throw); surplus arguments are silently ignored. `Platform.Function.IsPhoneNumber` throws on arity 0 and on surplus arguments. Documented contract remains minArgs/maxArgs 1. The official docs describe generic "valid phone number" validation; see the `Platform.Function.IsPhoneNumber` entry for the NANP runtime format details. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first.
  * @param value - The value to validate.
  * @example
  * Platform.Load("core", "1.1.5");
@@ -1374,7 +1374,7 @@ declare function IsEmailAddress(value: string): boolean;
  */
 declare function IsPhoneNumber(value: string | number): boolean;
 /**
- * Writes text to the HTTP response output. For scope-independent output that needs no Platform.Load, use `Platform.Response.Write(text)` instead.
+ * Writes text to the HTTP response output. Non-string values use CLR stringification (not JS toString); use Stringify for objects. For scope-independent output that needs no Platform.Load, use `Platform.Response.Write(text)` instead.
  *
  * [ssjs.guide reference](https://ssjs.guide/core-library/write/)
  *
@@ -1387,7 +1387,7 @@ declare function IsPhoneNumber(value: string | number): boolean;
  */
 declare function Write(content: string): void;
 /**
- * Serializes a value to a JSON string. For scope-independent use, use `Platform.Function.Stringify(value)` instead.
+ * Serializes a value to a JSON string. Requires Platform.Load("core"). Same JSON text as `Platform.Function.Stringify(value)` for a given value; surplus arguments are ignored and zero arguments return "null" (the qualified form throws). For scope-independent use, prefer `Platform.Function.Stringify(value)`.
  *
  * [ssjs.guide reference](https://ssjs.guide/core-library/stringify/)
  *
@@ -1401,13 +1401,14 @@ declare function Write(content: string): void;
  */
 declare function Stringify(value: any): string;
 /**
- * Applies a formatting rule to a string or numeric value. Use format codes such as `C` (currency), `D` (decimal), `N` (number with separators), `P` (percentage), `O` (ISO 8601 date), `s` (sortable date), `d` (short date), `t` (12-hour time), etc. Append a digit to control decimal places, e.g. `C2` for two decimal places.
+ * Applies a formatting rule to a string, number, or Date. Use format codes such as `C` (currency), `D` (decimal), `N` (number with separators), `P` (percentage), `O` (ISO 8601 date), `s` (sortable date), `d` (short date), `t` (12-hour time), etc. Append a digit to control decimal places, e.g. `C2` for two decimal places.
  *
  * [ssjs.guide reference](https://ssjs.guide/core-library/format/)
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @param textToFormat - The string or number to apply a formatting rule to.
+ * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): bare-name `Format` requires `Platform.Load("core", ...)`. Numeric codes match the official examples (e.g. Format(4213.65, "C2") -> "$4,213.65"). DIFFERS: predefined short-form `d` returns a four-digit year (`8/5/2024` for the sample instant), not the two-digit year (`8/5/24`) shown in the official docs. textToFormat also accepts a real Date for date format codes (same result as the matching date string). Boolean is rejected for numeric codes. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run.
+ * @param textToFormat - The string, number, or Date to apply a formatting rule to.
  * @param formatCode - A format code to apply. Numeric: C, D, E, F, G, N, P (append digit for decimal places). Date/time: d, M, f, g, O, r, s, t, T, or a custom pattern.
  * @example
  * Platform.Load("core", "1.1.5");
@@ -1415,7 +1416,7 @@ declare function Stringify(value: any): string;
  * var isoDate = Format("2024-08-05T13:41:23", "O");  // "2024-08-05T13:41:23.0000000"
  * Write(price + " / " + isoDate);
  */
-declare function Format(textToFormat: string | number, formatCode: string): string;
+declare function Format(textToFormat: string | number | Date, formatCode: string): string;
 
 // ── DataExtension instance interfaces ───────────────────────────────────────
 interface DataExtensionFields {
@@ -1487,7 +1488,7 @@ interface DataExtensionRows {
      * var birthdayDE = DataExtension.Init("birthdayDE");
      * birthdayDE.Rows.Add(arrContacts);
      */
-    Add(rowData: any[]): number;
+    Add(rowData: any[] | object): number;
     /**
      * Returns rows where the specified columns equal the specified values (AND-joined). Optionally limits results and orders by a field. When initializing a data extension for `Lookup()` from an email message, you must use the data extension Name; on landing pages, either Name or external key works — make them identical to be safe.
      *
@@ -1497,16 +1498,16 @@ interface DataExtensionRows {
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage: returns typed values (Number and Decimal columns come back as number, Boolean as boolean), unlike Retrieve which returns every field as a string. Date columns are the exception: they come back as an ISO-8601 string (e.g. "2024-01-15T00:00:00.000"), NOT a Date object — the same behaviour as Platform.Function.LookupRows. On no match, returns `null` (not an empty array). The result is a host array where `instanceof Array` is `false`, but `.length` and index access work.
      * @param searchFieldNames - Array of column names to match against.
-     * @param searchValues - Array of values to match (one per column, in order).
+     * @param searchValues - Array of values to match (one per column, in order). Heterogeneous simple values; Number columns accept a number or a numeric string.
      * @param limit - Maximum number of rows to return.
      * @param orderByFieldName - Field to order results by.
-     * @returns Rows matching the lookup criteria.
+     * @returns Rows matching the lookup criteria with typed Number/Decimal/Boolean values; Date columns are ISO-8601 strings. Returns null when no row matches.
      * @example
      * Platform.Load("core", "1.1.5");
      * var testDE = DataExtension.Init("testDE");
      * var data = testDE.Rows.Lookup(["Age"], [25], 2, "LastName");
      */
-    Lookup(searchFieldNames: any[], searchValues: any[], limit?: number, orderByFieldName?: string): object[];
+    Lookup(searchFieldNames: string[], searchValues: any[], limit?: string | number, orderByFieldName?: string): object[] | null;
     /**
      * Deletes rows from the previously initialized data extension where the specified columns equal the specified values (AND-joined). For large deletion requests, batch the work — this method times out on long-running deletes.
      *
@@ -1515,14 +1516,14 @@ interface DataExtensionRows {
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param columnNames - Array of column names to match against.
-     * @param columnValues - Array of values to match (one per column, in order).
+     * @param columnValues - Array of values to match (one per column, in order). Heterogeneous simple values; Number columns accept a number or a numeric string.
      * @returns The number of rows that were modified (deleted).
      * @example
      * Platform.Load("Core", "1.1.5");
      * var memberDE = DataExtension.Init("MembershipRewards");
      * var result = memberDE.Rows.Remove(["Area"], ["Kensington"]);
      */
-    Remove(columnNames: any[], columnValues: any[]): number;
+    Remove(columnNames: string[], columnValues: any[]): number;
     /**
      * Retrieves up to 2500 rows from the previously initialized data extension. When called without a filter, returns all rows (subject to the 2500-row cap). Cannot be used in the context of an email message or email preview.
      *
@@ -1530,7 +1531,7 @@ interface DataExtensionRows {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage: calling `Retrieve()` without a filter DOES work on CloudPages and returns all rows — the widely-repeated "returns empty on CloudPages" bug could not be reproduced. All field values are returned as strings (even Number/Boolean/Date columns), unlike Lookup which returns typed values. On no match, returns an empty host array (`.length === 0`), not `null`. The result is a host array where `instanceof Array` is `false`, but `.length` and index access work.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage: calling `Retrieve()` without a filter DOES work on CloudPages and returns all rows — the widely-repeated "returns empty on CloudPages" bug could not be reproduced. All field values are returned as strings (even Number/Boolean/Date columns), unlike Lookup which returns typed Number/Decimal/Boolean values (Lookup Date columns are ISO-8601 strings, not Date objects). On no match, returns an empty host array (`.length === 0`), not `null`. The result is a host array where `instanceof Array` is `false`, but `.length` and index access work.
      * @param filter - WSProxy-style filter object — simple `{Property, SimpleOperator, Value}` or compound with `LeftOperand`/`LogicalOperator`/`RightOperand`. Optional per the example, despite the doc table marking `Required: Yes`.
      * @returns Rows from the data extension matching the filter (or all rows when no filter is supplied). Field values are strings.
      * @example
@@ -1551,7 +1552,7 @@ interface DataExtensionRows {
      * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage: returns a number (the count of rows updated), not the string "OK". When no row matches the WHERE clause, it returns `0` and does NOT throw.
      * @param rowData - Object whose keys are columns to update and values are the new values.
      * @param whereFieldNames - Array of column names to match against.
-     * @param whereValues - Array of values to match (one per column, in order).
+     * @param whereValues - Array of values to match (one per column, in order). Heterogeneous simple values; Number columns accept a number or a numeric string.
      * @returns The number of rows that were updated (0 when no row matches).
      * @example
      * Platform.Load("Core", "1");
@@ -1559,7 +1560,7 @@ interface DataExtensionRows {
      * var fieldsToUpdate = { StateProvince: "QC", PreferredActivity: "Sailing" };
      * var result = dataExt.Rows.Update(fieldsToUpdate, ["MemberId", "Country"], [9868600, "CA"]);
      */
-    Update(rowData: object, whereFieldNames: any[], whereValues: any[]): number;
+    Update(rowData: object, whereFieldNames: string[], whereValues: any[]): number;
 }
 interface DataExtensionInstance {
     Fields: DataExtensionFields;
@@ -1592,8 +1593,9 @@ interface ListSubscribersInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Official docs say Add returns "OK" or throws on failure. Runtime returns the plain string "Error" for invalid payloads and does not throw.
      * @param properties - Object containing subscriber properties (EmailAddress, SubscriberKey, optionally list status).
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns "OK" on success. Invalid or incomplete properties return the plain string "Error" (does not throw).
      * @example
      * Platform.Load("core", "1");
      * var list = List.Init("MY_LIST_KEY");
@@ -1605,13 +1607,13 @@ interface ListSubscribersInstance {
      */
     Add(properties: object): string;
     /**
-     * Returns the subscribers belonging to the previously initialized list. Pass an optional filter to narrow the results; omit it to return all subscribers on the list.
+     * Returns the subscribers belonging to the previously initialized list. Pass an optional filter to narrow the results; omit it to return all subscribers on the list. Filter on SubscriberKey; a filter on EmailAddress returns an empty array.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @param filter - Optional WSProxy-style filter object to narrow the results.
+     * @param filter - Optional WSProxy-style filter object. SubscriberKey works; EmailAddress returns no rows.
      * @returns List of subscriber objects on the list (filtered when a filter is supplied).
      * @example
      * Platform.Load("core", "1");
@@ -1620,36 +1622,38 @@ interface ListSubscribersInstance {
      */
     Retrieve(filter?: object): object[];
     /**
-     * Removes the specified subscriber from the previously initialized list.
+     * Sets the subscriber Status on the list to Unsubscribed. The membership row remains; it is not deleted.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Official docs say Unsubscribe returns "OK" or throws on failure. Runtime returns the plain string "Error" for a missing subscriber and does not throw.
      * @param emailAddress - Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns "OK" on success. A missing subscriber returns the plain string "Error" (does not throw).
      * @example
      * Platform.Load("core", "1.1.5");
      * var myList = List.Init("myList");
      * var status = myList.Subscribers.Unsubscribe("aruiz@example.com");
      */
-    Unsubscribe(emailAddress: string): string;
+    Unsubscribe(emailAddress: string | object): string;
     /**
-     * Updates the status of the specified subscriber on the previously initialized list.
+     * Updates the status of the specified subscriber on the previously initialized list. A bare email string works when EmailAddress equals SubscriberKey; otherwise pass `{EmailAddress, SubscriberKey}`.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/list-subscribers/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Official docs say Update returns "OK" or throws on failure. Runtime returns the plain string "Error" instead of throwing. A bare email string also returns "Error" when SubscriberKey differs from EmailAddress — use the object form in that case.
      * @param emailAddress - Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.
-     * @param status - New status of the subscriber on the list.
-     * @returns Returns "OK" on success or throws on failure.
+     * @param status - New status of the subscriber on the list (e.g. "Active", "Unsubscribed").
+     * @returns Returns "OK" on success. A missing subscriber or unresolved string identity returns the plain string "Error" (does not throw).
      * @example
      * Platform.Load("core", "1.1.5");
      * var myList = List.Init("myList");
      * var status = myList.Subscribers.Update("aruiz@example.com", "Active");
      */
-    Update(emailAddress: string, status: string): string;
+    Update(emailAddress: string | object, status: string): string;
     /**
      * Adds the subscriber if not on the list, otherwise updates the supplied attributes. If `attributes.Status` is supplied, the subscriber's list status is updated.
      *
@@ -1657,15 +1661,16 @@ interface ListSubscribersInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Official docs say Upsert returns "OK" or throws on failure. Runtime returns the plain string "Error" for failed calls and does not throw.
      * @param emailAddress - Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.
      * @param attributes - Additional subscriber attributes to set or update.
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns "OK" on success. Invalid calls return the plain string "Error" (does not throw).
      * @example
      * Platform.Load("core", "1.1.5");
      * var myList = List.Init("myList");
      * var status = myList.Subscribers.Upsert("aruiz@example.com", { ZipCode: "46202" });
      */
-    Upsert(emailAddress: string, attributes: object): string;
+    Upsert(emailAddress: string | object, attributes: object): string;
     readonly Tracking: ListSubscribersTrackingInstance;
 }
 interface SubscriberAttributesInstance {
@@ -1728,8 +1733,8 @@ interface SendTrackingTotalByIntervalInstance {
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @remarks ⚠️ Differs from the official Salesforce docs. Salesforce docs (and older references) document interval aggregation as `<SendInstance>.Tracking.TotalByIntervalRetrieve(type, startDate, endDate, groupBy)`. At runtime that name is `undefined`; the working member is `<SendInstance>.Tracking.TotalByInterval.Retrieve(type, startDate, endDate, groupBy)` (a `TotalByInterval` sub-object with a `Retrieve` method), matching the TriggeredSend.Tracking.TotalByInterval pattern.
      * @param type - Type of data to aggregate.
-     * @param startDate - Start date of the data period (MM-DD-YYYY).
-     * @param endDate - End date of the data period (MM-DD-YYYY).
+     * @param startDate - Start date of the data period (MM-DD-YYYY string or Date).
+     * @param endDate - End date of the data period (MM-DD-YYYY string or Date).
      * @param groupBy - Interval used to aggregate data.
      * @returns List of aggregated tracking records.
      * @example
@@ -1737,7 +1742,7 @@ interface SendTrackingTotalByIntervalInstance {
      * var singleSend = Send.Init(12345);
      * var results = singleSend.Tracking.TotalByInterval.Retrieve("Click", "07-01-2010", "07-31-2010", "day");
      */
-    Retrieve(type: string, startDate: string, endDate: string, groupBy: string): object[];
+    Retrieve(type: string, startDate: string | Date, endDate: string | Date, groupBy: string): object[];
 }
 interface TriggeredSendTrackingClicksInstance {
     /**
@@ -1765,8 +1770,8 @@ interface TriggeredSendTrackingTotalByIntervalInstance {
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param type - Type of data to aggregate.
-     * @param startDate - Start date of the data period (MM-DD-YYYY).
-     * @param endDate - End date of the data period (MM-DD-YYYY).
+     * @param startDate - Start date of the data period (MM-DD-YYYY string or Date).
+     * @param endDate - End date of the data period (MM-DD-YYYY string or Date).
      * @param groupBy - Interval used to aggregate data.
      * @returns List of aggregated tracking records.
      * @example
@@ -1774,7 +1779,7 @@ interface TriggeredSendTrackingTotalByIntervalInstance {
      * var tsd = TriggeredSend.Init("MyTSDKey");
      * var results = tsd.Tracking.TotalByInterval.Retrieve("Click", "07-01-2010", "07-31-2010", "day");
      */
-    Retrieve(type: string, startDate: string, endDate: string, groupBy: string): object[];
+    Retrieve(type: string, startDate: string | Date, endDate: string | Date, groupBy: string): object[];
 }
 interface SendTrackingInstance {
     readonly Clicks: SendTrackingClicksInstance;
@@ -1995,7 +2000,7 @@ declare namespace Portfolio {
      * Platform.Load("core", "1.1.5");
      * var portObj = Portfolio.Init("myPortfolioCK");
      */
-    function Init(key: string): PortfolioInstance;
+    function Init(key?: string): PortfolioInstance;
     /**
      * Creates a new portfolio (file) object from the supplied properties. DEPRECATED — Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
@@ -2034,7 +2039,7 @@ declare namespace Portfolio {
      * Platform.Load("core", "1.1.5");
      * var portObjArr = Portfolio.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "PortfolioObjectKey" });
      */
-    function Retrieve(filter: object): object[];
+    function Retrieve(filter?: object): object[];
 }
 /**
  * @deprecated
@@ -2066,7 +2071,7 @@ interface PortfolioInstance {
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. Runtime-verified: deleting an existing item returns "OK" and a follow-up Retrieve confirms it is gone. The return value is not a reliable success signal, however — calling Remove again on the already-deleted item, or on an instance built from a key that never existed, still returns "OK" instead of "Error" or a throw, so verify deletion with a Retrieve rather than trusting the return value. A surplus argument is accepted and ignored.
+     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. Runtime-verified: deleting an existing item returns "OK" and a follow-up Retrieve confirms it is gone. The return value is not a reliable success signal, however — calling Remove again on the already-deleted item still returns "OK" instead of "Error" or a throw, so verify deletion with a Retrieve rather than trusting the return value. An instance built from a key that never existed returns the plain string "Error" (it does not throw). A surplus argument is accepted and ignored.
      * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -2276,7 +2281,7 @@ interface FolderInstance {
      * var myIDFolder = Folder.Init();
      * myIDFolder.SetID(12345);
      */
-    SetID(id: number): void;
+    SetID(id: string | number): void;
 }
 /**
  * @deprecated
@@ -2306,7 +2311,7 @@ declare namespace Template {
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - JSON object describing the new template (CustomerKey, TemplateName, LayoutHTML).
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns "OK" on success or "Error" on failure (does not throw).
      * @example
      * Platform.Load("core", "1");
      * var myTemp = {
@@ -2346,7 +2351,7 @@ interface TemplateInstance {
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - Attributes to change on the template.
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns "OK" on success or "Error" on failure (does not throw).
      * @example
      * Platform.Load("core", "1.1.5");
      * var myTemplate = Template.Init("myTemplateCK");
@@ -2595,15 +2600,16 @@ declare namespace FilterDefinition {
      */
     function Init(key: string): FilterDefinitionInstance;
     /**
-     * Creates a new filter definition from the supplied properties. For a SIMPLE (single-property) filter, supply a `Filter` field with `{Property, SimpleOperator, Value}` and a top-level `DataSource: { Type: "DataExtension", CustomerKey }`. This shape is confirmed working at runtime against an owned source DE and returns the string "OK". COMPLEX filters (multiple conditions joined by `LeftOperand`/`LogicalOperator`/`RightOperand`) are NOT supported by this Core method and throw the raw string "Error adding FilterDefinition" — build those via `Platform.Function.CreateObject("ComplexFilterPart"…)` + `InvokeCreate`, or via a SOAP create over `HTTP.Post`.
+     * Creates a new filter definition from the supplied properties. No working Core `Add` invocation was found at runtime against an owned source DE — the documented simple-filter payload returns the string `"Error"` and does not create a row. A `DataFilter` property (instead of `Filter`) throws the raw string `"Error adding FilterDefinition"`. Prefer creating definitions via mcdev/`dataFilter` or SOAP when Core Add returns `"Error"`.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/filterdefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified against a real, owned source DE (`SSJSGUIDE_TYPES`) on the QA BU. `Add` is CONFIRMED WORKING at runtime with the SIMPLE-filter shape: a `Filter` field with `{Property, SimpleOperator, Value}` plus a top-level `DataSource: { Type: "DataExtension", CustomerKey }`. In that shape `FilterDefinition.Add()` creates the object and returns the string "OK". COMPLEX/multi-condition filters (conditions joined by `LeftOperand`/`LogicalOperator`/`RightOperand`, i.e. a `DataFilter`/`ComplexFilterPart` shape) are NOT supported by this Core method: at runtime `FilterDefinition.Add()` throws a raw string thrown value — `typeof e === "string"` with `String(e) === "Error adding FilterDefinition"` (no `.message`, `.description`, or `.name`). Build complex filters via `Platform.Function.CreateObject("SimpleFilterPart"/"ComplexFilterPart"/"FilterDefinition")` + `SetObjectProperty` + `InvokeCreate(filterDef, result, null)`, or via a hand-rolled SOAP create over `HTTP.Post`. Confirmed discrepancy vs docs: the return/throw contract is shape-dependent. For a valid simple-filter payload `Add()` returns the string "OK"; for an unsupported complex shape it throws the plain string "Error adding FilterDefinition" rather than returning "OK" or throwing an Error object as the docs imply. Note: `Add` is a STATIC method on `FilterDefinition`; the instance returned by `Init()` exposes only `Update` and `Remove`.
+     * @remarks ⚠️ Differs from the official Salesforce docs. No working invocation of `FilterDefinition.Add` was found on the QA CloudPage: with the owned source DE `SSJSGUIDE_TYPES` present, the documented simple-filter payload (`Filter: {Property, SimpleOperator, Value}` + `DataSource: { Type: "DataExtension", CustomerKey }`) returns the plain string `"Error"` (`typeof === "string"`) and does not create a retrievable definition (Core `Retrieve` and WSProxy `retrieve` both stay empty for the probe key). The same `"Error"` return was observed under Core `"1"`, `"1.1.1"`, and `"1.1.5"`, and with CategoryID / alternate DataSource shapes. A LeftOperand/LogicalOperator/RightOperand complex `Filter` also returns `"Error"` (does not throw). Using a `DataFilter` property instead of `Filter` throws the raw string `"Error adding FilterDefinition"` (`typeof e === "string"`). Observed WSProxy facts (reported, not interpreted as a cause): `createItem("FilterDefinition", …)` failed and `deleteItem` reported a permission error. Filters can still be created outside Core (e.g. mcdev `dataFilter` deploy). The official docs imply Add returns `"OK"` or throws; the success (`"OK"`) path could not be reproduced. Note: `Add` is a STATIC method on `FilterDefinition`; the instance returned by `Init()` exposes only `Update` and `Remove`.
+     * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @param properties - JSON object describing the new filter definition (Name, CustomerKey, a simple `Filter: {Property, SimpleOperator, Value}`, and a `DataSource: {Type, CustomerKey}`).
-     * @returns Returns the string "OK" on success (confirmed working at runtime with the simple-filter shape). An unsupported complex-filter payload throws the raw string "Error adding FilterDefinition" instead.
+     * @returns Documented as `"OK"` on success. At runtime the documented simple-filter payload returns `"Error"` and creates nothing; a `DataFilter` property throws the raw string `"Error adding FilterDefinition"`.
      * @example
      * Platform.Load("core", "1");
      * var newFD = {
@@ -2694,8 +2700,9 @@ declare namespace QueryDefinition {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a live CloudPage: a valid payload returns the string "OK". The official docs say failures throw — they do not: invalid payloads (including the docs' Overwrite sample that SELECTs from the same Data Extension used as Target) return the plain string "Error" instead of throwing. Overwrite requires the target DE to be absent from the QueryText FROM clause (use a different source DE, or use TargetUpdateType "Update" when reading and writing the same DE — Update also requires the target DE to have at least one non-primary-key field). Compare the return value against "OK"; do not rely on try/catch alone.
      * @param properties - JSON object describing the new query definition (Name, CustomerKey, optional CategoryID, TargetUpdateType, TargetType, Target, QueryText).
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
      * Platform.Load("core", "1.1.5");
      * var queryDef = {
@@ -2704,7 +2711,7 @@ declare namespace QueryDefinition {
      *     TargetUpdateType: "Overwrite",
      *     TargetType: "DE",
      *     Target: { Name: "Example Target DE", CustomerKey: "example_target_de" },
-     *     QueryText: "SELECT SubKey, Email, Name FROM [Example Target DE] where FavoriteItemID=77"
+     *     QueryText: "SELECT Pk FROM [SSJSGUIDE_TYPES]"
      * };
      * var status = QueryDefinition.Add(queryDef);
      */
@@ -2737,14 +2744,15 @@ interface QueryDefinitionInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: updating an existing definition returns "OK" and the change is visible via Retrieve. The official docs say failures throw — they do not: Update on a key that does not resolve returns the plain string "Error" instead of throwing. Always compare the return value against "OK".
      * @param properties - Attributes to change on the query definition.
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
      * Platform.Load("core", "1.1.5");
      * var qd = QueryDefinition.Init("myQueryDef");
      * var status = qd.Update({
      *     Name: "Updated Query Definition Name",
-     *     QueryText: "SELECT SubKey, Email, Name FROM [Example Target DE] where FavoriteItemID=12"
+     *     QueryText: "SELECT Pk FROM [SSJSGUIDE_TYPES]"
      * });
      */
     Update(properties: object): string;
@@ -2755,7 +2763,8 @@ interface QueryDefinitionInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @returns Returns "OK" on success or throws on failure.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: deleting an existing definition returns "OK" and a follow-up Retrieve confirms it is gone. The official docs say failures throw — they do not: Remove on a key that never existed returns the plain string "Error" instead of throwing. Always compare the return value against "OK" and confirm with Retrieve.
+     * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
      * Platform.Load("core", "1.1.5");
      * var qd = QueryDefinition.Init("myQueryDef");
@@ -2769,9 +2778,9 @@ interface QueryDefinitionInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs and this page state Perform returns "OK". Runtime-verified on a live CloudPage: Perform("start") returns the string "QueryDefinition perform called successfully" (not "OK"). It queues the query run asynchronously and returns immediately — the returned string only confirms the run was accepted, not that the query finished. Treat any thrown error as failure; do not string-match against "OK".
+     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs annotate Perform as `@returns {Enum("OK")}` and say failures throw. Runtime-verified on a live CloudPage: Perform("start") returns the string "QueryDefinition perform called successfully" (not "OK") when the run is accepted. It queues the query asynchronously and returns immediately — the string only confirms acceptance, not completion. On an invalid / non-existent key it does NOT throw: it returns a failure string of the form "Exception occurred during [Schedule::Start] ErrorID = <number>". Detect failure by inspecting the returned string, not by string-matching "OK" and not by relying on try/catch.
      * @param action - The action to perform. Use `"start"` to execute the query.
-     * @returns Returns the string "QueryDefinition perform called successfully" when the run is accepted; throws on failure.
+     * @returns Returns the string "QueryDefinition perform called successfully" when the run is accepted. On failure returns an Exception string (does not throw).
      * @example
      * Platform.Load("core", "1");
      * var qd = QueryDefinition.Init("MY_QUERY_KEY");
@@ -2832,7 +2841,8 @@ interface ListInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @returns Returns "OK" on success or throws on failure.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Official docs say Remove returns "OK" or throws on failure. Runtime returns the plain string "Error" for a nonexistent key and does not throw.
+     * @returns Returns "OK" on success. A nonexistent key returns the plain string "Error" (does not throw).
      * @example
      * Platform.Load("core", "1.1.5");
      * var myList = List.Init("myList");
@@ -3046,7 +3056,7 @@ interface EmailInstance {
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param properties - Attributes to change on the email message.
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns "OK" on success. A nonexistent key returns the plain string "Error" (does not throw).
      * @example
      * Platform.Load("core", "1.1.5");
      * var myEmail = Email.Init("myEmail");
@@ -3061,7 +3071,7 @@ interface EmailInstance {
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @returns Returns "OK" on success or throws on failure.
+     * @returns Returns "OK" on success. A nonexistent key returns the plain string "Error" (does not throw).
      * @example
      * Platform.Load("core", "1.1.5");
      * var myEmail = Email.Init("myEmail");
@@ -3069,15 +3079,15 @@ interface EmailInstance {
      */
     Remove(): string;
     /**
-     * Runs validation checks on the previously initialized classic email message. Returns a `{Task: {ValidationStatus: string, ValidationMessages: string}}` object. Deprecated — operates on classic Email Studio emails; prefer Content Builder assets for new work.
+     * Runs validation checks on the previously initialized classic email message. Returns a `{Task: {ValidationStatus: string, ValidationMessages: object[]|null}}` object. Initialize with the email CustomerKey string — Init with a numeric ID throws before returning a Task. Deprecated — operates on classic Email Studio emails; prefer Content Builder assets for new work.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/email/)
      *
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): `Task.ValidationStatus` is a STRING (e.g. "Fail"), not the boolean the official docs describe. Compare against string values, not `true`/`false`.
-     * @returns Validation result with `Task.ValidationStatus` (string, e.g. "Fail") and `Task.ValidationMessages` (string).
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): `Task.ValidationStatus` is a STRING (e.g. "Pass" / "Fail"), not the boolean the official docs describe. `Task.ValidationMessages` is `null` on Pass or an array of `{Location, Message, Description}` objects on Fail — not the single string the docs describe. Initialize with the CustomerKey string; `Email.Init(numericID).Validate()` throws "Error Validating Email".
+     * @returns Validation result with `Task.ValidationStatus` (string, e.g. "Pass" / "Fail") and `Task.ValidationMessages` (`null` on Pass, or an array of `{Location, Message, Description}` on Fail).
      * @example
      * Platform.Load("core", "1.1.5");
      * var myEmail = Email.Init("myEmail");
@@ -3116,13 +3126,13 @@ declare namespace Send {
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @param id - Numeric ID of the send.
+     * @param id - Numeric ID of the send (number or numeric string).
      * @returns An initialized Send bound to the specified send ID.
      * @example
      * Platform.Load("core", "1");
      * var s = Send.Init(12345);
      */
-    function Init(id: number): SendInstance;
+    function Init(id: string | number): SendInstance;
     /**
      * Creates a new send to the specified email and list(s). Pass an `options` object to override From name, From address, subject, send time, etc. Deprecated — Send is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
@@ -3132,8 +3142,8 @@ declare namespace Send {
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param emailKey - CustomerKey of the email message to associate with the send.
-     * @param listIds - Array of list IDs to send to.
-     * @param options - Optional send options (FromName, FromAddress, Subject, send time, ...).
+     * @param listIds - Target list IDs (numeric or numeric-string elements; mixed arrays accepted).
+     * @param options - Optional send options (FromName, FromAddress, Subject, SendDate, ...).
      * @returns Returns "OK" on success or throws on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3141,7 +3151,7 @@ declare namespace Send {
      * var options = { FromName: "JSON Specified Name", FromAddress: "aruiz@example.com", Subject: "JSON Test Mail" };
      * var status2 = Send.Add("test_email", [12345, 12346], options);
      */
-    function Add(emailKey: string, listIds: any[], options?: object): string;
+    function Add(emailKey: string, listIds: string[] | number[], options?: object): string;
     /**
      * Returns an array of sends matching the specified filter. Deprecated — Send is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
@@ -3178,14 +3188,15 @@ declare namespace Send {
  */
 interface SendInstance {
     /**
-     * Removes the previously initialized send. Deprecated — Send is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
+     * Cancels/removes the previously initialized send: returns "OK" and sets Status to "Canceled". The row remains Retrievable afterward (not a hard delete). Deprecated — Send is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/send/)
      *
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @returns Returns "OK" on success or throws on failure.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): `Remove()` returns "OK" and sets Status to "Canceled", but the send row remains Retrievable — it is not hard-deleted. A missing ID returns "Error" (does not throw).
+     * @returns Returns "OK" on success (Status becomes "Canceled"; row stays Retrievable). Returns "Error" when the ID is missing — does not throw.
      * @example
      * Platform.Load("core", "1.1.5");
      * var s = Send.Init(12345);
@@ -3200,8 +3211,8 @@ interface SendInstance {
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): `CancelSend()` returns the literal string "status" on success, not the "OK" the official docs describe. Do not compare its return value against "OK".
-     * @returns Returns the literal string "status" on success (not "OK"); throws on failure.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): `CancelSend()` returns the literal string "status" on success, not the "OK" the official docs describe. Do not compare its return value against "OK". Failure returns an error string (for example "not found" / "cannot be cancelled") and does not throw.
+     * @returns Returns the literal string "status" on success (not "OK"). On failure returns an error string — does not throw.
      * @example
      * Platform.Load("core", "1.1.5");
      * var mySend = Send.Init(12345);
@@ -3257,14 +3268,14 @@ declare namespace Send.Definition {
      * @param esdParams - Object with CustomerKey, Name, EmailSubject for the new send definition.
      * @param sendClassificationKey - CustomerKey of the related send classification.
      * @param emailKey - CustomerKey of the email message to use.
-     * @param listIds - Array of list IDs targeted by the send definition.
+     * @param listIds - Array of list IDs targeted by the send definition (numeric or numeric-string elements; mixed arrays accepted).
      * @returns Returns a CLR EmailSendDefinition object on success (`typeof` `"clr"`, stringifies to `"ExactTarget.Integration.WSDL.EmailSendDefinition"`). Throws the string `"Error adding EmailSendDefinition."` on failure.
      * @example
      * Platform.Load("core", "1");
      * var esdParams = { CustomerKey: "example_esd", Name: "Example Send Definition", EmailSubject: "Sent By Example Send Definition" };
      * Send.Definition.Add(esdParams, "example_sc_key", "example_email_key", [12345, 12346]);
      */
-    function Add(esdParams: object, sendClassificationKey: string, emailKey: string, listIds: any[]): object;
+    function Add(esdParams: object, sendClassificationKey: string, emailKey: string, listIds: string[] | number[]): object;
     /**
      * Creates a new send definition that targets a sendable Data Extension. Deprecated — Send.Definition is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
@@ -3312,7 +3323,7 @@ declare namespace Send.Definition {
      * }
      * var created = Send.Definition.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "filterDef_esd" }).length > 0;
      */
-    function AddWithFilterDefinition(esdParams: object, sendClassificationKey: string, emailKey: string, filterDefinitionKey: string, listId?: number): any;
+    function AddWithFilterDefinition(esdParams: object, sendClassificationKey: string, emailKey: string, filterDefinitionKey: string, listId?: string | number): any;
     /**
      * Returns an array of send definitions, optionally filtered. When no filter is supplied, all send definitions are returned. Deprecated — Send.Definition is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.
      *
@@ -3426,7 +3437,7 @@ declare namespace TriggeredSend {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Exists and resolves (`typeof TriggeredSend.Add === "function"`) but no working invocation was found. Every invocation of `TriggeredSend.Add` throws the string `Error adding TSD.`; `TriggeredSend.LastMessage` is then either `An error occurred when attempting to evaluate a SetObjectProperty function call.  See inner exception for details.` (whenever the payload contains any nested object such as `Email`, `List` or `SendClassification`) or the same `Error adding TSD.` with `LastErrorCode` 17014 / 2 (flat-only payloads). Proven with a fully valid, publishable definition on the QA BU (Email.ID 769268, List.ID 72164, SendClassification "Default Transactional" / ObjectID 2147aac4-35f1-ec11-b846-48df37d1dcc7, CategoryID 734919). Payload shapes swept without a single success: nested SOAP shape (`Email: {ID}`, `List: {ID}`, `SendClassification: {CustomerKey|ObjectID}`), the documented flat shape (`EmailID`, `ListID`, `SendClassificationID`), dotted keys (`"Email.ID"`), flat-scalar-only payloads, typed Core Library objects (`Email.Init()`, `List.Init()`, `SendClassification.Init()`), and the CLR object returned by `TriggeredSend.Retrieve` with its `CustomerKey` mutated. String and two-argument forms fail earlier with `Invalid cast from 'Char' to 'Double'.". Decisive control: in the same request, `Script.Util.WSProxy().createItem("TriggeredSendDefinition", payload)` with the identical payload returns `Status: "OK"`, `ErrorCode: 0`, `StatusMessage: "TriggeredSendDefinition created"`, and the resulting definition then publishes, starts, sends, pauses and updates normally. Use WSProxy `createItem` instead; no working invocation of `TriggeredSend.Add` was found.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Exists and resolves (`typeof TriggeredSend.Add === "function"`) but no working invocation was found. Every invocation of `TriggeredSend.Add` throws the string `Error adding TSD.`; `TriggeredSend.LastMessage` is then either `An error occurred when attempting to evaluate a SetObjectProperty function call.  See inner exception for details.` (whenever the payload contains any nested object such as `Email`, `List` or `SendClassification`) or the same `Error adding TSD.` with `LastErrorCode` 17014 / 2 (flat-only payloads). Proven with a fully valid, publishable definition on the QA BU (Email.ID 769268, List.ID 72164, SendClassification "Default Transactional" / ObjectID 2147aac4-35f1-ec11-b846-48df37d1dcc7, CategoryID 734919). Payload shapes swept without a single success: nested SOAP shape (`Email: {ID}`, `List: {ID}`, `SendClassification: {CustomerKey|ObjectID}`), the documented flat shape (`EmailID`, `ListID`, `SendClassificationID`), dotted keys (`"Email.ID"`), flat-scalar-only payloads, typed Core Library objects (`Email.Init()`, `List.Init()`, `SendClassification.Init()`), and the CLR object returned by `TriggeredSend.Retrieve` with its `CustomerKey` mutated. String and two-argument forms also throw the string `Error adding TSD.` (not the `Invalid cast from 'Char' to 'Double'.` cast seen on `Update("x")`). Decisive control: in the same request, `Script.Util.WSProxy().createItem("TriggeredSendDefinition", payload)` with the identical payload returns `Status: "OK"`, `ErrorCode: 0`, `StatusMessage: "TriggeredSendDefinition created"`, and the resulting definition then publishes, starts, sends, pauses and updates normally. Use WSProxy `createItem` instead; no working invocation of `TriggeredSend.Add` was found.
      * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @param properties - JSON object describing the new triggered send definition (Name, CustomerKey, FromName, FromAddress, EmailID, SendClassificationID, ...).
      * @returns An initialized TriggeredSend bound to the newly-created triggered send definition.
@@ -3543,13 +3554,13 @@ interface TriggeredSendInstance {
 }
 declare namespace DataExtension {
     /**
-     * Initializes a DataExtension instance bound to the specified data extension. Runtime accepts either the External Key or the Name of the data extension (both resolve to the same DE). Binding is lazy — Init never throws for a missing DE; the error surfaces on the first Rows/Fields operation. Required before invoking any `Fields` or `Rows` sub-namespace method on the returned instance. Note: Core Library DataExtension methods do not support enterprise-level data extensions.
+     * Initializes a DataExtension instance bound to the specified data extension by its External Key (`CustomerKey`). Binding is lazy — Init never throws for a missing DE; the error surfaces on the first Rows/Fields operation. Passing the display Name when it differs from CustomerKey does not bind Fields or Rows.Retrieve (empty results / `"Error"`); use the External Key. Required before invoking any `Fields` or `Rows` sub-namespace method on the returned instance. Note: Core Library DataExtension methods do not support enterprise-level data extensions.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @param key - External Key or Name of the data extension (the runtime resolves either).
+     * @param key - External Key (`CustomerKey`) of the data extension.
      * @returns An initialized DataExtension (exposing `Rows`, `Fields`, `Update`, `Remove`) bound to the specified data extension.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3591,13 +3602,13 @@ declare namespace DataExtension {
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @remarks ⚠️ Differs from the official Salesforce docs. The official Salesforce docs document `filter` as required, but at runtime it is optional: calling `DataExtension.Retrieve()` with no arguments does not throw and returns the full list of data extensions. A filter that matches nothing returns a real empty array (`[object Array]`, `length: 0`).
      * @param filter - PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`. Documented as required, but optional at runtime (omitting it returns all data extensions).
-     * @param queryAllAccounts - When `true`, search across all accounts accessible to the authenticated user. Defaults to `false`.
+     * @param queryAllAccounts - When `true`, search across all accounts accessible to the authenticated user. Defaults to `false`. Also accepts number `1` / `0` with the same meaning.
      * @returns List of data extensions matching the filter. Limit data extension external keys to 36 characters for downstream compatibility.
      * @example
      * Platform.Load("core", "1.1.5");
      * var results = DataExtension.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "myDEKey" });
      */
-    function Retrieve(filter: object, queryAllAccounts?: boolean): object[];
+    function Retrieve(filter?: object, queryAllAccounts?: boolean | number): object[];
 }
 declare namespace DateTime {
     /**
@@ -3882,21 +3893,22 @@ declare namespace HTTPHeader {
      * var host = HTTPHeader.GetValue("Host");
      * Write(host);
      */
-    function GetValue(name: string): string;
+    function GetValue(name: string): string | null;
     /**
-     * Sets the value of the specified OUTBOUND HTTP header. The host and content-length headers cannot be changed. Note: values set here are not readable via `HTTPHeader.GetValue`, which reads inbound headers.
+     * Sets the value of the specified OUTBOUND HTTP header. The content-length header cannot be changed; host can be set despite official docs. Note: values set here are not readable via `HTTPHeader.GetValue`, which reads inbound headers.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/httpheader/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): `content-length` cannot be changed (response keeps the real body length). Official docs also claim `host` is protected, but `SetValue("Host", …)` emits an outbound `Host` header. Boolean `value` is accepted but stringified with CLR capitalization (`True`/`False`).
      * @param name - Name of the header to set
      * @param value - Value to assign to the header
      * @example
      * Platform.Load("core", "1");
      * HTTPHeader.SetValue("From", "aruiz@example.com");
      */
-    function SetValue(name: string, value: string): void;
+    function SetValue(name: string, value: string | number | boolean): void;
     /**
      * Removes the specified entry from the HTTP header. Returns `undefined`.
      *

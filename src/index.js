@@ -103,11 +103,13 @@ export const SSJS_GLOBALS = [
         // Standalone bare-name object that DOES work at runtime. Shares the Platform.Variable member set.
         namespaceMethodsOf: 'Platform.Variable',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the bare-name global `Variable` is `undefined` BEFORE ' +
-            '`Platform.Load("core", ...)` and becomes a usable object AFTER it. `Variable.SetValue(key, val)` / ' +
-            '`Variable.GetValue(key)` work; `GetValue` on a variable that was set to `""` returns `""`, and on a ' +
-            'never-set variable returns `""` (empty string), not `null`.',
+            'Runtime-verified (CloudPage GET): bare `Variable` is undefined before `Platform.Load("core", ...)` ' +
+            'and an object after it. It shares request-local state with `Platform.Variable`. GetValue preserves ' +
+            'string/number/boolean scalars; an explicitly empty value returns `""`; a never-set name returns ' +
+            'JavaScript `null` (official docs: string). SetValue returns `undefined` (void-like), while ' +
+            '`Platform.Variable.SetValue` returns `null`. The leading `@` is optional.',
         description:
             'Bare-name access to Platform.Variable.* methods (`Variable.SetValue`, `Variable.GetValue`).',
         requiresCoreLoad: true,
@@ -179,9 +181,10 @@ export const SSJS_GLOBALS = [
         officialDocsNote:
             'Runtime-verified (CloudPage): available after Platform.Load("core", ...). `GetValue` reads INBOUND ' +
             'request headers and returns `null` for a header you set via `SetValue` (separate inbound/outbound ' +
-            'collections). `Remove` returns `undefined`, not `"OK"`.',
+            'collections). `Remove` returns `undefined`, not `"OK"`. Official docs claim `host` cannot be ' +
+            'changed; `SetValue("Host", …)` does emit an outbound `Host` header. `content-length` remains protected.',
         description:
-            'Object that provides access to HTTP request headers in SSJS CloudPage context.',
+            'Object that provides access to HTTP request and response headers in SSJS CloudPage context.',
         requiresCoreLoad: true,
     },
     {
@@ -496,7 +499,7 @@ export const SSJS_GLOBALS = [
             {
                 name: 'closeAll',
                 description: 'Optional flag to close all open impression regions.',
-                type: 'boolean',
+                type: 'string|boolean|number',
                 optional: true,
             },
         ],
@@ -517,24 +520,26 @@ export const SSJS_GLOBALS = [
         differsFromOfficialDocs: true,
         officialDocsNote:
             'Runtime-verified (CloudPage): the bare-name `Now` works after `Platform.Load("core", ...)` and ' +
-            'returns the same value as `Platform.Function.Now()` — a genuine Date object: typeof "object", ' +
+            'returns the same kind of value as `Platform.Function.Now()` — a genuine Date object: typeof "object", ' +
             '`Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and ' +
             '`getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that ' +
             '`instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via ' +
             '`.constructor === Date`, not `instanceof`. It coerces to an RFC 2822-style string such as ' +
             '"Tue, 21 Jul 2026 10:18:24 GMT-06:00" during output. The official docs describe the return as an ' +
-            'RFC 2822-compliant date-time string. ' +
+            'RFC 2822-compliant date-time string. Surplus arguments beyond maxArgs 1 are silently ignored on the ' +
+            'bare form; `Platform.Function.Now(...)` throws on arity 2+. useContextTime also accepts number 0/1 and ' +
+            'the strings "true"/"false". ' +
             'SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first.',
         description:
             'Returns the current server date/time as a Date object (in the account timezone, Central by ' +
-            'default), or the timestamp of the triggering send when called with `true`. Behaves identically to ' +
-            '`Platform.Function.Now()`.',
+            'default), or the timestamp of the triggering send when called with `true`. Same return shape as ' +
+            '`Platform.Function.Now()`; surplus arguments are ignored (the qualified form throws on arity 2+).',
         params: [
             {
                 name: 'useContextTime',
                 description:
-                    'Pass `true` to return the timestamp of the triggering send instead of the current time.',
-                type: 'boolean',
+                    'Pass `true` to return the timestamp of the triggering send instead of the current time. Also accepts number 0/1 and the strings "true"/"false".',
+                type: 'string|boolean|number',
                 optional: true,
             },
         ],
@@ -647,8 +652,8 @@ export const SSJS_GLOBALS = [
             {
                 name: 'movedPermanently',
                 description:
-                    'Pass `true` for an HTTP 301 (permanent) redirect or `false` for a 302 (temporary) redirect.',
-                type: 'boolean',
+                    'Pass `true` / `1` / `"true"` for an HTTP 301 (permanent) redirect or `false` / `0` / `"false"` for a 302 (temporary) redirect.',
+                type: 'string|boolean|number',
             },
         ],
         returnType: 'void',
@@ -668,12 +673,14 @@ export const SSJS_GLOBALS = [
         differsFromOfficialDocs: false,
         officialDocsNote:
             'Runtime-verified (CloudPage): the bare-name `GUID` works after `Platform.Load("core", ...)` and ' +
-            'returns the same value as `Platform.Function.GUID()` — a lowercase canonical UUID v4 string of 36 ' +
-            'characters (e.g. "f038aa14-708f-4392-a329-7dfa46abaf4b"). SCOPE RULE: bare-name Core globals exist ' +
-            'ONLY after Platform.Load has run — call the load first.',
+            'returns a lowercase canonical UUID v4 string of 36 characters (same shape as ' +
+            '`Platform.Function.GUID()`). Surplus arguments are silently ignored on the bare form; ' +
+            '`Platform.Function.GUID(...)` throws if any argument is passed. SCOPE RULE: bare-name Core ' +
+            'globals exist ONLY after Platform.Load has run — call the load first.',
         description:
             'Generates a new globally unique identifier as a lowercase canonical UUID v4 string (36 characters). ' +
-            'Behaves identically to `Platform.Function.GUID()`.',
+            'Requires Platform.Load("core"). Same return shape as Platform.Function.GUID(); surplus arguments ' +
+            'are ignored (the qualified form throws).',
         params: [],
         returnType: 'string',
         syntax: 'GUID()',
@@ -692,12 +699,15 @@ export const SSJS_GLOBALS = [
         differsFromOfficialDocs: false,
         officialDocsNote:
             'Runtime-verified (CloudPage): the bare-name `IsEmailAddress` works after `Platform.Load("core", ...)` ' +
-            'and returns the same boolean as `Platform.Function.IsEmailAddress()` (e.g. "a@b.com" -> true, ' +
-            '"nope" -> false). SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call ' +
-            'the load first.',
+            'and returns the same boolean as `Platform.Function.IsEmailAddress()` for the documented 1-argument ' +
+            'form (e.g. "a@b.com" -> true, "nope" -> false). Calling with no arguments returns false (does not ' +
+            'throw); surplus arguments are silently ignored. `Platform.Function.IsEmailAddress` throws on arity 0 ' +
+            'and on surplus arguments. Documented contract remains minArgs/maxArgs 1. SCOPE RULE: bare-name Core ' +
+            'globals exist ONLY after Platform.Load has run — call the load first.',
         description:
-            'Checks whether a string is a valid email address format. Behaves identically to ' +
-            '`Platform.Function.IsEmailAddress()`.',
+            'Checks whether a string is a valid email address format. Same boolean answers as ' +
+            '`Platform.Function.IsEmailAddress()` for one string argument; arity 0 returns false and surplus ' +
+            'arguments are ignored (the qualified form throws).',
         params: [{ name: 'value', description: 'The string to validate.', type: 'string' }],
         returnType: 'boolean',
         syntax: 'IsEmailAddress(value)',
@@ -716,13 +726,16 @@ export const SSJS_GLOBALS = [
         differsFromOfficialDocs: true,
         officialDocsNote:
             'Runtime-verified (CloudPage): the bare-name `IsPhoneNumber` works after `Platform.Load("core", ...)` ' +
-            'and returns the same boolean as `Platform.Function.IsPhoneNumber()`. The official docs describe ' +
-            'generic "valid phone number" validation; see the `Platform.Function.IsPhoneNumber` entry for the ' +
-            'stricter runtime format details. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load ' +
-            'has run — call the load first.',
+            'and returns the same boolean as `Platform.Function.IsPhoneNumber()` for the documented 1-argument form. ' +
+            'Calling with no arguments returns false (does not throw); surplus arguments are silently ignored. ' +
+            '`Platform.Function.IsPhoneNumber` throws on arity 0 and on surplus arguments. Documented contract ' +
+            'remains minArgs/maxArgs 1. The official docs describe generic "valid phone number" validation; see the ' +
+            '`Platform.Function.IsPhoneNumber` entry for the NANP runtime format details. SCOPE RULE: bare-name ' +
+            'Core globals exist ONLY after Platform.Load has run — call the load first.',
         description:
-            'Evaluates whether a string is a valid phone number and returns a boolean. Behaves identically to ' +
-            '`Platform.Function.IsPhoneNumber()` (see that entry for the strict digits-only runtime format).',
+            'Checks whether a value is a valid North American Numbering Plan (NANP) phone number. Same boolean ' +
+            'answers as `Platform.Function.IsPhoneNumber()` for one argument; arity 0 returns false and surplus ' +
+            'arguments are ignored (the qualified form throws). See that entry for the NANP format details.',
         params: [{ name: 'value', description: 'The value to validate.', type: 'string|number' }],
         returnType: 'boolean',
         syntax: 'IsPhoneNumber(value)',
@@ -741,14 +754,16 @@ export const SSJS_GLOBALS = [
         differsFromOfficialDocs: false,
         officialDocsNote:
             'Runtime-verified (CloudPage): the bare-name `Write` works after `Platform.Load("core", ...)` and ' +
-            'outputs to the response. This matches the official docs — the Core-library intro documents that these ' +
-            'bare-name globals require Platform.Load, so the requirement is documented behavior, not a deviation. ' +
-            'SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first. Once ' +
-            'loaded they are usable in that scope and inside nested helper-function bodies that close over it. For a ' +
-            'scope-independent form that needs no Platform.Load and works in any scope, use ' +
-            '`Platform.Response.Write(text)` instead.',
+            'appends to the response (no automatic newline; returns undefined). Platform.Load is required for the ' +
+            'bare name (documented Core-library intro behaviour, not a deviation). Zero arguments and surplus ' +
+            'arguments are soft (no throw; surplus ignored) while the documented contract remains one required ' +
+            'string. Non-string values use CLR stringification — objects/arrays emit host type names, booleans ' +
+            'emit `True`/`False` — not JavaScript `toString()` / `[object Object]`. Prefer `Stringify` for objects. ' +
+            'For a scope-independent form that needs no Platform.Load, use `Platform.Response.Write(text)` ' +
+            '(returns null).',
         description:
-            'Writes text to the HTTP response output. ' +
+            'Writes text to the HTTP response output. Non-string values use CLR stringification ' +
+            '(not JS toString); use Stringify for objects. ' +
             'For scope-independent output that needs no Platform.Load, use `Platform.Response.Write(text)` instead.',
         params: [{ name: 'text', description: 'Text to write to the response.', type: 'string' }],
         returnType: 'void',
@@ -768,15 +783,18 @@ export const SSJS_GLOBALS = [
         differsFromOfficialDocs: false,
         officialDocsNote:
             'Runtime-verified (CloudPage): the bare-name `Stringify` works after `Platform.Load("core", ...)` ' +
-            '(e.g. Stringify({a:1,b:"x"}) -> \'{"a":1,"b":"x"}\'). This matches the official docs — the Core-library ' +
-            'intro documents that these bare-name globals require Platform.Load, so the requirement is documented ' +
-            'behavior, not a deviation. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — ' +
-            'call the load first. Once loaded they are usable in that scope and inside nested helper-function bodies ' +
-            'that close over it. For a scope-independent form that needs no Platform.Load, use ' +
-            '`Platform.Function.Stringify(value)`.',
+            '(e.g. Stringify({a:1,b:"x"}) -> \'{"a":1,"b":"x"}\'). Surplus arguments are silently ignored and ' +
+            'zero arguments return the string "null"; `Platform.Function.Stringify(...)` throws on wrong arity. ' +
+            'This matches the official docs — the Core-library intro documents that these bare-name globals ' +
+            'require Platform.Load, so the requirement is documented behavior, not a deviation. SCOPE RULE: ' +
+            'bare-name Core globals exist ONLY after Platform.Load has run — call the load first. Once loaded ' +
+            'they are usable in that scope and inside nested helper-function bodies that close over it. For a ' +
+            'scope-independent form that needs no Platform.Load, use `Platform.Function.Stringify(value)`.',
         description:
-            'Serializes a value to a JSON string. ' +
-            'For scope-independent use, use `Platform.Function.Stringify(value)` instead.',
+            'Serializes a value to a JSON string. Requires Platform.Load("core"). Same JSON text as ' +
+            '`Platform.Function.Stringify(value)` for a given value; surplus arguments are ignored and zero ' +
+            'arguments return "null" (the qualified form throws). For scope-independent use, prefer ' +
+            '`Platform.Function.Stringify(value)`.',
         params: [{ name: 'value', description: 'Value to serialize to JSON.', type: 'any' }],
         returnType: 'string',
         syntax: 'Stringify(value)',
@@ -825,24 +843,25 @@ export const SSJS_GLOBALS = [
         maxArgs: 2,
         requiresCoreLoad: true,
         isConfirmed: true,
-        differsFromOfficialDocs: false,
+        differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the bare-name `Format` works after `Platform.Load("core", ...)` ' +
-            '(e.g. Format(4213.65, "C2") -> "$4,213.65"). This matches the official docs — the Core-library intro ' +
-            'documents that these bare-name globals require Platform.Load, so the requirement is documented ' +
-            'behavior, not a deviation. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — ' +
-            'call the load first. Once loaded they are usable in that scope and inside nested helper-function ' +
-            'bodies that close over it.',
+            'Runtime-verified (CloudPage): bare-name `Format` requires `Platform.Load("core", ...)`. ' +
+            'Numeric codes match the official examples (e.g. Format(4213.65, "C2") -> "$4,213.65"). ' +
+            'DIFFERS: predefined short-form `d` returns a four-digit year (`8/5/2024` for the sample ' +
+            'instant), not the two-digit year (`8/5/24`) shown in the official docs. ' +
+            'textToFormat also accepts a real Date for date format codes (same result as the matching ' +
+            'date string). Boolean is rejected for numeric codes. SCOPE RULE: bare-name Core globals ' +
+            'exist ONLY after Platform.Load has run.',
         description:
-            'Applies a formatting rule to a string or numeric value. ' +
+            'Applies a formatting rule to a string, number, or Date. ' +
             'Use format codes such as `C` (currency), `D` (decimal), `N` (number with separators), ' +
             '`P` (percentage), `O` (ISO 8601 date), `s` (sortable date), `d` (short date), `t` (12-hour time), etc. ' +
             'Append a digit to control decimal places, e.g. `C2` for two decimal places.',
         params: [
             {
                 name: 'textToFormat',
-                description: 'The string or number to apply a formatting rule to.',
-                type: 'string|number',
+                description: 'The string, number, or Date to apply a formatting rule to.',
+                type: 'string|number|Date',
             },
             {
                 name: 'formatCode',
@@ -1658,7 +1677,7 @@ export const PLATFORM_FUNCTIONS = [
             {
                 name: 'closeAll',
                 description: 'When true, closes all nested impression regions',
-                type: 'boolean',
+                type: 'string|boolean|number',
                 optional: true,
             },
         ],
@@ -1682,8 +1701,8 @@ export const PLATFORM_FUNCTIONS = [
             {
                 name: 'useContextTime',
                 description:
-                    'When true, returns the time the triggering send or activity was initiated. When false or omitted, returns the current system clock time.',
-                type: 'boolean',
+                    'When true, returns the time the triggering send or activity was initiated. When false or omitted, returns the current system clock time. Also accepts number 0/1 and the strings "true"/"false".',
+                type: 'string|boolean|number',
                 optional: true,
             },
         ],
@@ -1691,7 +1710,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the official docs describe the return as an RFC 2822-compliant date-time string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug (also affects Array/RegExp/Function) — detect via `.constructor === Date`, not `instanceof`. It coerces to an RFC 2822-style string during output.',
+            'Runtime-verified (CloudPage): the official docs describe the return as an RFC 2822-compliant date-time string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug (also affects Array/RegExp/Function) — detect via `.constructor === Date`, not `instanceof`. It coerces to an RFC 2822-style string during output. useContextTime also accepts number 0/1 and the strings "true"/"false".',
         syntax: 'Platform.Function.Now([useContextTime])',
         example:
             'var current = Platform.Function.Now();\nWrite(current); // e.g. "Tue, 14 Jul 2026 17:59:40 GMT-06:00"\n\n// current is a Date object:\nWrite(current.getFullYear()); // 2026\n\n// Use context time during triggered sends:\nvar sendTime = Platform.Function.Now(true);',
@@ -3332,7 +3351,7 @@ export const PORTFOLIO_METHODS = [
             'existence check (use Retrieve for that). The returned value is a host object: converting it with String() ' +
             'or otherwise stringifying it throws "Object reference not set to an instance of an object", so only call ' +
             'its methods. Both the CustomerKey and the ObjectID of an item are accepted as the key.',
-        minArgs: 1,
+        minArgs: 0,
         maxArgs: 1,
         description:
             'Initializes a Portfolio instance bound to the specified external key. ' +
@@ -3411,7 +3430,7 @@ export const PORTFOLIO_METHODS = [
             'booleans. The filter argument is optional in practice — calling Retrieve with no arguments returns every ' +
             'item, and a surplus second argument is ignored — but passing a non-object (e.g. a string) throws ' +
             '"Error Retrieving Portfolios".',
-        minArgs: 1,
+        minArgs: 0,
         maxArgs: 1,
         description:
             'Returns an array of portfolio objects matching the specified filter. ' +
@@ -3488,9 +3507,9 @@ export const PORTFOLIO_METHODS = [
             'endpoints for new work. ' +
             'Runtime-verified: deleting an existing item returns "OK" and a follow-up Retrieve confirms it is gone. ' +
             'The return value is not a reliable success signal, however — calling Remove again on the already-deleted ' +
-            'item, or on an instance built from a key that never existed, still returns "OK" instead of "Error" or a ' +
-            'throw, so verify deletion with a Retrieve rather than trusting the return value. A surplus argument is ' +
-            'accepted and ignored.',
+            'item still returns "OK" instead of "Error" or a throw, so verify deletion with a Retrieve rather than ' +
+            'trusting the return value. An instance built from a key that never existed returns the plain string ' +
+            '"Error" (it does not throw). A surplus argument is accepted and ignored.',
         minArgs: 0,
         maxArgs: 0,
         description:
@@ -3803,7 +3822,7 @@ export const FOLDER_METHODS = [
             {
                 name: 'id',
                 description: 'The folder ID to bind to this Folder instance.',
-                type: 'number',
+                type: 'string|number',
             },
         ],
         returnType: 'void',
@@ -3856,8 +3875,8 @@ export const TEMPLATE_METHODS = [
             },
         ],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription: 'Returns "OK" on success or "Error" on failure (does not throw).',
         syntax: 'Template.Add(properties)',
         example:
             'Platform.Load("core", "1");\n' +
@@ -3914,8 +3933,8 @@ export const TEMPLATE_METHODS = [
             },
         ],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription: 'Returns "OK" on success or "Error" on failure (does not throw).',
         syntax: '<TemplateInstance>.Update(properties)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -4308,18 +4327,16 @@ export const FILTER_DEFINITION_METHODS = [
         isStatic: true,
         isConfirmed: true,
         differsFromOfficialDocs: true,
+        nonFunctionalAtRuntime: true,
         officialDocsNote:
-            'Runtime-verified against a real, owned source DE (`SSJSGUIDE_TYPES`) on the QA BU. `Add` is CONFIRMED WORKING at runtime with the SIMPLE-filter shape: a `Filter` field with `{Property, SimpleOperator, Value}` plus a top-level `DataSource: { Type: "DataExtension", CustomerKey }`. In that shape `FilterDefinition.Add()` creates the object and returns the string "OK". ' +
-            'COMPLEX/multi-condition filters (conditions joined by `LeftOperand`/`LogicalOperator`/`RightOperand`, i.e. a `DataFilter`/`ComplexFilterPart` shape) are NOT supported by this Core method: at runtime `FilterDefinition.Add()` throws a raw string thrown value — `typeof e === "string"` with `String(e) === "Error adding FilterDefinition"` (no `.message`, `.description`, or `.name`). Build complex filters via `Platform.Function.CreateObject("SimpleFilterPart"/"ComplexFilterPart"/"FilterDefinition")` + `SetObjectProperty` + `InvokeCreate(filterDef, result, null)`, or via a hand-rolled SOAP create over `HTTP.Post`. ' +
-            'Confirmed discrepancy vs docs: the return/throw contract is shape-dependent. For a valid simple-filter payload `Add()` returns the string "OK"; for an unsupported complex shape it throws the plain string "Error adding FilterDefinition" rather than returning "OK" or throwing an Error object as the docs imply. ' +
-            'Note: `Add` is a STATIC method on `FilterDefinition`; the instance returned by `Init()` exposes only `Update` and `Remove`.',
+            'No working invocation of `FilterDefinition.Add` was found on the QA CloudPage: with the owned source DE `SSJSGUIDE_TYPES` present, the documented simple-filter payload (`Filter: {Property, SimpleOperator, Value}` + `DataSource: { Type: "DataExtension", CustomerKey }`) returns the plain string `"Error"` (`typeof === "string"`) and does not create a retrievable definition (Core `Retrieve` and WSProxy `retrieve` both stay empty for the probe key). The same `"Error"` return was observed under Core `"1"`, `"1.1.1"`, and `"1.1.5"`, and with CategoryID / alternate DataSource shapes. A LeftOperand/LogicalOperator/RightOperand complex `Filter` also returns `"Error"` (does not throw). Using a `DataFilter` property instead of `Filter` throws the raw string `"Error adding FilterDefinition"` (`typeof e === "string"`). Observed WSProxy facts (reported, not interpreted as a cause): `createItem("FilterDefinition", …)` failed and `deleteItem` reported a permission error. Filters can still be created outside Core (e.g. mcdev `dataFilter` deploy). The official docs imply Add returns `"OK"` or throws; the success (`"OK"`) path could not be reproduced. Note: `Add` is a STATIC method on `FilterDefinition`; the instance returned by `Init()` exposes only `Update` and `Remove`.',
         requiresCoreLoad: true,
         minArgs: 1,
         maxArgs: 1,
         description:
             'Creates a new filter definition from the supplied properties. ' +
-            'For a SIMPLE (single-property) filter, supply a `Filter` field with `{Property, SimpleOperator, Value}` and a top-level `DataSource: { Type: "DataExtension", CustomerKey }`. This shape is confirmed working at runtime against an owned source DE and returns the string "OK". ' +
-            'COMPLEX filters (multiple conditions joined by `LeftOperand`/`LogicalOperator`/`RightOperand`) are NOT supported by this Core method and throw the raw string "Error adding FilterDefinition" — build those via `Platform.Function.CreateObject("ComplexFilterPart"…)` + `InvokeCreate`, or via a SOAP create over `HTTP.Post`.',
+            'No working Core `Add` invocation was found at runtime against an owned source DE — the documented simple-filter payload returns the string `"Error"` and does not create a row. ' +
+            'A `DataFilter` property (instead of `Filter`) throws the raw string `"Error adding FilterDefinition"`. Prefer creating definitions via mcdev/`dataFilter` or SOAP when Core Add returns `"Error"`.',
         params: [
             {
                 name: 'properties',
@@ -4331,7 +4348,7 @@ export const FILTER_DEFINITION_METHODS = [
         returnType: 'string',
         returnEnum: ['OK', 'Error'],
         returnDescription:
-            'Returns the string "OK" on success (confirmed working at runtime with the simple-filter shape). An unsupported complex-filter payload throws the raw string "Error adding FilterDefinition" instead.',
+            'Documented as `"OK"` on success. At runtime the documented simple-filter payload returns `"Error"` and creates nothing; a `DataFilter` property throws the raw string `"Error adding FilterDefinition"`.',
         syntax: 'FilterDefinition.Add(properties)',
         example:
             'Platform.Load("core", "1");\n' +
@@ -4467,6 +4484,14 @@ export const QUERY_DEFINITION_METHODS = [
         isStatic: true,
         requiresCoreLoad: true,
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified on a live CloudPage: a valid payload returns the string "OK". The official docs say ' +
+            "failures throw — they do not: invalid payloads (including the docs' Overwrite sample that SELECTs from " +
+            'the same Data Extension used as Target) return the plain string "Error" instead of throwing. ' +
+            'Overwrite requires the target DE to be absent from the QueryText FROM clause (use a different source DE, ' +
+            'or use TargetUpdateType "Update" when reading and writing the same DE — Update also requires the target DE ' +
+            'to have at least one non-primary-key field). Compare the return value against "OK"; do not rely on try/catch alone.',
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -4481,8 +4506,9 @@ export const QUERY_DEFINITION_METHODS = [
             },
         ],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success; returns the string "Error" (not a throw) on failure.',
         syntax: 'QueryDefinition.Add(properties)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -4492,7 +4518,7 @@ export const QUERY_DEFINITION_METHODS = [
             '    TargetUpdateType: "Overwrite",\n' +
             '    TargetType: "DE",\n' +
             '    Target: { Name: "Example Target DE", CustomerKey: "example_target_de" },\n' +
-            '    QueryText: "SELECT SubKey, Email, Name FROM [Example Target DE] where FavoriteItemID=77"\n' +
+            '    QueryText: "SELECT Pk FROM [SSJSGUIDE_TYPES]"\n' +
             '};\n' +
             'var status = QueryDefinition.Add(queryDef);',
     },
@@ -4531,6 +4557,11 @@ export const QUERY_DEFINITION_METHODS = [
         isStatic: false,
         requiresCoreLoad: true,
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified: updating an existing definition returns "OK" and the change is visible via Retrieve. ' +
+            'The official docs say failures throw — they do not: Update on a key that does not resolve returns the ' +
+            'plain string "Error" instead of throwing. Always compare the return value against "OK".',
         minArgs: 1,
         maxArgs: 1,
         description: 'Updates the query definition with the supplied attributes.',
@@ -4542,15 +4573,16 @@ export const QUERY_DEFINITION_METHODS = [
             },
         ],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success; returns the string "Error" (not a throw) on failure.',
         syntax: '<QueryDefinitionInstance>.Update(properties)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
             'var qd = QueryDefinition.Init("myQueryDef");\n' +
             'var status = qd.Update({\n' +
             '    Name: "Updated Query Definition Name",\n' +
-            '    QueryText: "SELECT SubKey, Email, Name FROM [Example Target DE] where FavoriteItemID=12"\n' +
+            '    QueryText: "SELECT Pk FROM [SSJSGUIDE_TYPES]"\n' +
             '});',
     },
     {
@@ -4558,13 +4590,19 @@ export const QUERY_DEFINITION_METHODS = [
         isStatic: false,
         requiresCoreLoad: true,
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified: deleting an existing definition returns "OK" and a follow-up Retrieve confirms it is ' +
+            'gone. The official docs say failures throw — they do not: Remove on a key that never existed returns the ' +
+            'plain string "Error" instead of throwing. Always compare the return value against "OK" and confirm with Retrieve.',
         minArgs: 0,
         maxArgs: 0,
         description: 'Removes the previously initialized query definition.',
         params: [],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success; returns the string "Error" (not a throw) on failure.',
         syntax: '<QueryDefinitionInstance>.Remove()',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -4578,10 +4616,12 @@ export const QUERY_DEFINITION_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs and this page state Perform returns "OK". Runtime-verified on a live CloudPage: ' +
-            'Perform("start") returns the string "QueryDefinition perform called successfully" (not "OK"). It queues the ' +
-            'query run asynchronously and returns immediately — the returned string only confirms the run was accepted, ' +
-            'not that the query finished. Treat any thrown error as failure; do not string-match against "OK".',
+            'The official docs annotate Perform as `@returns {Enum("OK")}` and say failures throw. Runtime-verified on a ' +
+            'live CloudPage: Perform("start") returns the string "QueryDefinition perform called successfully" (not "OK") ' +
+            'when the run is accepted. It queues the query asynchronously and returns immediately — the string only ' +
+            'confirms acceptance, not completion. On an invalid / non-existent key it does NOT throw: it returns a ' +
+            'failure string of the form "Exception occurred during [Schedule::Start] ErrorID = <number>". Detect failure ' +
+            'by inspecting the returned string, not by string-matching "OK" and not by relying on try/catch.',
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -4597,7 +4637,8 @@ export const QUERY_DEFINITION_METHODS = [
         returnType: 'string',
         returnEnum: ['QueryDefinition perform called successfully'],
         returnDescription:
-            'Returns the string "QueryDefinition perform called successfully" when the run is accepted; throws on failure.',
+            'Returns the string "QueryDefinition perform called successfully" when the run is accepted. On failure ' +
+            'returns an Exception string (does not throw).',
         syntax: '<QueryDefinitionInstance>.Perform(action)',
         example:
             'Platform.Load("core", "1");\n' +
@@ -4684,8 +4725,12 @@ export const LIST_METHODS = [
         description: 'Removes the previously initialized list.',
         params: [],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success. A nonexistent key returns the plain string "Error" (does not throw).',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Official docs say Remove returns "OK" or throws on failure. Runtime returns the plain string "Error" for a nonexistent key and does not throw.',
         syntax: '<ListInstance>.Remove()',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -4712,8 +4757,12 @@ export const LIST_SUBSCRIBERS_METHODS = [
             },
         ],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success. Invalid or incomplete properties return the plain string "Error" (does not throw).',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Official docs say Add returns "OK" or throws on failure. Runtime returns the plain string "Error" for invalid payloads and does not throw.',
         syntax: '<ListInstance>.Subscribers.Add(properties)',
         example:
             'Platform.Load("core", "1");\n' +
@@ -4733,11 +4782,13 @@ export const LIST_SUBSCRIBERS_METHODS = [
         maxArgs: 1,
         description:
             'Returns the subscribers belonging to the previously initialized list. ' +
-            'Pass an optional filter to narrow the results; omit it to return all subscribers on the list.',
+            'Pass an optional filter to narrow the results; omit it to return all subscribers on the list. ' +
+            'Filter on SubscriberKey; a filter on EmailAddress returns an empty array.',
         params: [
             {
                 name: 'filter',
-                description: 'Optional WSProxy-style filter object to narrow the results.',
+                description:
+                    'Optional WSProxy-style filter object. SubscriberKey works; EmailAddress returns no rows.',
                 type: 'object',
                 optional: true,
             },
@@ -4758,18 +4809,23 @@ export const LIST_SUBSCRIBERS_METHODS = [
         isConfirmed: true,
         minArgs: 1,
         maxArgs: 1,
-        description: 'Removes the specified subscriber from the previously initialized list.',
+        description:
+            'Sets the subscriber Status on the list to Unsubscribed. The membership row remains; it is not deleted.',
         params: [
             {
                 name: 'emailAddress',
                 description:
                     'Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.',
-                type: 'string',
+                type: 'string|object',
             },
         ],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success. A missing subscriber returns the plain string "Error" (does not throw).',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Official docs say Unsubscribe returns "OK" or throws on failure. Runtime returns the plain string "Error" for a missing subscriber and does not throw.',
         syntax: '<ListInstance>.Subscribers.Unsubscribe(emailAddress)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -4784,23 +4840,29 @@ export const LIST_SUBSCRIBERS_METHODS = [
         minArgs: 2,
         maxArgs: 2,
         description:
-            'Updates the status of the specified subscriber on the previously initialized list.',
+            'Updates the status of the specified subscriber on the previously initialized list. ' +
+            'A bare email string works when EmailAddress equals SubscriberKey; otherwise pass `{EmailAddress, SubscriberKey}`.',
         params: [
             {
                 name: 'emailAddress',
                 description:
                     'Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.',
-                type: 'string',
+                type: 'string|object',
             },
             {
                 name: 'status',
-                description: 'New status of the subscriber on the list.',
+                description:
+                    'New status of the subscriber on the list (e.g. "Active", "Unsubscribed").',
                 type: 'string',
             },
         ],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success. A missing subscriber or unresolved string identity returns the plain string "Error" (does not throw).',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Official docs say Update returns "OK" or throws on failure. Runtime returns the plain string "Error" instead of throwing. A bare email string also returns "Error" when SubscriberKey differs from EmailAddress — use the object form in that case.',
         syntax: '<ListInstance>.Subscribers.Update(emailAddress, status)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -4822,7 +4884,7 @@ export const LIST_SUBSCRIBERS_METHODS = [
                 name: 'emailAddress',
                 description:
                     'Email address of the subscriber, or a `{EmailAddress, SubscriberKey}` object identifying the subscriber.',
-                type: 'string',
+                type: 'string|object',
             },
             {
                 name: 'attributes',
@@ -4831,8 +4893,12 @@ export const LIST_SUBSCRIBERS_METHODS = [
             },
         ],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success. Invalid calls return the plain string "Error" (does not throw).',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Official docs say Upsert returns "OK" or throws on failure. Runtime returns the plain string "Error" for failed calls and does not throw.',
         syntax: '<ListInstance>.Subscribers.Upsert(emailAddress, attributes)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -5206,8 +5272,9 @@ export const EMAIL_METHODS = [
             },
         ],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success. A nonexistent key returns the plain string "Error" (does not throw).',
         syntax: '<EmailInstance>.Update(properties)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -5227,8 +5294,9 @@ export const EMAIL_METHODS = [
             'Deprecated — operates on classic Email Studio emails; prefer Content Builder assets for new work.',
         params: [],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success. A nonexistent key returns the plain string "Error" (does not throw).',
         syntax: '<EmailInstance>.Remove()',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -5243,18 +5311,22 @@ export const EMAIL_METHODS = [
         deprecated: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): `Task.ValidationStatus` is a STRING (e.g. "Fail"), not the boolean ' +
-            'the official docs describe. Compare against string values, not `true`/`false`.',
+            'Runtime-verified (CloudPage): `Task.ValidationStatus` is a STRING (e.g. "Pass" / "Fail"), not the boolean ' +
+            'the official docs describe. `Task.ValidationMessages` is `null` on Pass or an array of ' +
+            '`{Location, Message, Description}` objects on Fail — not the single string the docs describe. ' +
+            'Initialize with the CustomerKey string; `Email.Init(numericID).Validate()` throws "Error Validating Email".',
         minArgs: 0,
         maxArgs: 0,
         description:
             'Runs validation checks on the previously initialized classic email message. ' +
-            'Returns a `{Task: {ValidationStatus: string, ValidationMessages: string}}` object. ' +
+            'Returns a `{Task: {ValidationStatus: string, ValidationMessages: object[]|null}}` object. ' +
+            'Initialize with the email CustomerKey string — Init with a numeric ID throws before returning a Task. ' +
             'Deprecated — operates on classic Email Studio emails; prefer Content Builder assets for new work.',
         params: [],
         returnType: 'object',
         returnDescription:
-            'Validation result with `Task.ValidationStatus` (string, e.g. "Fail") and `Task.ValidationMessages` (string).',
+            'Validation result with `Task.ValidationStatus` (string, e.g. "Pass" / "Fail") and ' +
+            '`Task.ValidationMessages` (`null` on Pass, or an array of `{Location, Message, Description}` on Fail).',
         syntax: '<EmailInstance>.Validate()',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -5304,7 +5376,13 @@ export const SEND_METHODS = [
             'Initializes a Send instance bound to the specified send ID. ' +
             'Required before invoking any other Send method on the returned instance. ' +
             'Deprecated — Send is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
-        params: [{ name: 'id', description: 'Numeric ID of the send.', type: 'number' }],
+        params: [
+            {
+                name: 'id',
+                description: 'Numeric ID of the send (number or numeric string).',
+                type: 'string|number',
+            },
+        ],
         returnType: 'SendInstance',
         returnDescription: 'An initialized Send bound to the specified send ID.',
         syntax: 'Send.Init(id)',
@@ -5328,11 +5406,16 @@ export const SEND_METHODS = [
                 description: 'CustomerKey of the email message to associate with the send.',
                 type: 'string',
             },
-            { name: 'listIds', description: 'Array of list IDs to send to.', type: 'array' },
+            {
+                name: 'listIds',
+                description:
+                    'Target list IDs (numeric or numeric-string elements; mixed arrays accepted).',
+                type: 'string[]|number[]',
+            },
             {
                 name: 'options',
                 description:
-                    'Optional send options (FromName, FromAddress, Subject, send time, ...).',
+                    'Optional send options (FromName, FromAddress, Subject, SendDate, ...).',
                 type: 'object',
                 optional: true,
             },
@@ -5406,15 +5489,20 @@ export const SEND_METHODS = [
         deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): `Remove()` returns "OK" and sets Status to "Canceled", but the send row remains Retrievable — it is not hard-deleted. A missing ID returns "Error" (does not throw).',
         minArgs: 0,
         maxArgs: 0,
         description:
-            'Removes the previously initialized send. ' +
+            'Cancels/removes the previously initialized send: returns "OK" and sets Status to "Canceled". ' +
+            'The row remains Retrievable afterward (not a hard delete). ' +
             'Deprecated — Send is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder.',
         params: [],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns "OK" on success (Status becomes "Canceled"; row stays Retrievable). Returns "Error" when the ID is missing — does not throw.',
         syntax: '<SendInstance>.Remove()',
         example: 'Platform.Load("core", "1.1.5");\nvar s = Send.Init(12345);\ns.Remove();',
     },
@@ -5427,7 +5515,8 @@ export const SEND_METHODS = [
         differsFromOfficialDocs: true,
         officialDocsNote:
             'Runtime-verified (CloudPage): `CancelSend()` returns the literal string "status" on success, ' +
-            'not the "OK" the official docs describe. Do not compare its return value against "OK".',
+            'not the "OK" the official docs describe. Do not compare its return value against "OK". ' +
+            'Failure returns an error string (for example "not found" / "cannot be cancelled") and does not throw.',
         minArgs: 0,
         maxArgs: 0,
         description:
@@ -5437,7 +5526,7 @@ export const SEND_METHODS = [
         returnType: 'string',
         returnEnum: ['status'],
         returnDescription:
-            'Returns the literal string "status" on success (not "OK"); throws on failure.',
+            'Returns the literal string "status" on success (not "OK"). On failure returns an error string — does not throw.',
         syntax: '<SendInstance>.CancelSend()',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -5525,13 +5614,13 @@ export const SEND_TRACKING_TOTAL_BY_INTERVAL_METHODS = [
             },
             {
                 name: 'startDate',
-                description: 'Start date of the data period (MM-DD-YYYY).',
-                type: 'string',
+                description: 'Start date of the data period (MM-DD-YYYY string or Date).',
+                type: 'string|Date',
             },
             {
                 name: 'endDate',
-                description: 'End date of the data period (MM-DD-YYYY).',
-                type: 'string',
+                description: 'End date of the data period (MM-DD-YYYY string or Date).',
+                type: 'string|Date',
             },
             {
                 name: 'groupBy',
@@ -5610,8 +5699,9 @@ export const SEND_DEFINITION_METHODS = [
             },
             {
                 name: 'listIds',
-                description: 'Array of list IDs targeted by the send definition.',
-                type: 'array',
+                description:
+                    'Array of list IDs targeted by the send definition (numeric or numeric-string elements; mixed arrays accepted).',
+                type: 'string[]|number[]',
             },
         ],
         returnType: 'object',
@@ -5736,7 +5826,7 @@ export const SEND_DEFINITION_METHODS = [
             {
                 name: 'listId',
                 description: 'ID of the list targeted by the filter.',
-                type: 'number',
+                type: 'string|number',
                 optional: true,
             },
         ],
@@ -5977,8 +6067,8 @@ export const TRIGGERED_SEND_METHODS = [
             'success: nested SOAP shape (`Email: {ID}`, `List: {ID}`, `SendClassification: {CustomerKey|ObjectID}`), the documented flat ' +
             'shape (`EmailID`, `ListID`, `SendClassificationID`), dotted keys (`"Email.ID"`), flat-scalar-only payloads, typed Core ' +
             'Library objects (`Email.Init()`, `List.Init()`, `SendClassification.Init()`), and the CLR object returned by ' +
-            '`TriggeredSend.Retrieve` with its `CustomerKey` mutated. String and two-argument forms fail earlier with `Invalid cast from ' +
-            "'Char' to 'Double'.\". Decisive control: in the same request, `Script.Util.WSProxy().createItem(\"TriggeredSendDefinition\", " +
+            '`TriggeredSend.Retrieve` with its `CustomerKey` mutated. String and two-argument forms also throw the string `Error adding TSD.` (not the `Invalid cast from ' +
+            '\'Char\' to \'Double\'.` cast seen on `Update("x")`). Decisive control: in the same request, `Script.Util.WSProxy().createItem("TriggeredSendDefinition", ' +
             'payload)` with the identical payload returns `Status: "OK"`, `ErrorCode: 0`, `StatusMessage: "TriggeredSendDefinition ' +
             'created"`, and the resulting definition then publishes, starts, sends, pauses and updates normally. Use WSProxy `createItem` ' +
             'instead; no working invocation of `TriggeredSend.Add` was found.',
@@ -6269,13 +6359,13 @@ export const TRIGGERED_SEND_TRACKING_TOTAL_BY_INTERVAL_METHODS = [
             },
             {
                 name: 'startDate',
-                description: 'Start date of the data period (MM-DD-YYYY).',
-                type: 'string',
+                description: 'Start date of the data period (MM-DD-YYYY string or Date).',
+                type: 'string|Date',
             },
             {
                 name: 'endDate',
-                description: 'End date of the data period (MM-DD-YYYY).',
-                type: 'string',
+                description: 'End date of the data period (MM-DD-YYYY string or Date).',
+                type: 'string|Date',
             },
             {
                 name: 'groupBy',
@@ -6538,16 +6628,16 @@ export const DATA_EXTENSION_METHODS = [
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Initializes a DataExtension instance bound to the specified data extension. ' +
-            'Runtime accepts either the External Key or the Name of the data extension (both resolve to the same DE). ' +
+            'Initializes a DataExtension instance bound to the specified data extension by its External Key (`CustomerKey`). ' +
             'Binding is lazy — Init never throws for a missing DE; the error surfaces on the first Rows/Fields operation. ' +
+            'Passing the display Name when it differs from CustomerKey does not bind Fields or Rows.Retrieve ' +
+            '(empty results / `"Error"`); use the External Key. ' +
             'Required before invoking any `Fields` or `Rows` sub-namespace method on the returned instance. ' +
             'Note: Core Library DataExtension methods do not support enterprise-level data extensions.',
         params: [
             {
                 name: 'key',
-                description:
-                    'External Key or Name of the data extension (the runtime resolves either).',
+                description: 'External Key (`CustomerKey`) of the data extension.',
                 type: 'string',
             },
         ],
@@ -6608,7 +6698,7 @@ export const DATA_EXTENSION_METHODS = [
             'The official Salesforce docs document `filter` as required, but at runtime it is optional: ' +
             'calling `DataExtension.Retrieve()` with no arguments does not throw and returns the full list of data extensions. ' +
             'A filter that matches nothing returns a real empty array (`[object Array]`, `length: 0`).',
-        minArgs: 1,
+        minArgs: 0,
         maxArgs: 2,
         description:
             'Returns an array of data extensions matching the specified filter. ' +
@@ -6621,12 +6711,14 @@ export const DATA_EXTENSION_METHODS = [
                     'PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`. ' +
                     'Documented as required, but optional at runtime (omitting it returns all data extensions).',
                 type: 'object',
+                optional: true,
             },
             {
                 name: 'queryAllAccounts',
                 description:
-                    'When `true`, search across all accounts accessible to the authenticated user. Defaults to `false`.',
-                type: 'boolean',
+                    'When `true`, search across all accounts accessible to the authenticated user. Defaults to `false`. ' +
+                    'Also accepts number `1` / `0` with the same meaning.',
+                type: 'boolean|number',
                 optional: true,
                 default: false,
             },
@@ -6746,7 +6838,7 @@ export const DATA_EXTENSION_ROWS_METHODS = [
                 name: 'rowData',
                 description:
                     "Array of row objects (or a single row object). Each object's keys must match data extension field names.",
-                type: 'array',
+                type: 'array|object',
             },
         ],
         returnType: 'number',
@@ -6781,17 +6873,18 @@ export const DATA_EXTENSION_ROWS_METHODS = [
             {
                 name: 'searchFieldNames',
                 description: 'Array of column names to match against.',
-                type: 'array',
+                type: 'string[]',
             },
             {
                 name: 'searchValues',
-                description: 'Array of values to match (one per column, in order).',
+                description:
+                    'Array of values to match (one per column, in order). Heterogeneous simple values; Number columns accept a number or a numeric string.',
                 type: 'array',
             },
             {
                 name: 'limit',
                 description: 'Maximum number of rows to return.',
-                type: 'number',
+                type: 'string|number',
                 optional: true,
             },
             {
@@ -6801,8 +6894,9 @@ export const DATA_EXTENSION_ROWS_METHODS = [
                 optional: true,
             },
         ],
-        returnType: 'object[]',
-        returnDescription: 'Rows matching the lookup criteria.',
+        returnType: 'object[]|null',
+        returnDescription:
+            'Rows matching the lookup criteria with typed Number/Decimal/Boolean values; Date columns are ISO-8601 strings. Returns null when no row matches.',
         syntax: '<DataExtensionInstance>.Rows.Lookup(searchFieldNames, searchValues, [limit], [orderByFieldName])',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -6823,11 +6917,12 @@ export const DATA_EXTENSION_ROWS_METHODS = [
             {
                 name: 'columnNames',
                 description: 'Array of column names to match against.',
-                type: 'array',
+                type: 'string[]',
             },
             {
                 name: 'columnValues',
-                description: 'Array of values to match (one per column, in order).',
+                description:
+                    'Array of values to match (one per column, in order). Heterogeneous simple values; Number columns accept a number or a numeric string.',
                 type: 'array',
             },
         ],
@@ -6847,7 +6942,7 @@ export const DATA_EXTENSION_ROWS_METHODS = [
         differsFromOfficialDocs: true,
         officialDocsNote:
             'Runtime-verified on a CloudPage: calling `Retrieve()` without a filter DOES work on CloudPages and returns all rows — the widely-repeated "returns empty on CloudPages" bug could not be reproduced. ' +
-            'All field values are returned as strings (even Number/Boolean/Date columns), unlike Lookup which returns typed values. ' +
+            'All field values are returned as strings (even Number/Boolean/Date columns), unlike Lookup which returns typed Number/Decimal/Boolean values (Lookup Date columns are ISO-8601 strings, not Date objects). ' +
             'On no match, returns an empty host array (`.length === 0`), not `null`. The result is a host array where `instanceof Array` is `false`, but `.length` and index access work.',
         minArgs: 0,
         maxArgs: 1,
@@ -6899,11 +6994,12 @@ export const DATA_EXTENSION_ROWS_METHODS = [
             {
                 name: 'whereFieldNames',
                 description: 'Array of column names to match against.',
-                type: 'array',
+                type: 'string[]',
             },
             {
                 name: 'whereValues',
-                description: 'Array of values to match (one per column, in order).',
+                description:
+                    'Array of values to match (one per column, in order). Heterogeneous simple values; Number columns accept a number or a numeric string.',
                 type: 'array',
             },
         ],
@@ -7502,7 +7598,7 @@ export const HTTPHEADER_METHODS = [
             'Retrieves the value of the specified INBOUND HTTP request header (e.g. Host, User-Agent). ' +
             'Returns `null` for headers that are not present on the request.',
         params: [{ name: 'name', description: 'Name of the HTTP header to read', type: 'string' }],
-        returnType: 'string',
+        returnType: 'string|null',
         syntax: 'HTTPHeader.GetValue(name)',
         example:
             'Platform.Load("core", "1");\n' +
@@ -7516,13 +7612,22 @@ export const HTTPHEADER_METHODS = [
         isStatic: false,
         requiresCoreLoad: true,
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): `content-length` cannot be changed (response keeps the real body ' +
+            'length). Official docs also claim `host` is protected, but `SetValue("Host", …)` emits an outbound ' +
+            '`Host` header. Boolean `value` is accepted but stringified with CLR capitalization (`True`/`False`).',
         description:
             'Sets the value of the specified OUTBOUND HTTP header. ' +
-            'The host and content-length headers cannot be changed. ' +
+            'The content-length header cannot be changed; host can be set despite official docs. ' +
             'Note: values set here are not readable via `HTTPHeader.GetValue`, which reads inbound headers.',
         params: [
             { name: 'name', description: 'Name of the header to set', type: 'string' },
-            { name: 'value', description: 'Value to assign to the header', type: 'string' },
+            {
+                name: 'value',
+                description: 'Value to assign to the header',
+                type: 'string|number|boolean',
+            },
         ],
         returnType: 'void',
         syntax: 'HTTPHeader.SetValue(name, value)',
@@ -7669,11 +7774,11 @@ export const PLATFORM_RESPONSE_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage). Two behaviours the official docs do not state: ' +
+            'Runtime-verified (CloudPage). Behaviours the official docs do not state: ' +
             'the second argument is optional — a single-argument call produces a 302 with the Location header set; ' +
-            'and the redirect terminates the script immediately, so statements after the call never run, ' +
-            'not even when the call sits inside a try/catch (no catchable exception is raised). ' +
-            'Any response body already written before the call is discarded in favour of the redirect payload.',
+            'a successful redirect discards any response body already written; ' +
+            'and a redirect inside try is catchable — the catch runs and can call Redirect again, ' +
+            'overriding the Location (keep redirects out of try, or guard the catch).',
         syntax: 'Platform.Response.Redirect(url[, movedPermanently])',
         example: 'Platform.Response.Redirect("https://pub.pages.example.com/thank-you", false);',
     },
@@ -7731,7 +7836,8 @@ export const PLATFORM_RESPONSE_METHODS = [
         maxArgs: 1,
         description:
             'Writes content to the HTTP response output. ' +
-            'Distinct from the bare-name `Write()``, which write to the rendered page output.',
+            'Distinct from the bare-name `Write()`, which also writes to the response after Core load. ' +
+            'Non-string values use CLR stringification (not JS toString); use Stringify for objects.',
         params: [
             {
                 name: 'content',
@@ -7742,7 +7848,9 @@ export const PLATFORM_RESPONSE_METHODS = [
         returnType: 'void',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): writes directly to the HTTP response body.',
+            'Runtime-verified (CloudPage): writes directly to the HTTP response body and returns JavaScript null. ' +
+            'Non-string values use CLR stringification — objects/arrays emit host type names, booleans emit ' +
+            '`True`/`False` — matching bare-name Write.',
         syntax: 'Platform.Response.Write(content)',
         example:
             'var data = { name: "Jane", status: "active" };\nPlatform.Response.Write(Stringify(data));',
@@ -8205,7 +8313,7 @@ export const REQUEST_UTILITY_METHODS = [
             {
                 name: 'name',
                 description: 'Key name of the query string parameter to read.',
-                type: 'string',
+                type: 'string|number',
             },
         ],
         returnType: 'string',
@@ -8222,7 +8330,7 @@ export const REQUEST_UTILITY_METHODS = [
         maxArgs: 1,
         requiresCoreLoad: true,
         description:
-            'Returns the value of a named form field submitted with the current request (including POST data), or null when the field is absent. Also reads GET query string values.',
+            'Returns the value of a named form field submitted with the current request (POST form data), or null when the field is absent. Does not read GET query string parameters — use Request.GetQueryStringParameter for those.',
         params: [
             {
                 name: 'name',
@@ -8233,7 +8341,7 @@ export const REQUEST_UTILITY_METHODS = [
         returnType: 'string',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified on a published CloudPage GET: Request.GetFormField("probeParam") returned null (typeof "object") because no form field was posted; an absent key also returned null. This bare-name Core method is a Jint function: calling it with zero arguments or a surplus second argument does NOT throw the "Unable to retrieve security descriptor for this frame." arity error (it returns null / ignores the extra argument), unlike the CLR-backed Platform.Request.GetFormField. Populated form values were not exercised in the GET probe; a POST request is needed to observe a non-null return. This is a distinct Core object method, not an alias of Platform.Request.GetFormField. Guard reads with a truthiness / != null check.',
+            'Runtime-verified on a published CloudPage GET (?probeParam=hello): Request.GetFormField("probeParam") returned null (typeof "object") even though the same key was present in the query string — it does not read GET query parameters (use Request.GetQueryStringParameter). An absent key also returned null. This bare-name Core method is a Jint function: calling it with zero arguments or a surplus second argument does NOT throw the "Unable to retrieve security descriptor for this frame." arity error (it returns null / ignores the extra argument), unlike the CLR-backed Platform.Request.GetFormField. Populated POST form values were not exercised in the GET probe; a POST request is needed to observe a non-null return. This is a distinct Core object method, not an alias of Platform.Request.GetFormField. Guard reads with a truthiness / != null check.',
         syntax: 'Request.GetFormField(name)',
         example: 'var email = Request.GetFormField("emailAddress");\nif (email) { Write(email); }',
     },
