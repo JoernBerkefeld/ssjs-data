@@ -3687,8 +3687,9 @@ declare namespace ErrorUtil {
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): `ErrorUtil` (and its only member `ThrowWSProxyError`) is provided ONLY by `Platform.Load("Core", "1")`. Under any newer Core version ("1.1.1", "1.1.5", …) `ErrorUtil` is `undefined`, so this call throws a ReferenceError — it is effectively deprecated in Core > 1. A preceding `new Script.Util.WSProxy()` is NOT required to make ErrorUtil available (disproven at runtime). When it does throw on a real WSProxy error result, it throws a plain STRING (e.g. "Error: Data extension does not exist: …") — not an Error object — so the caught value has no `.message`/`.description` (both `undefined`); read the string itself via `String(ex)`. Recommended replacement (works on any Core version): inspect `result.Status` and `throw new Error(...)` (or handle inline) instead of calling ErrorUtil.ThrowWSProxyError.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): `ErrorUtil` (and its only member `ThrowWSProxyError`) is provided ONLY by `Platform.Load("Core", "1")`. Under any newer Core version ("1.1.1", "1.1.5", …) `ErrorUtil` is `undefined`, so this call throws a TypeError ("Object expected: ThrowWSProxyError") — it is effectively deprecated in Core > 1. A preceding `new Script.Util.WSProxy()` is NOT required to make ErrorUtil available (disproven at runtime). When it does throw on a real WSProxy error result, it throws a plain STRING (e.g. "Error: Data extension does not exist: …") — not an Error object — so the caught value has no `.message`/`.description` (both `undefined`); read the string itself via `String(ex)`. On the success path it does not return `undefined`: it returns the result `Status` string ("OK"). Recommended replacement (works on any Core version): inspect `result.Status` and `throw new Error(...)` (or handle inline) instead of calling ErrorUtil.ThrowWSProxyError.
      * @param result - Result object returned by any WSProxy method. Minimum shape: `{ Status: string, RequestID: string, Results: object[] }`. Retrieve and perform variants may include additional fields.
+     * @returns The `Status` string of the passed result (e.g. `"OK"`) when it indicates success. Throws instead of returning when `Status` indicates an error.
      * @example
      * // Only works under Platform.Load("Core", "1"); prefer the result.Status check below.
      * Platform.Load("Core", "1");
@@ -3708,7 +3709,7 @@ declare namespace ErrorUtil {
      *     Write(String(ex));
      * }
      */
-    function ThrowWSProxyError(result: object): void;
+    function ThrowWSProxyError(result: object): string;
 }
 
 // ── Event namespaces ─────────────────────────────────────────────────────────
@@ -3959,7 +3960,7 @@ declare namespace Script {
              */
             constructor();
             /**
-             * Creates a new Marketing Cloud object via the SOAP API.
+             * Creates a new Marketing Cloud object via the SOAP API. Collection properties must be flat arrays: a DataExtension takes Fields: [...] and a DataExtensionObject takes Properties: [{ Name, Value }]. The nested SOAP wrappers Fields: { Field: [...] } and Properties: { Property: [...] } throw "Error executing create call.", and createItem does not accept the bracketed DataExtensionObject[key] object type — name the data extension through CustomerKey instead. It never upserts: an existing primary key returns Status "Error" and leaves the stored row unchanged.
              *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/createitem/)
              *
@@ -3967,12 +3968,12 @@ declare namespace Script {
              * @param objectType - SOAP API object type name
              * @param properties - Object properties to set
              * @param createOptions - Optional SOAP CreateOptions object (e.g. RequestType, QueuePriority).
-             * @returns Object with Status, RequestID, and a Results array of per-item results.
+             * @returns Object with Status ("OK" or "Error"), RequestID, and a Results array holding one per-item result with StatusCode, StatusMessage and Object.
              * @example
              * var api = new Script.Util.WSProxy();
              * var result = api.createItem("DataExtensionObject", {
-             *     CustomerKey: "MyDE",
-             *     Properties: { Property: [{ Name: "Email", Value: "jane@example.com" }] }
+             *     CustomerKey: "MyDE_Key",
+             *     Properties: [{ Name: "Email", Value: "jane@example.com" }]
              * });
              * if (result.Status === "OK") { Write("Created"); }
              */
@@ -4004,14 +4005,14 @@ declare namespace Script {
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param objectType - SOAP API object type name
-             * @param properties - Object properties identifying the item to delete
+             * @param properties - Object properties identifying the item to delete. For a DataExtensionObject row use a CustomerKey property plus a FLAT Keys array of { Name, Value } pairs — the nested Keys: { Key: [...] } form and the bracketed objectType "DataExtensionObject[key]" both throw.
              * @param deleteOptions - Optional SOAP DeleteOptions object (e.g. RequestType, QueuePriority).
              * @returns Object with Status, RequestID, and a Results array of per-item results (StatusCode, StatusMessage, ErrorCode). The top-level object has no StatusMessage.
              * @example
              * var api = new Script.Util.WSProxy();
              * var result = api.deleteItem("DataExtensionObject", {
              *     CustomerKey: "MyDE",
-             *     Keys: { Key: [{ Name: "Email", Value: "jane@example.com" }] }
+             *     Keys: [{ Name: "Email", Value: "jane@example.com" }]
              * });
              * if (result.Status === "OK") { Write("Deleted"); }
              */
@@ -4140,7 +4141,7 @@ declare namespace Script {
              */
             execute(parameters: object[], requestName: string): WSProxyResult;
             /**
-             * Sets a ClientId (impersonation) context on the WSProxy instance so subsequent operations run against another business unit. Pass an object with the MID under the "ID" key (and optionally "UserID"); the calling context must have access to the target BU.
+             * Sets a ClientId (impersonation) context on the WSProxy instance so subsequent operations run against another business unit. Pass an object with the MID under the "ID" key (and optionally "UserID"). The call itself is never rejected; whether the following operation is allowed depends on where the script runs. From a parent BU every business unit of the account can be targeted. From a child BU only its own MID works — neither the parent nor a sibling child is reachable, and the next operation fails with a "does not have access to ClientID" status naming the executing MID and the requested one. Cross-BU work therefore has to run from a parent BU.
              *
              * [ssjs.guide reference](https://ssjs.guide/wsproxy/setclientid/)
              *
@@ -4214,13 +4215,13 @@ declare namespace Script {
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param objectType - SOAP API object type name
-             * @param propertiesArray - Array of property objects identifying each object to delete
+             * @param propertiesArray - Array of property objects identifying each object to delete. For DataExtensionObject use CustomerKey plus a flat Keys array of { Name, Value } pairs — the nested Keys.Key form accepted by deleteItem throws here.
              * @param deleteOptions - Optional SOAP DeleteOptions object (e.g. RequestType, QueuePriority).
              * @returns Object with Status (string, e.g. "OK"), RequestID (string GUID), and a Results array holding one entry per input object (each with StatusCode, StatusMessage, ErrorCode, Object, etc.). There is no top-level StatusMessage.
              * @example
              * var api = new Script.Util.WSProxy();
              * var items = [
-             *     { CustomerKey: "MyDE", Keys: { Key: [{ Name: "Email", Value: "old@example.com" }] } }
+             *     { CustomerKey: "MyDE", Keys: [{ Name: "Email", Value: "old@example.com" }] }
              * ];
              * var result = api.deleteBatch("DataExtensionObject", items);
              * Write(result.Status);
@@ -4341,22 +4342,23 @@ declare namespace Script {
              */
             contentType: string;
             /**
-             * Character encoding (default "UTF-8").
+             * Character encoding for the request. The runtime default is "Windows-1252", not "UTF-8" — set it explicitly when the body is UTF-8. An assigned value is read back lower-cased ("UTF-8" reads back as "utf-8").
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
              */
             encoding: string;
             /**
-             * Timeout in milliseconds (default 30000).
+             * Timeout in seconds (default 30).
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
-             * @remarks ⚠️ Differs from the official Salesforce docs. Not listed as a configuration property in the official docs (which only mention that send() times out after 30 seconds), but the property exists and is applied at runtime.
+             * @remarks ⚠️ Differs from the official Salesforce docs. Not listed as a configuration property in the official docs (which only mention that send() times out after 30 seconds), but the property exists and is applied at runtime. The runtime default is 30, matching the 30-second send() timeout the docs describe, so the unit is seconds.
              */
             timeout: number;
             /**
-             * Request body for POST/PUT/PATCH requests.
+             * Request body for POST/PUT/PATCH requests. Write-only: assignment works and the body reaches the server, but reading the property throws "Property Get method was not found." — outside a try/catch that throw aborts the whole CloudPage.
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
+             * @remarks ⚠️ Differs from the official Salesforce docs. The official docs list postData among the readable configuration properties, but the runtime exposes no getter: every read throws "Property Get method was not found." while assignment works normally.
              */
             postData: string;
             /**
@@ -4495,10 +4497,10 @@ declare namespace Script {
              */
             emptyContentHandling: number;
             /**
-             * Timeout in milliseconds (default 30000).
+             * Timeout in seconds (default 30).
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
-             * @remarks ⚠️ Differs from the official Salesforce docs. Not listed in the official docs, but the property exists and is applied end-to-end at runtime (same behaviour as on Script.Util.HttpRequest).
+             * @remarks ⚠️ Differs from the official Salesforce docs. Not listed in the official docs, but the property exists and is applied end-to-end at runtime (same behaviour as on Script.Util.HttpRequest). The runtime default is 30, matching the 30-second send() timeout the docs describe, so the unit is seconds.
              */
             timeout: number;
         }
@@ -4514,32 +4516,33 @@ interface HttpResponseInstance {
      */
     readonly content: any;
     /**
-     * Content type returned in the response.
+     * Content type returned in the response. Always empty when the request was made with Script.Util.HttpGet — use Script.Util.HttpRequest to get it.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
      */
     readonly contentType: string;
     /**
-     * Encoding type returned in the response.
+     * Documented as the encoding type returned in the response, but it is always an empty string at runtime — on Script.Util.HttpRequest as well as on Script.Util.HttpGet, even when the response Content-Type carries a charset. Read the charset from the content-type header instead.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs list encoding as a populated response property, but it comes back empty for every request handler — the charset is only obtainable from the content-type header.
      */
     readonly encoding: string;
     /**
-     * Response headers as a CLR object. Direct access (headers["X"], .Get(), .Item(), String(headers[key])) throws "Use of CLR is not allowed". To read values, enumerate with for..in: each key is the string "Name, Value" (wrapped in [ ]) — strip the brackets and split on the first ", " to build a plain header map.
+     * Response headers as a CLR object. Direct access (headers["X"], .Get(), .Item(), String(headers[key])) throws "Use of CLR is not allowed". To read values, enumerate with for..in: each key is the string "Name, Value" (wrapped in [ ]) — strip the brackets and split on the first ", " to build a plain header map. The enumeration is always empty when the request was made with Script.Util.HttpGet — use Script.Util.HttpRequest to read headers.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @remarks ⚠️ Differs from the official Salesforce docs. The official example reads a single header via headers["..."], but that access throws at runtime. Individual values are only readable by parsing the for..in enumeration keys (shaped "[Name, Value]"), not by indexing.
      */
     readonly headers: object;
     /**
-     * Status value: 0 = OK, 1 = empty URL, 2 = call failed, 3 = succeeded with empty content.
+     * Status value: 0 = OK, 1 = empty URL, 2 = call failed, 3 = succeeded with empty content. Returned as a CLR value, so compare it with == (or Number()) — === against a number literal is never true.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
      */
     readonly returnStatus: number;
     /**
-     * HTTP status code.
+     * HTTP status code. Returned as a CLR value, so compare it with == (or Number()) — === against a number literal is never true.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
      */

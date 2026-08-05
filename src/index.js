@@ -7131,7 +7131,8 @@ export const WSPROXY_METHODS = [
         minArgs: 2,
         maxArgs: 3,
         isConfirmed: true,
-        description: 'Creates a new Marketing Cloud object via the SOAP API.',
+        description:
+            'Creates a new Marketing Cloud object via the SOAP API. Collection properties must be flat arrays: a DataExtension takes Fields: [...] and a DataExtensionObject takes Properties: [{ Name, Value }]. The nested SOAP wrappers Fields: { Field: [...] } and Properties: { Property: [...] } throw "Error executing create call.", and createItem does not accept the bracketed DataExtensionObject[key] object type — name the data extension through CustomerKey instead. It never upserts: an existing primary key returns Status "Error" and leaves the stored row unchanged.',
         params: [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
             { name: 'properties', description: 'Object properties to set', type: 'object' },
@@ -7145,13 +7146,13 @@ export const WSPROXY_METHODS = [
         ],
         returnType: 'WSProxyResult',
         returnDescription:
-            'Object with Status, RequestID, and a Results array of per-item results.',
+            'Object with Status ("OK" or "Error"), RequestID, and a Results array holding one per-item result with StatusCode, StatusMessage and Object.',
         syntax: '<WSProxyInstance>.createItem(objectType, properties[, createOptions])',
         example:
             'var api = new Script.Util.WSProxy();\n' +
             'var result = api.createItem("DataExtensionObject", {\n' +
-            '    CustomerKey: "MyDE",\n' +
-            '    Properties: { Property: [{ Name: "Email", Value: "jane@example.com" }] }\n' +
+            '    CustomerKey: "MyDE_Key",\n' +
+            '    Properties: [{ Name: "Email", Value: "jane@example.com" }]\n' +
             '});\n' +
             'if (result.Status === "OK") { Write("Created"); }',
     },
@@ -7196,7 +7197,8 @@ export const WSPROXY_METHODS = [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
             {
                 name: 'properties',
-                description: 'Object properties identifying the item to delete',
+                description:
+                    'Object properties identifying the item to delete. For a DataExtensionObject row use a CustomerKey property plus a FLAT Keys array of { Name, Value } pairs — the nested Keys: { Key: [...] } form and the bracketed objectType "DataExtensionObject[key]" both throw.',
                 type: 'object',
             },
             {
@@ -7215,7 +7217,7 @@ export const WSPROXY_METHODS = [
             'var api = new Script.Util.WSProxy();\n' +
             'var result = api.deleteItem("DataExtensionObject", {\n' +
             '    CustomerKey: "MyDE",\n' +
-            '    Keys: { Key: [{ Name: "Email", Value: "jane@example.com" }] }\n' +
+            '    Keys: [{ Name: "Email", Value: "jane@example.com" }]\n' +
             '});\n' +
             'if (result.Status === "OK") { Write("Deleted"); }',
     },
@@ -7462,7 +7464,7 @@ export const WSPROXY_METHODS = [
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Sets a ClientId (impersonation) context on the WSProxy instance so subsequent operations run against another business unit. Pass an object with the MID under the "ID" key (and optionally "UserID"); the calling context must have access to the target BU.',
+            'Sets a ClientId (impersonation) context on the WSProxy instance so subsequent operations run against another business unit. Pass an object with the MID under the "ID" key (and optionally "UserID"). The call itself is never rejected; whether the following operation is allowed depends on where the script runs. From a parent BU every business unit of the account can be targeted. From a child BU only its own MID works — neither the parent nor a sibling child is reachable, and the next operation fails with a "does not have access to ClientID" status naming the executing MID and the requested one. Cross-BU work therefore has to run from a parent BU.',
         params: [
             {
                 name: 'options',
@@ -7582,7 +7584,8 @@ export const WSPROXY_METHODS = [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
             {
                 name: 'propertiesArray',
-                description: 'Array of property objects identifying each object to delete',
+                description:
+                    'Array of property objects identifying each object to delete. For DataExtensionObject use CustomerKey plus a flat Keys array of { Name, Value } pairs — the nested Keys.Key form accepted by deleteItem throws here.',
                 type: 'array',
             },
             {
@@ -7600,7 +7603,7 @@ export const WSPROXY_METHODS = [
         example:
             'var api = new Script.Util.WSProxy();\n' +
             'var items = [\n' +
-            '    { CustomerKey: "MyDE", Keys: { Key: [{ Name: "Email", Value: "old@example.com" }] } }\n' +
+            '    { CustomerKey: "MyDE", Keys: [{ Name: "Email", Value: "old@example.com" }] }\n' +
             '];\n' +
             'var result = api.deleteBatch("DataExtensionObject", items);\n' +
             'Write(result.Status);',
@@ -8579,11 +8582,13 @@ export const ERROR_UTIL_METHODS = [
         officialDocsNote:
             'Runtime-verified (CloudPage): `ErrorUtil` (and its only member `ThrowWSProxyError`) is provided ' +
             'ONLY by `Platform.Load("Core", "1")`. Under any newer Core version ("1.1.1", "1.1.5", …) `ErrorUtil` ' +
-            'is `undefined`, so this call throws a ReferenceError — it is effectively deprecated in Core > 1. ' +
+            'is `undefined`, so this call throws a TypeError ("Object expected: ThrowWSProxyError") — it is ' +
+            'effectively deprecated in Core > 1. ' +
             'A preceding `new Script.Util.WSProxy()` is NOT required to make ErrorUtil available (disproven at runtime). ' +
             'When it does throw on a real WSProxy error result, it throws a plain STRING (e.g. ' +
             '"Error: Data extension does not exist: …") — not an Error object — so the caught value has no ' +
             '`.message`/`.description` (both `undefined`); read the string itself via `String(ex)`. ' +
+            'On the success path it does not return `undefined`: it returns the result `Status` string ("OK"). ' +
             'Recommended replacement (works on any Core version): inspect `result.Status` and ' +
             '`throw new Error(...)` (or handle inline) instead of calling ErrorUtil.ThrowWSProxyError.',
         description:
@@ -8602,7 +8607,10 @@ export const ERROR_UTIL_METHODS = [
                 type: 'object',
             },
         ],
-        returnType: 'void',
+        returnType: 'string',
+        returnDescription:
+            'The `Status` string of the passed result (e.g. `"OK"`) when it indicates success. ' +
+            'Throws instead of returning when `Status` indicates an error.',
         syntax: 'ErrorUtil.ThrowWSProxyError(result)',
         example:
             '// Only works under Platform.Load("Core", "1"); prefer the result.Status check below.\n' +
@@ -8831,24 +8839,29 @@ export const SCRIPT_UTIL_REQUEST_PROPERTIES = [
     {
         name: 'encoding',
         type: 'string',
-        description: 'Character encoding (default "UTF-8").',
+        description:
+            'Character encoding for the request. The runtime default is "Windows-1252", not "UTF-8" — set it explicitly when the body is UTF-8. An assigned value is read back lower-cased ("UTF-8" reads back as "utf-8").',
         isConfirmed: true,
     },
     {
         name: 'timeout',
         type: 'number',
-        description: 'Timeout in milliseconds (default 30000).',
+        description: 'Timeout in seconds (default 30).',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Not listed as a configuration property in the official docs (which only mention that send() times out after 30 seconds), but the property exists and is applied at runtime.',
+            'Not listed as a configuration property in the official docs (which only mention that send() times out after 30 seconds), but the property exists and is applied at runtime. The runtime default is 30, matching the 30-second send() timeout the docs describe, so the unit is seconds.',
         valueConstraint: { numeric: 'integer', min: 0 },
     },
     {
         name: 'postData',
         type: 'string',
-        description: 'Request body for POST/PUT/PATCH requests.',
+        description:
+            'Request body for POST/PUT/PATCH requests. Write-only: assignment works and the body reaches the server, but reading the property throws "Property Get method was not found." — outside a try/catch that throw aborts the whole CloudPage.',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs list postData among the readable configuration properties, but the runtime exposes no getter: every read throws "Property Get method was not found." while assignment works normally.',
     },
     {
         name: 'emptyContentHandling',
@@ -8924,11 +8937,11 @@ export const SCRIPT_UTIL_HTTPGET_PROPERTIES = [
     {
         name: 'timeout',
         type: 'number',
-        description: 'Timeout in milliseconds (default 30000).',
+        description: 'Timeout in seconds (default 30).',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Not listed in the official docs, but the property exists and is applied end-to-end at runtime (same behaviour as on Script.Util.HttpRequest).',
+            'Not listed in the official docs, but the property exists and is applied end-to-end at runtime (same behaviour as on Script.Util.HttpRequest). The runtime default is 30, matching the 30-second send() timeout the docs describe, so the unit is seconds.',
         valueConstraint: { numeric: 'integer', min: 0 },
     },
 ];
@@ -8950,20 +8963,25 @@ export const SCRIPT_UTIL_RESPONSE_PROPERTIES = [
     {
         name: 'contentType',
         type: 'string',
-        description: 'Content type returned in the response.',
+        description:
+            'Content type returned in the response. Always empty when the request was made with Script.Util.HttpGet — use Script.Util.HttpRequest to get it.',
         isConfirmed: true,
     },
     {
         name: 'encoding',
         type: 'string',
-        description: 'Encoding type returned in the response.',
+        description:
+            'Documented as the encoding type returned in the response, but it is always an empty string at runtime — on Script.Util.HttpRequest as well as on Script.Util.HttpGet, even when the response Content-Type carries a charset. Read the charset from the content-type header instead.',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs list encoding as a populated response property, but it comes back empty for every request handler — the charset is only obtainable from the content-type header.',
     },
     {
         name: 'headers',
         type: 'object',
         description:
-            'Response headers as a CLR object. Direct access (headers["X"], .Get(), .Item(), String(headers[key])) throws "Use of CLR is not allowed". To read values, enumerate with for..in: each key is the string "Name, Value" (wrapped in [ ]) — strip the brackets and split on the first ", " to build a plain header map.',
+            'Response headers as a CLR object. Direct access (headers["X"], .Get(), .Item(), String(headers[key])) throws "Use of CLR is not allowed". To read values, enumerate with for..in: each key is the string "Name, Value" (wrapped in [ ]) — strip the brackets and split on the first ", " to build a plain header map. The enumeration is always empty when the request was made with Script.Util.HttpGet — use Script.Util.HttpRequest to read headers.',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
@@ -8973,10 +8991,16 @@ export const SCRIPT_UTIL_RESPONSE_PROPERTIES = [
         name: 'returnStatus',
         type: 'number',
         description:
-            'Status value: 0 = OK, 1 = empty URL, 2 = call failed, 3 = succeeded with empty content.',
+            'Status value: 0 = OK, 1 = empty URL, 2 = call failed, 3 = succeeded with empty content. Returned as a CLR value, so compare it with == (or Number()) — === against a number literal is never true.',
         isConfirmed: true,
     },
-    { name: 'statusCode', type: 'number', description: 'HTTP status code.', isConfirmed: true },
+    {
+        name: 'statusCode',
+        type: 'number',
+        description:
+            'HTTP status code. Returned as a CLR value, so compare it with == (or Number()) — === against a number literal is never true.',
+        isConfirmed: true,
+    },
 ];
 
 // ── WSProxy result object shape ─────────────────────────────────────────────
