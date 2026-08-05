@@ -39,12 +39,12 @@ declare namespace Platform {
      */
     namespace Function {
         /**
-         * Retrieves a single field value from the first Data Extension row matching filter criteria. The returned value keeps the column's native runtime type (Text/EmailAddress become string, Number/Decimal become number, Boolean becomes boolean, Date becomes a real Date object). Three distinct empty-ish returns: when no row matches it returns a genuine JavaScript null (=== null is true); when a row exists but the field is empty/NULL it returns a CLR null whose typeof is "clr" (=== null is FALSE) and which stringifies to ""; otherwise the populated native value. To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).
+         * Retrieves a single field value from the first Data Extension row matching filter criteria. The returned value keeps the column's native runtime type (Text/EmailAddress become string, Number/Decimal become number, Boolean becomes boolean, Date becomes a real Date object). Three distinct empty-ish returns: when no row matches it returns a genuine JavaScript null (=== null is true); when a row exists but the field is empty/NULL it returns a CLR null whose typeof is "clr" (=== null is FALSE) and which stringifies to ""; otherwise the populated native value. To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic). Within a single request the engine caches the query: repeating the same lookup returns the FIRST result even if rows were written in between. The cache key is the (data extension, filter) pair, so the array filter form and a changed returnField are stale too — only a different filter column reads fresh data.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/lookup/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return as a string, but at runtime Lookup returns the column's typed value. Runtime-verified per DE field type: Text/EmailAddress/Locale/Phone return a string, Number/Decimal return a number, Boolean returns a boolean, and Date returns a real Date object. No-match returns a genuine JavaScript null. A row with an empty/NULL field returns a CLR null (typeof "clr", not === null) that stringifies to "" — so guard empty fields with a loose == null or a String() coercion, not a strict === null check.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return as a string, but at runtime Lookup returns the column's typed value. Runtime-verified per DE field type: Text/EmailAddress/Locale/Phone return a string, Number/Decimal return a number, Boolean returns a boolean, and Date returns a real Date object. No-match returns a genuine JavaScript null. A row with an empty/NULL field returns a CLR null (typeof "clr", not === null) that stringifies to "". Guard empty fields by coercing with String() first: a loose == null throws "Value cannot be null." and a truthiness test throws "Object cannot be cast from DBNull to other types.". Also note the request-scoped query cache — a repeated identical lookup returns the pre-write value.
          * @param deName - Data Extension name (resolved by Name, not external key)
          * @param returnField - Name of the field to return
          * @param whereFieldNames - Filter field name, or an array of field names connected with AND logic
@@ -611,7 +611,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeextract/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs list a third options argument and type the return value as an object; at runtime the call takes exactly two arguments (a third throws) and the statusArray is inert (never populated). The documented OverallStatus string return could not be reproduced from a CloudPage even against real saved Data Extract definitions (the invoke throws a catchable NullReferenceException), so the string return type is per-docs and unproven at runtime.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs list a third options argument and type the return value as an object; at runtime the call takes exactly two arguments (a third throws) and the statusArray is inert (never populated). The documented OverallStatus string return could not be reproduced from a CloudPage even against real saved Data Extract definitions: every two-argument call throws a catchable exception carrying only the generic wrapper message "An error occurred when attempting to evaluate an InvokeExtract function call.  See inner exception for details.", and the inner exception is not surfaced to SSJS, so the cause is not observable. The string return type is per-docs and unproven at runtime.
          * @param apiObject - SOAP API object on which to invoke Extract
          * @param statusArray - Status out-parameter required by the signature, but inert at runtime — it is never populated. Pass an array (e.g. [0, 0]).
          * @example
@@ -676,6 +676,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/httppost/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage. Three corrections to the official docs. (1) The argument count is a discontinuous overload, not a simple range: only a 3-argument call (url, contentType, payload) or the full 6-argument call are valid. Calling with 4 or 5 arguments throws "Unable to retrieve security descriptor for this frame." The trailing three arguments (headerNames, headerValues, response) form an all-or-nothing group, so the docs listing them as independently optional is wrong. (2) A 4xx or 5xx response is never handed back as a status code — it throws "An error occurred when attempting to evaluate a HTTPPost function call.  See inner exception for details." The docs branch on statusCode == 200 as if a failing status were observable; it is not, so wrap the call in try/catch. Successful 2xx statuses (200, 201, 204) from the same host are returned normally, which rules out a transport-level explanation. (3) Even on a successful call the response out-parameter was observed empty (response.length === 0, response[0] === undefined), so the body is not delivered in a CloudPage context — use HTTP.Post when you need the response body.
          * @param url - URL to post to
          * @param contentType - MIME type of the request body
          * @param payload - Request body content
@@ -804,13 +805,13 @@ declare namespace Platform {
          */
         function Stringify(value: any): string;
         /**
-         * Retrieves content from a specified classic Content Area by numeric ID. Deprecated — Content Areas are no longer supported on current SFMC infrastructure. Note: the bare-name ContentArea() global uses a string errorMsg as the 3rd parameter and requires Platform.Load("core","1.1.5"); this Platform.Function form does not.
+         * Retrieves content from a specified classic Content Area by ID. Salesforce documents Content Areas as deprecated in favour of Content Builder blocks. Only the single-argument form works: an existing id returns its content (a numeric string works too), while supplying regionName throws an "invalid parameter value ... ImpressionRegionName ... ResolvedValueParameter" error that leaves stopOnError and fallbackContent unreachable. Note: the bare-name ContentArea() global uses a string errorMsg as the 3rd parameter and requires Platform.Load("core","1.1.5"); this Platform.Function form does not.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentarea/)
          *
          * @deprecated
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @param id - Numeric ID of the Content Area.
+         * @param id - ID of the Content Area.
          * @param regionName - Impression region for content.
          * @param stopOnError - When true, throws on failure; when false the call proceeds.
          * @param fallbackContent - Default content to display when the area cannot be retrieved.
@@ -818,9 +819,9 @@ declare namespace Platform {
          * @example
          * var content = Platform.Function.ContentArea(123456, "impressionRegion", false, "defaultContentHere");
          */
-        function ContentArea(id: number, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
+        function ContentArea(id: string | number, regionName?: string, stopOnError?: boolean, fallbackContent?: string): string;
         /**
-         * Retrieves content from a specified classic Content Area by name. Deprecated — Content Areas are no longer supported on current SFMC infrastructure. Note: the bare-name ContentAreaByName() global uses a string errorMsg as the 3rd parameter and requires Platform.Load("core","1.1.5"); this Platform.Function form does not.
+         * Retrieves content from a specified classic Content Area by name. Salesforce documents Content Areas as deprecated in favour of Content Builder blocks. Only the single-argument form works: an existing name returns its content, matching is case-insensitive and the backslash-separated folder-path form resolves, while a CustomerKey, a space-padded name and an unknown name are rejected. Supplying regionName throws an "invalid parameter value ... ImpressionRegionName ... ResolvedValueParameter" error that leaves stopOnError and fallbackContent unreachable. Note: the bare-name ContentAreaByName() global uses a string errorMsg as the 3rd parameter and requires Platform.Load("core","1.1.5"); this Platform.Function form does not.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentareabyname/)
          *
@@ -1241,14 +1242,14 @@ declare function Base64Encode(string: string): string;
  */
 declare function Base64Decode(encodedString: string): string;
 /**
- * Retrieves content from a classic Content Area by numeric ID. Deprecated — Content Areas are no longer supported on current SFMC infrastructure. Note: the Platform.Function.ContentArea() variant does not require Platform.Load and accepts a boolean stopOnError parameter instead of a string errorMsg.
+ * Retrieves content from a classic Content Area by numeric ID. Salesforce documents Content Areas as deprecated in favour of Content Builder blocks. Note: the Platform.Function.ContentArea() variant does not require Platform.Load and accepts a boolean stopOnError parameter instead of a string errorMsg.
  *
  * [ssjs.guide reference](https://ssjs.guide/core-library/contentarea/)
  *
  * @deprecated
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @param id - Numeric ID of the Content Area.
+ * @param id - ID of the Content Area.
  * @param regionName - Impression region for content.
  * @param errorMsg - Error message string returned on failure.
  * @param fallbackContent - Default content to display when the area cannot be retrieved.
@@ -1257,9 +1258,9 @@ declare function Base64Decode(encodedString: string): string;
  * Platform.Load("core", "1.1.5");
  * var content = ContentArea(123456, "impressionRegion", "fallback error msg", "defaultContentHere");
  */
-declare function ContentArea(id: number, regionName?: string, errorMsg?: string, fallbackContent?: string): string;
+declare function ContentArea(id: string | number, regionName?: string, errorMsg?: string, fallbackContent?: string): string;
 /**
- * Retrieves content from a classic Content Area by name. Deprecated — Content Areas are no longer supported on current SFMC infrastructure. Note: the Platform.Function.ContentAreaByName() variant does not require Platform.Load and accepts a boolean stopOnError parameter instead of a string errorMsg.
+ * Retrieves content from a classic Content Area by name. Salesforce documents Content Areas as deprecated in favour of Content Builder blocks. Note: the Platform.Function.ContentAreaByName() variant does not require Platform.Load and accepts a boolean stopOnError parameter instead of a string errorMsg.
  *
  * [ssjs.guide reference](https://ssjs.guide/core-library/contentareabyname/)
  *
@@ -3554,7 +3555,7 @@ interface TriggeredSendInstance {
 }
 declare namespace DataExtension {
     /**
-     * Initializes a DataExtension instance bound to the specified data extension by its External Key (`CustomerKey`). Binding is lazy — Init never throws for a missing DE; the error surfaces on the first Rows/Fields operation. Passing the display Name when it differs from CustomerKey does not bind Fields or Rows.Retrieve (empty results / `"Error"`); use the External Key. Required before invoking any `Fields` or `Rows` sub-namespace method on the returned instance. Note: Core Library DataExtension methods do not support enterprise-level data extensions.
+     * Initializes a DataExtension instance bound to the specified data extension by its External Key (`CustomerKey`). Binding is lazy — Init never throws for a missing DE; the error surfaces on the first Rows/Fields operation. Passing the display Name when it differs from CustomerKey does not bind Fields or Rows.Retrieve (empty results / `"Error"`); use the External Key. Required before invoking any `Fields` or `Rows` sub-namespace method on the returned instance. A shared data extension owned by the parent Business Unit resolves from a child BU only with the `ENT.` prefix; writes and `Platform.Function` lookups then work. The prefix itself, however, silences the two read methods: on an `ENT.`-prefixed key `Fields.Retrieve()` and `Rows.Retrieve()` return an empty array on every Business Unit, including the one that owns the data extension, where the unprefixed key returns the real fields and rows.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/dataextension/)
      *
@@ -5406,7 +5407,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/max) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
-     * @remarks ⚠️ The variadic form throws in the SFMC engine when passed 3+ arguments, and the no-argument Math.max() returns 0 instead of -Infinity. Compare two values at a time, e.g. Math.max(Math.max(a, b), c), or fold with a loop.
+     * @remarks ⚠️ The variadic form throws in the SFMC engine when passed 3+ arguments. With fewer than two arguments it does not throw: every missing argument is supplied as 0, so Math.max(x) behaves as Math.max(x, 0) — Math.max(-7) returns 0 instead of -7 — and the no-argument Math.max() returns 0 instead of -Infinity. Always pass exactly two values; compare two at a time, e.g. Math.max(Math.max(a, b), c), or fold with a loop.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param values - Numbers to compare (variadic)
      * @example
@@ -5418,7 +5419,7 @@ declare namespace Math {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/min) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/math/)
      *
-     * @remarks ⚠️ The variadic form throws in the SFMC engine when passed 3+ arguments, and the no-argument Math.min() returns 0 instead of +Infinity. Compare two values at a time, e.g. Math.min(Math.min(a, b), c), or fold with a loop.
+     * @remarks ⚠️ The variadic form throws in the SFMC engine when passed 3+ arguments. With fewer than two arguments it does not throw: every missing argument is supplied as 0, so Math.min(x) behaves as Math.min(x, 0) — Math.min(5) returns 0 instead of 5 — and the no-argument Math.min() returns 0 instead of +Infinity. Always pass exactly two values; compare two at a time, e.g. Math.min(Math.min(a, b), c), or fold with a loop.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param values - Numbers to compare (variadic)
      * @example

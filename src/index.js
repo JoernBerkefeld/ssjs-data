@@ -359,17 +359,20 @@ export const SSJS_GLOBALS = [
         officialDocsNote:
             'Runtime-verified (CloudPage): the bare-name `ContentArea` IS defined as a function after ' +
             '`Platform.Load("core", ...)` has run (the load must precede use; once loaded the bare name is ' +
-            'usable in that scope and in nested helper bodies that close over it). It throws only because ' +
-            'Content Areas are deprecated and the target area no longer resolves on current SFMC ' +
-            'infrastructure, not because the global is missing. ' +
+            'usable in that scope and in nested helper bodies that close over it). ' +
+            'Only the single-argument form works: passing the id of an existing Content Area returns its ' +
+            'content, and a numeric string for the same id works too. Supplying regionName (parameter 2) ' +
+            'throws an "invalid parameter value ... ImpressionRegionName ... ResolvedValueParameter" error, ' +
+            'which leaves errorMsg and fallbackContent unreachable. An arity-1 call that throws means the id ' +
+            'did not resolve to a Content Area. ' +
             'The Platform.Function.ContentArea() variant does not require Platform.Load.',
         description:
             'Retrieves content from a classic Content Area by numeric ID. ' +
-            'Deprecated — Content Areas are no longer supported on current SFMC infrastructure. ' +
+            'Salesforce documents Content Areas as deprecated in favour of Content Builder blocks. ' +
             'Note: the Platform.Function.ContentArea() variant does not require Platform.Load and ' +
             'accepts a boolean stopOnError parameter instead of a string errorMsg.',
         params: [
-            { name: 'id', description: 'Numeric ID of the Content Area.', type: 'number' },
+            { name: 'id', description: 'ID of the Content Area.', type: 'string|number' },
             {
                 name: 'regionName',
                 description: 'Impression region for content.',
@@ -406,13 +409,17 @@ export const SSJS_GLOBALS = [
         officialDocsNote:
             'Runtime-verified (CloudPage): the bare-name `ContentAreaByName` IS defined as a function after ' +
             '`Platform.Load("core", ...)` has run (the load must precede use; once loaded the bare name is ' +
-            'usable in that scope and in nested helper bodies that close over it). It throws only because ' +
-            'Content Areas are deprecated and the target area no longer resolves on current SFMC ' +
-            'infrastructure, not because the global is missing. ' +
+            'usable in that scope and in nested helper bodies that close over it). ' +
+            'Only the single-argument form works: passing the name of an existing Content Area returns its ' +
+            'content. Name matching is case-insensitive and the backslash-separated folder-path form ' +
+            'resolves as well, while ' +
+            'a CustomerKey, a space-padded name and an unknown name are all rejected. Supplying regionName ' +
+            '(parameter 2) throws an "invalid parameter value ... ImpressionRegionName ... ' +
+            'ResolvedValueParameter" error, which leaves errorMsg and fallbackContent unreachable. ' +
             'The Platform.Function.ContentAreaByName() variant does not require Platform.Load.',
         description:
             'Retrieves content from a classic Content Area by name. ' +
-            'Deprecated — Content Areas are no longer supported on current SFMC infrastructure. ' +
+            'Salesforce documents Content Areas as deprecated in favour of Content Builder blocks. ' +
             'Note: the Platform.Function.ContentAreaByName() variant does not require Platform.Load and ' +
             'accepts a boolean stopOnError parameter instead of a string errorMsg.',
         params: [
@@ -989,11 +996,12 @@ export const PLATFORM_FUNCTIONS = [
             'Retrieves a single field value from the first Data Extension row matching filter criteria. ' +
             "The returned value keeps the column's native runtime type (Text/EmailAddress become string, Number/Decimal become number, Boolean becomes boolean, Date becomes a real Date object). " +
             'Three distinct empty-ish returns: when no row matches it returns a genuine JavaScript null (=== null is true); when a row exists but the field is empty/NULL it returns a CLR null whose typeof is "clr" (=== null is FALSE) and which stringifies to ""; otherwise the populated native value. ' +
-            'To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic).',
+            'To filter by multiple columns, pass string arrays for whereFieldNames and whereFieldValues (AND logic). ' +
+            'Within a single request the engine caches the query: repeating the same lookup returns the FIRST result even if rows were written in between. The cache key is the (data extension, filter) pair, so the array filter form and a changed returnField are stale too — only a different filter column reads fresh data.',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs type the return as a string, but at runtime Lookup returns the column\'s typed value. Runtime-verified per DE field type: Text/EmailAddress/Locale/Phone return a string, Number/Decimal return a number, Boolean returns a boolean, and Date returns a real Date object. No-match returns a genuine JavaScript null. A row with an empty/NULL field returns a CLR null (typeof "clr", not === null) that stringifies to "" — so guard empty fields with a loose == null or a String() coercion, not a strict === null check.',
+            'The official docs type the return as a string, but at runtime Lookup returns the column\'s typed value. Runtime-verified per DE field type: Text/EmailAddress/Locale/Phone return a string, Number/Decimal return a number, Boolean returns a boolean, and Date returns a real Date object. No-match returns a genuine JavaScript null. A row with an empty/NULL field returns a CLR null (typeof "clr", not === null) that stringifies to "". Guard empty fields by coercing with String() first: a loose == null throws "Value cannot be null." and a truthiness test throws "Object cannot be cast from DBNull to other types.". Also note the request-scoped query cache — a repeated identical lookup returns the pre-write value.',
         params: [
             {
                 name: 'deName',
@@ -2152,7 +2160,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs list a third options argument and type the return value as an object; at runtime the call takes exactly two arguments (a third throws) and the statusArray is inert (never populated). The documented OverallStatus string return could not be reproduced from a CloudPage even against real saved Data Extract definitions (the invoke throws a catchable NullReferenceException), so the string return type is per-docs and unproven at runtime.',
+            'The official docs list a third options argument and type the return value as an object; at runtime the call takes exactly two arguments (a third throws) and the statusArray is inert (never populated). The documented OverallStatus string return could not be reproduced from a CloudPage even against real saved Data Extract definitions: every two-argument call throws a catchable exception carrying only the generic wrapper message "An error occurred when attempting to evaluate an InvokeExtract function call.  See inner exception for details.", and the inner exception is not surfaced to SSJS, so the cause is not observable. The string return type is per-docs and unproven at runtime.',
         description:
             'Invokes the Extract SOAP API method on the specified object. The docs describe the return as the OverallStatus message string; that string was not reproducible from a CloudPage invoke.',
         params: [
@@ -2300,7 +2308,26 @@ export const PLATFORM_FUNCTIONS = [
         ampscriptEquivalent: 'HTTPPost',
         minArgs: 3,
         maxArgs: 6,
+        // Discontinuous overload: only a 3-argument call (url, contentType,
+        // payload) or the full 6-argument call are valid at runtime. Calling with
+        // 4 or 5 arguments is an argument count the engine does not accept, so it
+        // throws the generic "Unable to retrieve security descriptor for this
+        // frame." error. A plain minArgs..maxArgs range cannot express
+        // "valid arities = {3, 6}", so this field lists the exact permitted counts.
+        // Consumers that support it emit a distinct diagnostic when the count is
+        // inside the range but not a member.
+        validArities: [3, 6],
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified on a CloudPage. Three corrections to the official docs. ' +
+            '(1) The argument count is a discontinuous overload, not a simple range: only a 3-argument call (url, contentType, payload) or the full 6-argument call are valid. ' +
+            'Calling with 4 or 5 arguments throws "Unable to retrieve security descriptor for this frame." ' +
+            'The trailing three arguments (headerNames, headerValues, response) form an all-or-nothing group, so the docs listing them as independently optional is wrong. ' +
+            '(2) A 4xx or 5xx response is never handed back as a status code — it throws "An error occurred when attempting to evaluate a HTTPPost function call.  See inner exception for details." ' +
+            'The docs branch on statusCode == 200 as if a failing status were observable; it is not, so wrap the call in try/catch. ' +
+            'Successful 2xx statuses (200, 201, 204) from the same host are returned normally, which rules out a transport-level explanation. ' +
+            '(3) Even on a successful call the response out-parameter was observed empty (response.length === 0, response[0] === undefined), so the body is not delivered in a CloudPage context — use HTTP.Post when you need the response body.',
         description:
             'Performs an HTTP POST request with a content type and payload. ' +
             'Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. ' +
@@ -2577,13 +2604,17 @@ export const PLATFORM_FUNCTIONS = [
         maxArgs: 4,
         deprecated: true,
         description:
-            'Retrieves content from a specified classic Content Area by numeric ID. ' +
-            'Deprecated — Content Areas are no longer supported on current SFMC infrastructure. ' +
+            'Retrieves content from a specified classic Content Area by ID. ' +
+            'Salesforce documents Content Areas as deprecated in favour of Content Builder blocks. ' +
+            'Only the single-argument form works: an existing id returns its content (a numeric string ' +
+            'works too), while supplying regionName throws an "invalid parameter value ... ' +
+            'ImpressionRegionName ... ResolvedValueParameter" error that leaves stopOnError and ' +
+            'fallbackContent unreachable. ' +
             'Note: the bare-name ContentArea() global uses a string errorMsg as the 3rd parameter ' +
             'and requires Platform.Load("core","1.1.5"); this Platform.Function form does not.',
         isConfirmed: true,
         params: [
-            { name: 'id', description: 'Numeric ID of the Content Area.', type: 'number' },
+            { name: 'id', description: 'ID of the Content Area.', type: 'string|number' },
             {
                 name: 'regionName',
                 description: 'Impression region for content.',
@@ -2617,7 +2648,12 @@ export const PLATFORM_FUNCTIONS = [
         deprecated: true,
         description:
             'Retrieves content from a specified classic Content Area by name. ' +
-            'Deprecated — Content Areas are no longer supported on current SFMC infrastructure. ' +
+            'Salesforce documents Content Areas as deprecated in favour of Content Builder blocks. ' +
+            'Only the single-argument form works: an existing name returns its content, matching is ' +
+            'case-insensitive and the backslash-separated folder-path form resolves, while a CustomerKey, a space-padded ' +
+            'name and an unknown name are rejected. Supplying regionName throws an "invalid parameter ' +
+            'value ... ImpressionRegionName ... ResolvedValueParameter" error that leaves stopOnError and ' +
+            'fallbackContent unreachable. ' +
             'Note: the bare-name ContentAreaByName() global uses a string errorMsg as the 3rd parameter ' +
             'and requires Platform.Load("core","1.1.5"); this Platform.Function form does not.',
         isConfirmed: true,
@@ -2697,7 +2733,7 @@ export const CORE_LIBRARY_OBJECTS = [
         isConfirmed: true,
         description:
             'Manages Data Extension definitions and their field schemas. ' +
-            'Note: Core Library DataExtension methods do not support enterprise-level data extensions.',
+            'Note: a shared data extension owned by the parent Business Unit is reachable from a child BU only when the key carries the `ENT.` prefix, and that prefix makes `Fields.Retrieve()` / `Rows.Retrieve()` return an empty array on every Business Unit — including the owning one — even though writes succeed.',
     },
     {
         name: 'DataExtension.Fields',
@@ -6661,7 +6697,10 @@ export const DATA_EXTENSION_METHODS = [
             'Passing the display Name when it differs from CustomerKey does not bind Fields or Rows.Retrieve ' +
             '(empty results / `"Error"`); use the External Key. ' +
             'Required before invoking any `Fields` or `Rows` sub-namespace method on the returned instance. ' +
-            'Note: Core Library DataExtension methods do not support enterprise-level data extensions.',
+            'A shared data extension owned by the parent Business Unit resolves from a child BU only with the `ENT.` prefix; ' +
+            'writes and `Platform.Function` lookups then work. The prefix itself, however, silences the two read methods: ' +
+            'on an `ENT.`-prefixed key `Fields.Retrieve()` and `Rows.Retrieve()` return an empty array on every Business Unit, ' +
+            'including the one that owns the data extension, where the unprefixed key returns the real fields and rows.',
         params: [
             {
                 name: 'key',
@@ -9678,7 +9717,7 @@ export const ECMASCRIPT_BUILTINS = [
         isConfirmed: true,
         esVersion: 3,
         description: 'Returns the largest of the supplied numbers.',
-        caveat: 'The variadic form throws in the SFMC engine when passed 3+ arguments, and the no-argument Math.max() returns 0 instead of -Infinity. Compare two values at a time, e.g. Math.max(Math.max(a, b), c), or fold with a loop.',
+        caveat: 'The variadic form throws in the SFMC engine when passed 3+ arguments. With fewer than two arguments it does not throw: every missing argument is supplied as 0, so Math.max(x) behaves as Math.max(x, 0) — Math.max(-7) returns 0 instead of -7 — and the no-argument Math.max() returns 0 instead of -Infinity. Always pass exactly two values; compare two at a time, e.g. Math.max(Math.max(a, b), c), or fold with a loop.',
         params: [{ name: 'values', description: 'Numbers to compare (variadic)', type: 'number' }],
         returnType: 'number',
         syntax: 'Math.max(value1[, value2, ...])',
@@ -9690,7 +9729,7 @@ export const ECMASCRIPT_BUILTINS = [
         isConfirmed: true,
         esVersion: 3,
         description: 'Returns the smallest of the supplied numbers.',
-        caveat: 'The variadic form throws in the SFMC engine when passed 3+ arguments, and the no-argument Math.min() returns 0 instead of +Infinity. Compare two values at a time, e.g. Math.min(Math.min(a, b), c), or fold with a loop.',
+        caveat: 'The variadic form throws in the SFMC engine when passed 3+ arguments. With fewer than two arguments it does not throw: every missing argument is supplied as 0, so Math.min(x) behaves as Math.min(x, 0) — Math.min(5) returns 0 instead of 5 — and the no-argument Math.min() returns 0 instead of +Infinity. Always pass exactly two values; compare two at a time, e.g. Math.min(Math.min(a, b), c), or fold with a loop.',
         params: [{ name: 'values', description: 'Numbers to compare (variadic)', type: 'number' }],
         returnType: 'number',
         syntax: 'Math.min(value1[, value2, ...])',
