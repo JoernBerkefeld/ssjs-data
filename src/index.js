@@ -831,6 +831,7 @@ export const SSJS_GLOBALS = [
         name: 'ErrorUtil',
         type: 'object',
         deprecated: true,
+        maxCoreVersion: '1',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
@@ -8620,6 +8621,7 @@ export const ERROR_UTIL_METHODS = [
         isStatic: true,
         requiresCoreLoad: true,
         deprecated: true,
+        maxCoreVersion: '1',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
@@ -13870,4 +13872,36 @@ for (const m of EVENT_METHODS) {
         coreDeprecatedMethodLookup.set(key, new Map());
     }
     coreDeprecatedMethodLookup.get(key).set(m.name.toLowerCase(), m);
+}
+
+// ── Core-version-bound member lookup ──────────────────────────────────────────
+// Members that exist only up to a maximum `Platform.Load("Core", <version>)`.
+// Beyond that version they are `undefined` at runtime, so calling them throws.
+// Maps the lowercase qualified name (e.g. "errorutil", "errorutil.throwwsproxyerror")
+// → { name, maxCoreVersion }. Built generically from the catalogs so that flagging a
+// future member is a one-field change.
+export const maxCoreVersionLookup = new Map();
+for (const entry of SSJS_GLOBALS) {
+    if (typeof entry.maxCoreVersion === 'string') {
+        maxCoreVersionLookup.set(entry.name.toLowerCase(), {
+            name: entry.name,
+            maxCoreVersion: entry.maxCoreVersion,
+        });
+    }
+}
+const ownedMethodEntries = [
+    ...[['ErrorUtil', ERROR_UTIL_METHODS], ...CORE_METHOD_ARRAYS].flatMap(([ownerName, methods]) =>
+        methods.map((m) => [ownerName, m]),
+    ),
+    ...EVENT_METHODS.map((m) => [m.owner, m]),
+];
+for (const [ownerName, m] of ownedMethodEntries) {
+    if (typeof m.maxCoreVersion !== 'string') {
+        continue;
+    }
+    const qualifiedName = `${ownerName}.${m.name}`;
+    maxCoreVersionLookup.set(qualifiedName.toLowerCase(), {
+        name: qualifiedName,
+        maxCoreVersion: m.maxCoreVersion,
+    });
 }

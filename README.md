@@ -93,6 +93,8 @@ import {
   DATE_TIME_METHODS,
   DATE_TIME_TIMEZONE_METHODS,
   ERROR_UTIL_METHODS,
+  // Core-version constraints
+  maxCoreVersionLookup,
   // Script.Util
   SCRIPT_UTIL_CONSTRUCTORS,
   SCRIPT_UTIL_REQUEST_METHODS,
@@ -348,7 +350,7 @@ for (const method of DATE_TIME_TIMEZONE_METHODS) {
 
 ### `ERROR_UTIL_METHODS`
 
-Utility methods on the `ErrorUtil` namespace for WSProxy error handling (requires `Platform.Load("core", "1.1.5")`):
+Utility methods on the `ErrorUtil` namespace for WSProxy error handling. Runtime-verified: `ErrorUtil` is only provided by `Platform.Load("core", "1")` and is `undefined` under any newer Core version, so both the namespace and its method carry `deprecated: true` and `maxCoreVersion: '1'`:
 
 ```js
 import { ERROR_UTIL_METHODS } from 'ssjs-data';
@@ -356,8 +358,25 @@ import { ERROR_UTIL_METHODS } from 'ssjs-data';
 for (const method of ERROR_UTIL_METHODS) {
   console.log(method.name); // 'ThrowWSProxyError'
   console.log(method.syntax);
+  console.log(method.maxCoreVersion); // '1'
 }
 ```
+
+### `maxCoreVersionLookup`
+
+Members that only exist up to a maximum `Platform.Load("Core", <version>)`. Beyond that version they resolve to `undefined` at runtime, so calling them throws. Keyed by lowercase qualified name:
+
+```js
+import { maxCoreVersionLookup } from 'ssjs-data';
+
+maxCoreVersionLookup.get('errorutil');
+// { name: 'ErrorUtil', maxCoreVersion: '1' }
+
+maxCoreVersionLookup.get('errorutil.throwwsproxyerror');
+// { name: 'ErrorUtil.ThrowWSProxyError', maxCoreVersion: '1' }
+```
+
+The map is built generically from the catalogs — adding `maxCoreVersion` to any global or owned method is enough to have it surface here (and in the consuming linters).
 
 ### WSProxy object-specific method arrays
 
