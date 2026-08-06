@@ -7940,6 +7940,7 @@ export const PLATFORM_RESPONSE_METHODS = [
         minArgs: 0,
         maxArgs: 0,
         isProperty: true,
+        access: 'write-only-opaque',
         description:
             'Sets the Content-Type of the HTTP response. Reading or calling the property returns an opaque platform-managed CLR value rather than the configured MIME type.',
         params: [],
@@ -7958,6 +7959,7 @@ export const PLATFORM_RESPONSE_METHODS = [
         minArgs: 0,
         maxArgs: 0,
         isProperty: true,
+        access: 'write-only-opaque',
         description:
             'Sets the character set of the HTTP response. Reading or calling the property returns an opaque platform-managed CLR value rather than the configured character set.',
         params: [],
@@ -8112,6 +8114,7 @@ export const PLATFORM_REQUEST_METHODS = [
         minArgs: 0,
         maxArgs: 0,
         isProperty: true,
+        access: 'read-only',
         description:
             'Returns an object describing the client browser, parsed from the User-Agent request header.',
         params: [],
@@ -8131,6 +8134,7 @@ export const PLATFORM_REQUEST_METHODS = [
         minArgs: 0,
         maxArgs: 0,
         isProperty: true,
+        access: 'read-only',
         description: 'Returns the IP address of the client.',
         params: [],
         returnType: 'string',
@@ -8147,6 +8151,7 @@ export const PLATFORM_REQUEST_METHODS = [
         minArgs: 0,
         maxArgs: 0,
         isProperty: true,
+        access: 'read-only',
         description: 'Returns true if the current request was made over HTTPS.',
         params: [],
         returnType: 'boolean',
@@ -8166,6 +8171,7 @@ export const PLATFORM_REQUEST_METHODS = [
         minArgs: 0,
         maxArgs: 0,
         isProperty: true,
+        access: 'read-only',
         description: 'Returns true if the current request was made over HTTPS (alias of HasSSL).',
         params: [],
         returnType: 'boolean',
@@ -8183,6 +8189,7 @@ export const PLATFORM_REQUEST_METHODS = [
         minArgs: 0,
         maxArgs: 0,
         isProperty: true,
+        access: 'read-only',
         description: 'Returns the HTTP method (GET, POST, etc.) of the current request.',
         params: [],
         returnType: 'string',
@@ -8201,6 +8208,7 @@ export const PLATFORM_REQUEST_METHODS = [
         minArgs: 0,
         maxArgs: 0,
         isProperty: true,
+        access: 'read-only',
         description: 'Returns the full query string of the current request URL.',
         params: [],
         returnType: 'string',
@@ -8217,6 +8225,7 @@ export const PLATFORM_REQUEST_METHODS = [
         minArgs: 0,
         maxArgs: 0,
         isProperty: true,
+        access: 'read-only',
         description: 'Returns the referrer URL from the HTTP Referer header.',
         params: [],
         returnType: 'string',
@@ -8237,6 +8246,7 @@ export const PLATFORM_REQUEST_METHODS = [
         minArgs: 0,
         maxArgs: 0,
         isProperty: true,
+        access: 'read-only',
         description: 'Returns the full URL of the current page request.',
         params: [],
         returnType: 'string',
@@ -8253,6 +8263,7 @@ export const PLATFORM_REQUEST_METHODS = [
         minArgs: 0,
         maxArgs: 0,
         isProperty: true,
+        access: 'read-only',
         description: 'Returns the user-agent string from the HTTP request.',
         params: [],
         returnType: 'string',
@@ -8865,7 +8876,10 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
  * (integer = whole number), optionally >= `min`. `enumLabels` (optional) maps each enum
  * value to a short human-readable meaning used in quick-fix titles (e.g. `0` -> "continue").
  *
- * @type {{name: string, type: string, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string, valueConstraint?: {enum?: (string|number)[], enumLabels?: Object.<string, string>, numeric?: 'integer'|'number', min?: number}}[]}
+ * `access` (optional) marks a property whose access direction is restricted at runtime.
+ * See `propertyAccessLookup` for the meaning of each value.
+ *
+ * @type {{name: string, type: string, description: string, access?: 'write-only'|'write-only-opaque'|'read-only', isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string, valueConstraint?: {enum?: (string|number)[], enumLabels?: Object.<string, string>, numeric?: 'integer'|'number', min?: number}}[]}
  */
 export const SCRIPT_UTIL_REQUEST_PROPERTIES = [
     {
@@ -8901,6 +8915,7 @@ export const SCRIPT_UTIL_REQUEST_PROPERTIES = [
     {
         name: 'postData',
         type: 'string',
+        access: 'write-only',
         description:
             'Request body for POST/PUT/PATCH requests. Write-only: assignment works and the body reaches the server, but reading the property throws "Property Get method was not found." — outside a try/catch that throw aborts the whole CloudPage.',
         isConfirmed: true,
@@ -13905,3 +13920,28 @@ for (const [ownerName, m] of ownedMethodEntries) {
         maxCoreVersion: m.maxCoreVersion,
     });
 }
+
+// ── Restricted property-access lookup ────────────────────────────────────────
+// Members whose access direction is restricted at runtime:
+//   'write-only'        — assignment works, reading THROWS ("Property Get method
+//                         was not found."), which aborts the page outside try/catch.
+//   'write-only-opaque' — assignment works, reading returns an opaque CLR value
+//                         instead of the assigned string. No throw.
+//   'read-only'         — reading works, assignment is silently ineffective.
+// Keyed by the lowercase qualified name (e.g. "platform.request.method") →
+// { name, owner, access }. Built generically from the catalogs so that flagging a
+// future property is a one-field change.
+export const propertyAccessLookup = new Map(
+    [
+        ['Script.Util.HttpRequest', SCRIPT_UTIL_REQUEST_PROPERTIES],
+        ['Platform.Response', PLATFORM_RESPONSE_METHODS],
+        ['Platform.Request', PLATFORM_REQUEST_METHODS],
+    ].flatMap(([ownerName, members]) =>
+        members
+            .filter((m) => typeof m.access === 'string')
+            .map((m) => [
+                `${ownerName}.${m.name}`.toLowerCase(),
+                { name: m.name, owner: ownerName, access: m.access },
+            ]),
+    ),
+);
