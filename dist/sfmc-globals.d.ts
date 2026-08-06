@@ -1899,7 +1899,7 @@ declare namespace AccountUser {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs state Add returns "OK" on success or throws on failure. No working invocation of Add was found: in our runtime tests the write method does not work. Tested on a Parent BU session (the correct context for AccountUser edits): a short payload returned the plain string "Error" (it did NOT throw); a full payload (Name/UserID/Password/Email/CustomerKey/ClientID/DefaultBusinessUnit/AssociatedBusinessUnits) threw "Error adding AccountUser". A control WSProxy createItem("AccountUser", ...) on the same run returned StatusCode "Error", ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <Parent BU>." On the same run Subscriber.Add and DataExtension.Retrieve both succeeded, so the run had a working write/read path for other object types — the account-user create call itself produced no working invocation. The success ("OK") path could not be reproduced in our tests. Treat any non-"OK" return as failure.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs state Add returns "OK" on success or throws on failure. In our runtime tests the call was blocked by a tenant permission gate on AccountUser writes rather than by a defect in the method. Tested on a Parent BU session (the correct context for AccountUser edits): a short payload returned the plain string "Error" (it did NOT throw); a full payload (Name/UserID/Password/Email/CustomerKey/ClientID/DefaultBusinessUnit/AssociatedBusinessUnits) threw "Error adding AccountUser". A control WSProxy createItem("AccountUser", ...) on the same run named the cause explicitly: StatusCode "Error", ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <Parent BU>." On the same run Subscriber.Add and DataExtension.Retrieve both succeeded, so the run had a working write/read path for other object types. A session whose user carries the ACCOUNTUSERS edit permission was not available, so the success ("OK") path was never exercised. Treat any non-"OK" return as failure.
      * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @param properties - JSON object describing the new account user (Name, UserID, Password, Email, ClientID, DefaultBusinessUnitKey, AssociatedBusinessUnits, ...).
      * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
@@ -1940,7 +1940,7 @@ interface AccountUserInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. No working invocation of Update was found: in our runtime tests the write method does not work. Tested on a Parent BU session (the correct context for AccountUser edits): AccountUser.Init(key, <Parent BU>).Update({ Name: ... }) returned the plain string "Error" (it did NOT throw). A control WSProxy createItem("AccountUser", ...) on the same run returned ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <Parent BU>.", while Subscriber writes and DataExtension.Retrieve on the same run succeeded — the account-user update call produced no working invocation. The success ("OK") path could not be reproduced in our tests.
+     * @remarks ⚠️ Differs from the official Salesforce docs. In our runtime tests the call was blocked by a tenant permission gate on AccountUser writes rather than by a defect in the method. Tested on a Parent BU session (the correct context for AccountUser edits): AccountUser.Init(key, <Parent BU>).Update({ Name: ... }) returned the plain string "Error" (it did NOT throw). A control WSProxy createItem("AccountUser", ...) on the same run named the cause explicitly: ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <Parent BU>.", while Subscriber writes and DataExtension.Retrieve on the same run succeeded. A session whose user carries the ACCOUNTUSERS edit permission was not available, so the success ("OK") path was never exercised.
      * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @param properties - Attributes of the account user to change.
      * @returns Documented to return "OK" on success. Observed at runtime returning the plain string "Error" on failure (not a throw).
@@ -1957,7 +1957,7 @@ interface AccountUserInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. No working invocation of Activate was found: in our runtime tests the write method does not work. Tested on a Parent BU session (the correct context for AccountUser edits): AccountUser.Init(key, <Parent BU>).Activate() returned the plain string "Error" (it did NOT throw). A control WSProxy createItem("AccountUser", ...) on the same run returned ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <Parent BU>.", while Subscriber writes and DataExtension.Retrieve on the same run succeeded — the account-user activate call produced no working invocation. The success ("OK") path could not be reproduced in our tests.
+     * @remarks ⚠️ Differs from the official Salesforce docs. In our runtime tests the call was blocked by a tenant permission gate on AccountUser writes rather than by a defect in the method. Tested on a Parent BU session (the correct context for AccountUser edits): AccountUser.Init(key, <Parent BU>).Activate() returned the plain string "Error" (it did NOT throw). A control WSProxy createItem("AccountUser", ...) on the same run named the cause explicitly: ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <Parent BU>.", while Subscriber writes and DataExtension.Retrieve on the same run succeeded. A session whose user carries the ACCOUNTUSERS edit permission was not available, so the success ("OK") path was never exercised.
      * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @returns Documented to return "OK" on success. Observed at runtime returning the plain string "Error" on failure (not a throw).
      * @example
@@ -1973,7 +1973,7 @@ interface AccountUserInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. No working invocation of Deactivate was found: in our runtime tests the write method does not work. Tested on a Parent BU session (the correct context for AccountUser edits): AccountUser.Init(key, <Parent BU>).Deactivate() returned the plain string "Error" (it did NOT throw). A control WSProxy createItem("AccountUser", ...) on the same run returned ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <Parent BU>.", while Subscriber writes and DataExtension.Retrieve on the same run succeeded — the account-user deactivate call produced no working invocation. The success ("OK") path could not be reproduced in our tests.
+     * @remarks ⚠️ Differs from the official Salesforce docs. In our runtime tests the call was blocked by a tenant permission gate on AccountUser writes rather than by a defect in the method. Tested on a Parent BU session (the correct context for AccountUser edits): AccountUser.Init(key, <Parent BU>).Deactivate() returned the plain string "Error" (it did NOT throw). A control WSProxy createItem("AccountUser", ...) on the same run named the cause explicitly: ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <Parent BU>.", while Subscriber writes and DataExtension.Retrieve on the same run succeeded. A session whose user carries the ACCOUNTUSERS edit permission was not available, so the success ("OK") path was never exercised.
      * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @returns Documented to return "OK" on success. Observed at runtime returning the plain string "Error" on failure (not a throw).
      * @example
@@ -5805,12 +5805,15 @@ declare function isNaN(value: any): boolean;
  *
  * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/isFinite)
  *
+ * @remarks ⚠️ Unlike the spec, the SFMC engine returns true for a non-numeric string (isFinite("abc") and isFinite(Number("abc")) are both true). isFinite(NaN) itself is correct, and isFinite("") / isFinite(null) returning true is spec-correct. Test untrusted values with isNaN(Number(value)) instead.
  * @remarks ✅ Runtime-verified in a live SFMC test.
+ * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies the global isFinite(value) applies ToNumber first and returns false when the conversion yields NaN, so isFinite("abc") is false. In the SFMC Jint engine a non-numeric string returns true — isFinite("abc") and isFinite(Number("abc")) are both true. isFinite(NaN), isFinite(undefined), isFinite(0/0) and isFinite(Infinity) are spec-correct (false). isFinite("") and isFinite(null) also return true, but that matches MDN, where ToNumber("") and ToNumber(null) are both 0. Coerce with Number() and test the result with isNaN() before relying on isFinite for an untrusted value.
  * @param value - Value to test
  * @example
  * Write(isFinite(42)); // true
  * Write(isFinite(1 / 0)); // false (Infinity)
  * Write(isFinite(NaN)); // false
+ * Write(isFinite("abc")); // true in SFMC (spec would give false)
  */
 declare function isFinite(value: any): boolean;
 /**

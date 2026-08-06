@@ -3224,15 +3224,16 @@ export const ACCOUNT_USER_METHODS = [
         nonFunctionalAtRuntime: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs state Add returns "OK" on success or throws on failure. No working invocation of Add was ' +
-            'found: in our runtime tests the write method does not work. Tested on a Parent BU session (the correct ' +
-            'context for AccountUser edits): a short payload returned the plain string "Error" (it did NOT throw); a full ' +
-            'payload (Name/UserID/Password/Email/CustomerKey/ClientID/DefaultBusinessUnit/AssociatedBusinessUnits) threw ' +
-            '"Error adding AccountUser". A control WSProxy createItem("AccountUser", ...) on the same run returned ' +
-            'StatusCode "Error", ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on ' +
-            'account <Parent BU>." On the same run Subscriber.Add and DataExtension.Retrieve both succeeded, so the run had a ' +
-            'working write/read path for other object types — the account-user create call itself produced no working ' +
-            'invocation. The success ("OK") path could not be reproduced in our tests. Treat any non-"OK" return as failure.',
+            'The official docs state Add returns "OK" on success or throws on failure. In our runtime tests the call was ' +
+            'blocked by a tenant permission gate on AccountUser writes rather than by a defect in the method. Tested on a ' +
+            'Parent BU session (the correct context for AccountUser edits): a short payload returned the plain string ' +
+            '"Error" (it did NOT throw); a full payload ' +
+            '(Name/UserID/Password/Email/CustomerKey/ClientID/DefaultBusinessUnit/AssociatedBusinessUnits) threw ' +
+            '"Error adding AccountUser". A control WSProxy createItem("AccountUser", ...) on the same run named the cause ' +
+            'explicitly: StatusCode "Error", ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ' +
+            'ACCOUNTUSERS on account <Parent BU>." On the same run Subscriber.Add and DataExtension.Retrieve both succeeded, ' +
+            'so the run had a working write/read path for other object types. A session whose user carries the ACCOUNTUSERS ' +
+            'edit permission was not available, so the success ("OK") path was never exercised. Treat any non-"OK" return as failure.',
         minArgs: 1,
         maxArgs: 1,
         description: 'Creates a new account user from the supplied properties object.',
@@ -3292,12 +3293,13 @@ export const ACCOUNT_USER_METHODS = [
         nonFunctionalAtRuntime: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'No working invocation of Update was found: in our runtime tests the write method does not work. Tested on a ' +
-            'Parent BU session (the correct context for AccountUser edits): AccountUser.Init(key, <Parent BU>).Update({ Name: ... }) ' +
-            'returned the plain string "Error" (it did NOT throw). A control WSProxy createItem("AccountUser", ...) on the ' +
-            'same run returned ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on ' +
-            'account <Parent BU>.", while Subscriber writes and DataExtension.Retrieve on the same run succeeded — the ' +
-            'account-user update call produced no working invocation. The success ("OK") path could not be reproduced in our tests.',
+            'In our runtime tests the call was blocked by a tenant permission gate on AccountUser writes rather than by a ' +
+            'defect in the method. Tested on a Parent BU session (the correct context for AccountUser edits): ' +
+            'AccountUser.Init(key, <Parent BU>).Update({ Name: ... }) returned the plain string "Error" (it did NOT throw). ' +
+            'A control WSProxy createItem("AccountUser", ...) on the same run named the cause explicitly: ErrorCode 11001, ' +
+            'StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <Parent BU>.", while Subscriber ' +
+            'writes and DataExtension.Retrieve on the same run succeeded. A session whose user carries the ACCOUNTUSERS edit ' +
+            'permission was not available, so the success ("OK") path was never exercised.',
         minArgs: 1,
         maxArgs: 1,
         description: 'Updates the account user with the supplied attributes.',
@@ -3326,12 +3328,13 @@ export const ACCOUNT_USER_METHODS = [
         nonFunctionalAtRuntime: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'No working invocation of Activate was found: in our runtime tests the write method does not work. Tested on a ' +
-            'Parent BU session (the correct context for AccountUser edits): AccountUser.Init(key, <Parent BU>).Activate() returned the ' +
-            'plain string "Error" (it did NOT throw). A control WSProxy createItem("AccountUser", ...) on the same run ' +
-            'returned ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account ' +
-            '<Parent BU>.", while Subscriber writes and DataExtension.Retrieve on the same run succeeded — the account-user ' +
-            'activate call produced no working invocation. The success ("OK") path could not be reproduced in our tests.',
+            'In our runtime tests the call was blocked by a tenant permission gate on AccountUser writes rather than by a ' +
+            'defect in the method. Tested on a Parent BU session (the correct context for AccountUser edits): ' +
+            'AccountUser.Init(key, <Parent BU>).Activate() returned the plain string "Error" (it did NOT throw). A control ' +
+            'WSProxy createItem("AccountUser", ...) on the same run named the cause explicitly: ErrorCode 11001, ' +
+            'StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <Parent BU>.", while Subscriber ' +
+            'writes and DataExtension.Retrieve on the same run succeeded. A session whose user carries the ACCOUNTUSERS edit ' +
+            'permission was not available, so the success ("OK") path was never exercised.',
         minArgs: 0,
         maxArgs: 0,
         description: 'Activates the account user.',
@@ -3354,12 +3357,13 @@ export const ACCOUNT_USER_METHODS = [
         nonFunctionalAtRuntime: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'No working invocation of Deactivate was found: in our runtime tests the write method does not work. Tested on a ' +
-            'Parent BU session (the correct context for AccountUser edits): AccountUser.Init(key, <Parent BU>).Deactivate() returned the ' +
-            'plain string "Error" (it did NOT throw). A control WSProxy createItem("AccountUser", ...) on the same run ' +
-            'returned ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account ' +
-            '<Parent BU>.", while Subscriber writes and DataExtension.Retrieve on the same run succeeded — the account-user ' +
-            'deactivate call produced no working invocation. The success ("OK") path could not be reproduced in our tests.',
+            'In our runtime tests the call was blocked by a tenant permission gate on AccountUser writes rather than by a ' +
+            'defect in the method. Tested on a Parent BU session (the correct context for AccountUser edits): ' +
+            'AccountUser.Init(key, <Parent BU>).Deactivate() returned the plain string "Error" (it did NOT throw). A control ' +
+            'WSProxy createItem("AccountUser", ...) on the same run named the cause explicitly: ErrorCode 11001, ' +
+            'StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <Parent BU>.", while Subscriber ' +
+            'writes and DataExtension.Retrieve on the same run succeeded. A session whose user carries the ACCOUNTUSERS edit ' +
+            'permission was not available, so the success ("OK") path was never exercised.',
         minArgs: 0,
         maxArgs: 0,
         description:
@@ -10291,17 +10295,22 @@ export const ECMASCRIPT_BUILTINS = [
         name: 'isFinite',
         owner: 'Global',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies the global isFinite(value) applies ToNumber first and returns false when the conversion yields NaN, so isFinite("abc") is false. In the SFMC Jint engine a non-numeric string returns true — isFinite("abc") and isFinite(Number("abc")) are both true. isFinite(NaN), isFinite(undefined), isFinite(0/0) and isFinite(Infinity) are spec-correct (false). isFinite("") and isFinite(null) also return true, but that matches MDN, where ToNumber("") and ToNumber(null) are both 0. Coerce with Number() and test the result with isNaN() before relying on isFinite for an untrusted value.',
         esVersion: 3,
         description:
             'Returns true if the value is a finite number (not NaN, +Infinity, or -Infinity) ' +
             'after applying ToNumber conversion.',
+        caveat: 'Unlike the spec, the SFMC engine returns true for a non-numeric string (isFinite("abc") and isFinite(Number("abc")) are both true). isFinite(NaN) itself is correct, and isFinite("") / isFinite(null) returning true is spec-correct. Test untrusted values with isNaN(Number(value)) instead.',
         params: [{ name: 'value', description: 'Value to test', type: 'any' }],
         returnType: 'boolean',
         syntax: 'isFinite(value)',
         example:
             'Write(isFinite(42)); // true\n' +
             'Write(isFinite(1 / 0)); // false (Infinity)\n' +
-            'Write(isFinite(NaN)); // false',
+            'Write(isFinite(NaN)); // false\n' +
+            'Write(isFinite("abc")); // true in SFMC (spec would give false)',
     },
     {
         name: 'eval',
@@ -13680,7 +13689,7 @@ export const KNOWN_UNSUPPORTED = [
         hasPolyfill: false,
         isConfirmed: true,
         suggestion:
-            'Math.clz32 is unavailable in SFMC. Count leading zero bits manually over a 32-bit unsigned value.',
+            'Math.clz32 is unavailable in SFMC. Count leading zero bits manually over a 32-bit unsigned value. The emulation only accepts non-negative arguments: its leading "x >>> 0" throws "Arithmetic operation resulted in an overflow." for a negative value, so test the sign before calling.',
     },
     {
         member: 'fround',
@@ -13702,7 +13711,7 @@ export const KNOWN_UNSUPPORTED = [
         hasPolyfill: false,
         isConfirmed: true,
         suggestion:
-            'Math.imul is unavailable in SFMC. Emulate 32-bit integer multiplication with bitwise operations if needed.',
+            'Math.imul is unavailable in SFMC. A bitwise emulation works for non-negative operands whose product fits in a signed 32-bit integer, but a negative operand throws "Arithmetic operation resulted in an overflow." because every bitwise operator in this engine rejects a negative operand.',
     },
 ];
 
