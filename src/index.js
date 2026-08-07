@@ -5115,12 +5115,6 @@ export const SUBSCRIBER_METHODS = [
         params: [{ name: 'key', description: 'Subscriber key.', type: 'string' }],
         returnType: 'SubscriberInstance',
         returnDescription: 'An initialized Subscriber bound to the specified key.',
-        differsFromOfficialDocs: true,
-        officialDocsNote:
-            'Runtime-verified (CloudPage): the docs list Upsert and Statistics alongside Add and ' +
-            'Retrieve as static members of Subscriber, but neither is defined on the static object — ' +
-            'both read back as undefined. They only exist on the instance returned by Subscriber.Init(), ' +
-            'so a subscriber key must be bound first; Add and Retrieve remain genuinely static.',
         syntax: 'Subscriber.Init(key)',
         example: 'Platform.Load("core", "1");\nvar sub = Subscriber.Init("mySubscriber");',
     },

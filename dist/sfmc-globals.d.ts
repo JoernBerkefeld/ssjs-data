@@ -2872,7 +2872,6 @@ declare namespace Subscriber {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the docs list Upsert and Statistics alongside Add and Retrieve as static members of Subscriber, but neither is defined on the static object — both read back as undefined. They only exist on the instance returned by Subscriber.Init(), so a subscriber key must be bound first; Add and Retrieve remain genuinely static.
      * @param key - Subscriber key.
      * @returns An initialized Subscriber bound to the specified key.
      * @example
