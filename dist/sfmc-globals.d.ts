@@ -2911,7 +2911,7 @@ interface SubscriberInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Official docs document a static Subscriber.Upsert(properties); at runtime the static Subscriber.Upsert is undefined and calling it throws "Object expected: Upsert" — the method lives on the instance (Subscriber.Init(key).Upsert(properties)). Runtime-proven: <SubscriberInstance>.Upsert({ EmailAddress: ... }) on a new key returned typeof "string" value "OK" and the subscriber was read back afterwards. Use a real deliverable EmailAddress; a spam-blocked domain returns "Error".
+     * @remarks ⚠️ Differs from the official Salesforce docs. Official docs document a static Subscriber.Upsert(properties); at runtime the static Subscriber.Upsert is undefined and calling it throws "Object expected: Upsert" — the method lives on the instance (Subscriber.Init(key).Upsert(properties)). Runtime-proven: <SubscriberInstance>.Upsert({ EmailAddress: ... }) on a new key returned typeof "string" value "OK" and the subscriber was read back afterwards. Use a real deliverable EmailAddress; a spam-blocked domain returns "Error". Attributes must be a plain object keyed by attribute name ({ "First Name": "Jane" }); the array-of-pairs form shown in the official example ([ { Name: ..., Value: ... } ]) also returns "OK" but writes nothing at all — a read-back through Attributes.Retrieve() shows the value unchanged, so the failure is silent.
      * @param properties - JSON object describing the subscriber (EmailAddress, SubscriberKey, Attributes, ...).
      * @returns Returns "OK" on success or throws on failure.
      * @example
@@ -2920,7 +2920,7 @@ interface SubscriberInstance {
      * var result = subObj.Upsert({
      *     EmailAddress: "test@example.com",
      *     SubscriberKey: "test@example.com",
-     *     Attributes: [ { Name: "FirstName", Value: "Jane" } ]
+     *     Attributes: { "First Name": "Jane" }
      * });
      */
     Upsert(properties: object): string;
@@ -2961,7 +2961,8 @@ interface SubscriberInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @returns Returns "OK" on success or throws on failure.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-proven: <SubscriberInstance>.Remove() returned typeof "string" value "OK", and a subsequent Subscriber.Retrieve by SubscriberKey returned no rows, confirming the subscriber was deleted. Contrary to the official docs, a failure does not throw: removing a key that does not exist returns the plain string "Error".
+     * @returns Returns the string "OK" on success. Returns the string "Error" without throwing when the delete is rejected, for example when no subscriber matches the initialized key.
      * @example
      * Platform.Load("core", "1.1.5");
      * var subObj = Subscriber.Init("SubKey");

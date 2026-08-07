@@ -5025,7 +5025,7 @@ export const SUBSCRIBER_METHODS = [
         requiresCoreLoad: true,
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-proven: Subscriber.Add(properties) returned typeof "string" value "OK" and the subscriber was read back with Status "Active" immediately afterwards. A control WSProxy createItem("Subscriber", ...) on the same call returned StatusCode "OK" with StatusMessage "Created Subscriber." and a non-zero NewID. Note: supplying an EmailAddress on a spam-blocked domain (for example @example.com) returns the plain string "Error" instead of "OK" (WSProxy reports ErrorCode 12002 "TriggeredSpamFilter"); use a real deliverable address to create.',
+            'Runtime-proven: Subscriber.Add(properties) returned typeof "string" value "OK" and the subscriber was read back with Status "Active" immediately afterwards. A control WSProxy createItem("Subscriber", ...) on the same call returned StatusCode "OK" with StatusMessage "Created Subscriber." and a non-zero NewID. Note: supplying an EmailAddress on a spam-blocked domain (for example @example.com) returns the plain string "Error" instead of "OK" (WSProxy reports ErrorCode 12002 "TriggeredSpamFilter"); use a real deliverable address to create. Attributes must be a plain object keyed by attribute name; passing an array of { Name, Value } pairs also returns "OK" but stores no attribute value.',
         minArgs: 1,
         maxArgs: 1,
         description: 'Creates a new subscriber from the supplied properties.',
@@ -5083,7 +5083,7 @@ export const SUBSCRIBER_METHODS = [
         differsFromOfficialDocs: true,
         isConfirmed: true,
         officialDocsNote:
-            'Official docs document a static Subscriber.Upsert(properties); at runtime the static Subscriber.Upsert is undefined and calling it throws "Object expected: Upsert" — the method lives on the instance (Subscriber.Init(key).Upsert(properties)). Runtime-proven: <SubscriberInstance>.Upsert({ EmailAddress: ... }) on a new key returned typeof "string" value "OK" and the subscriber was read back afterwards. Use a real deliverable EmailAddress; a spam-blocked domain returns "Error".',
+            'Official docs document a static Subscriber.Upsert(properties); at runtime the static Subscriber.Upsert is undefined and calling it throws "Object expected: Upsert" — the method lives on the instance (Subscriber.Init(key).Upsert(properties)). Runtime-proven: <SubscriberInstance>.Upsert({ EmailAddress: ... }) on a new key returned typeof "string" value "OK" and the subscriber was read back afterwards. Use a real deliverable EmailAddress; a spam-blocked domain returns "Error". Attributes must be a plain object keyed by attribute name ({ "First Name": "Jane" }); the array-of-pairs form shown in the official example ([ { Name: ..., Value: ... } ]) also returns "OK" but writes nothing at all — a read-back through Attributes.Retrieve() shows the value unchanged, so the failure is silent.',
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -5106,7 +5106,7 @@ export const SUBSCRIBER_METHODS = [
             'var result = subObj.Upsert({\n' +
             '    EmailAddress: "test@example.com",\n' +
             '    SubscriberKey: "test@example.com",\n' +
-            '    Attributes: [ { Name: "FirstName", Value: "Jane" } ]\n' +
+            '    Attributes: { "First Name": "Jane" }\n' +
             '});',
     },
     {
@@ -5137,7 +5137,7 @@ export const SUBSCRIBER_METHODS = [
         requiresCoreLoad: true,
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-proven: <SubscriberInstance>.Update(...) returned typeof "string" value "OK". Both a no-argument call and a call passing an object (for example { EmailAddress: ... }) returned "OK" on an existing subscriber.',
+            'Runtime-proven: <SubscriberInstance>.Update(...) returned typeof "string" value "OK". Both a no-argument call and a call passing an object (for example { EmailAddress: ... }) returned "OK" on an existing subscriber. Attributes must be a plain object keyed by attribute name; passing an array of { Name, Value } pairs also returns "OK" but leaves the value untouched, as proven by a read-back through Attributes.Retrieve().',
         minArgs: 1,
         maxArgs: 1,
         description: 'Updates the previously initialized subscriber with the supplied attributes.',
@@ -5158,15 +5158,17 @@ export const SUBSCRIBER_METHODS = [
         isStatic: false,
         requiresCoreLoad: true,
         isConfirmed: true,
+        differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-proven: <SubscriberInstance>.Remove() returned typeof "string" value "OK", and a subsequent Subscriber.Retrieve by SubscriberKey returned no rows, confirming the subscriber was deleted.',
+            'Runtime-proven: <SubscriberInstance>.Remove() returned typeof "string" value "OK", and a subsequent Subscriber.Retrieve by SubscriberKey returned no rows, confirming the subscriber was deleted. Contrary to the official docs, a failure does not throw: removing a key that does not exist returns the plain string "Error".',
         minArgs: 0,
         maxArgs: 0,
         description: 'Deletes the previously initialized subscriber.',
         params: [],
         returnType: 'string',
-        returnEnum: ['OK'],
-        returnDescription: 'Returns "OK" on success or throws on failure.',
+        returnEnum: ['OK', 'Error'],
+        returnDescription:
+            'Returns the string "OK" on success. Returns the string "Error" without throwing when the delete is rejected, for example when no subscriber matches the initialized key.',
         syntax: '<SubscriberInstance>.Remove()',
         example:
             'Platform.Load("core", "1.1.5");\n' +
