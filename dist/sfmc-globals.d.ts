@@ -107,6 +107,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/insertdata/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): deName is matched against the data extension's Name only — the external key / CustomerKey is not accepted. Passing the CustomerKey of a data extension whose Name is deliberately a different string throws "The Data Extension name for a InsertData function call is invalid. A Data Extension of this name does not exist.", and a read-back confirmed the rejected call inserted no row.
          * @param deName - Data Extension name (resolved by Name, not external key)
          * @param fieldNames - Array of column names to populate
          * @param fieldValues - Array of values aligned to fieldNames
@@ -166,6 +167,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/upsertdata/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the docs allow whereFieldNames and whereFieldValues to be plain strings for a single-column filter, but a scalar in either position aborts the call with "Unable to retrieve security descriptor for this frame." — reproduced independently in two separate chapters. Wrap the single filter column and its value in one-element arrays instead; that form both inserted and updated in the same run. The flat/variadic argument form is likewise unsupported and throws.
          * @param deName - Data Extension name (resolved by Name, not external key)
          * @param whereFieldNames - Column name(s) to identify an existing row; use an array for multiple columns (AND logic)
          * @param whereFieldValues - Value(s) to match in whereFieldNames; must be an array of equal length when whereFieldNames is an array
@@ -197,6 +199,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/deletedata/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): deName is matched against the data extension's Name only — the external key / CustomerKey is not accepted. Passing the CustomerKey of a data extension whose Name is deliberately a different string throws "The Data Extension name for a DeleteData function call is invalid. A Data Extension of this name does not exist.", and a follow-up call by Name still deleted the row — proving the rejected key call removed nothing.
          * @param deName - Data Extension name (resolved by Name, not external key)
          * @param whereFieldNames - Array of column names to match for deletion
          * @param whereFieldValues - Array of values aligned to whereFieldNames that identify rows to delete
@@ -243,6 +246,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentblockbyname/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): only the single-argument form works from SSJS, and folder paths must be separated by a BACKSLASH — a forward-slash path always throws. Any 2nd argument — string literal, number, boolean, empty string, null or variable, including a closure-free top-level all-literal call — is rejected with "invalid parameter value ... Parameter Name: ImpressionRegionName, Parameter Ordinal: 2, Parameter Type: ResolvedValueParameter", so regionName, stopOnError and fallbackContent cannot be supplied; statusVariable is unreachable for a separate reason, because arity 5 throws "Unable to retrieve security descriptor for this frame" before the parameter check runs. A name that does not resolve THROWS rather than returning an empty string or the fallback, so callers must wrap the call in try/catch. A bare asset name resolves at any folder depth, so the path is only a disambiguator, and a literal ending in a backslash aborts the page with an uncatchable HTTP 422. Use Platform.Function.TreatAsContent() with the AMPscript form when the optional parameters are needed — it honours all five.
          * @param name - Folder path and name of the Content Builder asset
          * @param regionName - Impression region name for tracking
          * @param stopOnError - When true, returns an error if the content area cannot be found or is invalid. When false, no error is returned.
@@ -259,6 +263,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentblockbyid/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): only the single-argument form works from SSJS. Any 2nd argument — string literal, number, boolean, empty string, null or variable, including a closure-free top-level all-literal call — is rejected with "invalid parameter value ... Parameter Name: ImpressionRegionName, Parameter Ordinal: 2, Parameter Type: ResolvedValueParameter", which is neither a literal-vs-variable rule nor a test-harness artefact. Because parameter 2 is rejected first, stopOnError and fallbackContent are unreachable: both stopOnError=true and stopOnError=false throw, and the fallback string is never emitted — even when the referenced block exists. Use Platform.Function.TreatAsContent() with the AMPscript form when the optional parameters are needed.
          * @param id - Numeric ID of the Content Builder asset
          * @param regionName - Impression region name for tracking
          * @param stopOnError - When true, returns an exception and terminates if content cannot be retrieved. When false, the call proceeds.
@@ -450,6 +455,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/createobject/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the docs type the return value as a plain object, but the instance is a .NET CLR host object — typeof reports "clr" for DataExtensionObject, Subscriber and APIProperty alike. Properties assigned with SetObjectProperty() or AddObjectArrayItem() therefore cannot be read back from SSJS; unreadable is not unset, so the only way to prove a value landed is to submit the object through an Invoke* call and read the result from the API.
          * @param objectType - SOAP API object type name
          * @example
          * var sub = Platform.Function.CreateObject("Subscriber");
@@ -811,6 +817,7 @@ declare namespace Platform {
          *
          * @deprecated
          * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the three optional parameters the docs describe cannot be reached from SSJS. Every shape of the 2nd argument (regionName) — string literal, concatenation, variable, empty string, null — is rejected with an "invalid parameter value ... Parameter Name: ImpressionRegionName, Parameter Ordinal: 2, Parameter Type: ResolvedValueParameter" error, so arity 3 (stopOnError) and arity 4 (fallbackContent) never execute: setting stopOnError to false does not let the call proceed, and the fallback string is never assigned or returned. Only the single-argument form is usable, and even that throws unless the id resolves to an existing Content Area — the numeric ids in the docs' examples all failed with "An error occurred when attempting to evaluate an ContentArea function call". Use Platform.Function.ContentBlockByID() instead, or invoke the AMPscript form through Platform.Function.TreatAsContent() when the optional parameters are needed.
          * @param id - ID of the Content Area.
          * @param regionName - Impression region for content.
          * @param stopOnError - When true, throws on failure; when false the call proceeds.
@@ -827,6 +834,7 @@ declare namespace Platform {
          *
          * @deprecated
          * @remarks ✅ Runtime-verified in a live SFMC test.
+         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the single-argument form does return the content once the name resolves, but the three optional parameters the docs describe cannot be reached from SSJS. Every shape of the 2nd argument (regionName) — string literal, concatenation, variable, empty string, null — is rejected with an "invalid parameter value ... Parameter Name: ImpressionRegionName, Parameter Ordinal: 2, Parameter Type: ResolvedValueParameter" error, so arity 3 (stopOnError) and arity 4 (fallbackContent) never execute: setting stopOnError to false does not let the call proceed, and the fallback string is never assigned or returned. Use Platform.Function.ContentBlockByName() instead, or invoke the AMPscript form through Platform.Function.TreatAsContent() when the optional parameters are needed.
          * @param name - Name of the Content Area.
          * @param regionName - Impression region for content.
          * @param stopOnError - When true, throws on failure; when false the call proceeds.
@@ -1249,6 +1257,7 @@ declare function Base64Decode(encodedString: string): string;
  * @deprecated
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
+ * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `ContentArea` IS defined as a function after `Platform.Load("core", ...)` has run (the load must precede use; once loaded the bare name is usable in that scope and in nested helper bodies that close over it). Only the single-argument form works: passing the id of an existing Content Area returns its content, and a numeric string for the same id works too. Supplying regionName (parameter 2) throws an "invalid parameter value ... ImpressionRegionName ... ResolvedValueParameter" error, which leaves errorMsg and fallbackContent unreachable. An arity-1 call that throws means the id did not resolve to a Content Area. The Platform.Function.ContentArea() variant does not require Platform.Load.
  * @param id - ID of the Content Area.
  * @param regionName - Impression region for content.
  * @param errorMsg - Error message string returned on failure.
@@ -1267,6 +1276,7 @@ declare function ContentArea(id: string | number, regionName?: string, errorMsg?
  * @deprecated
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
+ * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `ContentAreaByName` IS defined as a function after `Platform.Load("core", ...)` has run (the load must precede use; once loaded the bare name is usable in that scope and in nested helper bodies that close over it). Only the single-argument form works: passing the name of an existing Content Area returns its content. Name matching is case-insensitive and the backslash-separated folder-path form resolves as well, while a CustomerKey, a space-padded name and an unknown name are all rejected. Supplying regionName (parameter 2) throws an "invalid parameter value ... ImpressionRegionName ... ResolvedValueParameter" error, which leaves errorMsg and fallbackContent unreachable. The Platform.Function.ContentAreaByName() variant does not require Platform.Load.
  * @param name - Name of the Content Area.
  * @param regionName - Impression region for content.
  * @param errorMsg - Error message string returned on failure.
@@ -1884,6 +1894,7 @@ declare namespace AccountUser {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (Parent BU CloudPage): the returned instance is an opaque stub, not the populated user record the docs imply. Reading ID, Name or CustomerKey off it yields undefined, and Init() does not validate targetUserKey — passing a key that matches no user still returns an object exposing Update/Activate/Deactivate that is indistinguishable from one built with a real key. A bad key therefore only surfaces when an instance method is called; use AccountUser.Retrieve() when you need to read user fields or check existence.
      * @param targetUserKey - External key of the user.
      * @param myClientID - MID of the business unit.
      * @returns An initialized AccountUser bound to the specified external key and client ID.
@@ -1924,6 +1935,7 @@ declare namespace AccountUser {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (Parent BU CloudPage): the documented object[] return value is not a real JavaScript Array — `result instanceof Array` is false both when the filter matches and when it matches nothing. It is index- and length-addressable, so a classic for loop works, but Array.prototype methods and instanceof checks must not be relied on; copy the entries into a real array first if you need them.
      * @param filter - Criteria used to search for the account user.
      * @returns List of results matching the filter.
      * @example
@@ -2860,6 +2872,7 @@ declare namespace Subscriber {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the docs list Upsert and Statistics alongside Add and Retrieve as static members of Subscriber, but neither is defined on the static object — both read back as undefined. They only exist on the instance returned by Subscriber.Init(), so a subscriber key must be bound first; Add and Retrieve remain genuinely static.
      * @param key - Subscriber key.
      * @returns An initialized Subscriber bound to the specified key.
      * @example

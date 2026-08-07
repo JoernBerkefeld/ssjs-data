@@ -356,6 +356,7 @@ export const SSJS_GLOBALS = [
         deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
+        differsFromOfficialDocs: true,
         officialDocsNote:
             'Runtime-verified (CloudPage): the bare-name `ContentArea` IS defined as a function after ' +
             '`Platform.Load("core", ...)` has run (the load must precede use; once loaded the bare name is ' +
@@ -406,6 +407,7 @@ export const SSJS_GLOBALS = [
         deprecated: true,
         requiresCoreLoad: true,
         isConfirmed: true,
+        differsFromOfficialDocs: true,
         officialDocsNote:
             'Runtime-verified (CloudPage): the bare-name `ContentAreaByName` IS defined as a function after ' +
             '`Platform.Load("core", ...)` has run (the load must precede use; once loaded the bare name is ' +
@@ -1136,6 +1138,13 @@ export const PLATFORM_FUNCTIONS = [
             'Adds a new row to a Data Extension and returns the number of rows inserted. ' +
             'Recommended for non-sending contexts (CloudPages, landing pages, microsites, and SMS messages), but the *DE variants also run and commit there — see InsertDE().',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            "Runtime-verified (CloudPage): deName is matched against the data extension's Name only — " +
+            'the external key / CustomerKey is not accepted. Passing the CustomerKey of a data extension ' +
+            'whose Name is deliberately a different string throws "The Data Extension name for a ' +
+            'InsertData function call is invalid. A Data Extension of this name does not exist.", and a ' +
+            'read-back confirmed the rejected call inserted no row.',
         params: [
             {
                 name: 'deName',
@@ -1297,6 +1306,14 @@ export const PLATFORM_FUNCTIONS = [
             'Takes array arguments for the where and field pairs — a flat/variadic argument form is not supported and throws at runtime. ' +
             'Recommended for non-sending contexts (CloudPages, landing pages), but the *DE variants also run and commit there — see UpsertDE().',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the docs allow whereFieldNames and whereFieldValues to be ' +
+            'plain strings for a single-column filter, but a scalar in either position aborts the call ' +
+            'with "Unable to retrieve security descriptor for this frame." — reproduced independently in ' +
+            'two separate chapters. Wrap the single filter column and its value in one-element arrays ' +
+            'instead; that form both inserted and updated in the same run. The flat/variadic argument ' +
+            'form is likewise unsupported and throws.',
         params: [
             {
                 name: 'deName',
@@ -1391,6 +1408,13 @@ export const PLATFORM_FUNCTIONS = [
             'Removes rows from a Data Extension matching filter criteria and returns the number of rows deleted. ' +
             'Recommended for non-sending contexts (CloudPages, landing pages, microsites, and SMS messages), but the *DE variants also run and commit there — see DeleteDE().',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            "Runtime-verified (CloudPage): deName is matched against the data extension's Name only — " +
+            'the external key / CustomerKey is not accepted. Passing the CustomerKey of a data extension ' +
+            'whose Name is deliberately a different string throws "The Data Extension name for a ' +
+            'DeleteData function call is invalid. A Data Extension of this name does not exist.", and a ' +
+            'follow-up call by Name still deleted the row — proving the rejected key call removed nothing.',
         params: [
             {
                 name: 'deName',
@@ -1504,6 +1528,21 @@ export const PLATFORM_FUNCTIONS = [
             'If the same name is used across multiple folders, supply the full path. ' +
             'Runtime note: when optional arguments are supplied, every argument must be a compile-time literal.',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): only the single-argument form works from SSJS, and folder ' +
+            'paths must be separated by a BACKSLASH — a forward-slash path always throws. Any 2nd ' +
+            'argument — string literal, number, boolean, empty string, null or variable, including a ' +
+            'closure-free top-level all-literal call — is rejected with "invalid parameter value ... ' +
+            'Parameter Name: ImpressionRegionName, Parameter Ordinal: 2, Parameter Type: ' +
+            'ResolvedValueParameter", so regionName, stopOnError and fallbackContent cannot be supplied; ' +
+            'statusVariable is unreachable for a separate reason, because arity 5 throws "Unable to ' +
+            'retrieve security descriptor for this frame" before the parameter check runs. A name that ' +
+            'does not resolve THROWS rather than returning an empty string or the fallback, so callers ' +
+            'must wrap the call in try/catch. A bare asset name resolves at any folder depth, so the ' +
+            'path is only a disambiguator, and a literal ending in a backslash aborts the page with an ' +
+            'uncatchable HTTP 422. Use Platform.Function.TreatAsContent() with the AMPscript form when ' +
+            'the optional parameters are needed — it honours all five.',
         params: [
             {
                 name: 'name',
@@ -1552,6 +1591,18 @@ export const PLATFORM_FUNCTIONS = [
             'Renders a Content Builder asset by its numeric identifier. ' +
             'Runtime note: when optional arguments are supplied, every argument must be a compile-time literal.',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): only the single-argument form works from SSJS. Any 2nd ' +
+            'argument — string literal, number, boolean, empty string, null or variable, including a ' +
+            'closure-free top-level all-literal call — is rejected with "invalid parameter value ... ' +
+            'Parameter Name: ImpressionRegionName, Parameter Ordinal: 2, Parameter Type: ' +
+            'ResolvedValueParameter", which is neither a literal-vs-variable rule nor a test-harness ' +
+            'artefact. Because parameter 2 is rejected first, stopOnError and fallbackContent are ' +
+            'unreachable: both stopOnError=true and stopOnError=false throw, and the fallback string is ' +
+            'never emitted — even when the referenced block exists. Use ' +
+            'Platform.Function.TreatAsContent() with the AMPscript form when the optional parameters ' +
+            'are needed.',
         params: [
             {
                 name: 'id',
@@ -1874,6 +1925,14 @@ export const PLATFORM_FUNCTIONS = [
         maxArgs: 1,
         description: 'Instantiates a Marketing Cloud SOAP API object.',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the docs type the return value as a plain object, but the ' +
+            'instance is a .NET CLR host object — typeof reports "clr" for DataExtensionObject, ' +
+            'Subscriber and APIProperty alike. Properties assigned with SetObjectProperty() or ' +
+            'AddObjectArrayItem() therefore cannot be read back from SSJS; unreadable is not unset, so ' +
+            'the only way to prove a value landed is to submit the object through an Invoke* call and ' +
+            'read the result from the API.',
         params: [{ name: 'objectType', description: 'SOAP API object type name', type: 'string' }],
         returnType: 'object',
         syntax: 'Platform.Function.CreateObject(objectType)',
@@ -2614,6 +2673,19 @@ export const PLATFORM_FUNCTIONS = [
             'Note: the bare-name ContentArea() global uses a string errorMsg as the 3rd parameter ' +
             'and requires Platform.Load("core","1.1.5"); this Platform.Function form does not.',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the three optional parameters the docs describe cannot be ' +
+            'reached from SSJS. Every shape of the 2nd argument (regionName) — string literal, ' +
+            'concatenation, variable, empty string, null — is rejected with an "invalid parameter value ' +
+            '... Parameter Name: ImpressionRegionName, Parameter Ordinal: 2, Parameter Type: ' +
+            'ResolvedValueParameter" error, so arity 3 (stopOnError) and arity 4 (fallbackContent) never ' +
+            'execute: setting stopOnError to false does not let the call proceed, and the fallback string ' +
+            'is never assigned or returned. Only the single-argument form is usable, and even that ' +
+            "throws unless the id resolves to an existing Content Area — the numeric ids in the docs' " +
+            'examples all failed with "An error occurred when attempting to evaluate an ContentArea ' +
+            'function call". Use Platform.Function.ContentBlockByID() instead, or invoke the AMPscript ' +
+            'form through Platform.Function.TreatAsContent() when the optional parameters are needed.',
         params: [
             { name: 'id', description: 'ID of the Content Area.', type: 'string|number' },
             {
@@ -2658,6 +2730,18 @@ export const PLATFORM_FUNCTIONS = [
             'Note: the bare-name ContentAreaByName() global uses a string errorMsg as the 3rd parameter ' +
             'and requires Platform.Load("core","1.1.5"); this Platform.Function form does not.',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the single-argument form does return the content once the ' +
+            'name resolves, but the three optional parameters the docs describe cannot be reached from ' +
+            'SSJS. Every shape of the 2nd argument (regionName) — string literal, concatenation, ' +
+            'variable, empty string, null — is rejected with an "invalid parameter value ... Parameter ' +
+            'Name: ImpressionRegionName, Parameter Ordinal: 2, Parameter Type: ResolvedValueParameter" ' +
+            'error, so arity 3 (stopOnError) and arity 4 (fallbackContent) never execute: setting ' +
+            'stopOnError to false does not let the call proceed, and the fallback string is never ' +
+            'assigned or returned. Use Platform.Function.ContentBlockByName() instead, or invoke the ' +
+            'AMPscript form through Platform.Function.TreatAsContent() when the optional parameters are ' +
+            'needed.',
         params: [
             { name: 'name', description: 'Name of the Content Area.', type: 'string' },
             {
@@ -3212,6 +3296,14 @@ export const ACCOUNT_USER_METHODS = [
         returnDescription:
             'An initialized AccountUser bound to the specified external key and client ID.',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (Parent BU CloudPage): the returned instance is an opaque stub, not the ' +
+            'populated user record the docs imply. Reading ID, Name or CustomerKey off it yields ' +
+            'undefined, and Init() does not validate targetUserKey — passing a key that matches no user ' +
+            'still returns an object exposing Update/Activate/Deactivate that is indistinguishable from ' +
+            'one built with a real key. A bad key therefore only surfaces when an instance method is ' +
+            'called; use AccountUser.Retrieve() when you need to read user fields or check existence.',
         syntax: 'AccountUser.Init(targetUserKey, myClientID)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -3281,6 +3373,13 @@ export const ACCOUNT_USER_METHODS = [
         returnType: 'object[]',
         returnDescription: 'List of results matching the filter.',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (Parent BU CloudPage): the documented object[] return value is not a real ' +
+            'JavaScript Array — `result instanceof Array` is false both when the filter matches and when ' +
+            'it matches nothing. It is index- and length-addressable, so a classic for loop works, but ' +
+            'Array.prototype methods and instanceof checks must not be relied on; copy the entries into ' +
+            'a real array first if you need them.',
         syntax: 'AccountUser.Retrieve(filter)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -5016,6 +5115,12 @@ export const SUBSCRIBER_METHODS = [
         params: [{ name: 'key', description: 'Subscriber key.', type: 'string' }],
         returnType: 'SubscriberInstance',
         returnDescription: 'An initialized Subscriber bound to the specified key.',
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage): the docs list Upsert and Statistics alongside Add and ' +
+            'Retrieve as static members of Subscriber, but neither is defined on the static object — ' +
+            'both read back as undefined. They only exist on the instance returned by Subscriber.Init(), ' +
+            'so a subscriber key must be bound first; Add and Retrieve remain genuinely static.',
         syntax: 'Subscriber.Init(key)',
         example: 'Platform.Load("core", "1");\nvar sub = Subscriber.Init("mySubscriber");',
     },
