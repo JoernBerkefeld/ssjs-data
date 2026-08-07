@@ -5182,11 +5182,11 @@ export const SUBSCRIBER_METHODS = [
         differsFromOfficialDocs: true,
         isConfirmed: true,
         officialDocsNote:
-            'Official docs document a static Subscriber.Upsert(properties); at runtime the static Subscriber.Upsert is undefined and calling it throws "Object expected: Upsert" — the method lives on the instance (Subscriber.Init(key).Upsert(properties)). Runtime-proven: <SubscriberInstance>.Upsert({ EmailAddress: ... }) on a new key returned typeof "string" value "OK" and the subscriber was read back afterwards. Use a real deliverable EmailAddress; a spam-blocked domain returns "Error". Attributes must be a plain object keyed by attribute name ({ "First Name": "Jane" }); the array-of-pairs form shown in the official example ([ { Name: ..., Value: ... } ]) also returns "OK" but writes nothing at all — a read-back through Attributes.Retrieve() shows the value unchanged, so the failure is silent.',
+            'Attributes must be a plain object keyed by attribute name ({ "First Name": "Jane" }); the array-of-pairs form shown in the official example ([ { Name: ..., Value: ... } ]) also returns "OK" but writes nothing at all — a read-back through Attributes.Retrieve() shows the value unchanged, so the failure is silent. Runtime-proven: <SubscriberInstance>.Upsert({ EmailAddress: ... }) on a new key returned typeof "string" value "OK" and the subscriber was read back afterwards. Use a real deliverable EmailAddress; a spam-blocked domain returns "Error".',
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Creates a new subscriber, or updates the initialized one matched by EmailAddress / SubscriberKey.',
+            'Creates a new subscriber, or updates the initialized one matched by EmailAddress / SubscriberKey. Instance-only: there is no static Subscriber.Upsert — calling it throws "Object expected: Upsert".',
         params: [
             {
                 name: 'properties',
@@ -5213,13 +5213,10 @@ export const SUBSCRIBER_METHODS = [
         isStatic: false,
         requiresCoreLoad: true,
         isConfirmed: true,
-        differsFromOfficialDocs: true,
-        officialDocsNote:
-            'Official docs document a static Subscriber.Statistics(subscriberKey); at runtime the static Subscriber.Statistics is undefined and calling it throws "Object expected: Statistics" — the method lives on the instance (Subscriber.Init(key).Statistics()). Runtime-proven: <SubscriberInstance>.Statistics() returned typeof "object" with string-valued keys OpenEmailName, SendEmailName, ClickCount, ClickLinkAlias, SendCount, OpenCount, ClickURL (counts are returned as strings, for example SendCount "0").',
         minArgs: 0,
         maxArgs: 0,
         description:
-            'Retrieves statistical data for the initialized subscriber (sends, opens, clicks).',
+            'Retrieves statistical data for the initialized subscriber (sends, opens, clicks). Instance-only: there is no static Subscriber.Statistics — calling it throws "Object expected: Statistics".',
         params: [],
         returnType: 'object',
         returnDescription:
