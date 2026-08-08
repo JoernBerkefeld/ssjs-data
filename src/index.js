@@ -221,17 +221,23 @@ export const SSJS_GLOBALS = [
         minArgs: 0,
         maxArgs: 1,
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'Runtime-verified (CloudPage, 2026-08-08): standard JavaScript renders a plain object as "[object Object]", but in the SFMC engine `String({})` THROWS "Object reference not set to an instance of an object." The throw is catchable and does not abort the page. The concatenation form `("" + {})` returns the EMPTY STRING instead of "[object Object]" (same for `[]`). Neither form renders an object — read its fields, or serialize with `Platform.Function.Stringify(value)`. The same throw occurs on .NET-null-backed CLR properties (`resp.contentType`, `resp.encoding`, `resp.headers`), so prefer `("" + value)` for engine values; both forms otherwise produce a real JS string that satisfies `===` and supports string methods.',
         description:
             'Native JavaScript function that converts any value to its string representation. ' +
             'Essential in SSJS for converting the CLR response object returned by Script.Util.HttpRequest.send().content ' +
             'into a JavaScript string that can be passed to Platform.Function.ParseJSON(). ' +
             'Unlike Stringify(), String() works on CLR/.NET objects and does not produce JSON output. ' +
             'Runtime-verified (CloudPage): available with no Platform.Load; `String()` with no argument returns `""`, ' +
-            '`String(null)` returns `"null"`.',
+            '`String(null)` returns `"null"`. CAVEAT: it does NOT render a plain object — `String({})` throws ' +
+            '"Object reference not set to an instance of an object." (catchable) and `("" + {})` yields `""`, ' +
+            'not the standard `"[object Object]"`; use `Platform.Function.Stringify(value)` for objects.',
         params: [
             {
                 name: 'value',
-                description: 'Value to convert to string (any type, including CLR objects)',
+                description:
+                    'Value to convert to string (any type, including CLR objects). A plain object throws — serialize it with Stringify() instead.',
                 type: 'any',
             },
         ],
@@ -9115,7 +9121,8 @@ export const SCRIPT_UTIL_RESPONSE_PROPERTIES = [
     {
         name: 'content',
         type: 'any',
-        description: 'Response body as a CLR string — wrap with String() before use.',
+        description:
+            'Response body as a CLR string — wrap with String() before use. Reading .length directly on it always yields -1 no matter how long the body is, and typeof reports "number" so the usual CLR tell is absent; measure with String(content).length instead.',
         isConfirmed: true,
     },
     {
@@ -9149,14 +9156,14 @@ export const SCRIPT_UTIL_RESPONSE_PROPERTIES = [
         name: 'returnStatus',
         type: 'number',
         description:
-            'Status value: 0 = OK, 1 = empty URL, 2 = call failed, 3 = succeeded with empty content. Returned as a CLR value, so compare it with == (or Number()) — === against a number literal is never true.',
+            'Status value: 0 = OK, 1 = empty URL, 2 = call failed, 3 = succeeded with empty content. Returned as a CLR value: === against a number literal is never true and switch/case silently falls through to default, so convert once with Number() and compare the result. Do not use == — loose equality against a CLR value backed by a .NET null throws "Value cannot be null. Parameter name: value", while === returns false safely. Relational operators (<, <=, >, >=) already evaluate correctly on the raw value.',
         isConfirmed: true,
     },
     {
         name: 'statusCode',
         type: 'number',
         description:
-            'HTTP status code. Returned as a CLR value, so compare it with == (or Number()) — === against a number literal is never true.',
+            'HTTP status code. Returned as a CLR value: === against a number literal is never true and switch/case silently falls through to default, so convert once with Number() and compare the result. Do not use == — loose equality against a CLR value backed by a .NET null throws "Value cannot be null. Parameter name: value", while === returns false safely. Relational operators (<, <=, >, >=) already evaluate correctly on the raw value.',
         isConfirmed: true,
     },
 ];
@@ -10317,8 +10324,11 @@ export const ECMASCRIPT_BUILTINS = [
         isConfirmed: true,
         esVersion: 3,
         description:
-            'Returns a string representation of the object. For a plain object it returns "[object Object]". ' +
-            'Object.prototype.toString.call(value) is the standard type-tag test (e.g. "[object Array]").',
+            'Returns a string representation of the object. An EXPLICIT call on a plain object returns "[object Object]". ' +
+            'Object.prototype.toString.call(value) is the standard type-tag test (e.g. "[object Array]"). ' +
+            'Implicit coercion does NOT go through this method in the SFMC engine: String({}) throws ' +
+            '"Object reference not set to an instance of an object." and ("" + {}) yields "" — always call toString() explicitly, ' +
+            'or use Platform.Function.Stringify(value).',
         params: [],
         returnType: 'string',
         syntax: 'Object.toString()',

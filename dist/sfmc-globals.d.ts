@@ -4523,7 +4523,7 @@ declare namespace Script {
 // ── Script.Util HTTP response instance ──────────────────────────────────────
 interface HttpResponseInstance {
     /**
-     * Response body as a CLR string — wrap with String() before use.
+     * Response body as a CLR string — wrap with String() before use. Reading .length directly on it always yields -1 no matter how long the body is, and typeof reports "number" so the usual CLR tell is absent; measure with String(content).length instead.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
      */
@@ -4549,13 +4549,13 @@ interface HttpResponseInstance {
      */
     readonly headers: object;
     /**
-     * Status value: 0 = OK, 1 = empty URL, 2 = call failed, 3 = succeeded with empty content. Returned as a CLR value, so compare it with == (or Number()) — === against a number literal is never true.
+     * Status value: 0 = OK, 1 = empty URL, 2 = call failed, 3 = succeeded with empty content. Returned as a CLR value: === against a number literal is never true and switch/case silently falls through to default, so convert once with Number() and compare the result. Do not use == — loose equality against a CLR value backed by a .NET null throws "Value cannot be null. Parameter name: value", while === returns false safely. Relational operators (<, <=, >, >=) already evaluate correctly on the raw value.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
      */
     readonly returnStatus: number;
     /**
-     * HTTP status code. Returned as a CLR value, so compare it with == (or Number()) — === against a number literal is never true.
+     * HTTP status code. Returned as a CLR value: === against a number literal is never true and switch/case silently falls through to default, so convert once with Number() and compare the result. Do not use == — loose equality against a CLR value backed by a .NET null throws "Value cannot be null. Parameter name: value", while === returns false safely. Relational operators (<, <=, >, >=) already evaluate correctly on the raw value.
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
      */
@@ -5083,7 +5083,7 @@ interface Object {
      */
     hasOwnProperty(v: string): boolean;
     /**
-     * Returns a string representation of the object. For a plain object it returns "[object Object]". Object.prototype.toString.call(value) is the standard type-tag test (e.g. "[object Array]").
+     * Returns a string representation of the object. An EXPLICIT call on a plain object returns "[object Object]". Object.prototype.toString.call(value) is the standard type-tag test (e.g. "[object Array]"). Implicit coercion does NOT go through this method in the SFMC engine: String({}) throws "Object reference not set to an instance of an object." and ("" + {}) yields "" — always call toString() explicitly, or use Platform.Function.Stringify(value).
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/toString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/object-methods/)
      *
