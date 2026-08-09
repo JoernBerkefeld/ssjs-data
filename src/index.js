@@ -8858,7 +8858,7 @@ export const SCRIPT_UTIL_CONSTRUCTORS = [
             'Only works with HTTP on port 80 and HTTPS on port 443. ' +
             'Call send() to execute the request and receive a Script.Util.HttpResponse object.',
         params: [{ name: 'url', description: 'The URL to retrieve content from', type: 'string' }],
-        returnType: 'HttpRequestInstance',
+        returnType: 'HttpGetInstance',
         syntax: 'new Script.Util.HttpGet(url)',
         example:
             'var req = new Script.Util.HttpGet("https://api.example.com/data");\n' +
@@ -8959,14 +8959,17 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
     },
 ];
 
-// ── Script.Util.HttpRequest writable instance properties ────────────────────
-// Configurable properties on the object returned by `new Script.Util.HttpRequest(url)`.
-// Source: ssjs.guide/http/script-util-httprequest.md (HttpRequestInstance Properties).
-// These are writable (req.method = "POST"), so the generator emits them as plain
-// (non-readonly) class members.
+// ── Script.Util.HttpGet writable instance properties ────────────────────────
+// Configurable properties on the object returned by `new Script.Util.HttpGet(url)`.
+// Source: ssjs.guide/http/script-util-httpget.md (HttpGetInstance Properties).
+// This array is the SHARED BASE: every entry here exists on both request handlers,
+// so SCRIPT_UTIL_REQUEST_PROPERTIES below is derived from it plus the request-only
+// extras. Membership is opt-in per runtime evidence — only add a property here once
+// it is proven to exist on `new Script.Util.HttpGet(url)` too.
 
 /**
- * Writable config properties on the object returned by `new Script.Util.HttpRequest(url)`.
+ * Writable config properties shared by the objects returned by
+ * `new Script.Util.HttpGet(url)` and `new Script.Util.HttpRequest(url)`.
  *
  * `isConfirmed` marks a property whose runtime type/behaviour was validated with a
  * live CloudPage test (see docs/joern/http-introspection-*). `differsFromOfficialDocs`
@@ -8980,12 +8983,69 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
  * (integer = whole number), optionally >= `min`. `enumLabels` (optional) maps each enum
  * value to a short human-readable meaning used in quick-fix titles (e.g. `0` -> "continue").
  *
- * `access` (optional) marks a property whose access direction is restricted at runtime.
+ * Descriptions here are handler-neutral because the same object is documented for both
+ * constructors.
+ *
+ * @type {{name: string, type: string, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string, valueConstraint?: {enum?: (string|number)[], enumLabels?: Object.<string, string>, numeric?: 'integer'|'number', min?: number}}[]}
+ */
+export const SCRIPT_UTIL_HTTPGET_PROPERTIES = [
+    {
+        name: 'retries',
+        type: 'number',
+        description: 'Number of times a failed request is retried before it gives up (default 1).',
+        isConfirmed: true,
+        valueConstraint: { numeric: 'integer', min: 0 },
+    },
+    {
+        name: 'continueOnError',
+        type: 'boolean',
+        description:
+            'If true, a failed request lets the script carry on instead of throwing an error.',
+        isConfirmed: true,
+    },
+    {
+        name: 'emptyContentHandling',
+        type: 'number',
+        description:
+            'What to do when the request returns no content: 0 = continue, 1 = stop, 2 = continue to next subscriber (email sends only).',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs type this as a boolean, but both request handlers accept only the numeric modes 0/1/2 at runtime and reject true/false.',
+        valueConstraint: {
+            enum: [0, 1, 2],
+            enumLabels: {
+                0: 'continue',
+                1: 'stop',
+                2: 'continue to next subscriber - email sends only',
+            },
+        },
+    },
+    {
+        name: 'timeout',
+        type: 'number',
+        description: 'Timeout in seconds (default 30).',
+        isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'The official docs do not list this as a configuration property on either request handler — they only state that send() gives up after 30 seconds. The property does exist and is applied end-to-end at runtime, and its default of 30 lines up with that 30-second limit, so the unit is seconds.',
+        valueConstraint: { numeric: 'integer', min: 0 },
+    },
+];
+
+// ── Script.Util.HttpRequest-only writable instance properties ───────────────
+// Properties exposed by `new Script.Util.HttpRequest(url)` but NOT by
+// `new Script.Util.HttpGet(url)` — reading them off a HttpGet instance throws
+// "Object reference not set" (docs/joern/http-introspection-FINDINGS.md).
+// Module-internal: consumers read the combined SCRIPT_UTIL_REQUEST_PROPERTIES export.
+
+/**
+ * `access` marks a property whose access direction is restricted at runtime.
  * See `propertyAccessLookup` for the meaning of each value.
  *
  * @type {{name: string, type: string, description: string, access?: 'write-only'|'write-only-opaque'|'read-only', isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string, valueConstraint?: {enum?: (string|number)[], enumLabels?: Object.<string, string>, numeric?: 'integer'|'number', min?: number}}[]}
  */
-export const SCRIPT_UTIL_REQUEST_PROPERTIES = [
+const SCRIPT_UTIL_REQUEST_ONLY_PROPERTIES = [
     {
         name: 'method',
         type: 'string',
@@ -9007,16 +9067,6 @@ export const SCRIPT_UTIL_REQUEST_PROPERTIES = [
         isConfirmed: true,
     },
     {
-        name: 'timeout',
-        type: 'number',
-        description: 'Timeout in seconds (default 30).',
-        isConfirmed: true,
-        differsFromOfficialDocs: true,
-        officialDocsNote:
-            'Not listed as a configuration property in the official docs (which only mention that send() times out after 30 seconds), but the property exists and is applied at runtime. The runtime default is 30, matching the 30-second send() timeout the docs describe, so the unit is seconds.',
-        valueConstraint: { numeric: 'integer', min: 0 },
-    },
-    {
         name: 'postData',
         type: 'string',
         access: 'write-only',
@@ -9027,87 +9077,20 @@ export const SCRIPT_UTIL_REQUEST_PROPERTIES = [
         officialDocsNote:
             'The official docs list postData among the readable configuration properties, but the runtime exposes no getter: every read throws "Property Get method was not found." while assignment works normally.',
     },
-    {
-        name: 'emptyContentHandling',
-        type: 'number',
-        description:
-            'What to do when the request returns no content: 0 = continue, 1 = stop, 2 = continue to next subscriber (email sends only).',
-        isConfirmed: true,
-        differsFromOfficialDocs: true,
-        officialDocsNote:
-            'The official docs type this as a boolean, but the runtime accepts only a numeric value (0/1/2) and rejects true/false — identical to Script.Util.HttpGet.',
-        valueConstraint: {
-            enum: [0, 1, 2],
-            enumLabels: {
-                0: 'continue',
-                1: 'stop',
-                2: 'continue to next subscriber - email sends only',
-            },
-        },
-    },
-    {
-        name: 'retries',
-        type: 'number',
-        description: 'Number of times to retry the request before throwing (default 1).',
-        isConfirmed: true,
-        valueConstraint: { numeric: 'integer', min: 0 },
-    },
-    {
-        name: 'continueOnError',
-        type: 'boolean',
-        description: 'If true, continues after a non-fatal error instead of throwing.',
-        isConfirmed: true,
-    },
 ];
 
-// ── Script.Util.HttpGet writable instance properties ────────────────────────
-// Configurable properties on the object returned by `new Script.Util.HttpGet(url)`.
-// Source: ssjs.guide/http/script-util-httpget.md (HttpGetInstance Properties).
-// HttpGet exposes a smaller property set than HttpRequest, and its
-// `emptyContentHandling` is a numeric mode (0/1/2) rather than a boolean.
+// ── Script.Util.HttpRequest writable instance properties ────────────────────
+// Configurable properties on the object returned by `new Script.Util.HttpRequest(url)`.
+// Source: ssjs.guide/http/script-util-httprequest.md (HttpRequestInstance Properties).
+// DERIVED, never a second literal list: the shared base that HttpGet also exposes,
+// followed by the request-only extras. That makes drift between the two handlers
+// impossible — a shared property can only ever be edited in one place.
+// These are writable (req.method = "POST"), so the generator emits them as plain
+// (non-readonly) class members.
 
-/**
- * @type {{name: string, type: string, description: string, isConfirmed?: boolean, differsFromOfficialDocs?: boolean, officialDocsNote?: string, valueConstraint?: {enum?: (string|number)[], enumLabels?: Object.<string, string>, numeric?: 'integer'|'number', min?: number}}[]}
- */
-export const SCRIPT_UTIL_HTTPGET_PROPERTIES = [
-    {
-        name: 'retries',
-        type: 'number',
-        description: 'Number of retry attempts on failure (default 1).',
-        isConfirmed: true,
-        valueConstraint: { numeric: 'integer', min: 0 },
-    },
-    {
-        name: 'continueOnError',
-        type: 'boolean',
-        description: 'If true, does not throw on an HTTP error status.',
-        isConfirmed: true,
-    },
-    {
-        name: 'emptyContentHandling',
-        type: 'number',
-        description:
-            'What to do when the GET returns no content: 0 = continue, 1 = stop, 2 = continue to next subscriber (email sends only).',
-        isConfirmed: true,
-        valueConstraint: {
-            enum: [0, 1, 2],
-            enumLabels: {
-                0: 'continue',
-                1: 'stop',
-                2: 'continue to next subscriber - email sends only',
-            },
-        },
-    },
-    {
-        name: 'timeout',
-        type: 'number',
-        description: 'Timeout in seconds (default 30).',
-        isConfirmed: true,
-        differsFromOfficialDocs: true,
-        officialDocsNote:
-            'Not listed in the official docs, but the property exists and is applied end-to-end at runtime (same behaviour as on Script.Util.HttpRequest). The runtime default is 30, matching the 30-second send() timeout the docs describe, so the unit is seconds.',
-        valueConstraint: { numeric: 'integer', min: 0 },
-    },
+export const SCRIPT_UTIL_REQUEST_PROPERTIES = [
+    ...SCRIPT_UTIL_HTTPGET_PROPERTIES,
+    ...SCRIPT_UTIL_REQUEST_ONLY_PROPERTIES,
 ];
 
 // ── Script.Util HTTP response instance properties ───────────────────────────

@@ -4343,6 +4343,32 @@ declare namespace Script {
              */
             removeHeader(name: string): void;
             /**
+             * Number of times a failed request is retried before it gives up (default 1).
+             *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             */
+            retries: number;
+            /**
+             * If true, a failed request lets the script carry on instead of throwing an error.
+             *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             */
+            continueOnError: boolean;
+            /**
+             * What to do when the request returns no content: 0 = continue, 1 = stop, 2 = continue to next subscriber (email sends only).
+             *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type this as a boolean, but both request handlers accept only the numeric modes 0/1/2 at runtime and reject true/false.
+             */
+            emptyContentHandling: number;
+            /**
+             * Timeout in seconds (default 30).
+             *
+             * @remarks ✅ Runtime-verified in a live SFMC test.
+             * @remarks ⚠️ Differs from the official Salesforce docs. The official docs do not list this as a configuration property on either request handler — they only state that send() gives up after 30 seconds. The property does exist and is applied end-to-end at runtime, and its default of 30 lines up with that 30-second limit, so the unit is seconds.
+             */
+            timeout: number;
+            /**
              * HTTP method (GET, POST, PUT, PATCH, DELETE).
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
@@ -4361,38 +4387,12 @@ declare namespace Script {
              */
             encoding: string;
             /**
-             * Timeout in seconds (default 30).
-             *
-             * @remarks ✅ Runtime-verified in a live SFMC test.
-             * @remarks ⚠️ Differs from the official Salesforce docs. Not listed as a configuration property in the official docs (which only mention that send() times out after 30 seconds), but the property exists and is applied at runtime. The runtime default is 30, matching the 30-second send() timeout the docs describe, so the unit is seconds.
-             */
-            timeout: number;
-            /**
              * Request body for POST/PUT/PATCH requests. Write-only: assignment works and the body reaches the server, but reading the property throws "Property Get method was not found." — outside a try/catch that throw aborts the whole CloudPage.
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
              * @remarks ⚠️ Differs from the official Salesforce docs. The official docs list postData among the readable configuration properties, but the runtime exposes no getter: every read throws "Property Get method was not found." while assignment works normally.
              */
             postData: string;
-            /**
-             * What to do when the request returns no content: 0 = continue, 1 = stop, 2 = continue to next subscriber (email sends only).
-             *
-             * @remarks ✅ Runtime-verified in a live SFMC test.
-             * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type this as a boolean, but the runtime accepts only a numeric value (0/1/2) and rejects true/false — identical to Script.Util.HttpGet.
-             */
-            emptyContentHandling: number;
-            /**
-             * Number of times to retry the request before throwing (default 1).
-             *
-             * @remarks ✅ Runtime-verified in a live SFMC test.
-             */
-            retries: number;
-            /**
-             * If true, continues after a non-fatal error instead of throwing.
-             *
-             * @remarks ✅ Runtime-verified in a live SFMC test.
-             */
-            continueOnError: boolean;
         }
         /**
          * Creates an HTTP GET request handler. Unlike Platform.Function.HTTPGet, this handler caches content for use in mail sends and supports custom headers. Only works with HTTP on port 80 and HTTPS on port 443. Call send() to execute the request and receive a Script.Util.HttpResponse object.
@@ -4492,28 +4492,29 @@ declare namespace Script {
              */
             removeHeader(name: string): void;
             /**
-             * Number of retry attempts on failure (default 1).
+             * Number of times a failed request is retried before it gives up (default 1).
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
              */
             retries: number;
             /**
-             * If true, does not throw on an HTTP error status.
+             * If true, a failed request lets the script carry on instead of throwing an error.
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
              */
             continueOnError: boolean;
             /**
-             * What to do when the GET returns no content: 0 = continue, 1 = stop, 2 = continue to next subscriber (email sends only).
+             * What to do when the request returns no content: 0 = continue, 1 = stop, 2 = continue to next subscriber (email sends only).
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
+             * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type this as a boolean, but both request handlers accept only the numeric modes 0/1/2 at runtime and reject true/false.
              */
             emptyContentHandling: number;
             /**
              * Timeout in seconds (default 30).
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
-             * @remarks ⚠️ Differs from the official Salesforce docs. Not listed in the official docs, but the property exists and is applied end-to-end at runtime (same behaviour as on Script.Util.HttpRequest). The runtime default is 30, matching the 30-second send() timeout the docs describe, so the unit is seconds.
+             * @remarks ⚠️ Differs from the official Salesforce docs. The official docs do not list this as a configuration property on either request handler — they only state that send() gives up after 30 seconds. The property does exist and is applied end-to-end at runtime, and its default of 30 lines up with that 30-second limit, so the unit is seconds.
              */
             timeout: number;
         }

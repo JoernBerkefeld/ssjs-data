@@ -110,6 +110,7 @@ const INSTANCE_TYPE_MAP = {
     DataExtensionInstance: 'DataExtensionInstance',
     WSProxyInstance: 'Script.Util.WSProxy',
     HttpRequestInstance: 'Script.Util.HttpRequest',
+    HttpGetInstance: 'Script.Util.HttpGet',
     HttpResponseInstance: 'HttpResponseInstance',
     WSProxyResult: 'WSProxyResult',
     WspResult: 'WspResult',
