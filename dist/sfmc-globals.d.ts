@@ -894,7 +894,7 @@ declare namespace Platform {
          * // @greeting is now available in subsequent AMPscript blocks
          * // Bare-name alias: Variable.SetValue("greeting", "Hello from SSJS")
          */
-        function SetValue(variableName: string, value: string | number | boolean | null | any): null;
+        function SetValue(variableName: string, value: string | number | boolean | null | undefined): null;
     }
     /**
      * HTTP response manipulation methods.
@@ -1119,7 +1119,7 @@ declare namespace Variable {
      * // @greeting is now available in subsequent AMPscript blocks
      * // Bare-name alias: Variable.SetValue("greeting", "Hello from SSJS")
      */
-    function SetValue(variableName: string, value: string | number | boolean | null | any): null;
+    function SetValue(variableName: string, value: string | number | boolean | null | undefined): null;
 }
 
 declare namespace Request {
@@ -1315,7 +1315,7 @@ declare function BeginImpressionRegion(name: string): void;
  * Platform.Load("core", "1.1.5");
  * EndImpressionRegion(); // returns undefined (Platform.Function form returns null)
  */
-declare function EndImpressionRegion(closeAll?: string | boolean | number): any;
+declare function EndImpressionRegion(closeAll?: string | boolean | number): undefined;
 /**
  * Returns the current server date/time as a Date object (in the account timezone, Central by default), or the timestamp of the triggering send when called with `true`. Same return shape as `Platform.Function.Now()`; surplus arguments are ignored (the qualified form throws on arity 2+).
  *

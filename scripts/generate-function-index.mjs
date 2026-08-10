@@ -43,6 +43,24 @@ function collectMarkdownAnchors(mdPath) {
 }
 
 /**
+ * Strip the parameter list from a display name for the table, keeping empty
+ * parentheses. Names without a `(` (properties, values) are returned unchanged
+ * so they keep having no call signature. Everything from the first `(` onward
+ * is replaced with `()`, so nested parens in a parameter collapse to `()` too.
+ *
+ * @param {string} displayName - Full call signature (e.g. "Account.Init(key)")
+ * @returns {string} Display name with an empty parameter list (e.g. "Account.Init()")
+ */
+function stripParams(displayName) {
+    const name = String(displayName ?? '');
+    const open = name.indexOf('(');
+    if (open === -1) {
+        return name;
+    }
+    return `${name.slice(0, open)}()`;
+}
+
+/**
  * Quote a value for safe single-line YAML output.
  *
  * @param {string|number} [value] - Value to quote
@@ -58,7 +76,7 @@ function q(value) {
 
 const rows = buildCatalog()
     .map((record) => ({
-        name: record.displayName,
+        name: stripParams(record.displayName),
         sortKey: record.sortKey,
         section: record.section,
         returnType: record.returnType,

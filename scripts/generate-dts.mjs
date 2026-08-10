@@ -153,6 +153,9 @@ function toTsType(s) {
     if (s === 'null') {
         return 'null';
     }
+    if (s === 'undefined') {
+        return 'undefined';
+    }
     if (s === 'boolean') {
         return 'boolean';
     }
