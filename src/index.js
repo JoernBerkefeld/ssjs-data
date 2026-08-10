@@ -1975,13 +1975,13 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs list a return value, but at runtime the call returns nothing (undefined); it mutates the passed object in place.',
+            'The official docs type a returned object, but at runtime the call returns a genuine JavaScript null (typeof "object", === null, String() "null") and mutates the passed object in place.',
         params: [
             { name: 'apiObject', description: 'SOAP API object instance', type: 'object' },
             { name: 'propertyName', description: 'Array property name', type: 'string' },
             { name: 'value', description: 'Item to append', type: 'any' },
         ],
-        returnType: 'void',
+        returnType: 'null',
         syntax: 'Platform.Function.AddObjectArrayItem(apiObject, propertyName, value)',
         example:
             'var ts = Platform.Function.CreateObject("TriggeredSend");\nPlatform.Function.AddObjectArrayItem(ts, "Subscribers", sub);',
@@ -11942,6 +11942,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'copyWithin',
         owner: 'Array.prototype',
+        returnType: 'array',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -11967,6 +11968,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'entries',
         owner: 'Array.prototype',
+        returnType: 'object',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -11994,6 +11996,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'fill',
         owner: 'Array.prototype',
+        returnType: 'array',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -12020,6 +12023,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'filter',
         owner: 'Array.prototype',
+        returnType: 'array',
         isConfirmed: true,
         esVersion: 5,
         isStatic: false,
@@ -12044,6 +12048,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'find',
         owner: 'Array.prototype',
+        returnType: 'any',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -12067,6 +12072,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'findIndex',
         owner: 'Array.prototype',
+        returnType: 'number',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -12090,6 +12096,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'forEach',
         owner: 'Array.prototype',
+        returnType: 'undefined',
         isConfirmed: true,
         esVersion: 5,
         isStatic: false,
@@ -12112,6 +12119,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'includes',
         owner: 'Array.prototype',
+        returnType: 'boolean',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -12134,6 +12142,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'indexOf',
         owner: 'Array.prototype',
+        returnType: 'number',
         isConfirmed: true,
         esVersion: 5,
         isStatic: false,
@@ -12158,6 +12167,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'lastIndexOf',
         owner: 'Array.prototype',
+        returnType: 'number',
         isConfirmed: true,
         esVersion: 5,
         isStatic: false,
@@ -12183,6 +12193,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'map',
         owner: 'Array.prototype',
+        returnType: 'array',
         isConfirmed: true,
         esVersion: 5,
         isStatic: false,
@@ -12207,6 +12218,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'reduce',
         owner: 'Array.prototype',
+        returnType: 'any',
         isConfirmed: true,
         esVersion: 5,
         isStatic: false,
@@ -12233,6 +12245,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'reduceRight',
         owner: 'Array.prototype',
+        returnType: 'any',
         isConfirmed: true,
         esVersion: 5,
         isStatic: false,
@@ -12259,6 +12272,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'some',
         owner: 'Array.prototype',
+        returnType: 'boolean',
         isConfirmed: true,
         esVersion: 5,
         isStatic: false,
@@ -12282,6 +12296,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'every',
         owner: 'Array.prototype',
+        returnType: 'boolean',
         isConfirmed: true,
         esVersion: 5,
         isStatic: false,
@@ -12305,11 +12320,13 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'splice',
         owner: 'Array.prototype',
+        returnType: 'array',
         isConfirmed: true,
         esVersion: 3,
         isStatic: false,
         category: 'broken',
         ambiguousWithString: false,
+        caveat: 'Only the two-argument delete form splice(start, deleteCount) works (deleteCount is clamped to the remaining length). The one-argument form splice(start) throws, and the insert form overwrites from the left instead of splicing. Apply the shipped polyfill for those cases.',
         description:
             'Array.prototype.splice(start, deleteCount, item1, …, itemN) works in SFMC SSJS only for the two-argument delete form splice(start, deleteCount) (deleteCount may exceed the remaining length). The one-argument form splice(start) throws "Index was outside the bounds of the array." The insert form is also broken: as soon as a third argument (item1) is passed, the engine ignores start and deleteCount and just overwrites from the left with the items to insert. A polyfill is needed for the one-argument delete form and for any insert; it also accepts unlimited additional items. Verified on a CloudPage.',
         polyfill:
@@ -12350,6 +12367,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'trim',
         owner: 'String.prototype',
+        returnType: 'string',
         isConfirmed: true,
         esVersion: 5,
         isStatic: false,
@@ -12368,6 +12386,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'startsWith',
         owner: 'String.prototype',
+        returnType: 'boolean',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -12389,6 +12408,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'endsWith',
         owner: 'String.prototype',
+        returnType: 'boolean',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -12422,6 +12442,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'bind',
         owner: 'Function.prototype',
+        returnType: 'any',
         isConfirmed: true,
         esVersion: 5,
         isStatic: false,
@@ -12451,6 +12472,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'toISOString',
         owner: 'Date.prototype',
+        returnType: 'string',
         isConfirmed: true,
         esVersion: 5,
         isStatic: false,
@@ -12475,6 +12497,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'isArray',
         owner: 'Array',
+        returnType: 'boolean',
         isConfirmed: true,
         esVersion: 5,
         isStatic: true,
@@ -12494,6 +12517,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'of',
         owner: 'Array',
+        returnType: 'array',
         isConfirmed: true,
         esVersion: 6,
         isStatic: true,
@@ -12517,6 +12541,7 @@ export const POLYFILLABLE_METHODS = [
     {
         method: 'substr',
         owner: 'String.prototype',
+        returnType: 'string',
         isConfirmed: true,
         esVersion: 3,
         isStatic: false,
@@ -12579,6 +12604,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'escape',
         owner: 'Global',
+        returnType: 'string',
         esVersion: 3,
         isStatic: false,
         isProperty: false,
@@ -12591,6 +12617,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'unescape',
         owner: 'Global',
+        returnType: 'string',
         esVersion: 3,
         isStatic: false,
         isProperty: false,
@@ -12603,6 +12630,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'globalThis',
         owner: 'GlobalValues',
+        returnType: 'object',
         esVersion: 2020,
         isStatic: false,
         isProperty: true,
@@ -12615,6 +12643,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Symbol',
         owner: 'Global',
+        returnType: 'any',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -12627,6 +12656,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'BigInt',
         owner: 'Global',
+        returnType: 'any',
         esVersion: 2020,
         isStatic: false,
         isProperty: false,
@@ -12639,6 +12669,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Map',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -12651,6 +12682,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Set',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -12663,6 +12695,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'WeakMap',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -12675,6 +12708,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'WeakSet',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -12687,6 +12721,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Promise',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -12699,6 +12734,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Iterator',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -12711,6 +12747,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Generator',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -12723,6 +12760,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'GeneratorFunction',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -12735,6 +12773,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'AsyncFunction',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2017,
         isStatic: false,
         isProperty: false,
@@ -12747,6 +12786,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'AsyncGenerator',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2018,
         isStatic: false,
         isProperty: false,
@@ -12758,6 +12798,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'AsyncGeneratorFunction',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2018,
         isStatic: false,
         isProperty: false,
@@ -12770,6 +12811,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'AsyncIterator',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2018,
         isStatic: false,
         isProperty: false,
@@ -12781,6 +12823,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Proxy',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -12793,6 +12836,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Reflect',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: true,
@@ -12805,6 +12849,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'AggregateError',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2021,
         isStatic: false,
         isProperty: false,
@@ -12817,6 +12862,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'SuppressedError',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2026,
         isStatic: false,
         isProperty: false,
@@ -12829,6 +12875,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'InternalError',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 0,
         isStatic: false,
         isProperty: false,
@@ -12842,6 +12889,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'ArrayBuffer',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -12854,6 +12902,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'SharedArrayBuffer',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2017,
         isStatic: false,
         isProperty: false,
@@ -12866,6 +12915,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'DataView',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -12878,6 +12928,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Atomics',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2017,
         isStatic: false,
         isProperty: true,
@@ -12890,6 +12941,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Int8Array',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -12902,6 +12954,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Uint8Array',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -12914,6 +12967,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Uint8ClampedArray',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -12926,6 +12980,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Int16Array',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -12938,6 +12993,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Uint16Array',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -12950,6 +13006,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Int32Array',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -12962,6 +13019,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Uint32Array',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -12974,6 +13032,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Float16Array',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2025,
         isStatic: false,
         isProperty: false,
@@ -12986,6 +13045,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Float32Array',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -12998,6 +13058,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Float64Array',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: false,
@@ -13010,6 +13071,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'BigInt64Array',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2020,
         isStatic: false,
         isProperty: false,
@@ -13022,6 +13084,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'BigUint64Array',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2020,
         isStatic: false,
         isProperty: false,
@@ -13035,6 +13098,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'WeakRef',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2021,
         isStatic: false,
         isProperty: false,
@@ -13047,6 +13111,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'FinalizationRegistry',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2021,
         isStatic: false,
         isProperty: false,
@@ -13060,6 +13125,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Intl',
         owner: 'Global',
+        returnType: 'object',
         esVersion: 2015,
         isStatic: false,
         isProperty: true,
@@ -13072,6 +13138,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'Infinity',
         owner: 'GlobalValues',
+        returnType: 'number',
         esVersion: 3,
         isStatic: false,
         isProperty: true,
@@ -13084,6 +13151,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'NaN',
         owner: 'GlobalValues',
+        returnType: 'number',
         esVersion: 3,
         isStatic: false,
         isProperty: true,
@@ -13097,6 +13165,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'LOG10E',
         owner: 'Math',
+        returnType: 'number',
         esVersion: 3,
         isStatic: true,
         isProperty: true,
@@ -13108,6 +13177,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'ignoreCase',
         owner: 'RegExp',
+        returnType: 'boolean',
         isConfirmed: true,
         esVersion: 3,
         isStatic: false,
@@ -13120,6 +13190,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'multiline',
         owner: 'RegExp',
+        returnType: 'boolean',
         isConfirmed: true,
         esVersion: 3,
         isStatic: false,
@@ -13132,6 +13203,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'instanceof',
         owner: 'RegExp',
+        returnType: 'boolean',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
@@ -13148,6 +13220,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'length',
         owner: 'Function.prototype',
+        returnType: 'number',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
@@ -13163,6 +13236,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'name',
         owner: 'Function.prototype',
+        returnType: 'string',
         isConfirmed: true,
         esVersion: 3,
         isStatic: false,
@@ -13175,6 +13249,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'caller',
         owner: 'Function.prototype',
+        returnType: 'any',
         isConfirmed: true,
         esVersion: 3,
         isStatic: false,
@@ -13188,6 +13263,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'toJSON',
         owner: 'Date.prototype',
+        returnType: 'string',
         isConfirmed: true,
         esVersion: 5,
         isStatic: false,
@@ -13200,6 +13276,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'parse',
         owner: 'JSON',
+        returnType: 'any',
         isConfirmed: true,
         esVersion: 5,
         isStatic: true,
@@ -13212,6 +13289,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'stringify',
         owner: 'JSON',
+        returnType: 'string',
         isConfirmed: true,
         esVersion: 5,
         isStatic: true,
@@ -13225,6 +13303,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'isPrototypeOf',
         owner: 'Object.prototype',
+        returnType: 'boolean',
         isConfirmed: true,
         esVersion: 3,
         isStatic: false,
@@ -13236,6 +13315,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'propertyIsEnumerable',
         owner: 'Object.prototype',
+        returnType: 'boolean',
         isConfirmed: true,
         esVersion: 3,
         isStatic: false,
@@ -13248,6 +13328,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'keys',
         owner: 'Object',
+        returnType: 'array',
         isConfirmed: true,
         esVersion: 5,
         isStatic: true,
@@ -13258,6 +13339,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'values',
         owner: 'Object',
+        returnType: 'array',
         isConfirmed: true,
         esVersion: 6,
         isStatic: true,
@@ -13269,6 +13351,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'entries',
         owner: 'Object',
+        returnType: 'array',
         isConfirmed: true,
         esVersion: 6,
         isStatic: true,
@@ -13280,6 +13363,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'assign',
         owner: 'Object',
+        returnType: 'object',
         isConfirmed: true,
         esVersion: 6,
         isStatic: true,
@@ -13291,6 +13375,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'create',
         owner: 'Object',
+        returnType: 'object',
         isConfirmed: true,
         esVersion: 5,
         isStatic: true,
@@ -13302,6 +13387,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'freeze',
         owner: 'Object',
+        returnType: 'object',
         isConfirmed: true,
         esVersion: 5,
         isStatic: true,
@@ -13313,6 +13399,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'getOwnPropertyNames',
         owner: 'Object',
+        returnType: 'array',
         isConfirmed: true,
         esVersion: 5,
         isStatic: true,
@@ -13324,6 +13411,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'defineProperties',
         owner: 'Object',
+        returnType: 'object',
         isConfirmed: true,
         esVersion: 5,
         isStatic: true,
@@ -13335,6 +13423,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'getOwnPropertyDescriptor',
         owner: 'Object',
+        returnType: 'object',
         isConfirmed: true,
         esVersion: 5,
         isStatic: true,
@@ -13346,6 +13435,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'isFrozen',
         owner: 'Object',
+        returnType: 'boolean',
         isConfirmed: true,
         esVersion: 5,
         isStatic: true,
@@ -13357,6 +13447,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'seal',
         owner: 'Object',
+        returnType: 'object',
         isConfirmed: true,
         esVersion: 5,
         isStatic: true,
@@ -13368,6 +13459,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'isSealed',
         owner: 'Object',
+        returnType: 'boolean',
         isConfirmed: true,
         esVersion: 5,
         isStatic: true,
@@ -13378,6 +13470,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'preventExtensions',
         owner: 'Object',
+        returnType: 'object',
         isConfirmed: true,
         esVersion: 5,
         isStatic: true,
@@ -13389,6 +13482,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'isExtensible',
         owner: 'Object',
+        returnType: 'boolean',
         isConfirmed: true,
         esVersion: 5,
         isStatic: true,
@@ -13401,6 +13495,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'trimStart',
         owner: 'String.prototype',
+        returnType: 'string',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -13411,6 +13506,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'trimEnd',
         owner: 'String.prototype',
+        returnType: 'string',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -13421,6 +13517,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'padStart',
         owner: 'String.prototype',
+        returnType: 'string',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -13432,6 +13529,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'padEnd',
         owner: 'String.prototype',
+        returnType: 'string',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -13443,6 +13541,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'repeat',
         owner: 'String.prototype',
+        returnType: 'string',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -13454,6 +13553,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'includes',
         owner: 'String.prototype',
+        returnType: 'boolean',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -13464,6 +13564,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'codePointAt',
         owner: 'String.prototype',
+        returnType: 'number',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -13476,6 +13577,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'flat',
         owner: 'Array.prototype',
+        returnType: 'array',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -13487,6 +13589,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'flatMap',
         owner: 'Array.prototype',
+        returnType: 'array',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -13498,6 +13601,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'findLast',
         owner: 'Array.prototype',
+        returnType: 'any',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -13509,6 +13613,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'at',
         owner: 'Array.prototype',
+        returnType: 'any',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -13520,6 +13625,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'keys',
         owner: 'Array.prototype',
+        returnType: 'object',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -13530,6 +13636,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'values',
         owner: 'Array.prototype',
+        returnType: 'object',
         isConfirmed: true,
         esVersion: 6,
         isStatic: false,
@@ -13540,6 +13647,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'from',
         owner: 'Array',
+        returnType: 'array',
         isConfirmed: true,
         esVersion: 6,
         isStatic: true,
@@ -13552,6 +13660,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'isInteger',
         owner: 'Number',
+        returnType: 'boolean',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13563,6 +13672,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'isNaN',
         owner: 'Number',
+        returnType: 'boolean',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13573,6 +13683,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'isFinite',
         owner: 'Number',
+        returnType: 'boolean',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13583,6 +13694,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'parseInt',
         owner: 'Number',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13593,6 +13705,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'MAX_SAFE_INTEGER',
         owner: 'Number',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         isProperty: true,
@@ -13605,6 +13718,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'isSafeInteger',
         owner: 'Number',
+        returnType: 'boolean',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13616,6 +13730,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'parseFloat',
         owner: 'Number',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13626,6 +13741,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'MIN_SAFE_INTEGER',
         owner: 'Number',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         isProperty: true,
@@ -13638,6 +13754,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'EPSILON',
         owner: 'Number',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         isProperty: true,
@@ -13650,6 +13767,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'trunc',
         owner: 'Math',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13660,6 +13778,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'sign',
         owner: 'Math',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13670,6 +13789,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'cbrt',
         owner: 'Math',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13680,6 +13800,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'log2',
         owner: 'Math',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13690,6 +13811,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'log10',
         owner: 'Math',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13700,6 +13822,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'hypot',
         owner: 'Math',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13710,6 +13833,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'expm1',
         owner: 'Math',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13720,6 +13844,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'log1p',
         owner: 'Math',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13730,6 +13855,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'sinh',
         owner: 'Math',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13740,6 +13866,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'cosh',
         owner: 'Math',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13750,6 +13877,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'tanh',
         owner: 'Math',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13761,6 +13889,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'asinh',
         owner: 'Math',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13771,6 +13900,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'acosh',
         owner: 'Math',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13781,6 +13911,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'atanh',
         owner: 'Math',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13791,6 +13922,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'clz32',
         owner: 'Math',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13802,6 +13934,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'fround',
         owner: 'Math',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',
@@ -13813,6 +13946,7 @@ export const KNOWN_UNSUPPORTED = [
     {
         member: 'imul',
         owner: 'Math',
+        returnType: 'number',
         esVersion: 6,
         isStatic: true,
         category: 'unavailable',

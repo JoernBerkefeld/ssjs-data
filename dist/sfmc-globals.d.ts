@@ -484,7 +484,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/addobjectarrayitem/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs list a return value, but at runtime the call returns nothing (undefined); it mutates the passed object in place.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type a returned object, but at runtime the call returns a genuine JavaScript null (typeof "object", === null, String() "null") and mutates the passed object in place.
          * @param apiObject - SOAP API object instance
          * @param propertyName - Array property name
          * @param value - Item to append
@@ -492,7 +492,7 @@ declare namespace Platform {
          * var ts = Platform.Function.CreateObject("TriggeredSend");
          * Platform.Function.AddObjectArrayItem(ts, "Subscribers", sub);
          */
-        function AddObjectArrayItem(apiObject: object, propertyName: string, value: any): void;
+        function AddObjectArrayItem(apiObject: object, propertyName: string, value: any): null;
         /**
          * Executes a SOAP API Create call on an API object and returns the OverallStatus message as a string.
          *

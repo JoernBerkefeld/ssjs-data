@@ -489,6 +489,53 @@ export const ecmascriptAnchor = (member, owner) =>
     ECMASCRIPT_ANCHOR_OVERRIDES[`${owner}.${member}`] ?? String(member).toLowerCase();
 
 /**
+ * Site-relative URL of the polyfills page on ssjs.guide. Every polyfillable
+ * member gets a documented chapter here; {@link polyfillMemberLink} deep-links
+ * to the member's `{#anchor}` heading.
+ */
+export const POLYFILLS_PAGE_URL = '/engine-limitations/polyfills/';
+
+/**
+ * Polyfill-chapter anchors that deviate from the default
+ * `owner.member` → dots-to-hyphens, lowercased rule.
+ * Key: `<owner>.<member>` — value: the anchor slug on the polyfills page.
+ *
+ * `Date.prototype.toISOString` is documented as a standalone `toISOStringUTC`
+ * helper (the value cannot be installed on the prototype), so its heading id is
+ * `date-toisostring`, not `date-prototype-toisostring`.
+ *
+ * @type {Record<string, string>}
+ */
+export const POLYFILL_ANCHOR_OVERRIDES = {
+    'Date.prototype.toISOString': 'date-toisostring',
+};
+
+/**
+ * Derive the in-page anchor for a polyfillable member's chapter on the
+ * polyfills page, matching the authored `{#anchor}` heading ids:
+ * `Array.prototype.splice` → `array-prototype-splice`, `Array.of` → `array-of`.
+ * Overrides in {@link POLYFILL_ANCHOR_OVERRIDES} take precedence.
+ *
+ * @param {string} owner - The member's `owner` (e.g. 'Array.prototype', 'Array')
+ * @param {string} method - The method/static name (e.g. 'splice', 'of', 'isArray')
+ * @returns {string} Anchor slug (no leading '#')
+ */
+export const polyfillAnchor = (owner, method) =>
+    POLYFILL_ANCHOR_OVERRIDES[`${owner}.${method}`] ??
+    `${owner}.${method}`.replaceAll('.', '-').toLowerCase();
+
+/**
+ * Resolve the full site-relative link (page + anchor) to a polyfillable
+ * member's chapter on the polyfills page.
+ *
+ * @param {string} owner - The member's `owner` (e.g. 'Array.prototype', 'Array')
+ * @param {string} method - The method/static name (e.g. 'splice', 'of')
+ * @returns {string} Site-relative link (e.g. `/engine-limitations/polyfills/#array-prototype-splice`)
+ */
+export const polyfillMemberLink = (owner, method) =>
+    `${POLYFILLS_PAGE_URL}#${polyfillAnchor(owner, method)}`;
+
+/**
  * Split a PascalCase / camelCase identifier into lowercase hyphen-joined words.
  * Used for event-type anchors (e.g. `ForwardedEmailOptInEvent` → `forwarded-email-opt-in-event`).
  *
