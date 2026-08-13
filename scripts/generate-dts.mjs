@@ -390,8 +390,14 @@ function buildJsDocComment(m, indent = ' '.repeat(4), guideUrl = null, mdnUrl = 
     }
     // nonFunctionalAtRuntime: the member EXISTS/RESOLVES at runtime but has no known
     // working invocation (every tested call fails). The declaration is KEPT (unlike
-    // notDefinedAtRuntime) so editors still offer it; this @remarks conveys the caveat.
+    // notDefinedAtRuntime) so editors still offer it. TypeScript has no dedicated
+    // "nonfunctional" concept, so we emit @deprecated (unless already emitted above for
+    // a truly deprecated member) to make TS strike it through and warn (ts(6385)) — the
+    // SSJS linting workhorse — while the @remarks line preserves the real reason.
     if (m.nonFunctionalAtRuntime) {
+        if (!m.deprecated) {
+            lines.push(`${indent} * @deprecated`);
+        }
         lines.push(
             `${indent} * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).`,
         );
