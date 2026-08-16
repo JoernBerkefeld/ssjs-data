@@ -6232,9 +6232,9 @@ export const TRIGGERED_SEND_METHODS = [
         officialDocsNote:
             'Exists and resolves (`typeof TriggeredSend.Add === "function"`) but no working invocation was found. ' +
             'Every invocation of `TriggeredSend.Add` throws the string `Error adding TSD.`; ' +
-            '`TriggeredSend.LastMessage` is then either `An error occurred when attempting to evaluate a SetObjectProperty function ' +
-            'call.  See inner exception for details.` (whenever the payload contains any nested object such as `Email`, `List` or ' +
-            '`SendClassification`) or the same `Error adding TSD.` with `LastErrorCode` 17014 / 2 (flat-only payloads). Proven with a ' +
+            '`TriggeredSend.LastMessage` is then always `An error occurred when attempting to evaluate a SetObjectProperty function ' +
+            'call.  See inner exception for details.` for every payload shape (including flat-only payloads, where `LastErrorCode` ' +
+            'is left `undefined`). Proven with a ' +
             'fully valid, publishable definition on the QA BU (Email.ID 769268, List.ID 72164, SendClassification "Default ' +
             'Transactional" / ObjectID 2147aac4-35f1-ec11-b846-48df37d1dcc7, CategoryID 734919). Payload shapes swept without a single ' +
             'success: nested SOAP shape (`Email: {ID}`, `List: {ID}`, `SendClassification: {CustomerKey|ObjectID}`), the documented flat ' +
@@ -7118,6 +7118,7 @@ export const DATA_EXTENSION_ROWS_METHODS = [
         differsFromOfficialDocs: true,
         officialDocsNote:
             'Runtime-verified on a CloudPage: calling `Retrieve()` without a filter DOES work on CloudPages and returns all rows — the widely-repeated "returns empty on CloudPages" bug could not be reproduced. ' +
+            'A ComplexFilterPart with LogicalOperator "OR" also works and returns the union of both operands (it is NOT silently collapsed to AND) — the community claim that DE WHERE is AND-only is incorrect. ' +
             'All field values are returned as strings (even Number/Boolean/Date columns), unlike Lookup which returns typed Number/Decimal/Boolean values (Lookup Date columns are ISO-8601 strings, not Date objects). ' +
             'On no match, returns an empty host array (`.length === 0`), not `null`. The result is a host array where `instanceof Array` is `false`, but `.length` and index access work.',
         minArgs: 0,
@@ -11878,14 +11879,6 @@ export const UNSUPPORTED_SYNTAX = [
         suggestion: 'Use a ternary or logical OR (||) instead.',
         nodeType: 'LogicalExpression',
         test: (node) => node.operator === '??',
-    },
-    {
-        feature: 'DirectObjectReturn',
-        isConfirmed: true,
-        label: 'direct object literal returns',
-        suggestion: 'Assign the object to a variable first, then return the variable.',
-        nodeType: 'ReturnStatement',
-        test: (node) => node.argument && node.argument.type === 'ObjectExpression',
     },
     {
         feature: 'NewExpression',
