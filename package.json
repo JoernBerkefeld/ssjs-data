@@ -34,7 +34,7 @@
     ],
     "license": "MIT",
     "scripts": {
-        "test": "echo No tests defined",
+        "test": "node --test tests/*.test.mjs",
         "generate:dts": "node scripts/generate-dts.mjs",
         "generate:index": "node scripts/generate-site-index.mjs",
         "generate:function-index": "node scripts/generate-function-index.mjs",
