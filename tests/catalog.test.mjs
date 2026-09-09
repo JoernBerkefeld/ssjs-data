@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { buildCatalog, statusText } from '../scripts/lib/build-catalog.mjs';
 
 import {
     SSJS_GLOBALS,
@@ -119,6 +120,87 @@ test('KNOWN_UNSUPPORTED: every entry has member, owner, and category', () => {
             `${entry.owner}.${entry.member}: category`,
         );
     }
+});
+
+test('confirmed modern native absences retain exact owners and derived lookup identity', () => {
+    const expected = [
+        ['Object', 'fromEntries', true, 'object'],
+        ['Array.prototype', 'toReversed', false, 'array'],
+        ['Array.prototype', 'toSorted', false, 'array'],
+        ['Array.prototype', 'toSpliced', false, 'array'],
+        ['String.prototype', 'replaceAll', false, 'string'],
+        ['String.prototype', 'matchAll', false, 'object'],
+        ['Global', 'structuredClone', false, 'any'],
+        ['Object', 'groupBy', true, 'object'],
+        ['Array.prototype', 'findLastIndex', false, 'number'],
+    ];
+    const catalog = buildCatalog();
+    const qualification = 'Listed return type is reference-only, not observed in SSJS.';
+    for (const [owner, member, isStatic, returnType] of expected) {
+        const matches = KNOWN_UNSUPPORTED.filter((entry) => entry.member === member);
+        assert.equal(matches.length, 1, `${owner}.${member}: unique catalog record`);
+        const [entry] = matches;
+        assert.equal(entry.owner, owner);
+        assert.equal(entry.isStatic, isStatic);
+        assert.equal(entry.esVersion, 6);
+        assert.equal(entry.category, 'unavailable');
+        assert.equal(entry.isConfirmed, true);
+        assert.equal(entry.hasPolyfill, false);
+        assert.equal(entry.returnType, returnType);
+        assert.ok(entry.suggestion.startsWith(`${qualification} `));
+        const records = catalog.filter((record) => record.entry === entry);
+        assert.equal(records.length, 1);
+        const [record] = records;
+        assert.equal(record.returnType, returnType);
+        assert.equal(record.status, 'missing');
+        assert.equal(record.verified, true);
+        assert.equal(record.polyfill, false);
+        assert.equal(statusText(record), qualification);
+        assert.equal(
+            POLYFILLABLE_METHODS.some((polyfill) => polyfill.method === member),
+            false,
+            `${member}: no bundled polyfill`,
+        );
+        assert.equal(
+            ECMASCRIPT_BUILTINS.some(
+                (builtin) => builtin.owner === owner && builtin.name === member,
+            ),
+            false,
+            `${member}: not also advertised as a native builtin`,
+        );
+        const lookup = isStatic ? knownUnsupportedByStaticName : knownUnsupportedByPrototypeName;
+        const opposite = isStatic ? knownUnsupportedByPrototypeName : knownUnsupportedByStaticName;
+        assert.equal(lookup.get(member.toLowerCase()), entry);
+        assert.equal(opposite.has(member.toLowerCase()), false);
+        assert.match(entry.suggestion, /Engagement CloudPage/);
+        assert.match(
+            entry.suggestion,
+            /before Core loading, with Core 1\.1\.1, and with Core 1\.1\.5/,
+        );
+        assert.match(entry.suggestion, /Email and other contexts were not tested/);
+        assert.match(entry.suggestion, /No verified polyfill is bundled/);
+        assert.doesNotMatch(
+            entry.suggestion,
+            /https?:|MCDEV|\bQA\b|\bMID\b|_verification-db|evidence\//,
+        );
+    }
+});
+
+test('structuredClone remains an unavailable global function, not a registered supported global', () => {
+    const entry = knownUnsupportedByPrototypeName.get('structuredclone');
+    assert.equal(entry.owner, 'Global');
+    assert.equal(entry.isStatic, false);
+    assert.equal(entry.isProperty, false);
+    assert.equal(knownUnsupportedByStaticName.has('structuredclone'), false);
+    assert.equal(
+        SSJS_GLOBALS.some((global) => global.name.toLowerCase() === 'structuredclone'),
+        false,
+    );
+    assert.equal(
+        Object.keys(SSJS_GLOBALS_MAP).some((name) => name.toLowerCase() === 'structuredclone'),
+        false,
+    );
+    assert.equal(ssjsGlobalsLookup.has('structuredclone'), false);
 });
 
 test('POLYFILLABLE_METHODS: every entry has method, owner, and polyfill source', () => {

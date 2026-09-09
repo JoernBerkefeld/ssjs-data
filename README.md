@@ -8,6 +8,18 @@ This package is the single source of truth consumed by:
 - [prettier-plugin-sfmc](https://www.npmjs.com/package/prettier-plugin-sfmc) — language registration
 - [VSCode: sfmc-language](https://marketplace.visualstudio.com/items?itemName=joernberkefeld.sfmc-language) — completions, hover, and diagnostics
 
+`KNOWN_UNSUPPORTED` includes `Object.fromEntries`, `Array.prototype.toReversed`,
+`Array.prototype.toSorted`, `Array.prototype.toSpliced`, `String.prototype.replaceAll`,
+`String.prototype.matchAll`, global `structuredClone`, `Object.groupBy`, and
+`Array.prototype.findLastIndex`.
+Their native absence and direct invocation failures were confirmed in Engagement
+CloudPage contexts before Core loading and separately with Core 1.1.1 and 1.1.5;
+this does not establish behavior in email or other contexts. These entries have
+no bundled verified polyfill (`hasPolyfill: false`), not a claim that a polyfill
+is impossible. Their listed return types describe the reference APIs, not successful
+SSJS invocations; `matchAll` uses the coarse `object` type for its reference iterator,
+and `structuredClone` uses `any` without claiming preservation of classes or prototypes.
+
 ## Installation
 
 ```sh
