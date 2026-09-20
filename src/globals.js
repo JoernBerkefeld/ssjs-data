@@ -15,7 +15,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage GET): bare `Variable` is undefined before `Platform.Load("core", ...)` ' +
+            'On a CloudPage, bare `Variable` is undefined before `Platform.Load("core", ...)` ' +
             'and an object after it. It shares request-local state with `Platform.Variable`. GetValue preserves ' +
             'string/number/boolean scalars; an explicitly empty value returns `""`; a never-set name returns ' +
             'JavaScript `null` (official docs: string). SetValue returns `undefined` (void-like), while ' +
@@ -37,7 +37,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: false,
         officialDocsNote:
-            'Runtime-verified (CloudPage GET) per-member: `Request.URL()` returns the full request URL ' +
+            'On a CloudPage, per member: `Request.URL()` returns the full request URL ' +
             'as a string; `Request.Method()` returns the HTTP verb (e.g. `"GET"`); `Request.PagePath()`, ' +
             '`Request.ApplicationID()`, `Request.PackageID()`, and `Request.ApplicationBaseURL()` invoke ' +
             'cleanly and return empty strings (`""`) when read outside their populating context. All 6 ' +
@@ -62,7 +62,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         notDefinedAtRuntime: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the bare-name global `Recipient` is `undefined` both BEFORE and ' +
+            'On a CloudPage, the bare-name global `Recipient` is `undefined` both BEFORE and ' +
             'AFTER Platform.Load("core", ...) — it does NOT exist as a usable alias. Use ' +
             '`Platform.Recipient.GetAttributeValue(...)`, or `Attribute.GetValue(...)` after Platform.Load.',
         description:
@@ -74,7 +74,7 @@ export const SSJS_GLOBALS = [
         type: 'object',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): available as an object after `Platform.Load("core", "1.1.5")` ' +
+            'On a CloudPage, available as an object after `Platform.Load("core", "1.1.5")` ' +
             '(before load `typeof Attribute` is `undefined`). `Attribute.GetValue(name)` returns a string; ' +
             'in a CloudPage (no subscriber send context) it returns `""` for both real and unknown attribute ' +
             'names, so treat an empty string as "no value in this context" rather than proof the attribute is absent.',
@@ -89,7 +89,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): available after Platform.Load("core", ...). `GetValue` reads INBOUND ' +
+            'On a CloudPage, available after Platform.Load("core", ...). `GetValue` reads INBOUND ' +
             'request headers and returns `null` for a header you set via `SetValue` (separate inbound/outbound ' +
             'collections). `Remove` returns `undefined`, not `"OK"`. Official docs claim `host` cannot be ' +
             'changed; `SetValue("Host", …)` does emit an outbound `Host` header. `content-length` remains protected.',
@@ -102,7 +102,7 @@ export const SSJS_GLOBALS = [
         type: 'object',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): available immediately, with no `Platform.Load` needed. ' +
+            'On a CloudPage, available immediately, with no `Platform.Load` needed. ' +
             'It is a CLR host object (`typeof` reports `clr`), so `for...in` yields no keys and the ' +
             'namespace cannot be enumerated from script — sub-namespaces must be addressed by name. ' +
             '`Platform.Function`, `Platform.Variable`, `Platform.Response`, and `Platform.Request` all resolve.',
@@ -115,11 +115,11 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the bare identifier `Script` is `undefined` — both before and ' +
+            'On a CloudPage, the bare identifier `Script` is `undefined` — both before and ' +
             'after `Platform.Load("core", ...)` — yet the nested constructors still resolve and work: ' +
             '`Script.Util.WSProxy` and `Script.Util.HttpRequest` are CLR objects and can be instantiated ' +
             'with `new`. The runtime resolves the dotted path without exposing a root object, so the ' +
-            'namespace cannot be probed with `typeof Script` or enumerated. Unknown members under the ' +
+            'namespace has no exposed root object, so it cannot be seen via `typeof Script` or enumerated. Unknown members under the ' +
             'path (for example `Script.Util.Nonexistent`) throw on use rather than returning `undefined`.',
         description:
             'Root namespace for SFMC script utilities. ' +
@@ -133,13 +133,13 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage, 2026-08-08): standard JavaScript renders a plain object as "[object Object]", but in the SFMC engine `String({})` THROWS "Object reference not set to an instance of an object." The throw is catchable and does not abort the page. The concatenation form `("" + {})` returns the EMPTY STRING instead of "[object Object]" (same for `[]`). Neither form renders an object — read its fields, or serialize with `Platform.Function.Stringify(value)`. The same throw occurs on .NET-null-backed CLR properties (`resp.contentType`, `resp.encoding`, `resp.headers`), so prefer `("" + value)` for engine values; both forms otherwise produce a real JS string that satisfies `===` and supports string methods.',
+            'On a CloudPage, standard JavaScript renders a plain object as "[object Object]", but in the SFMC engine `String({})` THROWS "Object reference not set to an instance of an object." The throw is catchable and does not abort the page. The concatenation form `("" + {})` returns the EMPTY STRING instead of "[object Object]" (same for `[]`). Neither form renders an object — read its fields, or serialize with `Platform.Function.Stringify(value)`. The same throw occurs on .NET-null-backed CLR properties (`resp.contentType`, `resp.encoding`, `resp.headers`), so prefer `("" + value)` for engine values; both forms otherwise produce a real JS string that satisfies `===` and supports string methods.',
         description:
             'Native JavaScript function that converts any value to its string representation. ' +
             'Essential in SSJS for converting the CLR response object returned by Script.Util.HttpRequest.send().content ' +
             'into a JavaScript string that can be passed to Platform.Function.ParseJSON(). ' +
             'Unlike Stringify(), String() works on CLR/.NET objects and does not produce JSON output. ' +
-            'Runtime-verified (CloudPage): available with no Platform.Load; `String()` with no argument returns `""`, ' +
+            'On a CloudPage, available with no Platform.Load; `String()` with no argument returns `""`, ' +
             '`String(null)` returns `"null"`. CAVEAT: it does NOT render a plain object — `String({})` throws ' +
             '"Object reference not set to an instance of an object." (catchable) and `("" + {})` yields `""`, ' +
             'not the standard `"[object Object]"`; use `Platform.Function.Stringify(value)` for objects.',
@@ -172,7 +172,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified: unlike standard JavaScript, a JS-constructed `new Error("msg")` in the SFMC Jint engine does NOT expose the message via `.message` — `err.message` reads back `undefined`, and `Stringify(err)` surfaces only a hidden `{jintException}` (the .NET stack), not the message. Recover the message with `String(err)` or `("" + err)` (both yield the constructor argument), or `err.toString()` (yields "Error: undefined"). This differs from engine-raised errors, which DO carry `.message` + `.description`. Do not rely on `new Error(...).message`.',
+            'Unlike standard JavaScript, a JS-constructed `new Error("msg")` in the SFMC Jint engine does NOT expose the message via `.message` — `err.message` reads back `undefined`, and `Stringify(err)` surfaces only a hidden `{jintException}` (the .NET stack), not the message. Recover the message with `String(err)` or `("" + err)` (both yield the constructor argument), or `err.toString()` (yields "Error: undefined"). This differs from engine-raised errors, which DO carry `.message` + `.description`. Do not rely on `new Error(...).message`.',
         description:
             'Native JavaScript Error constructor. Creates an Error object that can be thrown or caught. ' +
             'Use inside try/catch blocks for structured error handling in SSJS. ' +
@@ -212,7 +212,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: false,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the bare-name `Base64Encode` works after `Platform.Load("core", ...)` ' +
+            'On a CloudPage, the bare-name `Base64Encode` works after `Platform.Load("core", ...)` ' +
             'and returns the encoded string (e.g. Base64Encode("hi") -> "aGk="). This matches the official docs — ' +
             'the Core-library intro documents that these bare-name globals require Platform.Load, so the requirement ' +
             'is documented behavior, not a deviation. SCOPE RULE: bare-name Core globals exist ONLY after ' +
@@ -238,7 +238,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: false,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the bare-name `Base64Decode` works after `Platform.Load("core", ...)` ' +
+            'On a CloudPage, the bare-name `Base64Decode` works after `Platform.Load("core", ...)` ' +
             '(e.g. Base64Decode("aGk=") -> "hi"). This matches the official docs — the Core-library intro documents ' +
             'that these bare-name globals require Platform.Load, so the requirement is documented behavior, not a ' +
             'deviation. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load ' +
@@ -274,7 +274,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the bare-name `ContentArea` IS defined as a function after ' +
+            'On a CloudPage, the bare-name `ContentArea` IS defined as a function after ' +
             '`Platform.Load("core", ...)` has run (the load must precede use; once loaded the bare name is ' +
             'usable in that scope and in nested helper bodies that close over it). ' +
             'Only the single-argument form works: passing the id of an existing Content Area returns its ' +
@@ -325,7 +325,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the bare-name `ContentAreaByName` IS defined as a function after ' +
+            'On a CloudPage, the bare-name `ContentAreaByName` IS defined as a function after ' +
             '`Platform.Load("core", ...)` has run (the load must precede use; once loaded the bare name is ' +
             'usable in that scope and in nested helper bodies that close over it). ' +
             'Only the single-argument form works: passing the name of an existing Content Area returns its ' +
@@ -379,7 +379,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the bare-name `BeginImpressionRegion` IS defined as a function after ' +
+            'On a CloudPage, the bare-name `BeginImpressionRegion` IS defined as a function after ' +
             '`Platform.Load("core", ...)`, but calling it — with either a string literal or a variable — throws ' +
             '"A BeginImpressionRegion function call includes an invalid parameter value. The values making up the ' +
             'parameter value for this call must be a literal (constant) values." The bare alias and the ' +
@@ -408,7 +408,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the bare-name `EndImpressionRegion` IS defined as a function after ' +
+            'On a CloudPage, the bare-name `EndImpressionRegion` IS defined as a function after ' +
             '`Platform.Load("core", ...)` and can be called without throwing. It DIFFERS from its ' +
             '`Platform.Function.EndImpressionRegion` counterpart in return value: the bare alias returns ' +
             '`undefined` (typeof "undefined"), whereas `Platform.Function.EndImpressionRegion()` returns a genuine ' +
@@ -444,7 +444,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the bare-name `Now` works after `Platform.Load("core", ...)` and ' +
+            'On a CloudPage, the bare-name `Now` works after `Platform.Load("core", ...)` and ' +
             'returns the same kind of value as `Platform.Function.Now()` — a genuine Date object: typeof "object", ' +
             '`Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and ' +
             '`getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that ' +
@@ -485,7 +485,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): `DateTime.SystemDateToLocalDate` works after `Platform.Load("core", ...)` ' +
+            'On a CloudPage, `DateTime.SystemDateToLocalDate` works after `Platform.Load("core", ...)` ' +
             'and returns the same value as `Platform.Function.SystemDateToLocalDate()` — a genuine Date object: ' +
             'typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and ' +
             '`getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that ' +
@@ -521,7 +521,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): `DateTime.LocalDateToSystemDate` works after `Platform.Load("core", ...)` ' +
+            'On a CloudPage, `DateTime.LocalDateToSystemDate` works after `Platform.Load("core", ...)` ' +
             'and returns the same value as `Platform.Function.LocalDateToSystemDate()` — a genuine Date object: ' +
             'typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and ' +
             '`getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that ' +
@@ -556,7 +556,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: false,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the bare-name `Redirect` IS defined as a function after ' +
+            'On a CloudPage, the bare-name `Redirect` IS defined as a function after ' +
             '`Platform.Load("core", ...)` and actually performs the redirect. This matches the official docs — ' +
             'the Core-library intro documents that these bare-name globals require Platform.Load, so the requirement ' +
             'is documented behavior, not a deviation. SCOPE RULE: bare-name Core globals exist ONLY after ' +
@@ -597,7 +597,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: false,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the bare-name `GUID` works after `Platform.Load("core", ...)` and ' +
+            'On a CloudPage, the bare-name `GUID` works after `Platform.Load("core", ...)` and ' +
             'returns a lowercase canonical UUID v4 string of 36 characters (same shape as ' +
             '`Platform.Function.GUID()`). Surplus arguments are silently ignored on the bare form; ' +
             '`Platform.Function.GUID(...)` throws if any argument is passed. SCOPE RULE: bare-name Core ' +
@@ -623,7 +623,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: false,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the bare-name `IsEmailAddress` works after `Platform.Load("core", ...)` ' +
+            'On a CloudPage, the bare-name `IsEmailAddress` works after `Platform.Load("core", ...)` ' +
             'and returns the same boolean as `Platform.Function.IsEmailAddress()` for the documented 1-argument ' +
             'form (e.g. "a@b.com" -> true, "nope" -> false). Calling with no arguments returns false (does not ' +
             'throw); surplus arguments are silently ignored. `Platform.Function.IsEmailAddress` throws on arity 0 ' +
@@ -650,7 +650,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the bare-name `IsPhoneNumber` works after `Platform.Load("core", ...)` ' +
+            'On a CloudPage, the bare-name `IsPhoneNumber` works after `Platform.Load("core", ...)` ' +
             'and returns the same boolean as `Platform.Function.IsPhoneNumber()` for the documented 1-argument form. ' +
             'Calling with no arguments returns false (does not throw); surplus arguments are silently ignored. ' +
             '`Platform.Function.IsPhoneNumber` throws on arity 0 and on surplus arguments. Documented contract ' +
@@ -678,7 +678,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: false,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the bare-name `Write` works after `Platform.Load("core", ...)` and ' +
+            'On a CloudPage, the bare-name `Write` works after `Platform.Load("core", ...)` and ' +
             'appends to the response (no automatic newline; returns undefined). Platform.Load is required for the ' +
             'bare name (documented Core-library intro behaviour, not a deviation). Zero arguments and surplus ' +
             'arguments are soft (no throw; surplus ignored) while the documented contract remains one required ' +
@@ -707,7 +707,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: false,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the bare-name `Stringify` works after `Platform.Load("core", ...)` ' +
+            'On a CloudPage, the bare-name `Stringify` works after `Platform.Load("core", ...)` ' +
             '(e.g. Stringify({a:1,b:"x"}) -> \'{"a":1,"b":"x"}\'). Surplus arguments are silently ignored and ' +
             'zero arguments return the string "null"; `Platform.Function.Stringify(...)` throws on wrong arity. ' +
             'This matches the official docs — the Core-library intro documents that these bare-name globals ' +
@@ -733,7 +733,7 @@ export const SSJS_GLOBALS = [
         type: 'object',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage, Platform.Load("core","1.1.5")): available. ' +
+            'On a CloudPage: available. ' +
             '`SystemDateToLocalDate` / `LocalDateToSystemDate` return genuine Date objects (typeof "object", ' +
             '`Object.prototype.toString` === "[object Date]", `.constructor === Date`, working `getFullYear()` etc.; ' +
             'only `instanceof Date` is false due to the engine-wide instanceof-on-builtins bug), which also coerce ' +
@@ -753,7 +753,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): `ErrorUtil` is provided ONLY by `Platform.Load("Core", "1")`. ' +
+            'On a CloudPage, `ErrorUtil` is provided ONLY by `Platform.Load("Core", "1")`. ' +
             'Under newer Core versions ("1.1.1", "1.1.5", …) it is `undefined`. Effectively deprecated in Core > 1. ' +
             'Prefer checking `result.Status` and throwing `new Error(...)` instead of ErrorUtil.ThrowWSProxyError.',
         description:
@@ -771,7 +771,7 @@ export const SSJS_GLOBALS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): bare-name `Format` requires `Platform.Load("core", ...)`. ' +
+            'On a CloudPage, bare-name `Format` requires `Platform.Load("core", ...)`. ' +
             'Numeric codes match the official examples (e.g. Format(4213.65, "C2") -> "$4,213.65"). ' +
             'DIFFERS: predefined short-form `d` returns a four-digit year (`8/5/2024` for the sample ' +
             'instant), not the two-digit year (`8/5/24`) shown in the official docs. ' +

@@ -194,7 +194,7 @@ export const UNSUPPORTED_SYNTAX = [
 
 // ── Known-unsupported ECMAScript members (no polyfill shipped) ───────────────
 // Members empirically confirmed to be ABSENT or BROKEN in the SFMC SSJS engine
-// via the ecmascript-confirm-*.cloudpage.ssjs probes, and NOT covered by
+// via the ecmascript-confirm-*.cloudpage.ssjs scripts, and NOT covered by
 // POLYFILLABLE_METHODS. Consumers (sfmc-language-lsp validateSsjs, the ESLint
 // plugin, the VS Code extension, and mcp-server-sfmc) use this list to warn when
 // generated or authored SSJS references a member that will fail at runtime.
@@ -226,7 +226,7 @@ export const KNOWN_UNSUPPORTED = [
         hasPolyfill: false,
         isConfirmed: true,
         suggestion:
-            'Listed return type is reference-only, not observed in SSJS. String.prototype.matchAll is undefined and a direct string call with a global regular expression throws in tested Engagement CloudPage contexts: before Core loading, with Core 1.1.1, and with Core 1.1.5. Email and other contexts were not tested. No verified polyfill is bundled.',
+            'Listed return type is reference-only, not produced in SSJS. String.prototype.matchAll is undefined and a direct string call with a global regular expression throws in Engagement CloudPage contexts: before Core loading, with Core 1.1.1, and with Core 1.1.5. Email and other contexts are not covered. No polyfill is bundled.',
     },
     {
         member: 'structuredClone',
@@ -239,7 +239,7 @@ export const KNOWN_UNSUPPORTED = [
         hasPolyfill: false,
         isConfirmed: true,
         suggestion:
-            'Listed return type is reference-only, not observed in SSJS. The global structuredClone function is undefined and a direct call with a nested object and array throws in tested Engagement CloudPage contexts: before Core loading, with Core 1.1.1, and with Core 1.1.5. Email and other contexts were not tested. No verified polyfill is bundled.',
+            'Listed return type is reference-only, not produced in SSJS. The global structuredClone function is undefined and a direct call with a nested object and array throws in Engagement CloudPage contexts: before Core loading, with Core 1.1.1, and with Core 1.1.5. Email and other contexts are not covered. No polyfill is bundled.',
     },
     {
         member: 'groupBy',
@@ -251,7 +251,7 @@ export const KNOWN_UNSUPPORTED = [
         hasPolyfill: false,
         isConfirmed: true,
         suggestion:
-            'Listed return type is reference-only, not observed in SSJS. Object.groupBy is undefined and a direct call with an array and grouping callback throws in tested Engagement CloudPage contexts: before Core loading, with Core 1.1.1, and with Core 1.1.5. Email and other contexts were not tested. No verified polyfill is bundled.',
+            'Listed return type is reference-only, not produced in SSJS. Object.groupBy is undefined and a direct call with an array and grouping callback throws in Engagement CloudPage contexts: before Core loading, with Core 1.1.1, and with Core 1.1.5. Email and other contexts are not covered. No polyfill is bundled.',
     },
     {
         member: 'findLastIndex',
@@ -263,7 +263,7 @@ export const KNOWN_UNSUPPORTED = [
         hasPolyfill: false,
         isConfirmed: true,
         suggestion:
-            'Listed return type is reference-only, not observed in SSJS. Array.prototype.findLastIndex is undefined and a direct array call with a predicate throws in tested Engagement CloudPage contexts: before Core loading, with Core 1.1.1, and with Core 1.1.5. Email and other contexts were not tested. No verified polyfill is bundled.',
+            'Listed return type is reference-only, not produced in SSJS. Array.prototype.findLastIndex is undefined and a direct array call with a predicate throws in Engagement CloudPage contexts: before Core loading, with Core 1.1.1, and with Core 1.1.5. Email and other contexts are not covered. No polyfill is bundled.',
     },
     {
         member: 'fromEntries',
@@ -275,7 +275,7 @@ export const KNOWN_UNSUPPORTED = [
         hasPolyfill: false,
         isConfirmed: true,
         suggestion:
-            'Listed return type is reference-only, not observed in SSJS. Object.fromEntries is undefined and a direct pair-array call throws in tested Engagement CloudPage contexts: before Core loading, with Core 1.1.1, and with Core 1.1.5. Email and other contexts were not tested. No verified polyfill is bundled.',
+            'Listed return type is reference-only, not produced in SSJS. Object.fromEntries is undefined and a direct pair-array call throws in Engagement CloudPage contexts: before Core loading, with Core 1.1.1, and with Core 1.1.5. Email and other contexts are not covered. No polyfill is bundled.',
     },
     {
         member: 'toReversed',
@@ -287,7 +287,7 @@ export const KNOWN_UNSUPPORTED = [
         hasPolyfill: false,
         isConfirmed: true,
         suggestion:
-            'Listed return type is reference-only, not observed in SSJS. Array.prototype.toReversed is undefined and a direct array call throws in tested Engagement CloudPage contexts: before Core loading, with Core 1.1.1, and with Core 1.1.5. Email and other contexts were not tested. No verified polyfill is bundled.',
+            'Listed return type is reference-only, not produced in SSJS. Array.prototype.toReversed is undefined and a direct array call throws in Engagement CloudPage contexts: before Core loading, with Core 1.1.1, and with Core 1.1.5. Email and other contexts are not covered. No polyfill is bundled.',
     },
     {
         member: 'toSorted',
@@ -299,7 +299,7 @@ export const KNOWN_UNSUPPORTED = [
         hasPolyfill: false,
         isConfirmed: true,
         suggestion:
-            'Listed return type is reference-only, not observed in SSJS. Array.prototype.toSorted is undefined and a direct array call throws in tested Engagement CloudPage contexts: before Core loading, with Core 1.1.1, and with Core 1.1.5. Email and other contexts were not tested. No verified polyfill is bundled.',
+            'Listed return type is reference-only, not produced in SSJS. Array.prototype.toSorted is undefined and a direct array call throws in Engagement CloudPage contexts: before Core loading, with Core 1.1.1, and with Core 1.1.5. Email and other contexts are not covered. No polyfill is bundled.',
     },
     {
         member: 'toSpliced',
@@ -311,7 +311,7 @@ export const KNOWN_UNSUPPORTED = [
         hasPolyfill: false,
         isConfirmed: true,
         suggestion:
-            'Listed return type is reference-only, not observed in SSJS. Array.prototype.toSpliced is undefined and a direct array call throws in tested Engagement CloudPage contexts: before Core loading, with Core 1.1.1, and with Core 1.1.5. Email and other contexts were not tested. No verified polyfill is bundled.',
+            'Listed return type is reference-only, not produced in SSJS. Array.prototype.toSpliced is undefined and a direct array call throws in Engagement CloudPage contexts: before Core loading, with Core 1.1.1, and with Core 1.1.5. Email and other contexts are not covered. No polyfill is bundled.',
     },
     {
         member: 'replaceAll',
@@ -323,10 +323,10 @@ export const KNOWN_UNSUPPORTED = [
         hasPolyfill: false,
         isConfirmed: true,
         suggestion:
-            'Listed return type is reference-only, not observed in SSJS. String.prototype.replaceAll is undefined and a direct string call throws in tested Engagement CloudPage contexts: before Core loading, with Core 1.1.1, and with Core 1.1.5. Email and other contexts were not tested. No verified polyfill is bundled.',
+            'Listed return type is reference-only, not produced in SSJS. String.prototype.replaceAll is undefined and a direct string call throws in Engagement CloudPage contexts: before Core loading, with Core 1.1.1, and with Core 1.1.5. Email and other contexts are not covered. No polyfill is bundled.',
     },
     // ── Confirmed-missing / broken global identifiers ────────────────────────
-    // Runtime-verified absent on the child BU (typeof === "undefined").
+    // Absent on a CloudPage (typeof === "undefined").
     {
         member: 'escape',
         owner: 'Global',
@@ -611,7 +611,7 @@ export const KNOWN_UNSUPPORTED = [
         suggestion:
             'InternalError is a non-standard Mozilla-only error and is undefined in SFMC. Use the base Error constructor.',
     },
-    // ── Typed arrays / binary buffers (ES6+) — runtime-verified absent ────────
+    // ── Typed arrays / binary buffers (ES6+) — absent ────────
     {
         member: 'ArrayBuffer',
         owner: 'Global',
@@ -820,7 +820,7 @@ export const KNOWN_UNSUPPORTED = [
         suggestion:
             'BigUint64Array is undefined in SFMC (ES2020). Typed-array views are unavailable (no ArrayBuffer), and it also requires BigInt, which is likewise absent.',
     },
-    // ── Memory management (ES2021) — runtime-verified absent ──────────────────
+    // ── Memory management (ES2021) — absent ──────────────────
     {
         member: 'WeakRef',
         owner: 'Global',
@@ -847,7 +847,7 @@ export const KNOWN_UNSUPPORTED = [
         suggestion:
             'FinalizationRegistry is undefined in SFMC (ES2021). You cannot register garbage-collection callbacks; perform cleanup explicitly at the end of the script.',
     },
-    // ── Internationalization (ES2015) — runtime-verified absent ───────────────
+    // ── Internationalization (ES2015) — absent ───────────────
     {
         member: 'Intl',
         owner: 'Global',

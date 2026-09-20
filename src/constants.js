@@ -17,7 +17,7 @@
  *   - deprecated?: boolean    — true for entries that resolve at runtime but should not be used in new code
  *   - notDefinedAtRuntime?: boolean — true for entries that cannot be USED at runtime in any context
  *       available for testing. Two cases share this flag:
- *         (1) PRIMARY: entries that are officially documented but proven (via live CloudPage test) NOT to
+ *         (1) PRIMARY: entries that are officially documented but confirmed on a CloudPage NOT to
  *             exist in the SSJS engine; calling them throws a ReferenceError (e.g. `Redirect`).
  *         (2) EXTENSION: documented members that the SSJS engine does NOT resolve as documented at
  *             runtime — calling them throws the generic `System.InvalidOperationException:
@@ -35,7 +35,7 @@
  *       from .d.ts + completions, flagged as nonexistent) and verificationBlocked (verification could not
  *       even be ATTEMPTED for an environmental reason). Unlike notDefinedAtRuntime, nonFunctionalAtRuntime
  *       entries are KEPT in the .d.ts and completions (they exist); the tooling instead emits a WARNING at
- *       each call site. Requires isConfirmed: true (we confirmed non-function by testing) and pairs with
+ *       each call site. Requires isConfirmed: true and pairs with
  *       differsFromOfficialDocs: true plus an officialDocsNote documenting the runtime evidence. NEVER
  *       attribute the failure to permission/access/security — SSJS runs with full server access; state only
  *       the observed return/throw as fact.
@@ -55,7 +55,7 @@
  *       RUNTIME NOTE: the bare-name globals injected by Platform.Load (Write, Stringify, Base64Encode,
  *       Base64Decode, Format, Variable, Attribute, …) exist ONLY after Platform.Load("core", …) has run,
  *       so the load must precede any use of them. Once loaded they are usable in that scope and in nested
- *       helper-function bodies that close over it (runtime-verified — closures see them).
+ *       helper-function bodies that close over it (closures see them).
  *   - aliasOf?: string        — names the canonical entry this one aliases (dual-call modeling)
  *   - returnEnum?: (string|number|boolean)[] — allowed return literals when returnType is a primitive
  *   - enum?: (string|number|boolean)[]       — allowed literals for a parameter value
@@ -80,12 +80,12 @@
 //   - no-working-invocation  a runtime verification was attempted but no working invocation of
 //                         the method was found; document exactly what was tried in officialDocsNote.
 //   - needs-auth-context  requires authenticated user / send / subscriber context that
-//                         a plain CloudPage test harness cannot provide
+//                         a plain CloudPage cannot provide
 //   - no-test-data        requires pre-existing data of a kind not available on the BU
 //   - classic-only-no-assets  method only works with classic (legacy) assets and none
 //                         exist on the BU to test against
-//   - destructive-unsafe  cannot be exercised without unacceptable side effects
-//                         (reserved; destructive testing is generally allowed on the QA BU)
+//   - destructive-unsafe  cannot be observed without unacceptable side effects
+//                         (reserved)
 export const VERIFICATION_BLOCKED_REASONS = Object.freeze([
     'no-working-invocation',
     'needs-auth-context',

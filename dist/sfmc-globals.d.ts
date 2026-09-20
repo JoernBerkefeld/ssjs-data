@@ -44,7 +44,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/lookup/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return as a string, but at runtime Lookup returns the column's typed value. Runtime-verified per DE field type: Text/EmailAddress/Locale/Phone return a string, Number/Decimal return a number, Boolean returns a boolean, and Date returns a real Date object. No-match returns a genuine JavaScript null. A row with an empty/NULL field returns a CLR null (typeof "clr", not === null) that stringifies to "". Guard empty fields by coercing with String() first: a loose == null throws "Value cannot be null." and a truthiness test throws "Object cannot be cast from DBNull to other types.". Also note the request-scoped query cache — a repeated identical lookup returns the pre-write value.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs type the return as a string, but at runtime Lookup returns the column's typed value. By DE field type: Text/EmailAddress/Locale/Phone return a string, Number/Decimal return a number, Boolean returns a boolean, and Date returns a real Date object. No-match returns a genuine JavaScript null. A row with an empty/NULL field returns a CLR null (typeof "clr", not === null) that stringifies to "". Guard empty fields by coercing with String() first: a loose == null throws "Value cannot be null." and a truthiness test throws "Object cannot be cast from DBNull to other types.". Also note the request-scoped query cache — a repeated identical lookup returns the pre-write value.
          * @param deName - Data Extension name (resolved by Name, not external key)
          * @param returnField - Name of the field to return
          * @param whereFieldNames - Filter field name, or an array of field names connected with AND logic
@@ -63,7 +63,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/lookuprows/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs do not mention that no-match returns null (rather than an empty array) or that each row object includes the system fields _CustomObjectKey and _CreatedDate. Most fields are returned as their typed/native JS value, unlike DataExtension.Rows.Retrieve() which stringifies every field. Runtime-verified per DE field type: Text/EmailAddress/Locale/Phone come back as string, Number/Decimal as number, Boolean as boolean; Date columns are the exception — they come back as an ISO-8601 string (e.g. "2024-01-15T00:00:00.000"), NOT a Date object — this differs from Platform.Function.Lookup, which returns a real Date for Date columns. Runtime testing confirms the return value is a genuine JavaScript Array (Array.isArray is true; .push/.slice/.sort work), so the return type is object[]; note that instanceof Array is unreliable in the SFMC engine, so use the Array.isArray polyfill to test it.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs do not mention that no-match returns null (rather than an empty array) or that each row object includes the system fields _CustomObjectKey and _CreatedDate. Most fields are returned as their typed/native JS value, unlike DataExtension.Rows.Retrieve() which stringifies every field. By DE field type: Text/EmailAddress/Locale/Phone come back as string, Number/Decimal as number, Boolean as boolean; Date columns are the exception — they come back as an ISO-8601 string (e.g. "2024-01-15T00:00:00.000"), NOT a Date object — this differs from Platform.Function.Lookup, which returns a real Date for Date columns. The return value is a genuine JavaScript Array (Array.isArray is true; .push/.slice/.sort work), so the return type is object[]; note that instanceof Array is unreliable in the SFMC engine, so use the Array.isArray polyfill to test it.
          * @param deName - Data Extension name (resolved by Name, not external key)
          * @param whereFieldNames - Filter field name, or an array of field names connected with AND logic
          * @param whereFieldValues - Filter field value matching whereFieldNames; must be an array of equal length when whereFieldNames is an array
@@ -84,7 +84,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/lookuporderedrows/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs do not mention that each returned row object includes the system fields _CustomObjectKey and _CreatedDate. Most fields are returned as their typed/native JS value, unlike DataExtension.Rows.Retrieve() which stringifies every field. Runtime-verified per DE field type: Text/EmailAddress/Locale/Phone come back as string, Number/Decimal as number, Boolean as boolean; Date columns are the exception — they come back as an ISO-8601 string (e.g. "2024-01-15T00:00:00.000"), NOT a Date object — this differs from Platform.Function.Lookup, which returns a real Date for Date columns. Runtime testing confirms the return value is a genuine JavaScript Array (Array.isArray is true; .push/.slice/.sort work), so the return type is object[]; note that instanceof Array is unreliable in the SFMC engine, so use the Array.isArray polyfill to test it.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs do not mention that each returned row object includes the system fields _CustomObjectKey and _CreatedDate. Most fields are returned as their typed/native JS value, unlike DataExtension.Rows.Retrieve() which stringifies every field. By DE field type: Text/EmailAddress/Locale/Phone come back as string, Number/Decimal as number, Boolean as boolean; Date columns are the exception — they come back as an ISO-8601 string (e.g. "2024-01-15T00:00:00.000"), NOT a Date object — this differs from Platform.Function.Lookup, which returns a real Date for Date columns. The return value is a genuine JavaScript Array (Array.isArray is true; .push/.slice/.sort work), so the return type is object[]; note that instanceof Array is unreliable in the SFMC engine, so use the Array.isArray polyfill to test it.
          * @param deName - Data Extension name (resolved by Name, not external key)
          * @param count - Maximum number of rows to return; values below 1 return up to 2,000
          * @param orderBy - Sort expression using "ColumnName ASC/DESC" syntax (e.g. "LastName ASC, FirstName ASC")
@@ -107,7 +107,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/insertdata/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): deName is matched against the data extension's Name only — the external key / CustomerKey is not accepted. Passing the CustomerKey of a data extension whose Name is deliberately a different string throws "The Data Extension name for a InsertData function call is invalid. A Data Extension of this name does not exist.", and a read-back confirmed the rejected call inserted no row.
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, deName is matched against the data extension's Name only — the external key / CustomerKey is not accepted. Passing the CustomerKey of a data extension whose Name is deliberately a different string throws "The Data Extension name for a InsertData function call is invalid. A Data Extension of this name does not exist.", and the rejected call inserts no row.
          * @param deName - Data Extension name (resolved by Name, not external key)
          * @param fieldNames - Array of column names to populate
          * @param fieldValues - Array of values aligned to fieldNames
@@ -116,7 +116,7 @@ declare namespace Platform {
          */
         function InsertData(deName: string, fieldNames: string[], fieldValues: any[]): number;
         /**
-         * Adds a new row to a Data Extension. Returns null (no value). The official docs describe this as an email-context function, but it was proven to run and commit on a CloudPage as well. InsertData() is still preferred outside email because it returns the affected-row count.
+         * Adds a new row to a Data Extension. Returns null (no value). The official docs describe this as an email-context function, but it also runs and commits on a CloudPage. InsertData() is still preferred outside email because it returns the affected-row count.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/insertde/)
          *
@@ -167,7 +167,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/upsertdata/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the docs allow whereFieldNames and whereFieldValues to be plain strings for a single-column filter, but a scalar in either position aborts the call with "Unable to retrieve security descriptor for this frame." — reproduced independently in two separate chapters. Wrap the single filter column and its value in one-element arrays instead; that form both inserted and updated in the same run. The flat/variadic argument form is likewise unsupported and throws.
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, the docs allow whereFieldNames and whereFieldValues to be plain strings for a single-column filter, but a scalar in either position aborts the call with "Unable to retrieve security descriptor for this frame." Wrap the single filter column and its value in one-element arrays instead; that form both inserted and updated in the same run. The flat/variadic argument form is likewise unsupported and throws.
          * @param deName - Data Extension name (resolved by Name, not external key)
          * @param whereFieldNames - Column name(s) to identify an existing row; use an array for multiple columns (AND logic)
          * @param whereFieldValues - Value(s) to match in whereFieldNames; must be an array of equal length when whereFieldNames is an array
@@ -199,7 +199,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/deletedata/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): deName is matched against the data extension's Name only — the external key / CustomerKey is not accepted. Passing the CustomerKey of a data extension whose Name is deliberately a different string throws "The Data Extension name for a DeleteData function call is invalid. A Data Extension of this name does not exist.", and a follow-up call by Name still deleted the row — proving the rejected key call removed nothing.
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, deName is matched against the data extension's Name only — the external key / CustomerKey is not accepted. Passing the CustomerKey of a data extension whose Name is deliberately a different string throws "The Data Extension name for a DeleteData function call is invalid. A Data Extension of this name does not exist.", and a follow-up call by Name still deleted the row — proving the rejected key call removed nothing.
          * @param deName - Data Extension name (resolved by Name, not external key)
          * @param whereFieldNames - Array of column names to match for deletion
          * @param whereFieldValues - Array of values aligned to whereFieldNames that identify rows to delete
@@ -208,7 +208,7 @@ declare namespace Platform {
          */
         function DeleteData(deName: string, whereFieldNames: string[], whereFieldValues: any[]): number;
         /**
-         * Removes rows from a Data Extension matching filter criteria. Returns null (no value). The official docs describe this as an email-context function, but it was proven to run and commit on a CloudPage as well. DeleteData() is still preferred outside email because it returns the affected-row count.
+         * Removes rows from a Data Extension matching filter criteria. Returns null (no value). The official docs describe this as an email-context function, but it also runs and commits on a CloudPage. DeleteData() is still preferred outside email because it returns the affected-row count.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/deletede/)
          *
@@ -246,7 +246,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentblockbyname/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): only the single-argument form works from SSJS, and folder paths must be separated by a BACKSLASH — a forward-slash path always throws. Any 2nd argument — string literal, number, boolean, empty string, null or variable, including a closure-free top-level all-literal call — is rejected with "invalid parameter value ... Parameter Name: ImpressionRegionName, Parameter Ordinal: 2, Parameter Type: ResolvedValueParameter", so regionName, stopOnError and fallbackContent cannot be supplied; statusVariable is unreachable for a separate reason, because arity 5 throws "Unable to retrieve security descriptor for this frame" before the parameter check runs. A name that does not resolve THROWS rather than returning an empty string or the fallback, so callers must wrap the call in try/catch. A bare asset name resolves at any folder depth, so the path is only a disambiguator, and a literal ending in a backslash aborts the page with an uncatchable HTTP 422. Use Platform.Function.TreatAsContent() with the AMPscript form when the optional parameters are needed — it honours all five.
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, only the single-argument form works from SSJS, and folder paths must be separated by a BACKSLASH — a forward-slash path always throws. Any 2nd argument — string literal, number, boolean, empty string, null or variable, including a closure-free top-level all-literal call — is rejected with "invalid parameter value ... Parameter Name: ImpressionRegionName, Parameter Ordinal: 2, Parameter Type: ResolvedValueParameter", so regionName, stopOnError and fallbackContent cannot be supplied; statusVariable is unreachable for a separate reason, because arity 5 throws "Unable to retrieve security descriptor for this frame" before the parameter check runs. A name that does not resolve THROWS rather than returning an empty string or the fallback, so callers must wrap the call in try/catch. A bare asset name resolves at any folder depth, so the path is only a disambiguator, and a literal ending in a backslash aborts the page with an uncatchable HTTP 422. Use Platform.Function.TreatAsContent() with the AMPscript form when the optional parameters are needed — it honours all five.
          * @param name - Folder path and name of the Content Builder asset
          * @param regionName - Impression region name for tracking
          * @param stopOnError - When true, returns an error if the content area cannot be found or is invalid. When false, no error is returned.
@@ -263,7 +263,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/contentblockbyid/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): only the single-argument form works from SSJS. Any 2nd argument — string literal, number, boolean, empty string, null or variable, including a closure-free top-level all-literal call — is rejected with "invalid parameter value ... Parameter Name: ImpressionRegionName, Parameter Ordinal: 2, Parameter Type: ResolvedValueParameter", which is neither a literal-vs-variable rule nor a test-harness artefact. Because parameter 2 is rejected first, stopOnError and fallbackContent are unreachable: both stopOnError=true and stopOnError=false throw, and the fallback string is never emitted — even when the referenced block exists. Use Platform.Function.TreatAsContent() with the AMPscript form when the optional parameters are needed.
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, only the single-argument form works from SSJS. Any 2nd argument — string literal, number, boolean, empty string, null or variable, including a closure-free top-level all-literal call — is rejected with "invalid parameter value ... Parameter Name: ImpressionRegionName, Parameter Ordinal: 2, Parameter Type: ResolvedValueParameter", which is neither a literal-vs-variable rule nor an artefact of the calling context. Because parameter 2 is rejected first, stopOnError and fallbackContent are unreachable: both stopOnError=true and stopOnError=false throw, and the fallback string is never emitted — even when the referenced block exists. Use Platform.Function.TreatAsContent() with the AMPscript form when the optional parameters are needed.
          * @param id - Numeric ID of the Content Builder asset
          * @param regionName - Impression region name for tracking
          * @param stopOnError - When true, returns an exception and terminates if content cannot be retrieved. When false, the call proceeds.
@@ -348,7 +348,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/now/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the official docs describe the return as an RFC 2822-compliant date-time string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug (also affects Array/RegExp/Function) — detect via `.constructor === Date`, not `instanceof`. It coerces to an RFC 2822-style string during output. useContextTime also accepts number 0/1 and the strings "true"/"false".
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, the official docs describe the return as an RFC 2822-compliant date-time string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug (also affects Array/RegExp/Function) — detect via `.constructor === Date`, not `instanceof`. It coerces to an RFC 2822-style string during output. useContextTime also accepts number 0/1 and the strings "true"/"false".
          * @param useContextTime - When true, returns the time the triggering send or activity was initiated. When false or omitted, returns the current system clock time. Also accepts number 0/1 and the strings "true"/"false".
          * @example
          * var current = Platform.Function.Now();
@@ -367,7 +367,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/systemdatetolocaldate/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the official docs type the return value as a string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an ISO-like string when written or stringified.
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, the official docs type the return value as a string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an ISO-like string when written or stringified.
          * @param dateString - Date-time value in system time (CST) (string or Date)
          * @example
          * var systemDate = Platform.Function.Now();
@@ -381,7 +381,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/localdatetosystemdate/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the official docs type the return value as a string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an ISO-like string when written or stringified.
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, the official docs type the return value as a string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an ISO-like string when written or stringified.
          * @param dateString - Date-time value in local account/user time (string or Date)
          * @example
          * var localDate = "8/5/2025 12:00:00 PM";
@@ -434,7 +434,7 @@ declare namespace Platform {
          */
         function IsEmailAddress(value: string): boolean;
         /**
-         * Evaluates whether a string is a valid phone number and returns a boolean. Runtime-verified (CloudPage): the accepted format is digits 0-9 only, with no spaces and no leading 0. To present any country's country code (including the US) you omit the leading 00/+ and write the country code as bare digits with no leading zero. Values containing spaces, a leading 0, or a +/00 international prefix return false, as do empty, letters, and mixed-text inputs. This is the same digits-only, no-leading-zero format that SFMC phone-number fields and the SMS (MobileConnect) service expect.
+         * Evaluates whether a string is a valid phone number and returns a boolean. On a CloudPage, the accepted format is digits 0-9 only, with no spaces and no leading 0. To present any country's country code (including the US) you omit the leading 00/+ and write the country code as bare digits with no leading zero. Values containing spaces, a leading 0, or a +/00 international prefix return false, as do empty, letters, and mixed-text inputs. This is the same digits-only, no-leading-zero format that SFMC phone-number fields and the SMS (MobileConnect) service expect.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/isphonenumber/)
          *
@@ -455,7 +455,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/createobject/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the docs type the return value as a plain object, but the instance is a .NET CLR host object — typeof reports "clr" for DataExtensionObject, Subscriber and APIProperty alike. Properties assigned with SetObjectProperty() or AddObjectArrayItem() therefore cannot be read back from SSJS; unreadable is not unset, so the only way to prove a value landed is to submit the object through an Invoke* call and read the result from the API.
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, the docs type the return value as a plain object, but the instance is a .NET CLR host object — typeof reports "clr" for DataExtensionObject, Subscriber and APIProperty alike. Properties assigned with SetObjectProperty() or AddObjectArrayItem() therefore cannot be read back from SSJS; unreadable is not unset, so the only way to prove a value landed is to submit the object through an Invoke* call and read the result from the API.
          * @param objectType - SOAP API object type name
          * @example
          * var sub = Platform.Function.CreateObject("Subscriber");
@@ -612,12 +612,12 @@ declare namespace Platform {
          */
         function InvokeExecute(apiObject: object, status: any[]): object[];
         /**
-         * Invokes the Extract SOAP API method on the specified object. The docs describe the return as the OverallStatus message string; that string was not reproducible from a CloudPage invoke.
+         * Invokes the Extract SOAP API method on the specified object. The docs describe the return as the OverallStatus message string; that string does not occur.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/invokeextract/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs list a third options argument and type the return value as an object; at runtime the call takes exactly two arguments (a third throws) and the statusArray is inert (never populated). The documented OverallStatus string return could not be reproduced from a CloudPage even against real saved Data Extract definitions: every two-argument call throws a catchable exception carrying only the generic wrapper message "An error occurred when attempting to evaluate an InvokeExtract function call.  See inner exception for details.", and the inner exception is not surfaced to SSJS, so the cause is not observable. The string return type is per-docs and unproven at runtime.
+         * @remarks ⚠️ Differs from the official Salesforce docs. The official docs list a third options argument and type the return value as an object; at runtime the call takes exactly two arguments (a third throws) and the statusArray is inert (never populated). The documented OverallStatus string return does not occur: every two-argument call throws a catchable exception carrying only the generic wrapper message "An error occurred when attempting to evaluate an InvokeExtract function call.  See inner exception for details.", and the inner exception is not surfaced to SSJS, so the cause is not observable. The string return type is therefore per-docs only.
          * @param apiObject - SOAP API object on which to invoke Extract
          * @param statusArray - Status out-parameter required by the signature, but inert at runtime — it is never populated. Pass an array (e.g. [0, 0]).
          * @example
@@ -645,18 +645,18 @@ declare namespace Platform {
          */
         function InvokeSchedule(apiObject: object, action: string, schedule: object, statusArray: any[], options?: object): string;
         /**
-         * Performs an HTTP GET request and returns the response body as a string. Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. Valid call forms are exactly two: HTTPGet(url) with a single argument, or the full 6-argument form; passing 2-5 arguments is an argument count it does not accept and throws the generic "Unable to retrieve security descriptor for this frame." error. The statusVariable out-parameter is unreliable (observed empty even on success), so read the body from the return value.
+         * Performs an HTTP GET request and returns the response body as a string. Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. Valid call forms are exactly two: HTTPGet(url) with a single argument, or the full 6-argument form; passing 2-5 arguments is an argument count it does not accept and throws the generic "Unable to retrieve security descriptor for this frame." error. The statusVariable out-parameter is unreliable (empty even on success), so read the body from the return value.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/httpget/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage. Three corrections to the official docs. (1) The docs state this returns a numeric status, but it actually returns the response body as a string. (2) The argument count is a discontinuous overload, not a simple range: only a 1-argument call (url only) or the full 6-argument call are valid. Calling with 2, 3, 4, or 5 arguments throws "Unable to retrieve security descriptor for this frame." The trailing five arguments (continueOnError, emptyContentHandling, headerNames, headerValues, statusVariable) form an all-or-nothing group — you must supply all five together or none. This contradicts the older claim that "all six arguments are required" (the 1-argument form works) as well as the docs listing arguments 3-6 as independently optional. (3) Even on a successful 6-argument call the statusVariable out-parameter was observed empty (statusVariable.length === 0, statusVariable[0] === undefined), so the numeric status is not reliably delivered in a CloudPage context — read the returned body string and do not depend on statusVariable[0].
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, Three corrections to the official docs. (1) The docs state this returns a numeric status, but it actually returns the response body as a string. (2) The argument count is a discontinuous overload, not a simple range: only a 1-argument call (url only) or the full 6-argument call are valid. Calling with 2, 3, 4, or 5 arguments throws "Unable to retrieve security descriptor for this frame." The trailing five arguments (continueOnError, emptyContentHandling, headerNames, headerValues, statusVariable) form an all-or-nothing group — you must supply all five together or none. This contradicts the older claim that "all six arguments are required" (the 1-argument form works) as well as the docs listing arguments 3-6 as independently optional. (3) Even on a successful 6-argument call the statusVariable out-parameter is empty (statusVariable.length === 0, statusVariable[0] === undefined), so the numeric status is not reliably delivered in a CloudPage context — read the returned body string and do not depend on statusVariable[0].
          * @param url - URL to request
          * @param continueOnError - When true, the request terminates if an error occurs. When false, the request continues on error. Only valid in the 6-argument form; the trailing five arguments are all-or-nothing.
          * @param emptyContentHandling - How to handle a URL that returns empty content: 0 = allow empty, 1 = return error, 2 = skip subscriber. Only valid in the 6-argument form (co-required with the other trailing arguments).
          * @param headerNames - Array of header names to include in the GET request (pass null when none). Only valid in the 6-argument form (co-required with the other trailing arguments).
          * @param headerValues - Array of header values corresponding to headerNames (pass null when none). Only valid in the 6-argument form (co-required with the other trailing arguments).
-         * @param statusVariable - Array intended to receive the status code, but observed empty at runtime even on success — do not rely on it. Only valid in the 6-argument form (co-required with the other trailing arguments).
+         * @param statusVariable - Array intended to receive the status code, but empty at runtime even on success — do not rely on it. Only valid in the 6-argument form (co-required with the other trailing arguments).
          * @example
          * // Valid form 1 - single argument, returns the response body as a string
          * var body = Platform.Function.HTTPGet("https://api.example.com/data");
@@ -672,23 +672,23 @@ declare namespace Platform {
          *     ["sampleValue"],
          *     status
          * );
-         * // Note: status[0] is unreliable (observed empty); read the body from `content`.
+         * // Note: status[0] is unreliable (empty); read the body from `content`.
          * var parsed = Platform.Function.ParseJSON(content);
          */
         function HTTPGet(url: string, continueOnError?: boolean, emptyContentHandling?: string | number, headerNames?: string[], headerValues?: string[], statusVariable?: number[]): string;
         /**
-         * Performs an HTTP POST request with a content type and payload. Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. Returns the HTTP status code as a number (e.g. 200 for success). The optional response out-parameter is unreliable — in runtime tests it stayed empty even for successful requests, so read the status code from the return value and use HTTP.Post / a WSProxy call when you need the response body.
+         * Performs an HTTP POST request with a content type and payload. Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. Returns the HTTP status code as a number (e.g. 200 for success). The optional response out-parameter is unreliable — it stays empty even for successful requests, so read the status code from the return value and use HTTP.Post / a WSProxy call when you need the response body.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/httppost/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage. Three corrections to the official docs. (1) The argument count is a discontinuous overload, not a simple range: only a 3-argument call (url, contentType, payload) or the full 6-argument call are valid. Calling with 4 or 5 arguments throws "Unable to retrieve security descriptor for this frame." The trailing three arguments (headerNames, headerValues, response) form an all-or-nothing group, so the docs listing them as independently optional is wrong. (2) A 4xx or 5xx response is never handed back as a status code — it throws "An error occurred when attempting to evaluate a HTTPPost function call.  See inner exception for details." The docs branch on statusCode == 200 as if a failing status were observable; it is not, so wrap the call in try/catch. Successful 2xx statuses (200, 201, 204) from the same host are returned normally, which rules out a transport-level explanation. (3) Even on a successful call the response out-parameter was observed empty (response.length === 0, response[0] === undefined), so the body is not delivered in a CloudPage context — use HTTP.Post when you need the response body.
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, Three corrections to the official docs. (1) The argument count is a discontinuous overload, not a simple range: only a 3-argument call (url, contentType, payload) or the full 6-argument call are valid. Calling with 4 or 5 arguments throws "Unable to retrieve security descriptor for this frame." The trailing three arguments (headerNames, headerValues, response) form an all-or-nothing group, so the docs listing them as independently optional is wrong. (2) A 4xx or 5xx response is never handed back as a status code — it throws "An error occurred when attempting to evaluate a HTTPPost function call.  See inner exception for details." The docs branch on statusCode == 200 as if a failing status were observable; it is not, so wrap the call in try/catch. Successful 2xx statuses (200, 201, 204) from the same host are returned normally, which rules out a transport-level explanation. (3) Even on a successful call the response out-parameter is empty (response.length === 0, response[0] === undefined), so the body is not delivered in a CloudPage context — use HTTP.Post when you need the response body.
          * @param url - URL to post to
          * @param contentType - MIME type of the request body
          * @param payload - Request body content
          * @param headerNames - Array of header names (co-required with headerValues)
          * @param headerValues - Array of header values corresponding to headerNames (co-required)
-         * @param response - Array intended to receive the response body. Unreliable — observed empty even on successful (200) responses; do not depend on it.
+         * @param response - Array intended to receive the response body. Unreliable — empty even on successful (200) responses; do not depend on it.
          * @example
          * var statusCode = Platform.Function.HTTPPost(
          *     "https://api.example.com/items",
@@ -704,7 +704,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-functions/parsejson/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage. Two corrections to the official docs: (1) The docs type the argument as `string or string[]` and describe passing an "array of strings"; at runtime passing an array (or any non-string object) throws `System.InvalidOperationException: Unable to retrieve security descriptor for this frame`. A single string, boolean, or number is accepted: a number matches ParseJSON of the equivalent numeric string; a boolean yields the CLR strings "True"/"False" (not JSON boolean primitives and not equal to ParseJSON("true")/"false"). (2) The docs return type `object|object[]` is incomplete: only JSON objects/arrays are deserialised; a scalar JSON string ("42", "\"hello\"", "true", "null") is returned unchanged as a string, and invalid/empty/null/undefined input returns null (it does NOT throw).
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, Two corrections to the official docs: (1) The docs type the argument as `string or string[]` and describe passing an "array of strings"; at runtime passing an array (or any non-string object) throws `System.InvalidOperationException: Unable to retrieve security descriptor for this frame`. A single string, boolean, or number is accepted: a number matches ParseJSON of the equivalent numeric string; a boolean yields the CLR strings "True"/"False" (not JSON boolean primitives and not equal to ParseJSON("true")/"false"). (2) The docs return type `object|object[]` is incomplete: only JSON objects/arrays are deserialised; a scalar JSON string ("42", "\"hello\"", "true", "null") is returned unchanged as a string, and invalid/empty/null/undefined input returns null (it does NOT throw).
          * @param jsonString - A JSON-formatted string, boolean, or number to parse. A number yields the same result as the equivalent numeric string. A boolean is accepted but returns CLR "True"/"False" (not JSON boolean primitives). Passing an array or other object throws a runtime error (contrary to the official docs).
          * @example
          * var jsonString = '{"name":"Jane","age":30}';
@@ -817,7 +817,7 @@ declare namespace Platform {
          *
          * @deprecated
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the three optional parameters the docs describe cannot be reached from SSJS. Every shape of the 2nd argument (regionName) — string literal, concatenation, variable, empty string, null — is rejected with an "invalid parameter value ... Parameter Name: ImpressionRegionName, Parameter Ordinal: 2, Parameter Type: ResolvedValueParameter" error, so arity 3 (stopOnError) and arity 4 (fallbackContent) never execute: setting stopOnError to false does not let the call proceed, and the fallback string is never assigned or returned. Only the single-argument form is usable, and even that throws unless the id resolves to an existing Content Area — the numeric ids in the docs' examples all failed with "An error occurred when attempting to evaluate an ContentArea function call". Use Platform.Function.ContentBlockByID() instead, or invoke the AMPscript form through Platform.Function.TreatAsContent() when the optional parameters are needed.
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, the three optional parameters the docs describe cannot be reached from SSJS. Every shape of the 2nd argument (regionName) — string literal, concatenation, variable, empty string, null — is rejected with an "invalid parameter value ... Parameter Name: ImpressionRegionName, Parameter Ordinal: 2, Parameter Type: ResolvedValueParameter" error, so arity 3 (stopOnError) and arity 4 (fallbackContent) never execute: setting stopOnError to false does not let the call proceed, and the fallback string is never assigned or returned. Only the single-argument form is usable, and even that throws unless the id resolves to an existing Content Area — the numeric ids in the docs' examples all failed with "An error occurred when attempting to evaluate an ContentArea function call". Use Platform.Function.ContentBlockByID() instead, or invoke the AMPscript form through Platform.Function.TreatAsContent() when the optional parameters are needed.
          * @param id - ID of the Content Area.
          * @param regionName - Impression region for content.
          * @param stopOnError - When true, throws on failure; when false the call proceeds.
@@ -834,7 +834,7 @@ declare namespace Platform {
          *
          * @deprecated
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the single-argument form does return the content once the name resolves, but the three optional parameters the docs describe cannot be reached from SSJS. Every shape of the 2nd argument (regionName) — string literal, concatenation, variable, empty string, null — is rejected with an "invalid parameter value ... Parameter Name: ImpressionRegionName, Parameter Ordinal: 2, Parameter Type: ResolvedValueParameter" error, so arity 3 (stopOnError) and arity 4 (fallbackContent) never execute: setting stopOnError to false does not let the call proceed, and the fallback string is never assigned or returned. Use Platform.Function.ContentBlockByName() instead, or invoke the AMPscript form through Platform.Function.TreatAsContent() when the optional parameters are needed.
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, the single-argument form does return the content once the name resolves, but the three optional parameters the docs describe cannot be reached from SSJS. Every shape of the 2nd argument (regionName) — string literal, concatenation, variable, empty string, null — is rejected with an "invalid parameter value ... Parameter Name: ImpressionRegionName, Parameter Ordinal: 2, Parameter Type: ResolvedValueParameter" error, so arity 3 (stopOnError) and arity 4 (fallbackContent) never execute: setting stopOnError to false does not let the call proceed, and the fallback string is never assigned or returned. Use Platform.Function.ContentBlockByName() instead, or invoke the AMPscript form through Platform.Function.TreatAsContent() when the optional parameters are needed.
          * @param name - Name of the Content Area.
          * @param regionName - Impression region for content.
          * @param stopOnError - When true, throws on failure; when false the call proceeds.
@@ -872,7 +872,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-variable/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage GET): values retain their SSJS scalar type within the request, while a never-set variable returns JavaScript `null` and an explicitly empty variable returns `""`. The leading `@` is optional, and variable names are case-insensitive.
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, values retain their SSJS scalar type within the request, while a never-set variable returns JavaScript `null` and an explicitly empty variable returns `""`. The leading `@` is optional, and variable names are case-insensitive.
          * @param variableName - Name of the AMPscript variable
          * @example
          * var sk = Platform.Variable.GetValue("SubscriberKey");
@@ -886,7 +886,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-variable/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage GET): the method returns JavaScript `null`, not void. Strings, numbers, and booleans retain their SSJS scalar type in later SSJS blocks; null and undefined read back as `null`. The leading `@` is optional, and values are request-local.
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, the method returns JavaScript `null`, not void. Strings, numbers, and booleans retain their SSJS scalar type in later SSJS blocks; null and undefined read back as `null`. The leading `@` is optional, and values are request-local.
          * @param variableName - Name of the AMPscript variable
          * @param value - Scalar value to assign
          * @example
@@ -909,7 +909,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the header appears verbatim in the HTTP response and the call returns JavaScript null, not void. Numeric values are coerced to their string form.
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, the header appears verbatim in the HTTP response and the call returns JavaScript null, not void. Numeric values are coerced to their string form.
          * @param headerName - Name of the response header.
          * @param value - Value for the response header.
          * @example
@@ -923,7 +923,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): removes a header set earlier in the same request and returns JavaScript null, not void. Removing a header that was never set is a no-op rather than an error.
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, removes a header set earlier in the same request and returns JavaScript null, not void. Removing a header that was never set is a no-op rather than an error.
          * @param headerName - Name of the HTTP response header to remove.
          * @example
          * Platform.Response.RemoveResponseHeader("X-Powered-By");
@@ -935,7 +935,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage). Behaviours the official docs do not state: the second argument is optional — a single-argument call produces a 302 with the Location header set; a successful redirect discards any response body already written; and a redirect inside try is catchable — the catch runs and can call Redirect again, overriding the Location (keep redirects out of try, or guard the catch).
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage: Behaviours the official docs do not state: the second argument is optional — a single-argument call produces a 302 with the Location header set; a successful redirect discards any response body already written; and a redirect inside try is catchable — the catch runs and can call Redirect again, overriding the Location (keep redirects out of try, or guard the catch).
          * @param url - URL to redirect to.
          * @param movedPermanently - True for 301 permanent redirect, false for 302 temporary. Defaults to a 302 when omitted.
          * @example
@@ -948,7 +948,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): each call returns JavaScript null, not void, and emits its own Set-Cookie header. Without an expiry the cookie is a session cookie; a JavaScript Date object is accepted for the expiry alongside a date string and is rendered as a GMT timestamp.
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, each call returns JavaScript null, not void, and emits its own Set-Cookie header. Without an expiry the cookie is a session cookie; a JavaScript Date object is accepted for the expiry alongside a date string and is rendered as a GMT timestamp.
          * @param name - Name of the cookie to set.
          * @param value - Value to store in the cookie.
          * @param expires - Expiration date/time for the cookie. Accepts a date string or a JavaScript Date object.
@@ -958,12 +958,12 @@ declare namespace Platform {
          */
         function SetCookie(name: string, value: string, expires?: string | Date, secure?: boolean): null;
         /**
-         * Attempts to remove a browser cookie from a CloudPage response. In the tested runtime it returns null but emits no deletion header; use SetCookie with an empty value and a past JavaScript Date instead.
+         * Attempts to remove a browser cookie from a CloudPage response. It returns null but emits no deletion header; use SetCookie with an empty value and a past JavaScript Date instead.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-response/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a published CloudPage GET with the named request cookie present: the call returns JavaScript null, not void, and emits no Set-Cookie header. The proven workaround is SetCookie(name, "", new Date(1970, 0, 1), true), which emits an empty cookie with a past expiry and removes it from the next cookie-jar request.
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a published CloudPage with the named request cookie present, the call returns JavaScript null, not void, and emits no Set-Cookie header. The workaround is SetCookie(name, "", new Date(1970, 0, 1), true), which emits an empty cookie with a past expiry and removes it from the next cookie-jar request.
          * @param name - Name of the cookie to remove.
          * @example
          * Platform.Response.SetCookie("userId", "", new Date(1970, 0, 1), true);
@@ -997,7 +997,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage GET): an absent parameter returns strict JavaScript `null`, not an empty string. Empty values return `""`; repeated values are comma-joined in URL order; names are case-insensitive; plus signs, percent escapes, and UTF-8 sequences are decoded; numeric names are coerced to strings. Guard reads with truthiness or `!= null`.
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, an absent parameter returns strict JavaScript `null`, not an empty string. Empty values return `""`; repeated values are comma-joined in URL order; names are case-insensitive; plus signs, percent escapes, and UTF-8 sequences are decoded; numeric names are coerced to strings. Guard reads with truthiness or `!= null`.
          * @param parameterName - Name of the query string parameter.
          * @example
          * // Page URL: /mypage?email=jane@example.com
@@ -1006,12 +1006,12 @@ declare namespace Platform {
          */
         function GetQueryStringParameter(parameterName: string): string | null;
         /**
-         * Retrieves a named field from a submitted POST form body. On a CloudPage GET it does not fall back to query parameters and returns null.
+         * Retrieves a named field from a submitted POST form body. On a CloudPage it does not fall back to query parameters and returns null.
          *
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage GET): it returns strict JavaScript `null` for an absent field and does not read a same-named query-string parameter. Use GetQueryStringParameter for URL values.
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, it returns strict JavaScript `null` for an absent field and does not read a same-named query-string parameter. Use GetQueryStringParameter for URL values.
          * @param name - Name of the form field to retrieve.
          * @example
          * var email = Platform.Request.GetFormField("emailAddress");
@@ -1037,7 +1037,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-request/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): a supplied cookie returns its string value; an absent cookie returns strict JavaScript `null`, not an empty string.
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, a supplied cookie returns its string value; an absent cookie returns strict JavaScript `null`, not an empty string.
          * @param cookieName - Name of the cookie to retrieve.
          * @example
          * var sessionId = Platform.Request.GetCookieValue("sessionId");
@@ -1079,7 +1079,7 @@ declare namespace Platform {
          * [ssjs.guide reference](https://ssjs.guide/platform-objects/platform-recipient/)
          *
          * @remarks ✅ Runtime-verified in a live SFMC test.
-         * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): does NOT throw outside a send context — in a plain CloudPage it returns `""` (empty string, typeof "string") for any attribute because no recipient is bound. The bare-name `Recipient` alias is NOT available even after Platform.Load; use `Platform.Recipient.GetAttributeValue(...)` (or `Attribute.GetValue(...)` after load).
+         * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, does NOT throw outside a send context — in a plain CloudPage it returns `""` (empty string, typeof "string") for any attribute because no recipient is bound. The bare-name `Recipient` alias is NOT available even after Platform.Load; use `Platform.Recipient.GetAttributeValue(...)` (or `Attribute.GetValue(...)` after load).
          * @param attributeName - Name of the subscriber attribute or sendable DE field to retrieve
          * @example
          * var email = Platform.Recipient.GetAttributeValue("EmailAddress");
@@ -1097,7 +1097,7 @@ declare namespace Variable {
      * [ssjs.guide reference](https://ssjs.guide/core-library/variable/)
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage GET): values retain their SSJS scalar type within the request, while a never-set variable returns JavaScript `null` and an explicitly empty variable returns `""`. The leading `@` is optional, and variable names are case-insensitive.
+     * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, values retain their SSJS scalar type within the request, while a never-set variable returns JavaScript `null` and an explicitly empty variable returns `""`. The leading `@` is optional, and variable names are case-insensitive.
      * @param variableName - Name of the AMPscript variable
      * @example
      * var sk = Platform.Variable.GetValue("SubscriberKey");
@@ -1111,7 +1111,7 @@ declare namespace Variable {
      * [ssjs.guide reference](https://ssjs.guide/core-library/variable/)
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage GET): the method returns JavaScript `null`, not void. Strings, numbers, and booleans retain their SSJS scalar type in later SSJS blocks; null and undefined read back as `null`. The leading `@` is optional, and values are request-local.
+     * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, the method returns JavaScript `null`, not void. Strings, numbers, and booleans retain their SSJS scalar type in later SSJS blocks; null and undefined read back as `null`. The leading `@` is optional, and values are request-local.
      * @param variableName - Name of the AMPscript variable
      * @param value - Scalar value to assign
      * @example
@@ -1257,7 +1257,7 @@ declare function Base64Decode(encodedString: string): string;
  * @deprecated
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `ContentArea` IS defined as a function after `Platform.Load("core", ...)` has run (the load must precede use; once loaded the bare name is usable in that scope and in nested helper bodies that close over it). Only the single-argument form works: passing the id of an existing Content Area returns its content, and a numeric string for the same id works too. Supplying regionName (parameter 2) throws an "invalid parameter value ... ImpressionRegionName ... ResolvedValueParameter" error, which leaves errorMsg and fallbackContent unreachable. An arity-1 call that throws means the id did not resolve to a Content Area. The Platform.Function.ContentArea() variant does not require Platform.Load.
+ * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, the bare-name `ContentArea` IS defined as a function after `Platform.Load("core", ...)` has run (the load must precede use; once loaded the bare name is usable in that scope and in nested helper bodies that close over it). Only the single-argument form works: passing the id of an existing Content Area returns its content, and a numeric string for the same id works too. Supplying regionName (parameter 2) throws an "invalid parameter value ... ImpressionRegionName ... ResolvedValueParameter" error, which leaves errorMsg and fallbackContent unreachable. An arity-1 call that throws means the id did not resolve to a Content Area. The Platform.Function.ContentArea() variant does not require Platform.Load.
  * @param id - ID of the Content Area.
  * @param regionName - Impression region for content.
  * @param errorMsg - Error message string returned on failure.
@@ -1276,7 +1276,7 @@ declare function ContentArea(id: string | number, regionName?: string, errorMsg?
  * @deprecated
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `ContentAreaByName` IS defined as a function after `Platform.Load("core", ...)` has run (the load must precede use; once loaded the bare name is usable in that scope and in nested helper bodies that close over it). Only the single-argument form works: passing the name of an existing Content Area returns its content. Name matching is case-insensitive and the backslash-separated folder-path form resolves as well, while a CustomerKey, a space-padded name and an unknown name are all rejected. Supplying regionName (parameter 2) throws an "invalid parameter value ... ImpressionRegionName ... ResolvedValueParameter" error, which leaves errorMsg and fallbackContent unreachable. The Platform.Function.ContentAreaByName() variant does not require Platform.Load.
+ * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, the bare-name `ContentAreaByName` IS defined as a function after `Platform.Load("core", ...)` has run (the load must precede use; once loaded the bare name is usable in that scope and in nested helper bodies that close over it). Only the single-argument form works: passing the name of an existing Content Area returns its content. Name matching is case-insensitive and the backslash-separated folder-path form resolves as well, while a CustomerKey, a space-padded name and an unknown name are all rejected. Supplying regionName (parameter 2) throws an "invalid parameter value ... ImpressionRegionName ... ResolvedValueParameter" error, which leaves errorMsg and fallbackContent unreachable. The Platform.Function.ContentAreaByName() variant does not require Platform.Load.
  * @param name - Name of the Content Area.
  * @param regionName - Impression region for content.
  * @param errorMsg - Error message string returned on failure.
@@ -1294,7 +1294,7 @@ declare function ContentAreaByName(name: string, regionName?: string, errorMsg?:
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `BeginImpressionRegion` IS defined as a function after `Platform.Load("core", ...)`, but calling it — with either a string literal or a variable — throws "A BeginImpressionRegion function call includes an invalid parameter value. The values making up the parameter value for this call must be a literal (constant) values." The bare alias and the `Platform.Function.BeginImpressionRegion` form behave identically (both throw the same error), so impression regions are effectively unusable from SSJS — they are an AMPscript-only feature. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first.
+ * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, the bare-name `BeginImpressionRegion` IS defined as a function after `Platform.Load("core", ...)`, but calling it — with either a string literal or a variable — throws "A BeginImpressionRegion function call includes an invalid parameter value. The values making up the parameter value for this call must be a literal (constant) values." The bare alias and the `Platform.Function.BeginImpressionRegion` form behave identically (both throw the same error), so impression regions are effectively unusable from SSJS — they are an AMPscript-only feature. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first.
  * @param name - The impression region name.
  * @example
  * Platform.Load("core", "1.1.5");
@@ -1309,7 +1309,7 @@ declare function BeginImpressionRegion(name: string): void;
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `EndImpressionRegion` IS defined as a function after `Platform.Load("core", ...)` and can be called without throwing. It DIFFERS from its `Platform.Function.EndImpressionRegion` counterpart in return value: the bare alias returns `undefined` (typeof "undefined"), whereas `Platform.Function.EndImpressionRegion()` returns a genuine `null` (typeof "object", === null). The official docs type the return as void. Because `BeginImpressionRegion` is unusable from SSJS, this method has no practical effect in SSJS either. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first.
+ * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, the bare-name `EndImpressionRegion` IS defined as a function after `Platform.Load("core", ...)` and can be called without throwing. It DIFFERS from its `Platform.Function.EndImpressionRegion` counterpart in return value: the bare alias returns `undefined` (typeof "undefined"), whereas `Platform.Function.EndImpressionRegion()` returns a genuine `null` (typeof "object", === null). The official docs type the return as void. Because `BeginImpressionRegion` is unusable from SSJS, this method has no practical effect in SSJS either. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first.
  * @param closeAll - Optional flag to close all open impression regions.
  * @example
  * Platform.Load("core", "1.1.5");
@@ -1323,7 +1323,7 @@ declare function EndImpressionRegion(closeAll?: string | boolean | number): unde
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `Now` works after `Platform.Load("core", ...)` and returns the same kind of value as `Platform.Function.Now()` — a genuine Date object: typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an RFC 2822-style string such as "Tue, 21 Jul 2026 10:18:24 GMT-06:00" during output. The official docs describe the return as an RFC 2822-compliant date-time string. Surplus arguments beyond maxArgs 1 are silently ignored on the bare form; `Platform.Function.Now(...)` throws on arity 2+. useContextTime also accepts number 0/1 and the strings "true"/"false". SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first.
+ * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, the bare-name `Now` works after `Platform.Load("core", ...)` and returns the same kind of value as `Platform.Function.Now()` — a genuine Date object: typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an RFC 2822-style string such as "Tue, 21 Jul 2026 10:18:24 GMT-06:00" during output. The official docs describe the return as an RFC 2822-compliant date-time string. Surplus arguments beyond maxArgs 1 are silently ignored on the bare form; `Platform.Function.Now(...)` throws on arity 2+. useContextTime also accepts number 0/1 and the strings "true"/"false". SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first.
  * @param useContextTime - Pass `true` to return the timestamp of the triggering send instead of the current time. Also accepts number 0/1 and the strings "true"/"false".
  * @example
  * Platform.Load("core", "1.1.5");
@@ -1377,7 +1377,7 @@ declare function IsEmailAddress(value: string): boolean;
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the bare-name `IsPhoneNumber` works after `Platform.Load("core", ...)` and returns the same boolean as `Platform.Function.IsPhoneNumber()` for the documented 1-argument form. Calling with no arguments returns false (does not throw); surplus arguments are silently ignored. `Platform.Function.IsPhoneNumber` throws on arity 0 and on surplus arguments. Documented contract remains minArgs/maxArgs 1. The official docs describe generic "valid phone number" validation; see the `Platform.Function.IsPhoneNumber` entry for the NANP runtime format details. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first.
+ * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, the bare-name `IsPhoneNumber` works after `Platform.Load("core", ...)` and returns the same boolean as `Platform.Function.IsPhoneNumber()` for the documented 1-argument form. Calling with no arguments returns false (does not throw); surplus arguments are silently ignored. `Platform.Function.IsPhoneNumber` throws on arity 0 and on surplus arguments. Documented contract remains minArgs/maxArgs 1. The official docs describe generic "valid phone number" validation; see the `Platform.Function.IsPhoneNumber` entry for the NANP runtime format details. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run — call the load first.
  * @param value - The value to validate.
  * @example
  * Platform.Load("core", "1.1.5");
@@ -1418,7 +1418,7 @@ declare function Stringify(value: any): string;
  *
  * @remarks Requires `Platform.Load("Core", "1")` before use.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): bare-name `Format` requires `Platform.Load("core", ...)`. Numeric codes match the official examples (e.g. Format(4213.65, "C2") -> "$4,213.65"). DIFFERS: predefined short-form `d` returns a four-digit year (`8/5/2024` for the sample instant), not the two-digit year (`8/5/24`) shown in the official docs. textToFormat also accepts a real Date for date format codes (same result as the matching date string). Boolean is rejected for numeric codes. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run.
+ * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, bare-name `Format` requires `Platform.Load("core", ...)`. Numeric codes match the official examples (e.g. Format(4213.65, "C2") -> "$4,213.65"). DIFFERS: predefined short-form `d` returns a four-digit year (`8/5/2024` for the sample instant), not the two-digit year (`8/5/24`) shown in the official docs. textToFormat also accepts a real Date for date format codes (same result as the matching date string). Boolean is rejected for numeric codes. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load has run.
  * @param textToFormat - The string, number, or Date to apply a formatting rule to.
  * @param formatCode - A format code to apply. Numeric: C, D, E, F, G, N, P (append digit for decimal places). Date/time: d, M, f, g, O, r, s, t, T, or a custom pattern.
  * @example
@@ -1471,7 +1471,7 @@ interface DataExtensionFields {
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param deFieldName - Name of the data extension field that should make the connection to the subscriber list.
      * @param subscriberField - Subscriber attribute to map the data extension field to.
-     * @returns Returns "OK" on success (confirmed at runtime; the doc has no `@returns`). Returns the string "Error" instead of throwing on failure. Runtime defect: a no-argument call returns "OK" although the mapping is unchanged, so an "OK" return alone does not prove a mapping was applied.
+     * @returns Returns "OK" on success (the doc has no `@returns`). Returns the string "Error" instead of throwing on failure. Runtime defect: a no-argument call returns "OK" although the mapping is unchanged, so an "OK" return alone does not prove a mapping was applied.
      * @example
      * Platform.Load("core", "1.1.5");
      * var updateDE = DataExtension.Init("sendableDataExtension");
@@ -1487,7 +1487,7 @@ interface DataExtensionRows {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage: returns a number (the count of rows added), not the string "OK". Also accepts a single row object in addition to an array of objects.
+     * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, returns a number (the count of rows added), not the string "OK". Also accepts a single row object in addition to an array of objects.
      * @param rowData - Array of row objects (or a single row object). Each object's keys must match data extension field names.
      * @returns The number of rows that were added.
      * @example
@@ -1507,7 +1507,7 @@ interface DataExtensionRows {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage: returns typed values (Number and Decimal columns come back as number, Boolean as boolean), unlike Retrieve which returns every field as a string. Date columns are the exception: they come back as an ISO-8601 string (e.g. "2024-01-15T00:00:00.000"), NOT a Date object — the same behaviour as Platform.Function.LookupRows. On no match, returns `null` (not an empty array). The result is a host array where `instanceof Array` is `false`, but `.length` and index access work.
+     * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, returns typed values (Number and Decimal columns come back as number, Boolean as boolean), unlike Retrieve which returns every field as a string. Date columns are the exception: they come back as an ISO-8601 string (e.g. "2024-01-15T00:00:00.000"), NOT a Date object — the same behaviour as Platform.Function.LookupRows. On no match, returns `null` (not an empty array). The result is a host array where `instanceof Array` is `false`, but `.length` and index access work.
      * @param searchFieldNames - Array of column names to match against.
      * @param searchValues - Array of values to match (one per column, in order). Heterogeneous simple values; Number columns accept a number or a numeric string.
      * @param limit - Maximum number of rows to return.
@@ -1542,7 +1542,7 @@ interface DataExtensionRows {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage: calling `Retrieve()` without a filter DOES work on CloudPages and returns all rows — the widely-repeated "returns empty on CloudPages" bug could not be reproduced. A ComplexFilterPart with LogicalOperator "OR" also works and returns the union of both operands (it is NOT silently collapsed to AND) — the community claim that DE WHERE is AND-only is incorrect. All field values are returned as strings (even Number/Boolean/Date columns), unlike Lookup which returns typed Number/Decimal/Boolean values (Lookup Date columns are ISO-8601 strings, not Date objects). On no match, returns an empty host array (`.length === 0`), not `null`. The result is a host array where `instanceof Array` is `false`, but `.length` and index access work.
+     * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, calling `Retrieve()` without a filter DOES work and returns all rows — the widely-repeated claim that it returns empty on CloudPages is wrong. A ComplexFilterPart with LogicalOperator "OR" also works and returns the union of both operands (it is NOT silently collapsed to AND) — the community claim that DE WHERE is AND-only is incorrect. All field values are returned as strings (even Number/Boolean/Date columns), unlike Lookup which returns typed Number/Decimal/Boolean values (Lookup Date columns are ISO-8601 strings, not Date objects). On no match, returns an empty host array (`.length === 0`), not `null`. The result is a host array where `instanceof Array` is `false`, but `.length` and index access work.
      * @param filter - WSProxy-style filter object — simple `{Property, SimpleOperator, Value}` or compound with `LeftOperand`/`LogicalOperator`/`RightOperand`. Optional per the example, despite the doc table marking `Required: Yes`.
      * @returns Rows from the data extension matching the filter (or all rows when no filter is supplied). Field values are strings.
      * @example
@@ -1560,7 +1560,7 @@ interface DataExtensionRows {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage: returns a number (the count of rows updated), not the string "OK". When no row matches the WHERE clause, it returns `0` and does NOT throw.
+     * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, returns a number (the count of rows updated), not the string "OK". When no row matches the WHERE clause, it returns `0` and does NOT throw.
      * @param rowData - Object whose keys are columns to update and values are the new values.
      * @param whereFieldNames - Array of column names to match against.
      * @param whereValues - Array of values to match (one per column, in order). Heterogeneous simple values; Number columns accept a number or a numeric string.
@@ -1825,9 +1825,9 @@ declare namespace Account {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Proven at runtime on the parent BU: Account.Init returns the same instance regardless of the key passed — a CustomerKey GUID, a numeric MID, a Name ("SFMC2Slack"), or a nonsense key all yield an identical stub exposing only an Update function ({"Update":"function"}). No account properties are readable from the instance (ID/Name/CustomerKey return undefined), so Init does not itself confirm whether the key resolves to a real account.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Account.Init returns the same instance regardless of the key passed — a CustomerKey GUID, a numeric MID, a name, or a nonsense key all yield an identical stub exposing only an Update function ({"Update":"function"}). No account properties are readable from the instance (ID/Name/CustomerKey return undefined), so Init does not itself confirm whether the key resolves to a real account.
      * @param key - External key of the account.
-     * @returns An Account instance. Proven at runtime on the parent BU: the returned object exposes a single enumerable member, the Update method (Stringifies as {"Update":"function"}). It carries no readable account fields — inst.ID, inst.Name and inst.CustomerKey all read back undefined — and the same stub is returned for any key value (the running account's CustomerKey GUID, a numeric MID, a Name such as "SFMC2Slack", or a nonsense string). Use the returned instance to call <AccountInstance>.Update(...); use Account.Retrieve to read account fields.
+     * @returns An Account instance. The returned object exposes a single enumerable member, the Update method (Stringifies as {"Update":"function"}). It carries no readable account fields — inst.ID, inst.Name and inst.CustomerKey all read back undefined — and the same stub is returned for any key value (a CustomerKey GUID, a numeric MID, a name, or a nonsense string). Use the returned instance to call <AccountInstance>.Update(...); use Account.Retrieve to read account fields.
      * @example
      * Platform.Load("core", "1.1.5");
      * var myAccount = Account.Init("MyCustomerKey");
@@ -1840,9 +1840,9 @@ declare namespace Account {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Proven at runtime on the parent BU: Account.Retrieve resolves only the running session's own account, and it does so via Property "Name", "ID", or "CustomerKey". For "ID", both the numeric form and the string form of the running account's MID resolved. Requests for any other (child) business unit returned a zero-length collection for every property and value tried — by Name ("Retail Test"), by ID (7316951), and by CustomerKey (both GUID keys and plain-string keys such as "DEV"). The properties "MID", "AccountID" and "BusinessUnitID" are not recognized and always returned empty. Neither the matched nor the empty collection is an instanceof Array in this engine, so guard with a truthy .length check before indexing.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Account.Retrieve resolves only the running session's own account, and it does so via Property "Name", "ID", or "CustomerKey". For "ID", both the numeric form and the string form of the running account's MID resolve. Requests for any other (child) business unit return a zero-length collection for every property and value tried — by Name, by ID, and by CustomerKey (both GUID keys and plain-string keys). The properties "MID", "AccountID" and "BusinessUnitID" are not recognized and always return empty. Neither the matched nor the empty collection is an instanceof Array in this engine, so guard with a truthy .length check before indexing.
      * @param filter - Criteria used to search for the account. Use a filter expression or a JSON object containing filter and additional search parameters.
-     * @returns On a match returns an array-like collection of account rows (proven at runtime: exposes .length and .push and Stringifies as a JSON array with length 1), though it is not an instanceof Array in this engine. On no match returns the same array-like shape with .length of 0 (it still exposes .push, Stringifies as [] and has no enumerable keys); that zero-length collection is itself falsy in this engine, so both a truthy check and a .length check reject it. Proven at runtime on the parent BU: filtering by Property "Name" (equals "Accenture SFMC Global"), "ID" (equals the running account MID or greaterThan 0), or "CustomerKey" (equals the account CustomerKey GUID) each returned the running BU's own account row. Filtering for any child BU — by Name, by ID, or by CustomerKey (GUID or plain-string key) — returned the empty [] shape, as did unrecognized properties "MID" and "AccountID". Only the running session's own account resolves. A matched row exposes the full Account SOAP object; observed fields include AccountType, ParentID, BrandID, PrivateLabelID, ReportingParentID, Name, Email, FromName, BusinessName, Phone, Address, Fax, City, State, Zip, Country, IsActive, IsTestAccount, OrgID, DBID, ParentName, CustomerID, DeletedDate, EditionID, Children, Subscription, PrivateLabels, BusinessRules, AccountUsers, InheritAddress, IsTrialAccount, Locale, ParentAccount, TimeZone (a nested object with ID/Name/CustomerKey), Roles, StackID, SalesForceID, LanguageLocale, IndustryCode, Edition, SalesforceOrgID, AccountState, SubscriptionRestrictionFlags, Client, PartnerKey, PartnerProperties, CreatedDate, ModifiedDate, ID, ObjectID, CustomerKey, Owner, CorrelationID, ObjectState and IsPlatformObject, plus a *Specified boolean companion for many numeric/date fields.
+     * @returns On a match returns an array-like collection of account rows (it exposes .length and .push and Stringifies as a JSON array with length 1), though it is not an instanceof Array in this engine. On no match returns the same array-like shape with .length of 0 (it still exposes .push, Stringifies as [] and has no enumerable keys); that zero-length collection is itself falsy in this engine, so both a truthy check and a .length check reject it. Filtering by Property "Name", "ID" (the running account MID or greaterThan 0), or "CustomerKey" each returns the running session's own account row. Filtering for any child BU — by Name, by ID, or by CustomerKey (GUID or plain-string key) — returns the empty [] shape, as did unrecognized properties "MID" and "AccountID". Only the running session's own account resolves. A matched row exposes the full Account SOAP object; exposed fields include AccountType, ParentID, BrandID, PrivateLabelID, ReportingParentID, Name, Email, FromName, BusinessName, Phone, Address, Fax, City, State, Zip, Country, IsActive, IsTestAccount, OrgID, DBID, ParentName, CustomerID, DeletedDate, EditionID, Children, Subscription, PrivateLabels, BusinessRules, AccountUsers, InheritAddress, IsTrialAccount, Locale, ParentAccount, TimeZone (a nested object with ID/Name/CustomerKey), Roles, StackID, SalesForceID, LanguageLocale, IndustryCode, Edition, SalesforceOrgID, AccountState, SubscriptionRestrictionFlags, Client, PartnerKey, PartnerProperties, CreatedDate, ModifiedDate, ID, ObjectID, CustomerKey, Owner, CorrelationID, ObjectState and IsPlatformObject, plus a *Specified boolean companion for many numeric/date fields.
      * @example
      * Platform.Load("core", "1.1.5");
      * // Resolves the running session's own account by Name, ID, or CustomerKey
@@ -1859,11 +1859,11 @@ interface AccountInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Proven at runtime on the parent BU against the running session's own account, resolved via Account.Init(<self CustomerKey GUID>): <AccountInstance>.Update(...) returned the plain string "Error" (typeof "string") for every real single-field payload tried — { CustomerKey }, { FromName }, { BusinessName }, a CustomerKey-only object, an empty object {}, and an { ID, CustomerKey } object. Set/verify/restore cycles confirmed none of these writes persisted: reading each field back by ID after the call showed the original value unchanged (CustomerKey stayed "D61BC7A3-E557-4ABD-B8E0-B73B7202C1BC", FromName stayed "Accenture SFMC Global", BusinessName stayed "Accenture"). The user confirmed CustomerKey is a safe, IsUpdatable field, yet updating it via the Init stub still returned "Error" and did not persist. The only object that carries an Update method is the Account.Init(...) stub; the row objects returned by Account.Retrieve have no Update method (typeof row.Update is "undefined"), and calling row.Update(...) throws a Jint "Object expected: Update" exception. A { Description } payload throws the plain string "Error Updating Account." instead of returning "Error" (Description is not a real SOAP Account field). The official-doc "OK" success return was not reproduced for any payload. Separately, a child BU could not be resolved from the current session (Account.Retrieve returned the empty [] shape) and Account.Init(<child BU name>).Update(...) also returned "Error".
+     * @remarks ⚠️ Differs from the official Salesforce docs. <AccountInstance>.Update(...) returns the plain string "Error" (typeof "string") for each payload — { CustomerKey }, { FromName }, { BusinessName }, a CustomerKey-only object, an empty object {}, and an { ID, CustomerKey } object. None of these writes persist: each field reads back unchanged (CustomerKey keeps its original GUID; FromName and BusinessName keep their original values). CustomerKey is a safe, IsUpdatable field, yet updating it via the Init stub still returns "Error" and does not persist. The only object that carries an Update method is the Account.Init(...) stub; the row objects returned by Account.Retrieve have no Update method (typeof row.Update is "undefined"), and calling row.Update(...) throws a Jint "Object expected: Update" exception. A { Description } payload throws the plain string "Error Updating Account." instead of returning "Error" (Description is not a real SOAP Account field). The official-doc "OK" success return does not occur for any payload. Separately, a child business unit cannot be resolved from the current session (Account.Retrieve returns the empty [] shape) and Account.Init(<child BU name>).Update(...) also returns "Error".
      * @deprecated
      * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @param properties - Account attributes to change.
-     * @returns Returns a string. On failure it returns the plain string "Error"; for one payload shape it instead throws the plain string "Error Updating Account." (both proven at runtime; which one occurs depends on the payload). The documented success return is the string "OK"; a success return was not reproduced at runtime in this project, and set/re-read cycles on the running BU showed no field change persisted. Because it can throw a plain string, wrap the call in try/catch and treat any non-"OK" return — and any throw — as failure.
+     * @returns Returns a string. On failure it returns the plain string "Error"; for one payload shape it instead throws the plain string "Error Updating Account." (which one occurs depends on the payload). The documented success return is the string "OK"; that success return does not occur, and no field change persists. Because it can throw a plain string, wrap the call in try/catch and treat any non-"OK" return — and any throw — as failure.
      * @example
      * Platform.Load("core", "1.1.5");
      * var myAccount = Account.Init("MyCustomerKey");
@@ -1880,7 +1880,7 @@ declare namespace Account.Tracking {
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @param filter - Criteria used to search for the account.
-     * @returns Array-like collection of tracking rows (proven at runtime with .length and JSON like [{"Sends":{"Total":0},"Bounces":{"Total":0,"HardBounces":0,"SoftBounces":0,"BlockBounces":0,"TechnicalBounces":0,"UnknownBounces":0},"Clicks":{"Total":0,"Unique":0},"Opens":{"Total":0,"Unique":0},"Unsubscribes":{"Unique":0}}]). Each row exposes Sends, Bounces, Clicks, Opens and Unsubscribes counter objects.
+     * @returns Array-like collection of tracking rows (with .length and JSON like [{"Sends":{"Total":0},"Bounces":{"Total":0,"HardBounces":0,"SoftBounces":0,"BlockBounces":0,"TechnicalBounces":0,"UnknownBounces":0},"Clicks":{"Total":0,"Unique":0},"Opens":{"Total":0,"Unique":0},"Unsubscribes":{"Unique":0}}]). Each row exposes Sends, Bounces, Clicks, Opens and Unsubscribes counter objects.
      * @example
      * Platform.Load("core", "1.1.5");
      * var acctTracking = Account.Tracking.Retrieve({Property:"CustomerKey",SimpleOperator:"equals",Value:"MyAccount"});
@@ -1895,7 +1895,7 @@ declare namespace AccountUser {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (Parent BU CloudPage): the returned instance is an opaque stub, not the populated user record the docs imply. Reading ID, Name or CustomerKey off it yields undefined, and Init() does not validate targetUserKey — passing a key that matches no user still returns an object exposing Update/Activate/Deactivate that is indistinguishable from one built with a real key. A bad key therefore only surfaces when an instance method is called; use AccountUser.Retrieve() when you need to read user fields or check existence.
+     * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, the returned instance is an opaque stub, not the populated user record the docs imply. Reading ID, Name or CustomerKey off it yields undefined, and Init() does not validate targetUserKey — passing a key that matches no user still returns an object exposing Update/Activate/Deactivate that is indistinguishable from one built with a real key. A bad key therefore only surfaces when an instance method is called; use AccountUser.Retrieve() when you need to read user fields or check existence.
      * @param targetUserKey - External key of the user.
      * @param myClientID - MID of the business unit.
      * @returns An initialized AccountUser bound to the specified external key and client ID.
@@ -1911,7 +1911,7 @@ declare namespace AccountUser {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs state Add returns "OK" on success or throws on failure. In our runtime tests the call was blocked by a tenant permission gate on AccountUser writes rather than by a defect in the method. Tested on a Parent BU session (the correct context for AccountUser edits): a short payload returned the plain string "Error" (it did NOT throw); a full payload (Name/UserID/Password/Email/CustomerKey/ClientID/DefaultBusinessUnit/AssociatedBusinessUnits) threw "Error adding AccountUser". A control WSProxy createItem("AccountUser", ...) on the same run named the cause explicitly: StatusCode "Error", ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <Parent BU>." On the same run Subscriber.Add and DataExtension.Retrieve both succeeded, so the run had a working write/read path for other object types. A session whose user carries the ACCOUNTUSERS edit permission was not available, so the success ("OK") path was never exercised. Treat any non-"OK" return as failure.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs state Add returns "OK" on success or throws on failure. The call is blocked by a tenant permission requirement on AccountUser writes rather than by a defect in the method; AccountUser edits must run from the parent business unit. A short payload returns the plain string "Error" (it does NOT throw); a full payload (Name/UserID/Password/Email/CustomerKey/ClientID/DefaultBusinessUnit/AssociatedBusinessUnits) throws "Error adding AccountUser". A WSProxy createItem("AccountUser", ...) call names the cause explicitly: StatusCode "Error", ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <account>." Subscriber.Add and DataExtension.Retrieve both succeed under the same permissions, so the restriction is specific to AccountUser writes. Without a user that carries the ACCOUNTUSERS edit permission, the success ("OK") path is not reachable. Treat any non-"OK" return as failure.
      * @deprecated
      * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @param properties - JSON object describing the new account user (Name, UserID, Password, Email, ClientID, DefaultBusinessUnitKey, AssociatedBusinessUnits, ...).
@@ -1937,7 +1937,7 @@ declare namespace AccountUser {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (Parent BU CloudPage): the documented object[] return value is not a real JavaScript Array — `result instanceof Array` is false both when the filter matches and when it matches nothing. It is index- and length-addressable, so a classic for loop works, but Array.prototype methods and instanceof checks must not be relied on; copy the entries into a real array first if you need them.
+     * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, the documented object[] return value is not a real JavaScript Array — `result instanceof Array` is false both when the filter matches and when it matches nothing. It is index- and length-addressable, so a classic for loop works, but Array.prototype methods and instanceof checks must not be relied on; copy the entries into a real array first if you need them.
      * @param filter - Criteria used to search for the account user.
      * @returns List of results matching the filter.
      * @example
@@ -1954,11 +1954,11 @@ interface AccountUserInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. In our runtime tests the call was blocked by a tenant permission gate on AccountUser writes rather than by a defect in the method. Tested on a Parent BU session (the correct context for AccountUser edits): AccountUser.Init(key, <Parent BU>).Update({ Name: ... }) returned the plain string "Error" (it did NOT throw). A control WSProxy createItem("AccountUser", ...) on the same run named the cause explicitly: ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <Parent BU>.", while Subscriber writes and DataExtension.Retrieve on the same run succeeded. A session whose user carries the ACCOUNTUSERS edit permission was not available, so the success ("OK") path was never exercised.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The call is blocked by a tenant permission requirement on AccountUser writes rather than by a defect in the method; AccountUser edits must run from the parent business unit. AccountUser.Init(key).Update({ Name: ... }) returns the plain string "Error" (it does NOT throw). A WSProxy createItem("AccountUser", ...) call names the cause explicitly: ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <account>.", while Subscriber writes and DataExtension.Retrieve succeed under the same permissions. Without a user that carries the ACCOUNTUSERS edit permission, the success ("OK") path is not reachable.
      * @deprecated
      * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @param properties - Attributes of the account user to change.
-     * @returns Documented to return "OK" on success. Observed at runtime returning the plain string "Error" on failure (not a throw).
+     * @returns Documented to return "OK" on success. At runtime it returns the plain string "Error" on failure (not a throw).
      * @example
      * Platform.Load("core", "1.1.5");
      * var acctUser = AccountUser.Init("myAccountUser", 123456789);
@@ -1972,10 +1972,10 @@ interface AccountUserInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. In our runtime tests the call was blocked by a tenant permission gate on AccountUser writes rather than by a defect in the method. Tested on a Parent BU session (the correct context for AccountUser edits): AccountUser.Init(key, <Parent BU>).Activate() returned the plain string "Error" (it did NOT throw). A control WSProxy createItem("AccountUser", ...) on the same run named the cause explicitly: ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <Parent BU>.", while Subscriber writes and DataExtension.Retrieve on the same run succeeded. A session whose user carries the ACCOUNTUSERS edit permission was not available, so the success ("OK") path was never exercised.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The call is blocked by a tenant permission requirement on AccountUser writes rather than by a defect in the method; AccountUser edits must run from the parent business unit. AccountUser.Init(key).Activate() returns the plain string "Error" (it does NOT throw). A WSProxy createItem("AccountUser", ...) call names the cause explicitly: ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <account>.", while Subscriber writes and DataExtension.Retrieve succeed under the same permissions. Without a user that carries the ACCOUNTUSERS edit permission, the success ("OK") path is not reachable.
      * @deprecated
      * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
-     * @returns Documented to return "OK" on success. Observed at runtime returning the plain string "Error" on failure (not a throw).
+     * @returns Documented to return "OK" on success. At runtime it returns the plain string "Error" on failure (not a throw).
      * @example
      * Platform.Load("core", "1.1.5");
      * var acctUser = AccountUser.Init("myAccountUser", 123456789);
@@ -1989,10 +1989,10 @@ interface AccountUserInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. In our runtime tests the call was blocked by a tenant permission gate on AccountUser writes rather than by a defect in the method. Tested on a Parent BU session (the correct context for AccountUser edits): AccountUser.Init(key, <Parent BU>).Deactivate() returned the plain string "Error" (it did NOT throw). A control WSProxy createItem("AccountUser", ...) on the same run named the cause explicitly: ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <Parent BU>.", while Subscriber writes and DataExtension.Retrieve on the same run succeeded. A session whose user carries the ACCOUNTUSERS edit permission was not available, so the success ("OK") path was never exercised.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The call is blocked by a tenant permission requirement on AccountUser writes rather than by a defect in the method; AccountUser edits must run from the parent business unit. AccountUser.Init(key).Deactivate() returns the plain string "Error" (it does NOT throw). A WSProxy createItem("AccountUser", ...) call names the cause explicitly: ErrorCode 11001, StatusMessage "User 0 does not have permission to edit ACCOUNTUSERS on account <account>.", while Subscriber writes and DataExtension.Retrieve succeed under the same permissions. Without a user that carries the ACCOUNTUSERS edit permission, the success ("OK") path is not reachable.
      * @deprecated
      * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
-     * @returns Documented to return "OK" on success. Observed at runtime returning the plain string "Error" on failure (not a throw).
+     * @returns Documented to return "OK" on success. At runtime it returns the plain string "Error" on failure (not a throw).
      * @example
      * Platform.Load("core", "1.1.5");
      * var acctUser = AccountUser.Init("myAccountUser", 123456789);
@@ -2027,7 +2027,7 @@ declare namespace Portfolio {
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. Runtime-verified: a full payload of DisplayName + CustomerKey + CategoryID + FileName + FileLocation creates the item and returns the string "OK". The docs say failures throw — they do NOT: calling Add with zero arguments returns the plain string "Error" instead of throwing, so always compare the return value against "OK" rather than relying on try/catch. CategoryID must reference an existing media/portfolio folder and FileLocation must be a reachable URL whose file type matches the FileName extension; a mismatched extension makes the call return "Error". A surplus second argument is accepted and ignored. Re-adding the same CustomerKey returns "OK" without creating a duplicate.
+     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. a full payload of DisplayName + CustomerKey + CategoryID + FileName + FileLocation creates the item and returns the string "OK". The docs say failures throw — they do NOT: calling Add with zero arguments returns the plain string "Error" instead of throwing, so always compare the return value against "OK" rather than relying on try/catch. CategoryID must reference an existing media/portfolio folder and FileLocation must be a reachable URL whose file type matches the FileName extension; a mismatched extension makes the call return "Error". A surplus second argument is accepted and ignored. Re-adding the same CustomerKey returns "OK" without creating a duplicate.
      * @param properties - JSON object describing the new portfolio item (DisplayName, CustomerKey, CategoryID, FileName, FileLocation).
      * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
@@ -2050,7 +2050,7 @@ declare namespace Portfolio {
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. Runtime-verified: the return value is array-LIKE but NOT a real JS array — `instanceof Array` is false even though `.length`, `.push` and `.slice` are present and index access works, so avoid `instanceof` checks and iterate with a classic for-loop over `.length`. A filter matching nothing yields a zero-length collection (never null), so test `.length` rather than truthiness. Each item is a SOAP Portfolio object exposing Source, CategoryID, FileName, DisplayName, Description, FileSizeKB, FileURL, ThumbURL, Client, CreatedDate, ModifiedDate, ID, ObjectID, CustomerKey and the matching *Specified booleans. The filter argument is optional in practice — calling Retrieve with no arguments returns every item, and a surplus second argument is ignored — but passing a non-object (e.g. a string) throws "Error Retrieving Portfolios".
+     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. the return value is array-LIKE but NOT a real JS array — `instanceof Array` is false even though `.length`, `.push` and `.slice` are present and index access works, so avoid `instanceof` checks and iterate with a classic for-loop over `.length`. A filter matching nothing yields a zero-length collection (never null), so test `.length` rather than truthiness. Each item is a SOAP Portfolio object exposing Source, CategoryID, FileName, DisplayName, Description, FileSizeKB, FileURL, ThumbURL, Client, CreatedDate, ModifiedDate, ID, ObjectID, CustomerKey and the matching *Specified booleans. The filter argument is optional in practice — calling Retrieve with no arguments returns every item, and a surplus second argument is ignored — but passing a non-object (e.g. a string) throws "Error Retrieving Portfolios".
      * @param filter - Criteria used to search for portfolio objects. PascalCase WSProxy-style filter object: `{Property, SimpleOperator, Value}`.
      * @returns List of portfolio objects matching the filter.
      * @example
@@ -2071,7 +2071,7 @@ interface PortfolioInstance {
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. The official docs state Update returns "OK" on success or throws on failure. No working invocation was found at runtime, even though Init, Add, Retrieve and Remove all work on the same item: every attempt either returned the string "Error" or threw "Error Updating Portfolio", and the stored record never changed. Attempts covered instances created via Init(CustomerKey) and Init(ObjectID), payloads with a single field ({DisplayName} / {Description}), payloads repeating the identifying fields ({CustomerKey, DisplayName, CategoryID}), payloads carrying the ObjectID, the full Add-shaped payload including FileName + FileLocation, an array-wrapped payload, and a no-op update writing the current DisplayName back onto a pre-existing (non-probe) portfolio item. There is no static Portfolio.Update — that identifier is undefined. Treat the method as non-functional: to change a portfolio item, Remove it and Add it again, or use the Content Builder Asset REST endpoints.
+     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. The official docs state Update returns "OK" on success or throws on failure. The method is non-functional: every call either returns the string "Error" or throws "Error Updating Portfolio", and the stored record never changes — for instances created via Init(CustomerKey) and Init(ObjectID), payloads with a single field ({DisplayName} / {Description}), payloads repeating the identifying fields ({CustomerKey, DisplayName, CategoryID}), payloads carrying the ObjectID, the full Add-shaped payload including FileName + FileLocation, an array-wrapped payload, and a no-op update writing the current DisplayName back onto a pre-existing portfolio item. There is no static Portfolio.Update — that identifier is undefined. Treat the method as non-functional: to change a portfolio item, Remove it and Add it again, or use the Content Builder Asset REST endpoints.
      * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @param properties - Attributes to change on the portfolio object.
      * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
@@ -2089,7 +2089,7 @@ interface PortfolioInstance {
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. Runtime-verified: deleting an existing item returns "OK" and a follow-up Retrieve confirms it is gone. The return value is not a reliable success signal, however — calling Remove again on the already-deleted item still returns "OK" instead of "Error" or a throw, so verify deletion with a Retrieve rather than trusting the return value. An instance built from a key that never existed returns the plain string "Error" (it does not throw). A surplus argument is accepted and ignored.
+     * @remarks ⚠️ Differs from the official Salesforce docs. DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST endpoints for new work. deleting an existing item returns "OK" and a follow-up Retrieve confirms it is gone. The return value is not a reliable success signal, however — calling Remove again on the already-deleted item still returns "OK" instead of "Error" or a throw, so verify deletion with a Retrieve rather than trusting the return value. An instance built from a key that never existed returns the plain string "Error" (it does not throw). A surplus argument is accepted and ignored.
      * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -2399,7 +2399,7 @@ declare namespace DeliveryProfile {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a CloudPage: returns a CLR object (`ExactTarget.Integration.WSDL.DeliveryProfile`), not the string "OK". The returned object stringifies to its .NET type name and its properties are NOT readable from SSJS ("Use of Common Language Runtime (CLR) is not allowed"). Treat a non-throwing return as success.
+     * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, returns a CLR object (`ExactTarget.Integration.WSDL.DeliveryProfile`), not the string "OK". The returned object stringifies to its .NET type name and its properties are NOT readable from SSJS ("Use of Common Language Runtime (CLR) is not allowed"). Treat a non-throwing return as success.
      * @param properties - JSON object describing the new delivery profile (Name, CustomerKey, Description, SourceAddressType, ...).
      * @returns A CLR DeliveryProfile object on success (its properties are not readable from SSJS). Treat a non-throwing return as success.
      * @example
@@ -2467,7 +2467,7 @@ declare namespace SenderProfile {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs annotate Add as returning the string "OK". Runtime-verified on a live CloudPage: it returns a CLR object (`typeof` is `clr`; it stringifies to `ExactTarget.Integration.WSDL.SenderProfile`), not "OK". Reading any property off it throws "Use of Common Language Runtime (CLR) is not allowed", so the object is opaque from SSJS — treat any non-throwing return as success. This mirrors DeliveryProfile.Add.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs annotate Add as returning the string "OK". It returns a CLR object (`typeof` is `clr`; it stringifies to `ExactTarget.Integration.WSDL.SenderProfile`), not "OK". Reading any property off it throws "Use of Common Language Runtime (CLR) is not allowed", so the object is opaque from SSJS — treat any non-throwing return as success. This mirrors DeliveryProfile.Add.
      * @param properties - JSON object describing the new sender profile (Name, CustomerKey, Description, FromName, FromAddress, ...).
      * @returns Returns a CLR SenderProfile object (opaque from SSJS) on success; throws on failure. Not the "OK" string the docs imply.
      * @example
@@ -2536,7 +2536,7 @@ declare namespace SendClassification {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified working on a live CloudPage against real, owned SenderProfile (`ssjs-senderprofile`) and DeliveryProfile (`ssjs-deliveryprofile`) keys: `SendClassification.Add()` creates the object and returns a CLR object (`typeof` is `clr`; it stringifies to `ExactTarget.Integration.WSDL.SenderProfile`), NOT the string "OK" the docs imply. The returned CLR object is opaque from SSJS — enumerating its keys with `for..in` yields none — so treat any non-throwing return as success and read the created record back with `SendClassification.Retrieve` (a Retrieve immediately after Add returned the new record). The `SenderProfileKey` and `DeliveryProfileKey` in `properties` must reference existing profiles by external key; an unresolvable profile key makes the Add fail. This mirrors DeliveryProfile.Add and SenderProfile.Add.
+     * @remarks ⚠️ Differs from the official Salesforce docs. `SendClassification.Add()` creates the object and returns a CLR object (`typeof` is `clr`; it stringifies to `ExactTarget.Integration.WSDL.SenderProfile`), NOT the string "OK" the docs imply. The returned CLR object is opaque from SSJS — enumerating its keys with `for..in` yields none — so treat any non-throwing return as success and read the created record back with `SendClassification.Retrieve` (a Retrieve after Add returns the new record). The `SenderProfileKey` and `DeliveryProfileKey` in `properties` must reference existing profiles by external key; an unresolvable profile key makes the Add fail. This mirrors DeliveryProfile.Add and SenderProfile.Add.
      * @param properties - JSON object describing the new send classification (CustomerKey, Name, Description, SenderProfileKey, DeliveryProfileKey).
      * @returns Returns a CLR SenderProfile object (opaque from SSJS) on success; throws on failure. Not the "OK" string the docs imply.
      * @example
@@ -2618,13 +2618,13 @@ declare namespace FilterDefinition {
      */
     function Init(key: string): FilterDefinitionInstance;
     /**
-     * Creates a new filter definition from the supplied properties. No working Core `Add` invocation was found at runtime against an owned source DE — the documented simple-filter payload returns the string `"Error"` and does not create a row. A `DataFilter` property (instead of `Filter`) throws the raw string `"Error adding FilterDefinition"`. Prefer creating definitions via mcdev/`dataFilter` or SOAP when Core Add returns `"Error"`.
+     * Creates a new filter definition from the supplied properties. The documented simple-filter payload returns the string `"Error"` and does not create a row, so Core `Add` has no working invocation. A `DataFilter` property (instead of `Filter`) throws the raw string `"Error adding FilterDefinition"`. Prefer creating definitions via mcdev/`dataFilter` or SOAP when Core Add returns `"Error"`.
      *
      * [ssjs.guide reference](https://ssjs.guide/core-library/filterdefinition/)
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. No working invocation of `FilterDefinition.Add` was found on the QA CloudPage: with the owned source DE `SSJSGUIDE_TYPES` present, the documented simple-filter payload (`Filter: {Property, SimpleOperator, Value}` + `DataSource: { Type: "DataExtension", CustomerKey }`) returns the plain string `"Error"` (`typeof === "string"`) and does not create a retrievable definition (Core `Retrieve` and WSProxy `retrieve` both stay empty for the probe key). The same `"Error"` return was observed under Core `"1"`, `"1.1.1"`, and `"1.1.5"`, and with CategoryID / alternate DataSource shapes. A LeftOperand/LogicalOperator/RightOperand complex `Filter` also returns `"Error"` (does not throw). Using a `DataFilter` property instead of `Filter` throws the raw string `"Error adding FilterDefinition"` (`typeof e === "string"`). Observed WSProxy facts (reported, not interpreted as a cause): `createItem("FilterDefinition", …)` failed and `deleteItem` reported a permission error. Filters can still be created outside Core (e.g. mcdev `dataFilter` deploy). The official docs imply Add returns `"OK"` or throws; the success (`"OK"`) path could not be reproduced. Note: `Add` is a STATIC method on `FilterDefinition`; the instance returned by `Init()` exposes only `Update` and `Remove`.
+     * @remarks ⚠️ Differs from the official Salesforce docs. `FilterDefinition.Add` has no working invocation: the documented simple-filter payload (`Filter: {Property, SimpleOperator, Value}` + `DataSource: { Type: "DataExtension", CustomerKey }`) returns the plain string `"Error"` (`typeof === "string"`) and does not create a retrievable definition (Core `Retrieve` and WSProxy `retrieve` both stay empty for the key used). The same `"Error"` return occurs under Core `"1"`, `"1.1.1"`, and `"1.1.5"`, and with CategoryID / alternate DataSource shapes. A LeftOperand/LogicalOperator/RightOperand complex `Filter` also returns `"Error"` (does not throw). Using a `DataFilter` property instead of `Filter` throws the raw string `"Error adding FilterDefinition"` (`typeof e === "string"`). WSProxy facts: `createItem("FilterDefinition", …)` fails and `deleteItem` reports a permission error. Filters can still be created outside Core (e.g. via mcdev `dataFilter` support or SOAP). The official docs imply Add returns `"OK"` or throws; the success (`"OK"`) path does not occur. Note: `Add` is a STATIC method on `FilterDefinition`; the instance returned by `Init()` exposes only `Update` and `Remove`.
      * @deprecated
      * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @param properties - JSON object describing the new filter definition (Name, CustomerKey, a simple `Filter: {Property, SimpleOperator, Value}`, and a `DataSource: {Type, CustomerKey}`).
@@ -2663,7 +2663,7 @@ interface FilterDefinitionInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Read path verified: `FilterDefinition.Init("ssjs-datafilter-test")` returns an instance that exposes `Update` (`typeof === "function"`). No working invocation of `Update` was found: in our runtime tests the write method does not work. Runtime-tested against the OWNED, existing filter `ssjs-datafilter-test` with three payload shapes — so the failure is not a single malformed/incomplete payload; the method simply did not succeed with any shape tried: (1) a FULL Add-style payload (Name + CustomerKey + Description + `Filter: {Property, SimpleOperator, Value}` + `DataSource: {Type, CustomerKey}`) THREW the raw string "Error updating FilterDefinition" (`typeof === "string"`); (2) the same payload WITHOUT `DataSource` also THREW the raw string "Error updating FilterDefinition"; (3) a metadata-only payload (Name + CustomerKey + Description, no Filter/DataSource) returned the string "Error" (`typeof === "string"`, no throw). After each attempt a follow-up `FilterDefinition.Retrieve` confirmed Description was NOT changed (stayed empty) and the ObjectID was unchanged. Observed WSProxy fact (reported, not interpreted as a cause): the equivalent `updateItem("FilterDefinition", { CustomerKey: "ssjs-datafilter-test", Description: "..." })` returned `Status="Error"`. Note the SOAP describe (`mcdev soap FilterDefinition`) reports Name/Description/CustomerKey/DataFilter as `IsUpdatable: true`, i.e. the SOAP schema marks these fields editable, yet no working `Update` invocation was reproduced at runtime. The official docs imply Update returns "OK" or throws; the success ("OK") path could not be reproduced in our tests. On failure the return form varies: a payload containing `Filter` throws the raw string "Error updating FilterDefinition", while a metadata-only payload returns the string "Error".
+     * @remarks ⚠️ Differs from the official Salesforce docs. `FilterDefinition.Init("ssjs-datafilter-test")` returns an instance that exposes `Update` (`typeof === "function"`). The write method is non-functional: no `Update` invocation works. The method fails with all three payload shapes tried, so the failure is not a single malformed/incomplete payload: (1) a FULL Add-style payload (Name + CustomerKey + Description + `Filter: {Property, SimpleOperator, Value}` + `DataSource: {Type, CustomerKey}`) THROWS the raw string "Error updating FilterDefinition" (`typeof === "string"`); (2) the same payload WITHOUT `DataSource` also THROWS the raw string "Error updating FilterDefinition"; (3) a metadata-only payload (Name + CustomerKey + Description, no Filter/DataSource) returns the string "Error" (`typeof === "string"`, no throw). After each attempt a follow-up `FilterDefinition.Retrieve` confirms Description was NOT changed (stayed empty) and the ObjectID was unchanged. WSProxy fact: the equivalent `updateItem("FilterDefinition", { CustomerKey: "ssjs-datafilter-test", Description: "..." })` returns `Status="Error"`. Note the SOAP describe (`mcdev soap FilterDefinition`) reports Name/Description/CustomerKey/DataFilter as `IsUpdatable: true`, i.e. the SOAP schema marks these fields editable, yet no working `Update` invocation exists. The official docs imply Update returns "OK" or throws; the success ("OK") path does not occur. On failure the return form varies: a payload containing `Filter` throws the raw string "Error updating FilterDefinition", while a metadata-only payload returns the string "Error".
      * @deprecated
      * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @param properties - Attributes to change on the filter definition.
@@ -2688,7 +2688,7 @@ interface FilterDefinitionInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Read path verified: `FilterDefinition.Init("ssjs-datafilter-test")` returns an instance that exposes `Remove` (`typeof === "function"`). No working invocation of `Remove` was found: in our runtime tests the write method does not work. Runtime-tested against the OWNED, existing filter `ssjs-datafilter-test`: `<instance>.Remove()` returns the string "Error" (`typeof === "string"`) and does NOT throw, and a follow-up `FilterDefinition.Retrieve` confirms the object was NOT deleted (still returned, same ObjectID). The object was then restored from mcdev source to its original `Pk Equals "test"` condition. Observed WSProxy fact (reported, not interpreted as a cause): the equivalent `deleteItem("FilterDefinition", …)` returned `Status="Error"`. The success ("OK") path could not be reproduced in our tests. Consistent with the sibling write methods, failure surfaces as the string "Error" rather than the docs' "OK"/throw.
+     * @remarks ⚠️ Differs from the official Salesforce docs. `FilterDefinition.Init("ssjs-datafilter-test")` returns an instance that exposes `Remove` (`typeof === "function"`). The write method is non-functional: no `Remove` invocation works. Against an existing filter, `<instance>.Remove()` returns the string "Error" (`typeof === "string"`) and does NOT throw, and a follow-up `FilterDefinition.Retrieve` confirms the object was NOT deleted (still returned, same ObjectID). WSProxy fact: the equivalent `deleteItem("FilterDefinition", …)` returns `Status="Error"`. The success ("OK") path does not occur. Consistent with the sibling write methods, failure surfaces as the string "Error" rather than the docs' "OK"/throw.
      * @deprecated
      * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @returns Returns "OK" on success. On failure the Core library returns the string "Error" (it does not throw).
@@ -2721,7 +2721,7 @@ declare namespace QueryDefinition {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a live CloudPage: a valid payload returns the string "OK". The official docs say failures throw — they do not: invalid payloads (including the docs' Overwrite sample that SELECTs from the same Data Extension used as Target) return the plain string "Error" instead of throwing. Overwrite requires the target DE to be absent from the QueryText FROM clause (use a different source DE, or use TargetUpdateType "Update" when reading and writing the same DE — Update also requires the target DE to have at least one non-primary-key field). Compare the return value against "OK"; do not rely on try/catch alone.
+     * @remarks ⚠️ Differs from the official Salesforce docs. A valid payload returns the string "OK". The official docs say failures throw — they do not: invalid payloads (including the docs' Overwrite sample that SELECTs from the same Data Extension used as Target) return the plain string "Error" instead of throwing. Overwrite requires the target DE to be absent from the QueryText FROM clause (use a different source DE, or use TargetUpdateType "Update" when reading and writing the same DE — Update also requires the target DE to have at least one non-primary-key field). Compare the return value against "OK"; do not rely on try/catch alone.
      * @param properties - JSON object describing the new query definition (Name, CustomerKey, optional CategoryID, TargetUpdateType, TargetType, Target, QueryText).
      * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
@@ -2765,7 +2765,7 @@ interface QueryDefinitionInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: updating an existing definition returns "OK" and the change is visible via Retrieve. The official docs say failures throw — they do not: Update on a key that does not resolve returns the plain string "Error" instead of throwing. Always compare the return value against "OK".
+     * @remarks ⚠️ Differs from the official Salesforce docs. Updating an existing definition returns "OK" and the change is visible via Retrieve. The official docs say failures throw — they do not: Update on a key that does not resolve returns the plain string "Error" instead of throwing. Always compare the return value against "OK".
      * @param properties - Attributes to change on the query definition.
      * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
@@ -2784,7 +2784,7 @@ interface QueryDefinitionInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: deleting an existing definition returns "OK" and a follow-up Retrieve confirms it is gone. The official docs say failures throw — they do not: Remove on a key that never existed returns the plain string "Error" instead of throwing. Always compare the return value against "OK" and confirm with Retrieve.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Deleting an existing definition returns "OK" and a follow-up Retrieve confirms it is gone. The official docs say failures throw — they do not: Remove on a key that never existed returns the plain string "Error" instead of throwing. Always compare the return value against "OK" and confirm with Retrieve.
      * @returns Returns "OK" on success; returns the string "Error" (not a throw) on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -2799,7 +2799,7 @@ interface QueryDefinitionInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs annotate Perform as `@returns {Enum("OK")}` and say failures throw. Runtime-verified on a live CloudPage: Perform("start") returns the string "QueryDefinition perform called successfully" (not "OK") when the run is accepted. It queues the query asynchronously and returns immediately — the string only confirms acceptance, not completion. On an invalid / non-existent key it does NOT throw: it returns a failure string of the form "Exception occurred during [Schedule::Start] ErrorID = <number>". Detect failure by inspecting the returned string, not by string-matching "OK" and not by relying on try/catch.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The official docs annotate Perform as `@returns {Enum("OK")}` and say failures throw. Perform("start") returns the string "QueryDefinition perform called successfully" (not "OK") when the run is accepted. It queues the query asynchronously and returns immediately — the string only confirms acceptance, not completion. On an invalid / non-existent key it does NOT throw: it returns a failure string of the form "Exception occurred during [Schedule::Start] ErrorID = <number>". Detect failure by inspecting the returned string, not by string-matching "OK" and not by relying on try/catch.
      * @param action - The action to perform. Use `"start"` to execute the query.
      * @returns Returns the string "QueryDefinition perform called successfully" when the run is accepted. On failure returns an Exception string (does not throw).
      * @example
@@ -2931,7 +2931,7 @@ interface SubscriberInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Attributes must be a plain object keyed by attribute name ({ "First Name": "Jane" }); the array-of-pairs form shown in the official example ([ { Name: ..., Value: ... } ]) also returns "OK" but writes nothing at all — a read-back through Attributes.Retrieve() shows the value unchanged, so the failure is silent. Runtime-proven: <SubscriberInstance>.Upsert({ EmailAddress: ... }) on a new key returned typeof "string" value "OK" and the subscriber was read back afterwards. Use a real deliverable EmailAddress; a spam-blocked domain returns "Error".
+     * @remarks ⚠️ Differs from the official Salesforce docs. Attributes must be a plain object keyed by attribute name ({ "First Name": "Jane" }); the array-of-pairs form shown in the official example ([ { Name: ..., Value: ... } ]) also returns "OK" but writes nothing at all — a subsequent Attributes.Retrieve() shows the value unchanged, so the failure is silent. <SubscriberInstance>.Upsert({ EmailAddress: ... }) on a new key returns typeof "string" value "OK", and the subscriber can be read back afterwards. Use a real deliverable EmailAddress; a spam-blocked domain returns "Error".
      * @param properties - JSON object describing the subscriber (EmailAddress, SubscriberKey, Attributes, ...).
      * @returns Returns "OK" on success or throws on failure.
      * @example
@@ -2980,7 +2980,7 @@ interface SubscriberInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-proven: <SubscriberInstance>.Remove() returned typeof "string" value "OK", and a subsequent Subscriber.Retrieve by SubscriberKey returned no rows, confirming the subscriber was deleted. Contrary to the official docs, a failure does not throw: removing a key that does not exist returns the plain string "Error".
+     * @remarks ⚠️ Differs from the official Salesforce docs. <SubscriberInstance>.Remove() returns typeof "string" value "OK", and a subsequent Subscriber.Retrieve by SubscriberKey returns no rows, confirming the subscriber was deleted. Contrary to the official docs, a failure does not throw: removing a key that does not exist returns the plain string "Error".
      * @returns Returns the string "OK" on success. Returns the string "Error" without throwing when the delete is rejected, for example when no subscriber matches the initialized key.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3107,7 +3107,7 @@ interface EmailInstance {
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): `Task.ValidationStatus` is a STRING (e.g. "Pass" / "Fail"), not the boolean the official docs describe. `Task.ValidationMessages` is `null` on Pass or an array of `{Location, Message, Description}` objects on Fail — not the single string the docs describe. Initialize with the CustomerKey string; `Email.Init(numericID).Validate()` throws "Error Validating Email".
+     * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, `Task.ValidationStatus` is a STRING (e.g. "Pass" / "Fail"), not the boolean the official docs describe. `Task.ValidationMessages` is `null` on Pass or an array of `{Location, Message, Description}` objects on Fail — not the single string the docs describe. Initialize with the CustomerKey string; `Email.Init(numericID).Validate()` throws "Error Validating Email".
      * @returns Validation result with `Task.ValidationStatus` (string, e.g. "Pass" / "Fail") and `Task.ValidationMessages` (`null` on Pass, or an array of `{Location, Message, Description}` on Fail).
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3216,7 +3216,7 @@ interface SendInstance {
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): `Remove()` returns "OK" and sets Status to "Canceled", but the send row remains Retrievable — it is not hard-deleted. A missing ID returns "Error" (does not throw).
+     * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, `Remove()` returns "OK" and sets Status to "Canceled", but the send row remains Retrievable — it is not hard-deleted. A missing ID returns "Error" (does not throw).
      * @returns Returns "OK" on success (Status becomes "Canceled"; row stays Retrievable). Returns "Error" when the ID is missing — does not throw.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3232,7 +3232,7 @@ interface SendInstance {
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): `CancelSend()` returns the literal string "status" on success, not the "OK" the official docs describe. Do not compare its return value against "OK". Failure returns an error string (for example "not found" / "cannot be cancelled") and does not throw.
+     * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, `CancelSend()` returns the literal string "status" on success, not the "OK" the official docs describe. Do not compare its return value against "OK". Failure returns an error string (for example "not found" / "cannot be cancelled") and does not throw.
      * @returns Returns the literal string "status" on success (not "OK"). On failure returns an error string — does not throw.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3285,7 +3285,7 @@ declare namespace Send.Definition {
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-proven working. A successful call returns a CLR object, not the string `"OK"` the docs imply: `typeof` is `"clr"` and `String(result)` is `"ExactTarget.Integration.WSDL.EmailSendDefinition"`. The created send definition is immediately retrievable via `Send.Definition.Retrieve`. All four documented arguments are required and `listIds` must be an array of real list IDs — passing a list ID that does not exist makes the call throw the string `"Error adding EmailSendDefinition."` and nothing is created. The thrown value is a plain string (`typeof ex === "string"`), so `ex.message` is undefined; catch it as a string.
+     * @remarks ⚠️ Differs from the official Salesforce docs. A successful call returns a CLR object, not the string `"OK"` the docs imply: `typeof` is `"clr"` and `String(result)` is `"ExactTarget.Integration.WSDL.EmailSendDefinition"`. The created send definition is immediately retrievable via `Send.Definition.Retrieve`. All four documented arguments are required and `listIds` must be an array of real list IDs — passing a list ID that does not exist makes the call throw the string `"Error adding EmailSendDefinition."` and nothing is created. The thrown value is a plain string (`typeof ex === "string"`), so `ex.message` is undefined; catch it as a string.
      * @param esdParams - Object with CustomerKey, Name, EmailSubject for the new send definition.
      * @param sendClassificationKey - CustomerKey of the related send classification.
      * @param emailKey - CustomerKey of the email message to use.
@@ -3305,7 +3305,7 @@ declare namespace Send.Definition {
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-proven working, but only with **four** arguments — the documented fifth `publicationListKey` argument breaks the call. `AddWithDE(esdParams, sendClassificationKey, emailKey, sendableDataExtensionKey)` succeeds and the send definition is immediately retrievable via `Send.Definition.Retrieve`. Supplying a fifth argument throws the string `"Error adding EmailSendDefinition."` and creates nothing — this was observed with a publication list name, a numeric list ID, and the Data Extension key repeated. A successful call returns a CLR object, not the string `"OK"` the docs imply: `typeof` is `"clr"` and `String(result)` is `"ExactTarget.Integration.WSDL.EmailSendDefinition"`. The thrown failure value is a plain string (`typeof ex === "string"`), so `ex.message` is undefined.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Works only with **four** arguments — the documented fifth `publicationListKey` argument breaks the call. `AddWithDE(esdParams, sendClassificationKey, emailKey, sendableDataExtensionKey)` succeeds and the send definition is immediately retrievable via `Send.Definition.Retrieve`. Supplying a fifth argument throws the string `"Error adding EmailSendDefinition."` and creates nothing — this occurs with a publication list name, a numeric list ID, and the Data Extension key repeated. A successful call returns a CLR object, not the string `"OK"` the docs imply: `typeof` is `"clr"` and `String(result)` is `"ExactTarget.Integration.WSDL.EmailSendDefinition"`. The thrown failure value is a plain string (`typeof ex === "string"`), so `ex.message` is undefined.
      * @param esdParams - Object with CustomerKey, Name, EmailSubject for the new send definition.
      * @param sendClassificationKey - CustomerKey of the related send classification.
      * @param emailKey - CustomerKey of the email message to use.
@@ -3327,7 +3327,7 @@ declare namespace Send.Definition {
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime behaviour differs sharply from the docs: the call **always throws** the string `"Error adding EmailSendDefinition."`, yet the send definition **is created anyway** and is immediately retrievable via `Send.Definition.Retrieve` on the same page. This was reproduced with a valid filter definition key plus a real list ID, with the list ID passed as a number and as a single-element array, with a publication list name, with a Data Extension key, and with the fifth argument omitted — every shape threw, and the shapes using a valid list ID still created the object. Because the throw is indistinguishable from a genuine failure, the only reliable success check is to call `Send.Definition.Retrieve` for the new key after catching. No invocation shape was found that returns normally.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime behaviour differs sharply from the docs: the call **always throws** the string `"Error adding EmailSendDefinition."`, yet the send definition **is created anyway** and is immediately retrievable via `Send.Definition.Retrieve` on the same page. This also occurs with a valid filter definition key plus a real list ID, with the list ID passed as a number and as a single-element array, with a publication list name, with a Data Extension key, and with the fifth argument omitted — every shape threw, and the shapes using a valid list ID still created the object. Because the throw is indistinguishable from a genuine failure, the only reliable success check is to call `Send.Definition.Retrieve` for the new key after catching. No invocation shape returns normally.
      * @param esdParams - Object with CustomerKey, Name, EmailSubject for the new send definition.
      * @param sendClassificationKey - CustomerKey of the related send classification.
      * @param emailKey - CustomerKey of the email message to use.
@@ -3373,7 +3373,7 @@ interface SendDefinitionInstance {
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-proven working for scalar properties only. Updating simple values such as `Description` or `TestEmailAddr` returns the string `"OK"` and the change persists (confirmed by re-reading the record). Updating nested/complex properties fails: `Update({ Email: { ID: <id> } })` and `Update({ SendDefinitionList: [...] })` both throw `"Error Updating ESD."`. The equivalent WSProxy `updateItem` calls for those same nested properties return `Status: "OK"` with StatusMessage `"EmailSendDefinition updated"`, so the limitation is specific to this Core method rather than to the operation itself.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Works for scalar properties only. Updating simple values such as `Description` or `TestEmailAddr` returns the string `"OK"` and the change persists (confirmed by re-reading the record). Updating nested/complex properties fails: `Update({ Email: { ID: <id> } })` and `Update({ SendDefinitionList: [...] })` both throw `"Error Updating ESD."`. The equivalent WSProxy `updateItem` calls for those same nested properties return `Status: "OK"` with StatusMessage `"EmailSendDefinition updated"`, so the limitation is specific to this Core method rather than to the operation itself.
      * @param properties - Properties to update. Only scalar properties work; nested objects such as `Email` or `SendDefinitionList` throw.
      * @returns Returns "OK" when scalar properties are updated. Throws `"Error Updating ESD."` when the payload contains nested properties such as `Email` or `SendDefinitionList`.
      * @example
@@ -3405,7 +3405,7 @@ interface SendDefinitionInstance {
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-proven to reach the send pipeline: the call returns a multi-line **error string** rather than throwing, so a caller that only wraps it in `try/catch` will treat a rejected send as success. Observed returns include `"An EmailSendDefinition must have an audience to be sent."` when no audience is attached, and `"The following email validation errors need addressed before the email can be sent."` followed by the offending tokens once an audience is present. Always compare the returned string to `"OK"` instead of relying on `try/catch`. A WSProxy `performItem("EmailSendDefinition", …, "start")` control returned the identical validation text, confirming the Core method dispatches the same operation. A fully clean `"OK"` return was not observed here because the test email itself never passed content validation.
+     * @remarks ⚠️ Differs from the official Salesforce docs. The call reaches the send pipeline: it returns a multi-line **error string** rather than throwing, so a caller that only wraps it in `try/catch` will treat a rejected send as success. Returns include `"An EmailSendDefinition must have an audience to be sent."` when no audience is attached, and `"The following email validation errors need addressed before the email can be sent."` followed by the offending tokens once an audience is present. Always compare the returned string to `"OK"` instead of relying on `try/catch`. A WSProxy `performItem("EmailSendDefinition", …, "start")` control returns the identical validation text, confirming the Core method dispatches the same operation. A fully clean `"OK"` return does not occur here because the test email itself never passes content validation.
      * @returns Returns "OK" when the send is accepted. Returns a descriptive error string (it does not throw) when the send definition has no audience or the email fails content validation.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3425,7 +3425,7 @@ interface SendDefinitionInstance {
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Undocumented instance method that exists at runtime on the object returned by `Send.Definition.Init(key)`. No working invocation was found. Calling it with no arguments returns `"An EmailSendDefinition cannot be used in a test send to a list or group without a test email address."` even after a test address was stored on the record — set both through this object's own `Update({ TestEmailAddr: … })` (which returned `"OK"`) and through a WSProxy `updateItem("EmailSendDefinition", …)` control (which returned `Status: "OK"`, StatusMessage `"EmailSendDefinition updated"`). Passing an address directly as an argument bypasses that message but then returns the same email content validation error string as `Send()`. Like `Send()`, it returns error text rather than throwing.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Undocumented instance method that exists at runtime on the object returned by `Send.Definition.Init(key)`. The method has no working invocation. Calling it with no arguments returns `"An EmailSendDefinition cannot be used in a test send to a list or group without a test email address."` even after a test address was stored on the record — set both through this object's own `Update({ TestEmailAddr: … })` (which returned `"OK"`) and through a WSProxy `updateItem("EmailSendDefinition", …)` control (which returned `Status: "OK"`, StatusMessage `"EmailSendDefinition updated"`). Passing an address directly as an argument bypasses that message but then returns the same email content validation error string as `Send()`. Like `Send()`, it returns error text rather than throwing.
      * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @param emailAddress - Address to receive the test send.
      * @returns Expected to return "OK". In testing it only ever returned error text describing a missing test email address or failed email content validation.
@@ -3458,7 +3458,7 @@ declare namespace TriggeredSend {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Exists and resolves (`typeof TriggeredSend.Add === "function"`) but no working invocation was found. Every invocation of `TriggeredSend.Add` throws the string `Error adding TSD.`; `TriggeredSend.LastMessage` is then always `An error occurred when attempting to evaluate a SetObjectProperty function call.  See inner exception for details.` for every payload shape (including flat-only payloads, where `LastErrorCode` is left `undefined`). Proven with a fully valid, publishable definition on the QA BU (Email.ID 769268, List.ID 72164, SendClassification "Default Transactional" / ObjectID 2147aac4-35f1-ec11-b846-48df37d1dcc7, CategoryID 734919). Payload shapes swept without a single success: nested SOAP shape (`Email: {ID}`, `List: {ID}`, `SendClassification: {CustomerKey|ObjectID}`), the documented flat shape (`EmailID`, `ListID`, `SendClassificationID`), dotted keys (`"Email.ID"`), flat-scalar-only payloads, typed Core Library objects (`Email.Init()`, `List.Init()`, `SendClassification.Init()`), and the CLR object returned by `TriggeredSend.Retrieve` with its `CustomerKey` mutated. String and two-argument forms also throw the string `Error adding TSD.` (not the `Invalid cast from 'Char' to 'Double'.` cast seen on `Update("x")`). Decisive control: in the same request, `Script.Util.WSProxy().createItem("TriggeredSendDefinition", payload)` with the identical payload returns `Status: "OK"`, `ErrorCode: 0`, `StatusMessage: "TriggeredSendDefinition created"`, and the resulting definition then publishes, starts, sends, pauses and updates normally. Use WSProxy `createItem` instead; no working invocation of `TriggeredSend.Add` was found.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Exists and resolves (`typeof TriggeredSend.Add === "function"`) but it has no working invocation. Every invocation of `TriggeredSend.Add` throws the string `Error adding TSD.`; `TriggeredSend.LastMessage` is then always `An error occurred when attempting to evaluate a SetObjectProperty function call.  See inner exception for details.` for every payload shape (including flat-only payloads, where `LastErrorCode` is left `undefined`). The behaviour holds with a fully valid, publishable definition (a real Email, List, SendClassification and Category). No payload shape succeeded — including the nested SOAP shape (`Email: {ID}`, `List: {ID}`, `SendClassification: {CustomerKey|ObjectID}`), the documented flat shape (`EmailID`, `ListID`, `SendClassificationID`), dotted keys (`"Email.ID"`), flat-scalar-only payloads, typed Core Library objects (`Email.Init()`, `List.Init()`, `SendClassification.Init()`), and the CLR object returned by `TriggeredSend.Retrieve` with its `CustomerKey` mutated. String and two-argument forms also throw the string `Error adding TSD.` (not the `Invalid cast from 'Char' to 'Double'.` cast seen on `Update("x")`). Decisive control: in the same request, `Script.Util.WSProxy().createItem("TriggeredSendDefinition", payload)` with the identical payload returns `Status: "OK"`, `ErrorCode: 0`, `StatusMessage: "TriggeredSendDefinition created"`, and the resulting definition then publishes, starts, sends, pauses and updates normally. Use WSProxy `createItem` instead; `TriggeredSend.Add` has no working invocation.
      * @deprecated
      * @remarks ⚠️ Exists at runtime but has no known working invocation (every tested call fails).
      * @param properties - JSON object describing the new triggered send definition (Name, CustomerKey, FromName, FromAddress, EmailID, SendClassificationID, ...).
@@ -3499,7 +3499,7 @@ interface TriggeredSendInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Confirmed at runtime: returns the string `"OK"` and `LastMessage` `TriggeredSendDefinition updated` when the definition is NOT Active. Undocumented state requirement: calling it on an Active definition returns the string `"Error"` with `LastMessage` `An active TriggeredSendDefinition can not be updated or have it's content refreshed` and `LastErrorCode` 17003 — call `Pause()` first. Also undocumented: the `properties` argument is effectively optional — `Update()` with no arguments returns `"OK"`. Passing a non-object (e.g. a string) throws `Error Updating TSD.` with `LastMessage` `Invalid cast from 'Char' to 'Double'.".
+     * @remarks ⚠️ Differs from the official Salesforce docs. Returns the string `"OK"` and `LastMessage` `TriggeredSendDefinition updated` when the definition is NOT Active. Undocumented state requirement: calling it on an Active definition returns the string `"Error"` with `LastMessage` `An active TriggeredSendDefinition can not be updated or have it's content refreshed` and `LastErrorCode` 17003 — call `Pause()` first. Also undocumented: the `properties` argument is effectively optional — `Update()` with no arguments returns `"OK"`. Passing a non-object (e.g. a string) throws `Error Updating TSD.` with `LastMessage` `Invalid cast from 'Char' to 'Double'.".
      * @param properties - Attributes to change on the triggered send definition. Optional at runtime — omitting it returns "OK" without changes.
      * @returns Returns "OK" on success, or "Error" when the definition is Active (LastErrorCode 17003).
      * @example
@@ -3515,7 +3515,7 @@ interface TriggeredSendInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Confirmed at runtime: returns the string `"OK"` with `LastMessage` `TriggeredSendDefinition updated`, and the definition moves to `TriggeredSendStatus: "Active"` (verified by a follow-up WSProxy retrieve). Undocumented: extra arguments are ignored rather than rejected — `Start("x")` also returns `"OK"`.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Returns the string `"OK"` with `LastMessage` `TriggeredSendDefinition updated`, and the definition moves to `TriggeredSendStatus: "Active"` (a follow-up WSProxy retrieve reports the new status). Undocumented: extra arguments are ignored rather than rejected — `Start("x")` also returns `"OK"`.
      * @returns Returns "OK" on success or throws on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3530,7 +3530,7 @@ interface TriggeredSendInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Confirmed at runtime: returns the string `"OK"` with `LastMessage` `TriggeredSendDefinition updated`, and the definition moves to `TriggeredSendStatus: "Inactive"` (verified by a follow-up WSProxy retrieve) — note the resulting status is `Inactive`, not `Paused`. Undocumented: extra arguments are ignored rather than rejected — `Pause("x")` also returns `"OK"`.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Returns the string `"OK"` with `LastMessage` `TriggeredSendDefinition updated`, and the definition moves to `TriggeredSendStatus: "Inactive"` (a follow-up WSProxy retrieve reports the new status) — note the resulting status is `Inactive`, not `Paused`. Undocumented: extra arguments are ignored rather than rejected — `Pause("x")` also returns `"OK"`.
      * @returns Returns "OK" on success or throws on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3545,7 +3545,7 @@ interface TriggeredSendInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Confirmed at runtime: returns the string `"OK"` with `LastMessage` `TriggeredSendDefinition updated`. Undocumented behaviour: `Publish()` does NOT by itself move the definition to Active — a follow-up WSProxy retrieve showed the status still `New` after `Publish()` returned `"OK"`; the subsequent `Start()` is what set `TriggeredSendStatus: "Active"`. Extra arguments are ignored rather than rejected — `Publish("x")` also returns `"OK"`.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Returns the string `"OK"` with `LastMessage` `TriggeredSendDefinition updated`. Undocumented behaviour: `Publish()` does NOT by itself move the definition to Active — a follow-up WSProxy retrieve showed the status still `New` after `Publish()` returned `"OK"`; the subsequent `Start()` is what set `TriggeredSendStatus: "Active"`. Extra arguments are ignored rather than rejected — `Publish("x")` also returns `"OK"`.
      * @returns Returns "OK" on success or throws on failure.
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3560,7 +3560,7 @@ interface TriggeredSendInstance {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Confirmed at runtime with real sends: returns the string `"OK"` with `LastMessage` `Created TriggeredSend`. Several undocumented details. (1) A third argument is accepted — `Send(emailAddress, sendTimeAttributes, subscriberKey)` returns `"OK"`; surplus arguments beyond that are ignored (a 4-argument call also returns `"OK"`). (2) The definition does not have to be Active: a `Send` against an `Inactive` definition still returned `"OK"` / `Created TriggeredSend`. (3) An invalid address does not throw — it returns the string `"Error"` with `LastMessage` `Unable to queue Triggered Send request.  There are no valid subscribers.`. (4) Calling `Send()` with no arguments throws the usage string `Usage: Send(EmailAddress [, sendTimeAttributes])`. (5) `LastRequestID` was `0` after a successful send.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Returns the string `"OK"` with `LastMessage` `Created TriggeredSend`. Several undocumented details. (1) A third argument is accepted — `Send(emailAddress, sendTimeAttributes, subscriberKey)` returns `"OK"`; surplus arguments beyond that are ignored (a 4-argument call also returns `"OK"`). (2) The definition does not have to be Active: a `Send` against an `Inactive` definition still returned `"OK"` / `Created TriggeredSend`. (3) An invalid address does not throw — it returns the string `"Error"` with `LastMessage` `Unable to queue Triggered Send request.  There are no valid subscribers.`. (4) Calling `Send()` with no arguments throws the usage string `Usage: Send(EmailAddress [, sendTimeAttributes])`. (5) `LastRequestID` was `0` after a successful send.
      * @param emailAddress - Email address to send to. SubscriberKey is **not** supported.
      * @param sendTimeAttributes - Optional object with dynamic attributes to include in the send.
      * @param subscriberKey - Undocumented third argument accepted at runtime — subscriber key to associate with the send.
@@ -3640,7 +3640,7 @@ declare namespace DateTime {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the `DateTime.SystemDateToLocalDate` bare-name form behaves IDENTICALLY to `Platform.Function.SystemDateToLocalDate` (same value, same type). The official docs type the return as a string, but the runtime returns a genuine Date object: typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an ISO-like string when written or stringified. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load("core", ...) has run — call the load first.
+     * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, the `DateTime.SystemDateToLocalDate` bare-name form behaves IDENTICALLY to `Platform.Function.SystemDateToLocalDate` (same value, same type). The official docs type the return as a string, but the runtime returns a genuine Date object: typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an ISO-like string when written or stringified. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load("core", ...) has run — call the load first.
      * @param dateString - Date-time value in system time (CST); string or Date
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3655,7 +3655,7 @@ declare namespace DateTime {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): the `DateTime.LocalDateToSystemDate` bare-name form behaves IDENTICALLY to `Platform.Function.LocalDateToSystemDate` (same value, same type). The official docs type the return as a string, but the runtime returns a genuine Date object: typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an ISO-like string when written or stringified. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load("core", ...) has run — call the load first.
+     * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, the `DateTime.LocalDateToSystemDate` bare-name form behaves IDENTICALLY to `Platform.Function.LocalDateToSystemDate` (same value, same type). The official docs type the return as a string, but the runtime returns a genuine Date object: typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an ISO-like string when written or stringified. SCOPE RULE: bare-name Core globals exist ONLY after Platform.Load("core", ...) has run — call the load first.
      * @param dateString - Date-time value in local account/user time; string or Date
      * @example
      * Platform.Load("core", "1.1.5");
@@ -3690,7 +3690,7 @@ declare namespace Attribute {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified on a published CloudPage: after Platform.Load("Core", ...) the Attribute object exists and Attribute.GetValue(name) executes and returns a string — it is NOT unavailable in CloudPages. When no subscriber/attribute is in context (e.g. a plain CloudPage GET) it returns an empty string rather than throwing. In email/triggered-send/personalized contexts it returns the actual attribute value.
+     * @remarks ⚠️ Differs from the official Salesforce docs. On a published CloudPage, after Platform.Load("Core", ...) the Attribute object exists and Attribute.GetValue(name) executes and returns a string — it is NOT unavailable in CloudPages. When no subscriber/attribute is in context (e.g. a plain CloudPage) it returns an empty string rather than throwing. In email/triggered-send/personalized contexts it returns the actual attribute value.
      * @param name - Name of the subscriber attribute or sendable DE field to retrieve.
      * @example
      * Platform.Load("Core", "1.1.1");
@@ -3709,7 +3709,7 @@ declare namespace ErrorUtil {
      * @deprecated
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): `ErrorUtil` (and its only member `ThrowWSProxyError`) is provided ONLY by `Platform.Load("Core", "1")`. Under any newer Core version ("1.1.1", "1.1.5", …) `ErrorUtil` is `undefined`, so this call throws a TypeError ("Object expected: ThrowWSProxyError") — it is effectively deprecated in Core > 1. A preceding `new Script.Util.WSProxy()` is NOT required to make ErrorUtil available (disproven at runtime). When it does throw on a real WSProxy error result, it throws a plain STRING (e.g. "Error: Data extension does not exist: …") — not an Error object — so the caught value has no `.message`/`.description` (both `undefined`); read the string itself via `String(ex)`. On the success path it does not return `undefined`: it returns the result `Status` string ("OK"). Recommended replacement (works on any Core version): inspect `result.Status` and `throw new Error(...)` (or handle inline) instead of calling ErrorUtil.ThrowWSProxyError.
+     * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, `ErrorUtil` (and its only member `ThrowWSProxyError`) is provided ONLY by `Platform.Load("Core", "1")`. Under any newer Core version ("1.1.1", "1.1.5", …) `ErrorUtil` is `undefined`, so this call throws a TypeError ("Object expected: ThrowWSProxyError") — it is effectively deprecated in Core > 1. A preceding `new Script.Util.WSProxy()` is NOT required to make ErrorUtil available. When it does throw on a real WSProxy error result, it throws a plain STRING (e.g. "Error: Data extension does not exist: …") — not an Error object — so the caught value has no `.message`/`.description` (both `undefined`); read the string itself via `String(ex)`. On the success path it does not return `undefined`: it returns the result `Status` string ("OK"). Recommended replacement (works on any Core version): inspect `result.Status` and `throw new Error(...)` (or handle inline) instead of calling ErrorUtil.ThrowWSProxyError.
      * @param result - Result object returned by any WSProxy method. Minimum shape: `{ Status: string, RequestID: string, Results: object[] }`. Retrieve and perform variants may include additional fields.
      * @returns The `Status` string of the passed result (e.g. `"OK"`) when it indicates success. Throws instead of returning when `Status` indicates an error.
      * @example
@@ -3909,7 +3909,7 @@ declare namespace HTTPHeader {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): reads INBOUND request headers (e.g. `Host`, `User-Agent`) and returns their string value. It does NOT read back a header you set earlier with `HTTPHeader.SetValue(...)` — GetValue for a just-set custom header returns `null`. Treat GetValue and SetValue as operating on separate (inbound vs outbound) header collections.
+     * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, reads INBOUND request headers (e.g. `Host`, `User-Agent`) and returns their string value. It does NOT read back a header you set earlier with `HTTPHeader.SetValue(...)` — GetValue for a just-set custom header returns `null`. Treat GetValue and SetValue as operating on separate (inbound vs outbound) header collections.
      * @param name - Name of the HTTP header to read
      * @example
      * Platform.Load("core", "1");
@@ -3924,7 +3924,7 @@ declare namespace HTTPHeader {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): `content-length` cannot be changed (response keeps the real body length). Official docs also claim `host` is protected, but `SetValue("Host", …)` emits an outbound `Host` header. Boolean `value` is accepted but stringified with CLR capitalization (`True`/`False`).
+     * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, `content-length` cannot be changed (response keeps the real body length). Official docs also claim `host` is protected, but `SetValue("Host", …)` emits an outbound `Host` header. Boolean `value` is accepted but stringified with CLR capitalization (`True`/`False`).
      * @param name - Name of the header to set
      * @param value - Value to assign to the header
      * @example
@@ -3939,7 +3939,7 @@ declare namespace HTTPHeader {
      *
      * @remarks Requires `Platform.Load("Core", "1")` before use.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified (CloudPage): returns `undefined` (typeof "undefined"), NOT the `"OK"` string implied by some docs. Do not rely on the return value; call it for its side effect only.
+     * @remarks ⚠️ Differs from the official Salesforce docs. On a CloudPage, returns `undefined` (typeof "undefined"), NOT the `"OK"` string implied by some docs. Do not rely on the return value; call it for its side effect only.
      * @param headerName - Name of the header to remove
      * @example
      * Platform.Load("core", "1");
@@ -4590,7 +4590,7 @@ interface WspResult {
     readonly Object?: object;
     /** perform-only: async task descriptor with StatusCode, StatusMessage, OrdinalID, ErrorCode, ID, TblAsyncID and InteractionObjectID. Present for performItem()/performBatch(); undefined elsewhere. */
     readonly Task?: object;
-    /** Per-entry request identifier. Observed as null on every result entry at runtime — read the top-level RequestID instead. */
+    /** Per-entry request identifier. Null on every result entry at runtime — read the top-level RequestID instead. */
     readonly RequestID?: string;
     /** retrieve()/getNextBatch(): retrieved-row fields keyed by column name. */
     readonly [column: string]: any;
@@ -4834,7 +4834,7 @@ interface String {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/search) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
-     * @remarks ⚠️ String.search is unreliable in the SFMC engine: a no-match returns 0 instead of the spec-mandated -1, and some real matches return the wrong index (observed returning 0 or -1 where the match is elsewhere). Use String.match or RegExp.test to detect a match, or apply the search polyfill.
+     * @remarks ⚠️ String.search is unreliable in the SFMC engine: a no-match returns 0 instead of the spec-mandated -1, and some real matches return the wrong index (returning 0 or -1 where the match is elsewhere). Use String.match or RegExp.test to detect a match, or apply the search polyfill.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies str.search(regex) returns -1 when there is no match. In the SFMC Jint engine a no-match returns 0 (not -1) and some real matches return the wrong index, so search is unreliable for locating substrings. Use indexOf or a match-based approach instead.
      * @param regexp - Regular expression to search for
@@ -4896,26 +4896,26 @@ interface String {
      */
     toLowerCase(): string;
     /**
-     * Returns the string converted to lowercase. Runtime-verified in SFMC; it behaves like toLowerCase() (locale mappings are not applied).
+     * Returns the string converted to lowercase. In SFMC, it behaves like toLowerCase() (locale mappings are not applied).
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/toLocaleLowerCase) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
      * @remarks ⚠️ The locale argument is ignored — it behaves exactly like toLowerCase(). "ABC".toLocaleLowerCase() returns "abc" with no locale-specific casing.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: "ABC".toLocaleLowerCase() === "abc". The SFMC Jint engine applies no locale-specific mappings, so this is a plain toLowerCase() alias rather than the locale-aware method the spec describes.
+     * @remarks ⚠️ Differs from the official Salesforce docs. "ABC".toLocaleLowerCase() === "abc". The SFMC Jint engine applies no locale-specific mappings, so this is a plain toLowerCase() alias rather than the locale-aware method the spec describes.
      * @example
      * var str = "AbC";
      * Write(str.toLocaleLowerCase()); // "abc"
      */
     toLocaleLowerCase(): string;
     /**
-     * Returns the string converted to uppercase. Runtime-verified in SFMC; it behaves like toUpperCase() (locale mappings are not applied).
+     * Returns the string converted to uppercase. In SFMC, it behaves like toUpperCase() (locale mappings are not applied).
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/toLocaleUpperCase) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/string-methods/)
      *
      * @remarks ⚠️ The locale argument is ignored — it behaves exactly like toUpperCase(). "abc".toLocaleUpperCase() returns "ABC" with no locale-specific casing.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: "abc".toLocaleUpperCase() === "ABC". The SFMC Jint engine applies no locale-specific mappings, so this is a plain toUpperCase() alias rather than the locale-aware method the spec describes.
+     * @remarks ⚠️ Differs from the official Salesforce docs. "abc".toLocaleUpperCase() === "ABC". The SFMC Jint engine applies no locale-specific mappings, so this is a plain toUpperCase() alias rather than the locale-aware method the spec describes.
      * @example
      * var str = "abc";
      * Write(str.toLocaleUpperCase()); // "ABC"
@@ -5031,13 +5031,13 @@ interface Number {
      */
     valueOf(): number;
     /**
-     * Returns a string representation of the number. Runtime-verified in SFMC: the locale argument is ignored and no grouping separators are applied — it behaves like a plain toString(). Use AMPscript FormatNumber via Platform.Function.TreatAsContent for real locale formatting.
+     * Returns a string representation of the number. In SFMC, the locale argument is ignored and no grouping separators are applied — it behaves like a plain toString(). Use AMPscript FormatNumber via Platform.Function.TreatAsContent for real locale formatting.
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toLocaleString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
      *
      * @remarks ⚠️ The locale argument is ignored — (123456.789).toLocaleString("de-DE") returns "123456.789", not the grouped "123.456,789".
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies locale-aware formatting with grouping separators; the SFMC Jint engine ignores the locale/options arguments and returns the plain number string (no grouping).
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies locale-aware formatting with grouping separators; the SFMC Jint engine ignores the locale/options arguments and returns the plain number string (no grouping).
      * @param locales - Ignored in SFMC
      * @param options - Ignored in SFMC
      * @example
@@ -5054,7 +5054,7 @@ interface Boolean {
      *
      * @remarks ⚠️ new Boolean(false).valueOf() returns the boxed object (typeof "object"), not the primitive. There is no reliable way to unwrap a boxed Boolean — avoid creating one and use Boolean(value) or !!value instead.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies valueOf() returns the primitive boolean wrapped by the object. In the SFMC Jint engine box.valueOf() === box is true and typeof box.valueOf() is "object", so it does not unwrap. Boolean.prototype.valueOf.call(true) does return the primitive true.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies valueOf() returns the primitive boolean wrapped by the object. In the SFMC Jint engine box.valueOf() === box is true and typeof box.valueOf() is "object", so it does not unwrap. Boolean.prototype.valueOf.call(true) does return the primitive true.
      * @example
      * var b = new Boolean(false);
      * Write(typeof b.valueOf()); // "object" in SFMC (spec: "boolean")
@@ -5068,7 +5068,7 @@ interface Boolean {
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean/toString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/boolean/)
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified via String(new Boolean(true)): MDN specifies the lowercase "true"/"false"; on a boxed instance the SFMC Jint engine capitalizes the first letter ("True"/"False") — in String(), in "" + x concatenation and in an explicit .toString(). Called through .call() on a PRIMITIVE it returns the correct lowercase form, which is the reliable workaround (a primitive has no .toString() of its own because there is no auto-boxing).
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies the lowercase "true"/"false"; on a boxed instance the SFMC Jint engine capitalizes the first letter ("True"/"False") — in String(), in "" + x concatenation and in an explicit .toString(). Called through .call() on a PRIMITIVE it returns the correct lowercase form, which is the reliable workaround (a primitive has no .toString() of its own because there is no auto-boxing).
      * @example
      * var b = new Boolean(true);
      * Write(b.toString()); // "True" in SFMC (spec: "true")
@@ -5374,13 +5374,13 @@ interface Date {
      */
     toTimeString(): string;
     /**
-     * Returns the date portion as a string. Runtime-verified in SFMC: the locale argument is ignored and a fixed English-style format is returned (e.g. "Wed, 15 Jan 2020"). Use AMPscript FormatDate via Platform.Function.TreatAsContent for locale-aware output.
+     * Returns the date portion as a string. In SFMC, the locale argument is ignored and a fixed English-style format is returned (e.g. "Wed, 15 Jan 2020"). Use AMPscript FormatDate via Platform.Function.TreatAsContent for locale-aware output.
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
      * @remarks ⚠️ The locale argument is ignored — output is a fixed English format like "Wed, 15 Jan 2020", not locale-specific.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies locale-aware date formatting; the SFMC Jint engine ignores the locale/options arguments and returns a fixed English-style string (e.g. "Wed, 15 Jan 2020").
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies locale-aware date formatting; the SFMC Jint engine ignores the locale/options arguments and returns a fixed English-style string (e.g. "Wed, 15 Jan 2020").
      * @param locales - Ignored in SFMC
      * @param options - Ignored in SFMC
      * @example
@@ -5769,7 +5769,7 @@ interface Function {
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/toString) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/function-methods/)
      *
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: unlike standard JavaScript (which returns the function source), fn.toString() returns the generic "[object Function]" object tag in the SFMC Jint engine. String(fn) / ("" + fn) yield "function" instead. Do not rely on function source introspection.
+     * @remarks ⚠️ Differs from the official Salesforce docs. Unlike standard JavaScript (which returns the function source), fn.toString() returns the generic "[object Function]" object tag in the SFMC Jint engine. String(fn) / ("" + fn) yield "function" instead. Do not rely on function source introspection.
      * @example
      * function greet() {}
      * Write(greet.toString()); // "[object Function]" in SFMC (not the source)
@@ -5839,7 +5839,7 @@ declare function isNaN(value: any): boolean;
  */
 declare function isFinite(value: any): boolean;
 /**
- * Parses a string of JavaScript source and executes it as a script, returning the completion value of the last evaluated expression (or undefined when there is nothing to complete). A non-string argument is returned unchanged. Runtime-verified to work in SFMC SSJS: direct eval sees the surrounding local scope, and bare-name Core globals loaded via Platform.Load are visible inside the evaluated string. Use sparingly — it runs arbitrary code and is a common injection risk; prefer Platform.Function.ParseJSON for parsing data.
+ * Parses a string of JavaScript source and executes it as a script, returning the completion value of the last evaluated expression (or undefined when there is nothing to complete). A non-string argument is returned unchanged. Works in SFMC SSJS: direct eval sees the surrounding local scope, and bare-name Core globals loaded via Platform.Load are visible inside the evaluated string. Use sparingly — it runs arbitrary code and is a common injection risk; prefer Platform.Function.ParseJSON for parsing data.
  *
  * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval)
  *
@@ -5854,39 +5854,39 @@ declare function isFinite(value: any): boolean;
  */
 declare function eval(script: string): any;
 /**
- * Encodes a complete URI, leaving reserved characters (/ ? : @ & = + $ #) intact. Runtime-verified to work in SFMC SSJS, but the Jint engine encodes a space as "+" (not "%20") and emits lowercase hex escapes.
+ * Encodes a complete URI, leaving reserved characters (/ ? : @ & = + $ #) intact. Works in SFMC SSJS, but the Jint engine encodes a space as "+" (not "%20") and emits lowercase hex escapes.
  *
  * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURI)
  *
  * @remarks ⚠️ Space is encoded as "+" instead of "%20", and percent-escapes use lowercase hex, unlike the ECMAScript spec.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies encodeURI encodes a space as "%20" with uppercase hex; the SFMC Jint engine encodes a space as "+" and emits lowercase hex escapes.
+ * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies encodeURI encodes a space as "%20" with uppercase hex; the SFMC Jint engine encodes a space as "+" and emits lowercase hex escapes.
  * @param uri - The URI string to encode
  * @example
  * Write(encodeURI("a b/c?d=1")); // "a+b/c?d=1" in SFMC (spec: "a%20b/c?d=1")
  */
 declare function encodeURI(uri: string): string;
 /**
- * Encodes a URI component, escaping reserved characters as well. Runtime-verified to work in SFMC SSJS, but the Jint engine encodes a space as "+" (not "%20") and emits lowercase hex escapes (e.g. "/" becomes "%2f", not "%2F").
+ * Encodes a URI component, escaping reserved characters as well. Works in SFMC SSJS, but the Jint engine encodes a space as "+" (not "%20") and emits lowercase hex escapes (e.g. "/" becomes "%2f", not "%2F").
  *
  * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent)
  *
  * @remarks ⚠️ Space -> "+" and lowercase hex (e.g. "/" -> "%2f") instead of the spec's "%20" / "%2F".
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies a space encodes as "%20" with uppercase hex; the SFMC Jint engine encodes a space as "+" and emits lowercase hex (e.g. "/" -> "%2f").
+ * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies a space encodes as "%20" with uppercase hex; the SFMC Jint engine encodes a space as "+" and emits lowercase hex (e.g. "/" -> "%2f").
  * @param str - The component string to encode
  * @example
  * Write(encodeURIComponent("a b/c")); // "a+b%2fc" in SFMC (spec: "a%20b%2Fc")
  */
 declare function encodeURIComponent(str: string): string;
 /**
- * Decodes a URI previously encoded by encodeURI, converting percent-escapes back to their characters. Runtime-verified to work in SFMC SSJS, but the Jint engine also decodes escapes for the URI-syntax characters the spec preserves, and turns a literal "+" into a space — making it behave like decodeURIComponent.
+ * Decodes a URI previously encoded by encodeURI, converting percent-escapes back to their characters. Works in SFMC SSJS, but the Jint engine also decodes escapes for the URI-syntax characters the spec preserves, and turns a literal "+" into a space — making it behave like decodeURIComponent.
  *
  * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/decodeURI)
  *
  * @remarks ⚠️ Escapes for the reserved set ; / ? : @ & = + $ , # are decoded (the spec preserves them), and a literal "+" becomes a space.
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies decodeURI leaves escapes for ; / ? : @ & = + $ , # intact and leaves a literal "+" unchanged; the SFMC Jint engine decodes those escapes and turns "+" into a space, so it is indistinguishable from decodeURIComponent.
+ * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies decodeURI leaves escapes for ; / ? : @ & = + $ , # intact and leaves a literal "+" unchanged; the SFMC Jint engine decodes those escapes and turns "+" into a space, so it is indistinguishable from decodeURIComponent.
  * @param uri - The encoded URI string to decode
  * @example
  * Write(decodeURI("a%20b/c")); // "a b/c"
@@ -5895,13 +5895,13 @@ declare function encodeURIComponent(str: string): string;
  */
 declare function decodeURI(uri: string): string;
 /**
- * Decodes a URI component previously encoded by encodeURIComponent, converting all percent-escapes back to characters. Runtime-verified to work in SFMC SSJS, but the Jint engine decodes a literal "+" to a space (form-urlencoded behaviour), unlike the spec.
+ * Decodes a URI component previously encoded by encodeURIComponent, converting all percent-escapes back to characters. Works in SFMC SSJS, but the Jint engine decodes a literal "+" to a space (form-urlencoded behaviour), unlike the spec.
  *
  * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/decodeURIComponent)
  *
  * @remarks ⚠️ A literal "+" is decoded to a space, unlike the ECMAScript spec (which leaves it).
  * @remarks ✅ Runtime-verified in a live SFMC test.
- * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies decodeURIComponent leaves a literal "+" unchanged; the SFMC Jint engine decodes "+" to a space, matching application/x-www-form-urlencoded.
+ * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies decodeURIComponent leaves a literal "+" unchanged; the SFMC Jint engine decodes "+" to a space, matching application/x-www-form-urlencoded.
  * @param str - The encoded component string to decode
  * @example
  * Write(decodeURIComponent("a%20b%2Fc")); // "a b/c"
@@ -6147,7 +6147,7 @@ interface NumberConstructor {
     new (value?: any): Number;
     (value?: any): number;
     /**
-     * The largest positive finite value representable by a Number. Runtime-verified present in SFMC (typeof number). The value is correct (~1.7976931348623157e308) but note the sibling constants MIN_VALUE and the INFINITY constants are broken in this engine.
+     * The largest positive finite value representable by a Number. Present in SFMC (typeof number). The value is correct (~1.7976931348623157e308) but note the sibling constants MIN_VALUE and the INFINITY constants are broken in this engine.
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_VALUE) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
      *
@@ -6157,49 +6157,49 @@ interface NumberConstructor {
      */
     readonly MAX_VALUE: number;
     /**
-     * Standard ES3 exposes the smallest positive representable Number (~5e-324). Runtime-verified present in SFMC (typeof number) but WRONG: the SFMC Jint engine returns the negative of MAX_VALUE (-1.7976931348623157e308) instead, so Number.MIN_VALUE > 0 is false. Use the literal 5e-324 if you need the true smallest positive value.
+     * Standard ES3 exposes the smallest positive representable Number (~5e-324). Present in SFMC (typeof number) but WRONG: the SFMC Jint engine returns the negative of MAX_VALUE (-1.7976931348623157e308) instead, so Number.MIN_VALUE > 0 is false. Use the literal 5e-324 if you need the true smallest positive value.
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MIN_VALUE) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
      *
      * @remarks ⚠️ Broken in SFMC: Number.MIN_VALUE returns -MAX_VALUE (a large negative number), not the ES3 smallest-positive value 5e-324. Number.MIN_VALUE > 0 is false. Use the literal 5e-324.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN/ES3 define Number.MIN_VALUE as the smallest positive value (~5e-324); the SFMC Jint engine instead returns -Number.MAX_VALUE, so it is negative and MIN_VALUE > 0 evaluates to false.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN/ES3 define Number.MIN_VALUE as the smallest positive value (~5e-324); the SFMC Jint engine instead returns -Number.MAX_VALUE, so it is negative and MIN_VALUE > 0 evaluates to false.
      * @example
      * Write(Number.MIN_VALUE > 0); // false (returns -MAX_VALUE in SFMC)
      */
     readonly MIN_VALUE: number;
     /**
-     * The Not-a-Number value. Runtime-verified present in SFMC (typeof number); NaN !== NaN holds as expected. Note it stringifies as lowercase "nan" (not "NaN") in this engine.
+     * The Not-a-Number value. Present in SFMC (typeof number); NaN !== NaN holds as expected. Note it stringifies as lowercase "nan" (not "NaN") in this engine.
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/NaN) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
      *
      * @remarks ⚠️ Stringifies as lowercase "nan" in SFMC (String(Number.NaN) === "nan"), unlike the standard "NaN". The value still compares as not-equal to itself.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: the value is present and behaves as NaN for comparisons, but String(Number.NaN) yields lowercase "nan" instead of the standard "NaN".
+     * @remarks ⚠️ Differs from the official Salesforce docs. The value is present and behaves as NaN for comparisons, but String(Number.NaN) yields lowercase "nan" instead of the standard "NaN".
      * @example
      * Write(Number.NaN !== Number.NaN); // true
      */
     readonly NaN: number;
     /**
-     * Standard ES3 exposes positive infinity. Runtime-verified present in SFMC (typeof number) but BROKEN: it stringifies as "-infinity" and Number.POSITIVE_INFINITY > 0 is false. The global Infinity is equally unreliable in this engine.
+     * Standard ES3 exposes positive infinity. Present in SFMC (typeof number) but BROKEN: it stringifies as "-infinity" and Number.POSITIVE_INFINITY > 0 is false. The global Infinity is equally unreliable in this engine.
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/POSITIVE_INFINITY) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
      *
      * @remarks ⚠️ Broken in SFMC: Number.POSITIVE_INFINITY stringifies as "-infinity" and Number.POSITIVE_INFINITY > 0 is false (sign inverted). Avoid infinity constants; guard with explicit finite bounds instead.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN defines this as +Infinity; the SFMC Jint engine returns a value that stringifies as "-infinity" and for which > 0 is false (sign inverted). The global Infinity is likewise unreliable.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN defines this as +Infinity; the SFMC Jint engine returns a value that stringifies as "-infinity" and for which > 0 is false (sign inverted). The global Infinity is likewise unreliable.
      * @example
      * Write(Number.POSITIVE_INFINITY > 0); // false (sign inverted in SFMC)
      */
     readonly POSITIVE_INFINITY: number;
     /**
-     * Standard ES3 exposes negative infinity. Runtime-verified present in SFMC (typeof number) but BROKEN: it stringifies as "infinity" and Number.NEGATIVE_INFINITY < 0 is false (sign inverted).
+     * Standard ES3 exposes negative infinity. Present in SFMC (typeof number) but BROKEN: it stringifies as "infinity" and Number.NEGATIVE_INFINITY < 0 is false (sign inverted).
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/NEGATIVE_INFINITY) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/number-methods/)
      *
      * @remarks ⚠️ Broken in SFMC: Number.NEGATIVE_INFINITY stringifies as "infinity" and Number.NEGATIVE_INFINITY < 0 is false (sign inverted). Avoid infinity constants; guard with explicit finite bounds instead.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN defines this as -Infinity; the SFMC Jint engine returns a value that stringifies as "infinity" and for which < 0 is false (sign inverted).
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN defines this as -Infinity; the SFMC Jint engine returns a value that stringifies as "infinity" and for which < 0 is false (sign inverted).
      * @example
      * Write(Number.NEGATIVE_INFINITY < 0); // false (sign inverted in SFMC)
      */
@@ -6214,7 +6214,7 @@ interface BooleanConstructor {
      *
      * @remarks ⚠️ A boxed Boolean stringifies capitalized ("True"/"False"), a boxed false is falsy in a condition, valueOf() returns the boxed object instead of the primitive, and instanceof Boolean is false. There is no reliable way to unwrap one — do not create it.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies a boxed Boolean stringifies to lowercase "true"/"false", is always truthy (it is an object), unwraps via valueOf() and satisfies instanceof Boolean. The SFMC Jint engine breaks all four — String(new Boolean(true)) is "True", new Boolean(false) is falsy, valueOf() returns the boxed object itself (box.valueOf() === box), and instanceof Boolean is false although constructor === Boolean is true.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies a boxed Boolean stringifies to lowercase "true"/"false", is always truthy (it is an object), unwraps via valueOf() and satisfies instanceof Boolean. The SFMC Jint engine breaks all four — String(new Boolean(true)) is "True", new Boolean(false) is falsy, valueOf() returns the boxed object itself (box.valueOf() === box), and instanceof Boolean is false although constructor === Boolean is true.
      * @param value - The value to box as a Boolean object
      * @example
      * var b = new Boolean(false);
@@ -6228,7 +6228,7 @@ interface BooleanConstructor {
      *
      * @remarks ⚠️ The SFMC engine treats a number as truthy only when it is greater than zero, so Boolean(-1) is false. Boolean([]) is also false. The returned primitive is not auto-boxed — Boolean(1).toString() throws "Object expected"; use String(value) instead.
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. Runtime-verified: MDN specifies falsy is limited to false/0/-0/""/null/undefined/NaN and that every object is truthy. The SFMC Jint engine coerces numbers with the rule n > 0, so Boolean(-1) and Boolean(-0.5) are false; Boolean([]) is false (ToPrimitive yields ""), while Boolean([0]) is true; and the primitive result is not auto-boxed, so Boolean(1).toString() and Boolean(1).valueOf() throw "Object expected".
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies falsy is limited to false/0/-0/""/null/undefined/NaN and that every object is truthy. The SFMC Jint engine coerces numbers with the rule n > 0, so Boolean(-1) and Boolean(-0.5) are false; Boolean([]) is false (ToPrimitive yields ""), while Boolean([0]) is true; and the primitive result is not auto-boxed, so Boolean(1).toString() and Boolean(1).valueOf() throw "Object expected".
      * @param value - The value to coerce to a boolean
      * @example
      * Write(Boolean(1)); // true
@@ -6260,7 +6260,7 @@ interface ObjectConstructor {
      */
     defineProperty(obj: object, prop: string, descriptor: object): object;
     /**
-     * Returns the prototype (internal [[Prototype]]) of the specified object. Runtime-verified working in SFMC SSJS.
+     * Returns the prototype (internal [[Prototype]]) of the specified object. working in SFMC SSJS.
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/object-methods/)
      *
@@ -6282,9 +6282,9 @@ interface DateConstructor {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/UTC) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
-     * @remarks ⚠️ Runtime-verified: with year + month (and beyond) it returns the correct UTC timestamp, but the year-only form Date.UTC(2026) returns a nonsense small number (observed -21597974) instead of treating the month as 0 — always pass at least year and month, e.g. Date.UTC(2026, 0, 1).
+     * @remarks ⚠️ With year + month (and beyond) it returns the correct UTC timestamp, but the year-only form Date.UTC(2026) returns a nonsense small number (it returns -21597974) instead of treating the month as 0 — always pass at least year and month, e.g. Date.UTC(2026, 0, 1).
      * @remarks ✅ Runtime-verified in a live SFMC test.
-     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies Date.UTC(year[, month...]) accepts a year-only call. In the SFMC Jint engine the year-only form Date.UTC(2026) returns a nonsense small number (observed -21597974) rather than a valid timestamp or NaN. Always pass at least year and month, e.g. Date.UTC(2026, 0, 1); with two or more components it returns the correct UTC timestamp.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies Date.UTC(year[, month...]) accepts a year-only call. In the SFMC Jint engine the year-only form Date.UTC(2026) returns a nonsense small number (it returns -21597974) rather than a valid timestamp or NaN. Always pass at least year and month, e.g. Date.UTC(2026, 0, 1); with two or more components it returns the correct UTC timestamp.
      * @param year - Full year
      * @param month - Month (0–11)
      * @param day - Day of the month (1–31)
@@ -6301,7 +6301,7 @@ interface DateConstructor {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
-     * @remarks ⚠️ Runtime-verified: unlike the spec, an unparseable or invalid string (e.g. "garbage", "", "2021-13-45") returns 0 — the Unix epoch — instead of NaN, so isNaN() cannot detect a bad date and invalid input silently becomes 1970-01-01. Also, a date-only ISO string such as "2026-06-18" is parsed as LOCAL midnight, not UTC (contrary to the ES5+ spec). Validate input yourself; do not rely on NaN for error detection.
+     * @remarks ⚠️ Unlike the spec, an unparseable or invalid string (e.g. "garbage", "", "2021-13-45") returns 0 — the Unix epoch — instead of NaN, so isNaN() cannot detect a bad date and invalid input silently becomes 1970-01-01. Also, a date-only ISO string such as "2026-06-18" is parsed as LOCAL midnight, not UTC (contrary to the ES5+ spec). Validate input yourself; do not rely on NaN for error detection.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies Date.parse(str) returns NaN for unparseable strings and treats date-only ISO forms as UTC. In the SFMC Jint engine invalid strings return 0 (the epoch), NEVER NaN, so isNaN() cannot detect a bad date; and date-only strings like "2026-06-18" parse as LOCAL midnight, not UTC. Validate input yourself before trusting the result.
      * @param dateString - A date string (ISO 8601 is the most portable form)
@@ -6314,7 +6314,7 @@ interface DateConstructor {
      *
      * [MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now) / [ssjs.guide reference](https://ssjs.guide/ecmascript-builtins/date-methods/)
      *
-     * @remarks ⚠️ Runtime-verified: unlike the spec (which returns a Number), Date.now() returns a Date object (typeof "object") that stringifies to a date-time string. Numeric coercion (Date.now() + 0, Date.now() * 1) yields the epoch milliseconds, but code expecting a number will break. Prefer new Date().getTime(), which returns a clean number.
+     * @remarks ⚠️ Unlike the spec (which returns a Number), Date.now() returns a Date object (typeof "object") that stringifies to a date-time string. Numeric coercion (Date.now() + 0, Date.now() * 1) yields the epoch milliseconds, but code expecting a number will break. Prefer new Date().getTime(), which returns a clean number.
      * @remarks ✅ Runtime-verified in a live SFMC test.
      * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies Date.now() returns a Number (milliseconds since the Unix epoch). In the SFMC Jint engine it returns a Date OBJECT instead (typeof Date.now() is "object"). Numeric coercion (Date.now() + 0) recovers the epoch ms, but code expecting a plain number breaks. Prefer new Date().getTime() for a clean number.
      * @example

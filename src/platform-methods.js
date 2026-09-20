@@ -47,7 +47,7 @@ export const PLATFORM_VARIABLE_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage GET): values retain their SSJS scalar type within the request, while a ' +
+            'On a CloudPage, values retain their SSJS scalar type within the request, while a ' +
             'never-set variable returns JavaScript `null` and an explicitly empty variable returns `""`. The ' +
             'leading `@` is optional, and variable names are case-insensitive.',
         syntax: 'Platform.Variable.GetValue(variableName)',
@@ -73,7 +73,7 @@ export const PLATFORM_VARIABLE_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage GET): the method returns JavaScript `null`, not void. Strings, numbers, ' +
+            'On a CloudPage, the method returns JavaScript `null`, not void. Strings, numbers, ' +
             'and booleans retain their SSJS scalar type in later SSJS blocks; null and undefined read back as ' +
             '`null`. The leading `@` is optional, and values are request-local.',
         syntax: 'Platform.Variable.SetValue(variableName, value)',
@@ -98,7 +98,7 @@ export const PLATFORM_RESPONSE_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the header appears verbatim in the HTTP response and the call returns JavaScript null, not void. ' +
+            'On a CloudPage, the header appears verbatim in the HTTP response and the call returns JavaScript null, not void. ' +
             'Numeric values are coerced to their string form.',
         syntax: 'Platform.Response.SetResponseHeader(headerName, value)',
         example:
@@ -120,7 +120,7 @@ export const PLATFORM_RESPONSE_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): removes a header set earlier in the same request and returns JavaScript null, not void. ' +
+            'On a CloudPage, removes a header set earlier in the same request and returns JavaScript null, not void. ' +
             'Removing a header that was never set is a no-op rather than an error.',
         syntax: 'Platform.Response.RemoveResponseHeader(headerName)',
         example: 'Platform.Response.RemoveResponseHeader("X-Powered-By");',
@@ -148,7 +148,7 @@ export const PLATFORM_RESPONSE_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage). Behaviours the official docs do not state: ' +
+            'On a CloudPage: Behaviours the official docs do not state: ' +
             'the second argument is optional — a single-argument call produces a 302 with the Location header set; ' +
             'a successful redirect discards any response body already written; ' +
             'and a redirect inside try is catchable — the catch runs and can call Redirect again, ' +
@@ -182,7 +182,7 @@ export const PLATFORM_RESPONSE_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): each call returns JavaScript null, not void, and emits its own Set-Cookie header. ' +
+            'On a CloudPage, each call returns JavaScript null, not void, and emits its own Set-Cookie header. ' +
             'Without an expiry the cookie is a session cookie; a JavaScript Date object is accepted for ' +
             'the expiry alongside a date string and is rendered as a GMT timestamp.',
         syntax: 'Platform.Response.SetCookie(name, value[, expires, secure])',
@@ -193,14 +193,14 @@ export const PLATFORM_RESPONSE_METHODS = [
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Attempts to remove a browser cookie from a CloudPage response. In the tested runtime it returns null but emits no deletion header; use SetCookie with an empty value and a past JavaScript Date instead.',
+            'Attempts to remove a browser cookie from a CloudPage response. It returns null but emits no deletion header; use SetCookie with an empty value and a past JavaScript Date instead.',
         params: [{ name: 'name', description: 'Name of the cookie to remove.', type: 'string' }],
         returnType: 'null',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified on a published CloudPage GET with the named request cookie present: the call returns JavaScript null, not void, and emits no Set-Cookie header. ' +
-            'The proven workaround is SetCookie(name, "", new Date(1970, 0, 1), true), which emits an empty cookie with a past expiry and removes it from the next cookie-jar request.',
+            'On a published CloudPage with the named request cookie present, the call returns JavaScript null, not void, and emits no Set-Cookie header. ' +
+            'The workaround is SetCookie(name, "", new Date(1970, 0, 1), true), which emits an empty cookie with a past expiry and removes it from the next cookie-jar request.',
         syntax: 'Platform.Response.RemoveCookie(name)',
         example: 'Platform.Response.SetCookie("userId", "", new Date(1970, 0, 1), true);',
     },
@@ -222,7 +222,7 @@ export const PLATFORM_RESPONSE_METHODS = [
         returnType: 'void',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): writes directly to the HTTP response body and returns JavaScript null. ' +
+            'On a CloudPage, writes directly to the HTTP response body and returns JavaScript null. ' +
             'Non-string values use CLR stringification — objects/arrays emit host type names, booleans emit ' +
             '`True`/`False` — matching bare-name Write.',
         syntax: 'Platform.Response.Write(content)',
@@ -243,7 +243,7 @@ export const PLATFORM_RESPONSE_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): assignment works and is reflected in the HTTP Content-Type header. ' +
+            'On a CloudPage, assignment works and is reflected in the HTTP Content-Type header. ' +
             'Reading or calling the property does not return the configured string; it returns an opaque CLR value with no documented caller-facing use. ' +
             'Keep your own JavaScript variable if the value must be read later.',
         syntax: 'Platform.Response.ContentType',
@@ -262,7 +262,7 @@ export const PLATFORM_RESPONSE_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): assignment works and is reflected in the charset parameter of the HTTP Content-Type header. ' +
+            'On a CloudPage, assignment works and is reflected in the charset parameter of the HTTP Content-Type header. ' +
             'Reading or calling the property does not return the configured string; it returns an opaque CLR value with no documented caller-facing use. ' +
             'Keep your own JavaScript variable if the value must be read later.',
         syntax: 'Platform.Response.CharacterSet',
@@ -287,7 +287,7 @@ export const PLATFORM_REQUEST_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage GET): an absent parameter returns strict JavaScript `null`, not an ' +
+            'On a CloudPage, an absent parameter returns strict JavaScript `null`, not an ' +
             'empty string. Empty values return `""`; repeated values are comma-joined in URL order; names are ' +
             'case-insensitive; plus signs, percent escapes, and UTF-8 sequences are decoded; numeric names are ' +
             'coerced to strings. Guard reads with truthiness or `!= null`.',
@@ -300,7 +300,7 @@ export const PLATFORM_REQUEST_METHODS = [
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Retrieves a named field from a submitted POST form body. On a CloudPage GET it does not fall back ' +
+            'Retrieves a named field from a submitted POST form body. On a CloudPage it does not fall back ' +
             'to query parameters and returns null.',
         params: [
             { name: 'name', description: 'Name of the form field to retrieve.', type: 'string' },
@@ -309,7 +309,7 @@ export const PLATFORM_REQUEST_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage GET): it returns strict JavaScript `null` for an absent field and does ' +
+            'On a CloudPage, it returns strict JavaScript `null` for an absent field and does ' +
             'not read a same-named query-string parameter. Use GetQueryStringParameter for URL values.',
         syntax: 'Platform.Request.GetFormField(name)',
         example: 'var email = Platform.Request.GetFormField("emailAddress");\nWrite(email);',
@@ -333,7 +333,7 @@ export const PLATFORM_REQUEST_METHODS = [
         returnType: 'string',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): on a GET request it returns `""` ' +
+            'On a CloudPage, on a GET request it returns `""` ' +
             '(empty string), not null. First call per request returns the body; subsequent calls return `""`.',
         syntax: 'Platform.Request.GetPostData([encoding])',
         example:
@@ -352,7 +352,7 @@ export const PLATFORM_REQUEST_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): a supplied cookie returns its string value; an absent cookie returns ' +
+            'On a CloudPage, a supplied cookie returns its string value; an absent cookie returns ' +
             'strict JavaScript `null`, not an empty string.',
         syntax: 'Platform.Request.GetCookieValue(cookieName)',
         example:
@@ -370,8 +370,8 @@ export const PLATFORM_REQUEST_METHODS = [
         notDefinedAtRuntime: true,
         officialDocsNote:
             'Officially documented to return the `Accept-Language` header value, but `GetUserLanguages()` as ' +
-            'called is NOT DEFINED AT RUNTIME: the engine does not resolve this member — runtime probing shows ' +
-            'it throws the generic `System.InvalidOperationException: "Unable to retrieve security descriptor ' +
+            'called is NOT DEFINED AT RUNTIME: the engine does not resolve this member — it throws ' +
+            'the generic `System.InvalidOperationException: "Unable to retrieve security descriptor ' +
             'for this frame."` at every arity tried (0/1/2 args), the error the SSJS engine raises for an ' +
             'unrecognized member name or an argument count the engine does not accept (NOT a security or ' +
             'frame restriction). The same `Accept-Language` header IS present and readable in the same run via ' +
@@ -397,7 +397,7 @@ export const PLATFORM_REQUEST_METHODS = [
         returnType: 'string|null',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): header names are case-insensitive; a supplied header returns its string ' +
+            'On a CloudPage, header names are case-insensitive; a supplied header returns its string ' +
             'value and an absent header returns strict JavaScript `null`.',
         syntax: 'Platform.Request.GetRequestHeader(headerName)',
         example:
@@ -416,7 +416,7 @@ export const PLATFORM_REQUEST_METHODS = [
         returnType: 'object',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): returns a CLR object exposing `Platform`, `Browser`, `Version`, ' +
+            'On a CloudPage, returns a CLR object exposing `Platform`, `Browser`, `Version`, ' +
             '`MajorVersion`, and `MinorVersion`. Individual fields read fine by name, but the object is not ' +
             'enumerable — `for...in` yields no keys — so address the fields directly. `Stringify()` does render ' +
             'the whole object. When the request carries no User-Agent header the fields fall back to ' +
@@ -435,7 +435,7 @@ export const PLATFORM_REQUEST_METHODS = [
         returnType: 'string',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): returns the caller IP address. The value is a CLR string ' +
+            'On a CloudPage, returns the caller IP address. The value is a CLR string ' +
             '(`typeof` reports `clr`), so compare it after an explicit `String()` conversion rather than with ' +
             '`===`. Read-only: assigning to it fails.',
         syntax: 'Platform.Request.ClientIP',
@@ -453,7 +453,7 @@ export const PLATFORM_REQUEST_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the value is a CLR boolean, not a JavaScript one — `typeof` reports ' +
+            'On a CloudPage, the value is a CLR boolean, not a JavaScript one — `typeof` reports ' +
             '`clr` and it renders as "True"/"False". It is truthy/falsy as expected in an `if`, but strict ' +
             'comparison against `true` or against the string "True" both fail. Test it directly in a condition ' +
             'instead of comparing with `===`. Read-only: assigning to it fails.',
@@ -473,7 +473,7 @@ export const PLATFORM_REQUEST_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): resolves and returns the same value as `HasSSL` in the same request. ' +
+            'On a CloudPage, resolves and returns the same value as `HasSSL` in the same request. ' +
             'Like `HasSSL` it is a CLR boolean (`typeof` reports `clr`, renders as "True"/"False") and fails ' +
             'strict comparison against `true` or "True" — use it directly in a condition. Read-only.',
         syntax: 'Platform.Request.IsSSL',
@@ -491,7 +491,7 @@ export const PLATFORM_REQUEST_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): returns the uppercase HTTP verb. The value is a CLR string ' +
+            'On a CloudPage, returns the uppercase HTTP verb. The value is a CLR string ' +
             '(`typeof` reports `clr`), so a strict comparison such as `Method === "POST"` never matches — ' +
             'wrap it in `String()` first. Read-only: assigning to it fails.',
         syntax: 'Platform.Request.Method',
@@ -509,7 +509,7 @@ export const PLATFORM_REQUEST_METHODS = [
         returnType: 'string',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): includes the leading `?`. A request without a query string yields ' +
+            'On a CloudPage, includes the leading `?`. A request without a query string yields ' +
             'an empty value rather than null or a throw. The value is a CLR string (`typeof` reports `clr`), ' +
             'so convert with `String()` before comparing. Read-only.',
         syntax: 'Platform.Request.QueryString',
@@ -527,7 +527,7 @@ export const PLATFORM_REQUEST_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): returns the Referer header when one is sent, but when the header is ' +
+            'On a CloudPage, returns the Referer header when one is sent, but when the header is ' +
             'ABSENT reading the property THROWS a null-reference error instead of returning null or an empty ' +
             'string — a plain link click or address-bar visit is enough to trigger it. Always wrap the read in ' +
             'a try/catch, or read the header via `Platform.Request.GetRequestHeader("Referer")`, which returns ' +
@@ -547,7 +547,7 @@ export const PLATFORM_REQUEST_METHODS = [
         returnType: 'string',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): returns the absolute URL including scheme, host, path, and the query ' +
+            'On a CloudPage, returns the absolute URL including scheme, host, path, and the query ' +
             'string when present. Always populated. The value is a CLR string (`typeof` reports `clr`), ' +
             'so convert with `String()` before comparing. Read-only.',
         syntax: 'Platform.Request.RequestURL',
@@ -565,7 +565,7 @@ export const PLATFORM_REQUEST_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): returns the User-Agent header when one is sent, but when the header ' +
+            'On a CloudPage, returns the User-Agent header when one is sent, but when the header ' +
             'is ABSENT reading the property THROWS a null-reference error instead of returning null or an empty ' +
             'string. Wrap the read in a try/catch, or use ' +
             '`Platform.Request.GetRequestHeader("User-Agent")`, which returns null when absent. Note that ' +
@@ -584,7 +584,7 @@ export const PLATFORM_REQUEST_METHODS = [
 // from Platform.Request (which uses PROPERTIES like RequestURL and CLR methods) —
 // not an alias of it. For example `Request.URL()` is a real METHOD here whereas on
 // Platform.Request the equivalent is the `RequestURL` PROPERTY.
-// Runtime-verified on a published CloudPage: the six context
+// On a published CloudPage, the six context
 // methods invoke cleanly (URL() returns the full URL; Method() returns the HTTP verb;
 // the rest return empty strings outside their populating context), and the two value
 // getters return the query-string value for a present key (null for an absent key).
@@ -600,7 +600,7 @@ export const REQUEST_UTILITY_METHODS = [
         returnType: 'string',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage GET): returns the full request URL as a string ' +
+            'On a CloudPage, it returns the full request URL as a string ' +
             '(e.g. `https://…pub.sfmc-content.com/hovt2pwtcq3`). This is a distinct Core object ' +
             'method, not an alias of `Platform.Request` — the equivalent there is the ' +
             '`RequestURL` PROPERTY, not a `URL()` method.',
@@ -617,7 +617,7 @@ export const REQUEST_UTILITY_METHODS = [
         returnType: 'string',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage GET): invokes cleanly and returns an empty string ' +
+            'On a CloudPage, it invokes cleanly and returns an empty string ' +
             '(`""`) outside its populating context. This is a distinct Core object method, ' +
             'not an alias of `Platform.Request`.',
         syntax: 'Request.PagePath()',
@@ -633,7 +633,7 @@ export const REQUEST_UTILITY_METHODS = [
         returnType: 'string',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage GET): returns the HTTP verb as a string (e.g. `"GET"`). ' +
+            'On a CloudPage, it returns the HTTP verb as a string (e.g. `"GET"`). ' +
             'This is a distinct Core object method, not an alias of `Platform.Request` — the ' +
             'equivalent there is the `Method` PROPERTY.',
         syntax: 'Request.Method()',
@@ -649,7 +649,7 @@ export const REQUEST_UTILITY_METHODS = [
         returnType: 'string',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage GET): invokes cleanly and returns an empty string ' +
+            'On a CloudPage, it invokes cleanly and returns an empty string ' +
             '(`""`) outside its populating context. This is a distinct Core object method, ' +
             'not an alias of `Platform.Request`.',
         syntax: 'Request.ApplicationID()',
@@ -665,7 +665,7 @@ export const REQUEST_UTILITY_METHODS = [
         returnType: 'string',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage GET): invokes cleanly and returns an empty string ' +
+            'On a CloudPage, it invokes cleanly and returns an empty string ' +
             '(`""`) outside its populating context. This is a distinct Core object method, ' +
             'not an alias of `Platform.Request`.',
         syntax: 'Request.PackageID()',
@@ -681,7 +681,7 @@ export const REQUEST_UTILITY_METHODS = [
         returnType: 'string',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage GET): invokes cleanly and returns an empty string ' +
+            'On a CloudPage, it invokes cleanly and returns an empty string ' +
             '(`""`) outside its populating context. This is a distinct Core object method, ' +
             'not an alias of `Platform.Request`.',
         syntax: 'Request.ApplicationBaseURL()',
@@ -704,7 +704,7 @@ export const REQUEST_UTILITY_METHODS = [
         returnType: 'string',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified on a published CloudPage GET (?probeParam=hello): Request.GetQueryStringParameter("probeParam") returned "hello" (typeof "string"); an absent key returned null (typeof "object"). Unlike the CLR-backed Platform.Request.GetQueryStringParameter, this bare-name Core method is a Jint function: calling it with zero arguments returns null and a surplus second argument is ignored (it does NOT throw the "Unable to retrieve security descriptor for this frame." arity error). This is a distinct Core object method, not an alias of Platform.Request.GetQueryStringParameter. Guard reads with a truthiness / != null check.',
+            'On a published CloudPage, Request.GetQueryStringParameter("sku") returns the parameter value as a string (typeof "string"); an absent key returns null (typeof "object"). Unlike the CLR-backed Platform.Request.GetQueryStringParameter, this bare-name Core method is a Jint function: calling it with zero arguments returns null and a surplus second argument is ignored (it does NOT throw the "Unable to retrieve security descriptor for this frame." arity error). This is a distinct Core object method, not an alias of Platform.Request.GetQueryStringParameter. Guard reads with a truthiness / != null check.',
         syntax: 'Request.GetQueryStringParameter(name)',
         example:
             'var sku = Request.GetQueryStringParameter("sku");\nif (sku) { Write("SKU: " + sku); }',
@@ -726,7 +726,7 @@ export const REQUEST_UTILITY_METHODS = [
         returnType: 'string',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified on a published CloudPage GET (?probeParam=hello): Request.GetFormField("probeParam") returned null (typeof "object") even though the same key was present in the query string — it does not read GET query parameters (use Request.GetQueryStringParameter). An absent key also returned null. This bare-name Core method is a Jint function: calling it with zero arguments or a surplus second argument does NOT throw the "Unable to retrieve security descriptor for this frame." arity error (it returns null / ignores the extra argument), unlike the CLR-backed Platform.Request.GetFormField. Populated POST form values were not exercised in the GET probe; a POST request is needed to observe a non-null return. This is a distinct Core object method, not an alias of Platform.Request.GetFormField. Guard reads with a truthiness / != null check.',
+            'On a published CloudPage, Request.GetFormField("sku") returns null (typeof "object") even when the same key is present in the query string — it does not read GET query parameters (use Request.GetQueryStringParameter). An absent key also returns null. This bare-name Core method is a Jint function: calling it with zero arguments or a surplus second argument does NOT throw the "Unable to retrieve security descriptor for this frame." arity error (it returns null / ignores the extra argument), unlike the CLR-backed Platform.Request.GetFormField. A populated POST form body is needed to observe a non-null return. This is a distinct Core object method, not an alias of Platform.Request.GetFormField. Guard reads with a truthiness / != null check.',
         syntax: 'Request.GetFormField(name)',
         example: 'var email = Request.GetFormField("emailAddress");\nif (email) { Write(email); }',
     },
@@ -754,7 +754,7 @@ export const PLATFORM_RECIPIENT_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): does NOT throw outside a send ' +
+            'On a CloudPage, does NOT throw outside a send ' +
             'context — in a plain CloudPage it returns `""` (empty string, typeof "string") for any attribute ' +
             'because no recipient is bound. The bare-name `Recipient` alias is NOT available even after ' +
             'Platform.Load; use `Platform.Recipient.GetAttributeValue(...)` (or `Attribute.GetValue(...)` after load).',
@@ -778,7 +778,7 @@ export const ATTRIBUTE_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified on a published CloudPage: after Platform.Load("Core", ...) the Attribute object exists and Attribute.GetValue(name) executes and returns a string — it is NOT unavailable in CloudPages. When no subscriber/attribute is in context (e.g. a plain CloudPage GET) it returns an empty string rather than throwing. In email/triggered-send/personalized contexts it returns the actual attribute value.',
+            'On a published CloudPage, after Platform.Load("Core", ...) the Attribute object exists and Attribute.GetValue(name) executes and returns a string — it is NOT unavailable in CloudPages. When no subscriber/attribute is in context (e.g. a plain CloudPage) it returns an empty string rather than throwing. In email/triggered-send/personalized contexts it returns the actual attribute value.',
         description:
             'Returns the value of the specified subscriber attribute or sendable data extension field for the current recipient. ' +
             'Preferred over Platform.Recipient.GetAttributeValue() — both methods are equivalent. ' +
@@ -822,7 +822,7 @@ export const DATE_TIME_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the `DateTime.SystemDateToLocalDate` bare-name form behaves IDENTICALLY to ' +
+            'On a CloudPage, the `DateTime.SystemDateToLocalDate` bare-name form behaves IDENTICALLY to ' +
             '`Platform.Function.SystemDateToLocalDate` (same value, same type). The official docs type the return as a ' +
             'string, but the runtime returns a genuine Date object: typeof "object", `Object.prototype.toString` reports ' +
             '"[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical ' +
@@ -852,7 +852,7 @@ export const DATE_TIME_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the `DateTime.LocalDateToSystemDate` bare-name form behaves IDENTICALLY to ' +
+            'On a CloudPage, the `DateTime.LocalDateToSystemDate` bare-name form behaves IDENTICALLY to ' +
             '`Platform.Function.LocalDateToSystemDate` (same value, same type). The official docs type the return as a ' +
             'string, but the runtime returns a genuine Date object: typeof "object", `Object.prototype.toString` reports ' +
             '"[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical ' +
@@ -878,7 +878,7 @@ export const DATE_TIME_TIMEZONE_METHODS = [
         requiresCoreLoad: true,
         isConfirmed: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage). `Platform.Load("core", ...)` is genuinely required — before the load ' +
+            'On a CloudPage: `Platform.Load("core", ...)` is genuinely required — before the load ' +
             '`DateTime` is undefined and the call throws. The filter argument is optional: calling it with no ' +
             'argument returns the full time-zone list. Each result carries `ID` (number) and `Name` (string). ' +
             'A filter that matches nothing returns an empty list rather than null, so callers can read `.length` ' +
@@ -925,11 +925,11 @@ export const ERROR_UTIL_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): `ErrorUtil` (and its only member `ThrowWSProxyError`) is provided ' +
+            'On a CloudPage, `ErrorUtil` (and its only member `ThrowWSProxyError`) is provided ' +
             'ONLY by `Platform.Load("Core", "1")`. Under any newer Core version ("1.1.1", "1.1.5", …) `ErrorUtil` ' +
             'is `undefined`, so this call throws a TypeError ("Object expected: ThrowWSProxyError") — it is ' +
             'effectively deprecated in Core > 1. ' +
-            'A preceding `new Script.Util.WSProxy()` is NOT required to make ErrorUtil available (disproven at runtime). ' +
+            'A preceding `new Script.Util.WSProxy()` is NOT required to make ErrorUtil available. ' +
             'When it does throw on a real WSProxy error result, it throws a plain STRING (e.g. ' +
             '"Error: Data extension does not exist: …") — not an Error object — so the caught value has no ' +
             '`.message`/`.description` (both `undefined`); read the string itself via `String(ex)`. ' +

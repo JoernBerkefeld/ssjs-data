@@ -298,7 +298,7 @@ export const ECMASCRIPT_BUILTINS = [
             'MDN specifies str.search(regex) returns -1 when there is no match. In the SFMC Jint engine a no-match returns 0 (not -1) and some real matches return the wrong index, so search is unreliable for locating substrings. Use indexOf or a match-based approach instead.',
         esVersion: 3,
         description: 'Searches for a match and returns the index of the first match, or -1.',
-        caveat: 'String.search is unreliable in the SFMC engine: a no-match returns 0 instead of the spec-mandated -1, and some real matches return the wrong index (observed returning 0 or -1 where the match is elsewhere). Use String.match or RegExp.test to detect a match, or apply the search polyfill.',
+        caveat: 'String.search is unreliable in the SFMC engine: a no-match returns 0 instead of the spec-mandated -1, and some real matches return the wrong index (returning 0 or -1 where the match is elsewhere). Use String.match or RegExp.test to detect a match, or apply the search polyfill.',
         params: [
             { name: 'regexp', description: 'Regular expression to search for', type: 'RegExp' },
         ],
@@ -377,14 +377,14 @@ export const ECMASCRIPT_BUILTINS = [
         owner: 'String.prototype',
         esVersion: 3,
         description:
-            'Returns the string converted to lowercase. Runtime-verified in SFMC; it behaves like toLowerCase() (locale mappings are not applied).',
+            'Returns the string converted to lowercase. In SFMC, it behaves like toLowerCase() (locale mappings are not applied).',
         params: [],
         returnType: 'string',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         caveat: 'The locale argument is ignored — it behaves exactly like toLowerCase(). "ABC".toLocaleLowerCase() returns "abc" with no locale-specific casing.',
         officialDocsNote:
-            'Runtime-verified: "ABC".toLocaleLowerCase() === "abc". The SFMC Jint engine applies no locale-specific mappings, so this is a plain toLowerCase() alias rather than the locale-aware method the spec describes.',
+            '"ABC".toLocaleLowerCase() === "abc". The SFMC Jint engine applies no locale-specific mappings, so this is a plain toLowerCase() alias rather than the locale-aware method the spec describes.',
         syntax: 'String.toLocaleLowerCase()',
         example: 'var str = "AbC";\nWrite(str.toLocaleLowerCase()); // "abc"',
     },
@@ -393,14 +393,14 @@ export const ECMASCRIPT_BUILTINS = [
         owner: 'String.prototype',
         esVersion: 3,
         description:
-            'Returns the string converted to uppercase. Runtime-verified in SFMC; it behaves like toUpperCase() (locale mappings are not applied).',
+            'Returns the string converted to uppercase. In SFMC, it behaves like toUpperCase() (locale mappings are not applied).',
         params: [],
         returnType: 'string',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         caveat: 'The locale argument is ignored — it behaves exactly like toUpperCase(). "abc".toLocaleUpperCase() returns "ABC" with no locale-specific casing.',
         officialDocsNote:
-            'Runtime-verified: "abc".toLocaleUpperCase() === "ABC". The SFMC Jint engine applies no locale-specific mappings, so this is a plain toUpperCase() alias rather than the locale-aware method the spec describes.',
+            '"abc".toLocaleUpperCase() === "ABC". The SFMC Jint engine applies no locale-specific mappings, so this is a plain toUpperCase() alias rather than the locale-aware method the spec describes.',
         syntax: 'String.toLocaleUpperCase()',
         example: 'var str = "abc";\nWrite(str.toLocaleUpperCase()); // "ABC"',
     },
@@ -854,7 +854,7 @@ export const ECMASCRIPT_BUILTINS = [
         owner: 'Number.prototype',
         esVersion: 3,
         description:
-            'Returns a string representation of the number. Runtime-verified in SFMC: the locale argument is ignored and no grouping separators are applied — it behaves like a plain toString(). Use AMPscript FormatNumber via Platform.Function.TreatAsContent for real locale formatting.',
+            'Returns a string representation of the number. In SFMC, the locale argument is ignored and no grouping separators are applied — it behaves like a plain toString(). Use AMPscript FormatNumber via Platform.Function.TreatAsContent for real locale formatting.',
         caveat: 'The locale argument is ignored — (123456.789).toLocaleString("de-DE") returns "123456.789", not the grouped "123.456,789".',
         params: [
             { name: 'locales', description: 'Ignored in SFMC', type: 'string', optional: true },
@@ -864,7 +864,7 @@ export const ECMASCRIPT_BUILTINS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified: MDN specifies locale-aware formatting with grouping separators; the SFMC Jint engine ignores the locale/options arguments and returns the plain number string (no grouping).',
+            'MDN specifies locale-aware formatting with grouping separators; the SFMC Jint engine ignores the locale/options arguments and returns the plain number string (no grouping).',
         syntax: 'Number.toLocaleString([locales[, options]])',
         example: 'Write((123456.789).toLocaleString("de-DE")); // "123456.789" (locale ignored)',
     },
@@ -876,7 +876,7 @@ export const ECMASCRIPT_BUILTINS = [
         isStatic: true,
         isProperty: true,
         description:
-            'The largest positive finite value representable by a Number. Runtime-verified present in SFMC (typeof number). The value is correct (~1.7976931348623157e308) but note the sibling constants MIN_VALUE and the INFINITY constants are broken in this engine.',
+            'The largest positive finite value representable by a Number. Present in SFMC (typeof number). The value is correct (~1.7976931348623157e308) but note the sibling constants MIN_VALUE and the INFINITY constants are broken in this engine.',
         params: [],
         returnType: 'number',
         isConfirmed: true,
@@ -890,14 +890,14 @@ export const ECMASCRIPT_BUILTINS = [
         isStatic: true,
         isProperty: true,
         description:
-            'Standard ES3 exposes the smallest positive representable Number (~5e-324). Runtime-verified present in SFMC (typeof number) but WRONG: the SFMC Jint engine returns the negative of MAX_VALUE (-1.7976931348623157e308) instead, so Number.MIN_VALUE > 0 is false. Use the literal 5e-324 if you need the true smallest positive value.',
+            'Standard ES3 exposes the smallest positive representable Number (~5e-324). Present in SFMC (typeof number) but WRONG: the SFMC Jint engine returns the negative of MAX_VALUE (-1.7976931348623157e308) instead, so Number.MIN_VALUE > 0 is false. Use the literal 5e-324 if you need the true smallest positive value.',
         caveat: 'Broken in SFMC: Number.MIN_VALUE returns -MAX_VALUE (a large negative number), not the ES3 smallest-positive value 5e-324. Number.MIN_VALUE > 0 is false. Use the literal 5e-324.',
         params: [],
         returnType: 'number',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified: MDN/ES3 define Number.MIN_VALUE as the smallest positive value (~5e-324); the SFMC Jint engine instead returns -Number.MAX_VALUE, so it is negative and MIN_VALUE > 0 evaluates to false.',
+            'MDN/ES3 define Number.MIN_VALUE as the smallest positive value (~5e-324); the SFMC Jint engine instead returns -Number.MAX_VALUE, so it is negative and MIN_VALUE > 0 evaluates to false.',
         syntax: 'Number.MIN_VALUE',
         example: 'Write(Number.MIN_VALUE > 0); // false (returns -MAX_VALUE in SFMC)',
     },
@@ -908,14 +908,14 @@ export const ECMASCRIPT_BUILTINS = [
         isStatic: true,
         isProperty: true,
         description:
-            'The Not-a-Number value. Runtime-verified present in SFMC (typeof number); NaN !== NaN holds as expected. Note it stringifies as lowercase "nan" (not "NaN") in this engine.',
+            'The Not-a-Number value. Present in SFMC (typeof number); NaN !== NaN holds as expected. Note it stringifies as lowercase "nan" (not "NaN") in this engine.',
         caveat: 'Stringifies as lowercase "nan" in SFMC (String(Number.NaN) === "nan"), unlike the standard "NaN". The value still compares as not-equal to itself.',
         params: [],
         returnType: 'number',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified: the value is present and behaves as NaN for comparisons, but String(Number.NaN) yields lowercase "nan" instead of the standard "NaN".',
+            'The value is present and behaves as NaN for comparisons, but String(Number.NaN) yields lowercase "nan" instead of the standard "NaN".',
         syntax: 'Number.NaN',
         example: 'Write(Number.NaN !== Number.NaN); // true',
     },
@@ -926,14 +926,14 @@ export const ECMASCRIPT_BUILTINS = [
         isStatic: true,
         isProperty: true,
         description:
-            'Standard ES3 exposes positive infinity. Runtime-verified present in SFMC (typeof number) but BROKEN: it stringifies as "-infinity" and Number.POSITIVE_INFINITY > 0 is false. The global Infinity is equally unreliable in this engine.',
+            'Standard ES3 exposes positive infinity. Present in SFMC (typeof number) but BROKEN: it stringifies as "-infinity" and Number.POSITIVE_INFINITY > 0 is false. The global Infinity is equally unreliable in this engine.',
         caveat: 'Broken in SFMC: Number.POSITIVE_INFINITY stringifies as "-infinity" and Number.POSITIVE_INFINITY > 0 is false (sign inverted). Avoid infinity constants; guard with explicit finite bounds instead.',
         params: [],
         returnType: 'number',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified: MDN defines this as +Infinity; the SFMC Jint engine returns a value that stringifies as "-infinity" and for which > 0 is false (sign inverted). The global Infinity is likewise unreliable.',
+            'MDN defines this as +Infinity; the SFMC Jint engine returns a value that stringifies as "-infinity" and for which > 0 is false (sign inverted). The global Infinity is likewise unreliable.',
         syntax: 'Number.POSITIVE_INFINITY',
         example: 'Write(Number.POSITIVE_INFINITY > 0); // false (sign inverted in SFMC)',
     },
@@ -944,14 +944,14 @@ export const ECMASCRIPT_BUILTINS = [
         isStatic: true,
         isProperty: true,
         description:
-            'Standard ES3 exposes negative infinity. Runtime-verified present in SFMC (typeof number) but BROKEN: it stringifies as "infinity" and Number.NEGATIVE_INFINITY < 0 is false (sign inverted).',
+            'Standard ES3 exposes negative infinity. Present in SFMC (typeof number) but BROKEN: it stringifies as "infinity" and Number.NEGATIVE_INFINITY < 0 is false (sign inverted).',
         caveat: 'Broken in SFMC: Number.NEGATIVE_INFINITY stringifies as "infinity" and Number.NEGATIVE_INFINITY < 0 is false (sign inverted). Avoid infinity constants; guard with explicit finite bounds instead.',
         params: [],
         returnType: 'number',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified: MDN defines this as -Infinity; the SFMC Jint engine returns a value that stringifies as "infinity" and for which < 0 is false (sign inverted).',
+            'MDN defines this as -Infinity; the SFMC Jint engine returns a value that stringifies as "infinity" and for which < 0 is false (sign inverted).',
         syntax: 'Number.NEGATIVE_INFINITY',
         example: 'Write(Number.NEGATIVE_INFINITY < 0); // false (sign inverted in SFMC)',
     },
@@ -1100,7 +1100,7 @@ export const ECMASCRIPT_BUILTINS = [
         description:
             'Parses a string of JavaScript source and executes it as a script, returning the completion ' +
             'value of the last evaluated expression (or undefined when there is nothing to complete). A ' +
-            'non-string argument is returned unchanged. Runtime-verified to work in SFMC SSJS: direct eval ' +
+            'non-string argument is returned unchanged. Works in SFMC SSJS: direct eval ' +
             'sees the surrounding local scope, and bare-name Core globals loaded via Platform.Load are ' +
             'visible inside the evaluated string. Use sparingly — it runs arbitrary code and is a common ' +
             'injection risk; prefer Platform.Function.ParseJSON for parsing data.',
@@ -1119,7 +1119,7 @@ export const ECMASCRIPT_BUILTINS = [
             'Platform.Load("core","1.1.5");\nWrite(eval("Stringify({a:1})")); // {"a":1}',
     },
     // ── Global URI functions ──────────────────────────────────────────────────
-    // Runtime-verified on the child BU: present and callable, but the
+    // Behaviour verified on a CloudPage: present and callable, but the
     // Jint engine encodes like application/x-www-form-urlencoded (space -> +,
     // lowercase hex) rather than RFC 3986.
     {
@@ -1129,7 +1129,7 @@ export const ECMASCRIPT_BUILTINS = [
         esVersion: 3,
         description:
             'Encodes a complete URI, leaving reserved characters (/ ? : @ & = + $ #) intact. ' +
-            'Runtime-verified to work in SFMC SSJS, but the Jint engine encodes a space as "+" ' +
+            'Works in SFMC SSJS, but the Jint engine encodes a space as "+" ' +
             '(not "%20") and emits lowercase hex escapes.',
         caveat:
             'Space is encoded as "+" instead of "%20", and percent-escapes use lowercase hex, ' +
@@ -1138,7 +1138,7 @@ export const ECMASCRIPT_BUILTINS = [
         returnType: 'string',
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified: MDN specifies encodeURI encodes a space as "%20" with uppercase hex; ' +
+            'MDN specifies encodeURI encodes a space as "%20" with uppercase hex; ' +
             'the SFMC Jint engine encodes a space as "+" and emits lowercase hex escapes.',
         syntax: 'encodeURI(uri)',
         example: 'Write(encodeURI("a b/c?d=1")); // "a+b/c?d=1" in SFMC (spec: "a%20b/c?d=1")',
@@ -1149,15 +1149,15 @@ export const ECMASCRIPT_BUILTINS = [
         isConfirmed: true,
         esVersion: 3,
         description:
-            'Encodes a URI component, escaping reserved characters as well. Runtime-verified to ' +
-            'work in SFMC SSJS, but the Jint engine encodes a space as "+" (not "%20") and emits ' +
+            'Encodes a URI component, escaping reserved characters as well. Works ' +
+            'in SFMC SSJS, but the Jint engine encodes a space as "+" (not "%20") and emits ' +
             'lowercase hex escapes (e.g. "/" becomes "%2f", not "%2F").',
         caveat: 'Space -> "+" and lowercase hex (e.g. "/" -> "%2f") instead of the spec\'s "%20" / "%2F".',
         params: [{ name: 'str', description: 'The component string to encode', type: 'string' }],
         returnType: 'string',
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified: MDN specifies a space encodes as "%20" with uppercase hex; the SFMC ' +
+            'MDN specifies a space encodes as "%20" with uppercase hex; the SFMC ' +
             'Jint engine encodes a space as "+" and emits lowercase hex (e.g. "/" -> "%2f").',
         syntax: 'encodeURIComponent(str)',
         example: 'Write(encodeURIComponent("a b/c")); // "a+b%2fc" in SFMC (spec: "a%20b%2Fc")',
@@ -1169,7 +1169,7 @@ export const ECMASCRIPT_BUILTINS = [
         esVersion: 3,
         description:
             'Decodes a URI previously encoded by encodeURI, converting percent-escapes back to ' +
-            'their characters. Runtime-verified to work in SFMC SSJS, but the Jint engine also ' +
+            'their characters. Works in SFMC SSJS, but the Jint engine also ' +
             'decodes escapes for the URI-syntax characters the spec preserves, and turns a ' +
             'literal "+" into a space — making it behave like decodeURIComponent.',
         caveat:
@@ -1179,7 +1179,7 @@ export const ECMASCRIPT_BUILTINS = [
         returnType: 'string',
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified: MDN specifies decodeURI leaves escapes for ; / ? : @ & = + $ , # ' +
+            'MDN specifies decodeURI leaves escapes for ; / ? : @ & = + $ , # ' +
             'intact and leaves a literal "+" unchanged; the SFMC Jint engine decodes those ' +
             'escapes and turns "+" into a space, so it is indistinguishable from ' +
             'decodeURIComponent.',
@@ -1196,7 +1196,7 @@ export const ECMASCRIPT_BUILTINS = [
         esVersion: 3,
         description:
             'Decodes a URI component previously encoded by encodeURIComponent, converting all ' +
-            'percent-escapes back to characters. Runtime-verified to work in SFMC SSJS, but the ' +
+            'percent-escapes back to characters. Works in SFMC SSJS, but the ' +
             'Jint engine decodes a literal "+" to a space (form-urlencoded behaviour), unlike the spec.',
         caveat: 'A literal "+" is decoded to a space, unlike the ECMAScript spec (which leaves it).',
         params: [
@@ -1205,7 +1205,7 @@ export const ECMASCRIPT_BUILTINS = [
         returnType: 'string',
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified: MDN specifies decodeURIComponent leaves a literal "+" unchanged; the ' +
+            'MDN specifies decodeURIComponent leaves a literal "+" unchanged; the ' +
             'SFMC Jint engine decodes "+" to a space, matching application/x-www-form-urlencoded.',
         syntax: 'decodeURIComponent(str)',
         example:
@@ -1628,7 +1628,7 @@ export const ECMASCRIPT_BUILTINS = [
         owner: 'Date.prototype',
         esVersion: 3,
         description:
-            'Returns the date portion as a string. Runtime-verified in SFMC: the locale argument is ignored and a fixed English-style format is returned (e.g. "Wed, 15 Jan 2020"). Use AMPscript FormatDate via Platform.Function.TreatAsContent for locale-aware output.',
+            'Returns the date portion as a string. In SFMC, the locale argument is ignored and a fixed English-style format is returned (e.g. "Wed, 15 Jan 2020"). Use AMPscript FormatDate via Platform.Function.TreatAsContent for locale-aware output.',
         caveat: 'The locale argument is ignored — output is a fixed English format like "Wed, 15 Jan 2020", not locale-specific.',
         params: [
             { name: 'locales', description: 'Ignored in SFMC', type: 'string', optional: true },
@@ -1638,7 +1638,7 @@ export const ECMASCRIPT_BUILTINS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified: MDN specifies locale-aware date formatting; the SFMC Jint engine ignores the locale/options arguments and returns a fixed English-style string (e.g. "Wed, 15 Jan 2020").',
+            'MDN specifies locale-aware date formatting; the SFMC Jint engine ignores the locale/options arguments and returns a fixed English-style string (e.g. "Wed, 15 Jan 2020").',
         syntax: 'Date.toLocaleDateString([locales[, options]])',
         example:
             'var d = new Date(2020, 0, 15);\nWrite(d.toLocaleDateString()); // "Wed, 15 Jan 2020" (locale ignored)',
@@ -1650,7 +1650,7 @@ export const ECMASCRIPT_BUILTINS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'MDN specifies Date.UTC(year[, month...]) accepts a year-only call. In the SFMC Jint engine the year-only form Date.UTC(2026) returns a nonsense small number (observed -21597974) rather than a valid timestamp or NaN. Always pass at least year and month, e.g. Date.UTC(2026, 0, 1); with two or more components it returns the correct UTC timestamp.',
+            'MDN specifies Date.UTC(year[, month...]) accepts a year-only call. In the SFMC Jint engine the year-only form Date.UTC(2026) returns a nonsense small number (it returns -21597974) rather than a valid timestamp or NaN. Always pass at least year and month, e.g. Date.UTC(2026, 0, 1); with two or more components it returns the correct UTC timestamp.',
         esVersion: 3,
         isStatic: true,
         description:
@@ -1670,7 +1670,7 @@ export const ECMASCRIPT_BUILTINS = [
             },
         ],
         returnType: 'number',
-        caveat: 'Runtime-verified: with year + month (and beyond) it returns the correct UTC timestamp, but the year-only form Date.UTC(2026) returns a nonsense small number (observed -21597974) instead of treating the month as 0 — always pass at least year and month, e.g. Date.UTC(2026, 0, 1).',
+        caveat: 'With year + month (and beyond) it returns the correct UTC timestamp, but the year-only form Date.UTC(2026) returns a nonsense small number (it returns -21597974) instead of treating the month as 0 — always pass at least year and month, e.g. Date.UTC(2026, 0, 1).',
         syntax: 'Date.UTC(year[, month[, day[, hours[, minutes[, seconds[, ms]]]]]])',
         example: 'Write(Date.UTC(1970, 0, 1)); // 0',
     },
@@ -1693,7 +1693,7 @@ export const ECMASCRIPT_BUILTINS = [
             },
         ],
         returnType: 'number',
-        caveat: 'Runtime-verified: unlike the spec, an unparseable or invalid string (e.g. "garbage", "", "2021-13-45") returns 0 — the Unix epoch — instead of NaN, so isNaN() cannot detect a bad date and invalid input silently becomes 1970-01-01. Also, a date-only ISO string such as "2026-06-18" is parsed as LOCAL midnight, not UTC (contrary to the ES5+ spec). Validate input yourself; do not rely on NaN for error detection.',
+        caveat: 'Unlike the spec, an unparseable or invalid string (e.g. "garbage", "", "2021-13-45") returns 0 — the Unix epoch — instead of NaN, so isNaN() cannot detect a bad date and invalid input silently becomes 1970-01-01. Also, a date-only ISO string such as "2026-06-18" is parsed as LOCAL midnight, not UTC (contrary to the ES5+ spec). Validate input yourself; do not rely on NaN for error detection.',
         syntax: 'Date.parse(dateString)',
         example: "Write(Date.parse('2021-01-01T00:00:00Z')); // 1609459200000",
     },
@@ -1710,7 +1710,7 @@ export const ECMASCRIPT_BUILTINS = [
             'Returns the current time. In the SFMC engine this returns a Date OBJECT, not a numeric timestamp as the spec requires — coerce it (+Date.now() or new Date().getTime()) to get epoch milliseconds.',
         params: [],
         returnType: 'object',
-        caveat: 'Runtime-verified: unlike the spec (which returns a Number), Date.now() returns a Date object (typeof "object") that stringifies to a date-time string. Numeric coercion (Date.now() + 0, Date.now() * 1) yields the epoch milliseconds, but code expecting a number will break. Prefer new Date().getTime(), which returns a clean number.',
+        caveat: 'Unlike the spec (which returns a Number), Date.now() returns a Date object (typeof "object") that stringifies to a date-time string. Numeric coercion (Date.now() + 0, Date.now() * 1) yields the epoch milliseconds, but code expecting a number will break. Prefer new Date().getTime(), which returns a clean number.',
         syntax: 'Date.now()',
         example:
             'var ms = new Date().getTime(); // clean epoch milliseconds (Date.now() returns a Date object in SFMC)',
@@ -1750,7 +1750,7 @@ export const ECMASCRIPT_BUILTINS = [
         esVersion: 5,
         isStatic: true,
         description:
-            'Returns the prototype (internal [[Prototype]]) of the specified object. Runtime-verified working in SFMC SSJS.',
+            'Returns the prototype (internal [[Prototype]]) of the specified object. working in SFMC SSJS.',
         params: [
             {
                 name: 'obj',
@@ -1766,7 +1766,7 @@ export const ECMASCRIPT_BUILTINS = [
     // call() and apply() are ES3 and confirmed working in SFMC SSJS (verified on a
     // CloudPage). bind() is ES5 and is NOT available — and Function.prototype is sealed,
     // so it cannot be installed. Use a standalone helper instead (see POLYFILLABLE_METHODS).
-    // Runtime-verified extras: toString() returns "[object Function]" not source (differs);
+    // Extras: toString() returns "[object Function]" not source (differs);
     // .length THROWS a null-reference error, .name and .caller are undefined, and
     // fn.constructor === Function is false (all in KNOWN_UNSUPPORTED / differs-from-docs).
     // The `arguments` object and the Function() constructor DO work.
@@ -1832,7 +1832,7 @@ export const ECMASCRIPT_BUILTINS = [
         returnType: 'string',
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified: unlike standard JavaScript (which returns the function source), fn.toString() returns the generic "[object Function]" object tag in the SFMC Jint engine. String(fn) / ("" + fn) yield "function" instead. Do not rely on function source introspection.',
+            'Unlike standard JavaScript (which returns the function source), fn.toString() returns the generic "[object Function]" object tag in the SFMC Jint engine. String(fn) / ("" + fn) yield "function" instead. Do not rely on function source introspection.',
         syntax: 'fn.toString()',
         example:
             'function greet() {}\nWrite(greet.toString()); // "[object Function]" in SFMC (not the source)',
@@ -1858,7 +1858,7 @@ export const ECMASCRIPT_BUILTINS = [
         returnType: 'boolean',
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified: MDN specifies falsy is limited to false/0/-0/""/null/undefined/NaN and that every object is truthy. The SFMC Jint engine coerces numbers with the rule n > 0, so Boolean(-1) and Boolean(-0.5) are false; Boolean([]) is false (ToPrimitive yields ""), while Boolean([0]) is true; and the primitive result is not auto-boxed, so Boolean(1).toString() and Boolean(1).valueOf() throw "Object expected".',
+            'MDN specifies falsy is limited to false/0/-0/""/null/undefined/NaN and that every object is truthy. The SFMC Jint engine coerces numbers with the rule n > 0, so Boolean(-1) and Boolean(-0.5) are false; Boolean([]) is false (ToPrimitive yields ""), while Boolean([0]) is true; and the primitive result is not auto-boxed, so Boolean(1).toString() and Boolean(1).valueOf() throw "Object expected".',
         syntax: 'Boolean(value)',
         example:
             'Write(Boolean(1)); // true\nWrite(Boolean("")); // false\nWrite(Boolean(-1)); // false in SFMC (spec: true)\nWrite(Boolean([])); // false in SFMC (spec: true)',
@@ -1881,7 +1881,7 @@ export const ECMASCRIPT_BUILTINS = [
         returnType: 'object',
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified: MDN specifies a boxed Boolean stringifies to lowercase "true"/"false", is always truthy (it is an object), unwraps via valueOf() and satisfies instanceof Boolean. The SFMC Jint engine breaks all four — String(new Boolean(true)) is "True", new Boolean(false) is falsy, valueOf() returns the boxed object itself (box.valueOf() === box), and instanceof Boolean is false although constructor === Boolean is true.',
+            'MDN specifies a boxed Boolean stringifies to lowercase "true"/"false", is always truthy (it is an object), unwraps via valueOf() and satisfies instanceof Boolean. The SFMC Jint engine breaks all four — String(new Boolean(true)) is "True", new Boolean(false) is falsy, valueOf() returns the boxed object itself (box.valueOf() === box), and instanceof Boolean is false although constructor === Boolean is true.',
         syntax: 'new Boolean(value)',
         example:
             'var b = new Boolean(false);\nWrite(String(b)); // "False" in SFMC (spec: "false")\nif (b) { Write("not reached in SFMC"); } // boxed false is falsy here\nWrite(typeof b.valueOf()); // "object" in SFMC (spec: "boolean")',
@@ -1917,7 +1917,7 @@ export const ECMASCRIPT_BUILTINS = [
         returnType: 'boolean',
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified: MDN specifies valueOf() returns the primitive boolean wrapped by the object. In the SFMC Jint engine box.valueOf() === box is true and typeof box.valueOf() is "object", so it does not unwrap. Boolean.prototype.valueOf.call(true) does return the primitive true.',
+            'MDN specifies valueOf() returns the primitive boolean wrapped by the object. In the SFMC Jint engine box.valueOf() === box is true and typeof box.valueOf() is "object", so it does not unwrap. Boolean.prototype.valueOf.call(true) does return the primitive true.',
         syntax: 'boxedBoolean.valueOf()',
         example:
             'var b = new Boolean(false);\nWrite(typeof b.valueOf()); // "object" in SFMC (spec: "boolean")\nWrite(b.valueOf() === b); // true in SFMC — it does not unwrap\nWrite(Boolean.prototype.valueOf.call(true)); // true',
@@ -1933,7 +1933,7 @@ export const ECMASCRIPT_BUILTINS = [
         returnType: 'string',
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified via String(new Boolean(true)): MDN specifies the lowercase "true"/"false"; on a boxed instance the SFMC Jint engine capitalizes the first letter ("True"/"False") — in String(), in "" + x concatenation and in an explicit .toString(). Called through .call() on a PRIMITIVE it returns the correct lowercase form, which is the reliable workaround (a primitive has no .toString() of its own because there is no auto-boxing).',
+            'MDN specifies the lowercase "true"/"false"; on a boxed instance the SFMC Jint engine capitalizes the first letter ("True"/"False") — in String(), in "" + x concatenation and in an explicit .toString(). Called through .call() on a PRIMITIVE it returns the correct lowercase form, which is the reliable workaround (a primitive has no .toString() of its own because there is no auto-boxing).',
         syntax: 'boxedBoolean.toString()',
         example:
             'var b = new Boolean(true);\nWrite(b.toString()); // "True" in SFMC (spec: "true")\nWrite(Boolean.prototype.toString.call(true)); // "true" (correct, lowercase)',
@@ -2321,7 +2321,7 @@ export const CONSTRUCTIBLE_BUILTINS = [
         differsFromOfficialDocs: true,
         officialDocsNote:
             'MDN specifies Boolean(value) is falsy only for false/0/-0/""/null/undefined/NaN, that every object (including []) is truthy, and that a boxed Boolean stringifies to lowercase, is always truthy, unwraps via valueOf() and satisfies instanceof. The SFMC Jint engine deviates on all of these. Boolean(value) treats a number as truthy only when n > 0, so Boolean(-1) is false; Boolean([]) is false (ToPrimitive gives ""); and the returned primitive is not auto-boxed, so Boolean(1).toString() throws "Object expected". new Boolean(value) stringifies CAPITALIZED ("True"/"False"), a boxed false is falsy, valueOf() returns the boxed object itself, and instanceof Boolean is false (constructor === Boolean is true). Use Boolean(value) or !!value, compare numbers explicitly, test arrays with .length, and stringify with String(value) or Boolean.prototype.toString.call(value).',
-        // Runtime-verified on the child BU — see the per-chapter test scripts in
+        // Behaviour verified on a CloudPage — see the per-chapter scripts in
         // ssjs.guide/_data/test_scripts/ecmascript-builtins--boolean.yml.
         // Instance members (valueOf/toString) come from ECMASCRIPT_BUILTINS owner
         // `Boolean.prototype`, like every other constructible builtin.

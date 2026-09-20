@@ -22,7 +22,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs type the return as a string, but at runtime Lookup returns the column\'s typed value. Runtime-verified per DE field type: Text/EmailAddress/Locale/Phone return a string, Number/Decimal return a number, Boolean returns a boolean, and Date returns a real Date object. No-match returns a genuine JavaScript null. A row with an empty/NULL field returns a CLR null (typeof "clr", not === null) that stringifies to "". Guard empty fields by coercing with String() first: a loose == null throws "Value cannot be null." and a truthiness test throws "Object cannot be cast from DBNull to other types.". Also note the request-scoped query cache — a repeated identical lookup returns the pre-write value.',
+            'The official docs type the return as a string, but at runtime Lookup returns the column\'s typed value. By DE field type: Text/EmailAddress/Locale/Phone return a string, Number/Decimal return a number, Boolean returns a boolean, and Date returns a real Date object. No-match returns a genuine JavaScript null. A row with an empty/NULL field returns a CLR null (typeof "clr", not === null) that stringifies to "". Guard empty fields by coercing with String() first: a loose == null throws "Value cannot be null." and a truthiness test throws "Object cannot be cast from DBNull to other types.". Also note the request-scoped query cache — a repeated identical lookup returns the pre-write value.',
         params: [
             {
                 name: 'deName',
@@ -64,7 +64,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs do not mention that no-match returns null (rather than an empty array) or that each row object includes the system fields _CustomObjectKey and _CreatedDate. Most fields are returned as their typed/native JS value, unlike DataExtension.Rows.Retrieve() which stringifies every field. Runtime-verified per DE field type: Text/EmailAddress/Locale/Phone come back as string, Number/Decimal as number, Boolean as boolean; Date columns are the exception — they come back as an ISO-8601 string (e.g. "2024-01-15T00:00:00.000"), NOT a Date object — this differs from Platform.Function.Lookup, which returns a real Date for Date columns. Runtime testing confirms the return value is a genuine JavaScript Array (Array.isArray is true; .push/.slice/.sort work), so the return type is object[]; note that instanceof Array is unreliable in the SFMC engine, so use the Array.isArray polyfill to test it.',
+            'The official docs do not mention that no-match returns null (rather than an empty array) or that each row object includes the system fields _CustomObjectKey and _CreatedDate. Most fields are returned as their typed/native JS value, unlike DataExtension.Rows.Retrieve() which stringifies every field. By DE field type: Text/EmailAddress/Locale/Phone come back as string, Number/Decimal as number, Boolean as boolean; Date columns are the exception — they come back as an ISO-8601 string (e.g. "2024-01-15T00:00:00.000"), NOT a Date object — this differs from Platform.Function.Lookup, which returns a real Date for Date columns. The return value is a genuine JavaScript Array (Array.isArray is true; .push/.slice/.sort work), so the return type is object[]; note that instanceof Array is unreliable in the SFMC engine, so use the Array.isArray polyfill to test it.',
         params: [
             {
                 name: 'deName',
@@ -107,7 +107,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs do not mention that each returned row object includes the system fields _CustomObjectKey and _CreatedDate. Most fields are returned as their typed/native JS value, unlike DataExtension.Rows.Retrieve() which stringifies every field. Runtime-verified per DE field type: Text/EmailAddress/Locale/Phone come back as string, Number/Decimal as number, Boolean as boolean; Date columns are the exception — they come back as an ISO-8601 string (e.g. "2024-01-15T00:00:00.000"), NOT a Date object — this differs from Platform.Function.Lookup, which returns a real Date for Date columns. Runtime testing confirms the return value is a genuine JavaScript Array (Array.isArray is true; .push/.slice/.sort work), so the return type is object[]; note that instanceof Array is unreliable in the SFMC engine, so use the Array.isArray polyfill to test it.',
+            'The official docs do not mention that each returned row object includes the system fields _CustomObjectKey and _CreatedDate. Most fields are returned as their typed/native JS value, unlike DataExtension.Rows.Retrieve() which stringifies every field. By DE field type: Text/EmailAddress/Locale/Phone come back as string, Number/Decimal as number, Boolean as boolean; Date columns are the exception — they come back as an ISO-8601 string (e.g. "2024-01-15T00:00:00.000"), NOT a Date object — this differs from Platform.Function.Lookup, which returns a real Date for Date columns. The return value is a genuine JavaScript Array (Array.isArray is true; .push/.slice/.sort work), so the return type is object[]; note that instanceof Array is unreliable in the SFMC engine, so use the Array.isArray polyfill to test it.',
         params: [
             {
                 name: 'deName',
@@ -158,11 +158,11 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            "Runtime-verified (CloudPage): deName is matched against the data extension's Name only — " +
+            "On a CloudPage, deName is matched against the data extension's Name only — " +
             'the external key / CustomerKey is not accepted. Passing the CustomerKey of a data extension ' +
             'whose Name is deliberately a different string throws "The Data Extension name for a ' +
-            'InsertData function call is invalid. A Data Extension of this name does not exist.", and a ' +
-            'read-back confirmed the rejected call inserted no row.',
+            'InsertData function call is invalid. A Data Extension of this name does not exist.", and the ' +
+            'rejected call inserts no row.',
         params: [
             {
                 name: 'deName',
@@ -192,7 +192,7 @@ export const PLATFORM_FUNCTIONS = [
         maxArgs: 3,
         description:
             'Adds a new row to a Data Extension. Returns null (no value). ' +
-            'The official docs describe this as an email-context function, but it was proven to run and commit on a CloudPage as well. ' +
+            'The official docs describe this as an email-context function, but it also runs and commits on a CloudPage. ' +
             'InsertData() is still preferred outside email because it returns the affected-row count.',
         isConfirmed: true,
         differsFromOfficialDocs: true,
@@ -326,10 +326,9 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the docs allow whereFieldNames and whereFieldValues to be ' +
+            'On a CloudPage, the docs allow whereFieldNames and whereFieldValues to be ' +
             'plain strings for a single-column filter, but a scalar in either position aborts the call ' +
-            'with "Unable to retrieve security descriptor for this frame." — reproduced independently in ' +
-            'two separate chapters. Wrap the single filter column and its value in one-element arrays ' +
+            'with "Unable to retrieve security descriptor for this frame." Wrap the single filter column and its value in one-element arrays ' +
             'instead; that form both inserted and updated in the same run. The flat/variadic argument ' +
             'form is likewise unsupported and throws.',
         params: [
@@ -428,7 +427,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            "Runtime-verified (CloudPage): deName is matched against the data extension's Name only — " +
+            "On a CloudPage, deName is matched against the data extension's Name only — " +
             'the external key / CustomerKey is not accepted. Passing the CustomerKey of a data extension ' +
             'whose Name is deliberately a different string throws "The Data Extension name for a ' +
             'DeleteData function call is invalid. A Data Extension of this name does not exist.", and a ' +
@@ -463,7 +462,7 @@ export const PLATFORM_FUNCTIONS = [
         maxArgs: 3,
         description:
             'Removes rows from a Data Extension matching filter criteria. Returns null (no value). ' +
-            'The official docs describe this as an email-context function, but it was proven to run and commit on a CloudPage as well. ' +
+            'The official docs describe this as an email-context function, but it also runs and commits on a CloudPage. ' +
             'DeleteData() is still preferred outside email because it returns the affected-row count.',
         isConfirmed: true,
         differsFromOfficialDocs: true,
@@ -548,7 +547,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): only the single-argument form works from SSJS, and folder ' +
+            'On a CloudPage, only the single-argument form works from SSJS, and folder ' +
             'paths must be separated by a BACKSLASH — a forward-slash path always throws. Any 2nd ' +
             'argument — string literal, number, boolean, empty string, null or variable, including a ' +
             'closure-free top-level all-literal call — is rejected with "invalid parameter value ... ' +
@@ -611,12 +610,11 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): only the single-argument form works from SSJS. Any 2nd ' +
+            'On a CloudPage, only the single-argument form works from SSJS. Any 2nd ' +
             'argument — string literal, number, boolean, empty string, null or variable, including a ' +
             'closure-free top-level all-literal call — is rejected with "invalid parameter value ... ' +
             'Parameter Name: ImpressionRegionName, Parameter Ordinal: 2, Parameter Type: ' +
-            'ResolvedValueParameter", which is neither a literal-vs-variable rule nor a test-harness ' +
-            'artefact. Because parameter 2 is rejected first, stopOnError and fallbackContent are ' +
+            'ResolvedValueParameter", which is neither a literal-vs-variable rule nor an artefact of the calling context. Because parameter 2 is rejected first, stopOnError and fallbackContent are ' +
             'unreachable: both stopOnError=true and stopOnError=false throw, and the fallback string is ' +
             'never emitted — even when the referenced block exists. Use ' +
             'Platform.Function.TreatAsContent() with the AMPscript form when the optional parameters ' +
@@ -790,7 +788,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the official docs describe the return as an RFC 2822-compliant date-time string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug (also affects Array/RegExp/Function) — detect via `.constructor === Date`, not `instanceof`. It coerces to an RFC 2822-style string during output. useContextTime also accepts number 0/1 and the strings "true"/"false".',
+            'On a CloudPage, the official docs describe the return as an RFC 2822-compliant date-time string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug (also affects Array/RegExp/Function) — detect via `.constructor === Date`, not `instanceof`. It coerces to an RFC 2822-style string during output. useContextTime also accepts number 0/1 and the strings "true"/"false".',
         syntax: 'Platform.Function.Now([useContextTime])',
         example:
             'var current = Platform.Function.Now();\nWrite(current); // e.g. "Tue, 14 Jul 2026 17:59:40 GMT-06:00"\n\n// current is a Date object:\nWrite(current.getFullYear()); // 2026\n\n// Use context time during triggered sends:\nvar sendTime = Platform.Function.Now(true);',
@@ -813,7 +811,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the official docs type the return value as a string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an ISO-like string when written or stringified.',
+            'On a CloudPage, the official docs type the return value as a string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an ISO-like string when written or stringified.',
         syntax: 'Platform.Function.SystemDateToLocalDate(dateString)',
         example:
             'var systemDate = Platform.Function.Now();\nvar localDate = Platform.Function.SystemDateToLocalDate(systemDate);\nWrite(localDate);',
@@ -836,7 +834,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the official docs type the return value as a string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an ISO-like string when written or stringified.',
+            'On a CloudPage, the official docs type the return value as a string, but the runtime returns a genuine Date object — typeof "object", `Object.prototype.toString` reports "[object Date]", `.constructor === Date`, and `getFullYear()`/`getHours()`/`getTime()` all work (identical to `new Date()`). The only anomaly is that `instanceof Date` returns false, due to the engine-wide `instanceof`-on-builtins bug — detect via `.constructor === Date`, not `instanceof`. It coerces to an ISO-like string when written or stringified.',
         syntax: 'Platform.Function.LocalDateToSystemDate(dateString)',
         example:
             'var localDate = "8/5/2025 12:00:00 PM";\nvar systemDate = Platform.Function.LocalDateToSystemDate(localDate);\nWrite(systemDate);',
@@ -918,8 +916,8 @@ export const PLATFORM_FUNCTIONS = [
         minArgs: 1,
         maxArgs: 1,
         description:
-            'Evaluates whether a string is a valid phone number and returns a boolean. Runtime-verified ' +
-            '(CloudPage): the accepted format is digits 0-9 only, with no spaces and no leading 0. To present ' +
+            'Evaluates whether a string is a valid phone number and returns a boolean. On a CloudPage, ' +
+            'the accepted format is digits 0-9 only, with no spaces and no leading 0. To present ' +
             "any country's country code (including the US) you omit the leading 00/+ and write the country code " +
             'as bare digits with no leading zero. Values containing spaces, a leading 0, or a +/00 international ' +
             'prefix return false, as do empty, letters, and mixed-text inputs. This is the same digits-only, ' +
@@ -945,7 +943,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the docs type the return value as a plain object, but the ' +
+            'On a CloudPage, the docs type the return value as a plain object, but the ' +
             'instance is a .NET CLR host object — typeof reports "clr" for DataExtensionObject, ' +
             'Subscriber and APIProperty alike. Properties assigned with SetObjectProperty() or ' +
             'AddObjectArrayItem() therefore cannot be read back from SSJS; unreadable is not unset, so ' +
@@ -1238,9 +1236,9 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs list a third options argument and type the return value as an object; at runtime the call takes exactly two arguments (a third throws) and the statusArray is inert (never populated). The documented OverallStatus string return could not be reproduced from a CloudPage even against real saved Data Extract definitions: every two-argument call throws a catchable exception carrying only the generic wrapper message "An error occurred when attempting to evaluate an InvokeExtract function call.  See inner exception for details.", and the inner exception is not surfaced to SSJS, so the cause is not observable. The string return type is per-docs and unproven at runtime.',
+            'The official docs list a third options argument and type the return value as an object; at runtime the call takes exactly two arguments (a third throws) and the statusArray is inert (never populated). The documented OverallStatus string return does not occur: every two-argument call throws a catchable exception carrying only the generic wrapper message "An error occurred when attempting to evaluate an InvokeExtract function call.  See inner exception for details.", and the inner exception is not surfaced to SSJS, so the cause is not observable. The string return type is therefore per-docs only.',
         description:
-            'Invokes the Extract SOAP API method on the specified object. The docs describe the return as the OverallStatus message string; that string was not reproducible from a CloudPage invoke.',
+            'Invokes the Extract SOAP API method on the specified object. The docs describe the return as the OverallStatus message string; that string does not occur.',
         params: [
             {
                 name: 'apiObject',
@@ -1311,19 +1309,19 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified on a CloudPage. Three corrections to the official docs. ' +
+            'On a CloudPage, Three corrections to the official docs. ' +
             '(1) The docs state this returns a numeric status, but it actually returns the response body as a string. ' +
             '(2) The argument count is a discontinuous overload, not a simple range: only a 1-argument call (url only) or the full 6-argument call are valid. ' +
             'Calling with 2, 3, 4, or 5 arguments throws "Unable to retrieve security descriptor for this frame." ' +
             'The trailing five arguments (continueOnError, emptyContentHandling, headerNames, headerValues, statusVariable) form an all-or-nothing group — you must supply all five together or none. ' +
             'This contradicts the older claim that "all six arguments are required" (the 1-argument form works) as well as the docs listing arguments 3-6 as independently optional. ' +
-            '(3) Even on a successful 6-argument call the statusVariable out-parameter was observed empty (statusVariable.length === 0, statusVariable[0] === undefined), so the numeric status is not reliably delivered in a CloudPage context — read the returned body string and do not depend on statusVariable[0].',
+            '(3) Even on a successful 6-argument call the statusVariable out-parameter is empty (statusVariable.length === 0, statusVariable[0] === undefined), so the numeric status is not reliably delivered in a CloudPage context — read the returned body string and do not depend on statusVariable[0].',
         description:
             'Performs an HTTP GET request and returns the response body as a string. ' +
             'Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. ' +
             'Valid call forms are exactly two: HTTPGet(url) with a single argument, or the full 6-argument form; ' +
             'passing 2-5 arguments is an argument count it does not accept and throws the generic "Unable to retrieve security descriptor for this frame." error. ' +
-            'The statusVariable out-parameter is unreliable (observed empty even on success), so read the body from the return value.',
+            'The statusVariable out-parameter is unreliable (empty even on success), so read the body from the return value.',
         params: [
             { name: 'url', description: 'URL to request', type: 'string' },
             {
@@ -1357,7 +1355,7 @@ export const PLATFORM_FUNCTIONS = [
             {
                 name: 'statusVariable',
                 description:
-                    'Array intended to receive the status code, but observed empty at runtime even on success — do not rely on it. Only valid in the 6-argument form (co-required with the other trailing arguments).',
+                    'Array intended to receive the status code, but empty at runtime even on success — do not rely on it. Only valid in the 6-argument form (co-required with the other trailing arguments).',
                 type: 'number[]',
                 optional: true,
             },
@@ -1378,7 +1376,7 @@ export const PLATFORM_FUNCTIONS = [
             '    ["sampleValue"],\n' +
             '    status\n' +
             ');\n' +
-            '// Note: status[0] is unreliable (observed empty); read the body from `content`.\n' +
+            '// Note: status[0] is unreliable (empty); read the body from `content`.\n' +
             'var parsed = Platform.Function.ParseJSON(content);',
     },
     {
@@ -1398,19 +1396,19 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified on a CloudPage. Three corrections to the official docs. ' +
+            'On a CloudPage, Three corrections to the official docs. ' +
             '(1) The argument count is a discontinuous overload, not a simple range: only a 3-argument call (url, contentType, payload) or the full 6-argument call are valid. ' +
             'Calling with 4 or 5 arguments throws "Unable to retrieve security descriptor for this frame." ' +
             'The trailing three arguments (headerNames, headerValues, response) form an all-or-nothing group, so the docs listing them as independently optional is wrong. ' +
             '(2) A 4xx or 5xx response is never handed back as a status code — it throws "An error occurred when attempting to evaluate a HTTPPost function call.  See inner exception for details." ' +
             'The docs branch on statusCode == 200 as if a failing status were observable; it is not, so wrap the call in try/catch. ' +
             'Successful 2xx statuses (200, 201, 204) from the same host are returned normally, which rules out a transport-level explanation. ' +
-            '(3) Even on a successful call the response out-parameter was observed empty (response.length === 0, response[0] === undefined), so the body is not delivered in a CloudPage context — use HTTP.Post when you need the response body.',
+            '(3) Even on a successful call the response out-parameter is empty (response.length === 0, response[0] === undefined), so the body is not delivered in a CloudPage context — use HTTP.Post when you need the response body.',
         description:
             'Performs an HTTP POST request with a content type and payload. ' +
             'Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. ' +
             'Returns the HTTP status code as a number (e.g. 200 for success). ' +
-            'The optional response out-parameter is unreliable — in runtime tests it stayed empty even for successful requests, so read the status code from the return value and use HTTP.Post / a WSProxy call when you need the response body.',
+            'The optional response out-parameter is unreliable — it stays empty even for successful requests, so read the status code from the return value and use HTTP.Post / a WSProxy call when you need the response body.',
         params: [
             { name: 'url', description: 'URL to post to', type: 'string' },
             { name: 'contentType', description: 'MIME type of the request body', type: 'string' },
@@ -1430,7 +1428,7 @@ export const PLATFORM_FUNCTIONS = [
             {
                 name: 'response',
                 description:
-                    'Array intended to receive the response body. Unreliable — observed empty even on successful (200) responses; do not depend on it.',
+                    'Array intended to receive the response body. Unreliable — empty even on successful (200) responses; do not depend on it.',
                 type: 'array',
                 optional: true,
             },
@@ -1451,7 +1449,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified on a CloudPage. Two corrections to the official docs: ' +
+            'On a CloudPage, Two corrections to the official docs: ' +
             '(1) The docs type the argument as `string or string[]` and describe passing an "array of strings"; ' +
             'at runtime passing an array (or any non-string object) throws `System.InvalidOperationException: ' +
             'Unable to retrieve security descriptor for this frame`. A single string, boolean, or number is accepted: ' +
@@ -1693,7 +1691,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the three optional parameters the docs describe cannot be ' +
+            'On a CloudPage, the three optional parameters the docs describe cannot be ' +
             'reached from SSJS. Every shape of the 2nd argument (regionName) — string literal, ' +
             'concatenation, variable, empty string, null — is rejected with an "invalid parameter value ' +
             '... Parameter Name: ImpressionRegionName, Parameter Ordinal: 2, Parameter Type: ' +
@@ -1750,7 +1748,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the single-argument form does return the content once the ' +
+            'On a CloudPage, the single-argument form does return the content once the ' +
             'name resolves, but the three optional parameters the docs describe cannot be reached from ' +
             'SSJS. Every shape of the 2nd argument (regionName) — string literal, concatenation, ' +
             'variable, empty string, null — is rejected with an "invalid parameter value ... Parameter ' +

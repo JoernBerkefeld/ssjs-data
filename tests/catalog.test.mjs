@@ -135,7 +135,7 @@ test('confirmed modern native absences retain exact owners and derived lookup id
         ['Array.prototype', 'findLastIndex', false, 'number'],
     ];
     const catalog = buildCatalog();
-    const qualification = 'Listed return type is reference-only, not observed in SSJS.';
+    const qualification = 'Listed return type is reference-only, not produced in SSJS.';
     for (const [owner, member, isStatic, returnType] of expected) {
         const matches = KNOWN_UNSUPPORTED.filter((entry) => entry.member === member);
         assert.equal(matches.length, 1, `${owner}.${member}: unique catalog record`);
@@ -177,8 +177,8 @@ test('confirmed modern native absences retain exact owners and derived lookup id
             entry.suggestion,
             /before Core loading, with Core 1\.1\.1, and with Core 1\.1\.5/,
         );
-        assert.match(entry.suggestion, /Email and other contexts were not tested/);
-        assert.match(entry.suggestion, /No verified polyfill is bundled/);
+        assert.match(entry.suggestion, /Email and other contexts are not covered/);
+        assert.match(entry.suggestion, /No polyfill is bundled/);
         assert.doesNotMatch(
             entry.suggestion,
             /https?:|MCDEV|\bQA\b|\bMID\b|_verification-db|evidence\//,

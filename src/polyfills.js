@@ -407,7 +407,7 @@ export const POLYFILLABLE_METHODS = [
         ambiguousWithString: false,
         caveat: 'Only the two-argument delete form splice(start, deleteCount) works (deleteCount is clamped to the remaining length). The one-argument form splice(start) throws, and the insert form overwrites from the left instead of splicing. Apply the shipped polyfill for those cases.',
         description:
-            'Array.prototype.splice(start, deleteCount, item1, …, itemN) works in SFMC SSJS only for the two-argument delete form splice(start, deleteCount) (deleteCount may exceed the remaining length). The one-argument form splice(start) throws "Index was outside the bounds of the array." The insert form is also broken: as soon as a third argument (item1) is passed, the engine ignores start and deleteCount and just overwrites from the left with the items to insert. A polyfill is needed for the one-argument delete form and for any insert; it also accepts unlimited additional items. Verified on a CloudPage.',
+            'Array.prototype.splice(start, deleteCount, item1, …, itemN) works in SFMC SSJS only for the two-argument delete form splice(start, deleteCount) (deleteCount may exceed the remaining length). The one-argument form splice(start) throws "Index was outside the bounds of the array." The insert form is also broken: as soon as a third argument (item1) is passed, the engine ignores start and deleteCount and just overwrites from the left with the items to insert. A polyfill is needed for the one-argument delete form and for any insert; it also accepts unlimited additional items.',
         polyfill:
             '/**\n' +
             ' * Polyfill for Array.prototype.splice (SFMC SSJS).\n' +

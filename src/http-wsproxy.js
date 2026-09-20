@@ -214,7 +214,7 @@ export const WSPROXY_METHODS = [
             'Object with Status, HasMoreRows, RequestID, and Results array. When a result set is paged, Status is "MoreDataAvailable" and HasMoreRows is true; the final page returns Status "OK" and HasMoreRows false.',
         syntax: '<WSProxyInstance>.retrieve(objectType, columns[, filter[, retrieveOptions[, requestProps]]])',
         officialDocsNote:
-            'Runtime verified on a CloudPage: retrieve(objectType, columns, null, { BatchSize: 2 }, { QueryAllAccounts: false }) against a 6-row Data Extension returned a first page with Status "MoreDataAvailable", HasMoreRows true, a RequestID, and exactly 2 rows — the retrieveOptions.BatchSize argument pages cleanly without throwing. Continuation via the requestProps.ContinueRequest field works: setting props.ContinueRequest to the returned RequestID and calling retrieve again returned each subsequent page (3 pages of 2 rows, 6 total), with the RequestID held constant across the sequence and HasMoreRows flipping to false (Status "OK") on the final page. This is a retrieve-only paging alternative to getNextBatch. BatchSize caps at 2500; larger values are ignored.',
+            'Retrieve(objectType, columns, null, { BatchSize: 2 }, { QueryAllAccounts: false }) against a 6-row Data Extension returned a first page with Status "MoreDataAvailable", HasMoreRows true, a RequestID, and exactly 2 rows — the retrieveOptions.BatchSize argument pages cleanly without throwing. Continuation via the requestProps.ContinueRequest field works: setting props.ContinueRequest to the returned RequestID and calling retrieve again returned each subsequent page (3 pages of 2 rows, 6 total), with the RequestID held constant across the sequence and HasMoreRows flipping to false (Status "OK") on the final page. This is a retrieve-only paging alternative to getNextBatch. BatchSize caps at 2500; larger values are ignored.',
         example:
             'var api = new Script.Util.WSProxy();\n' +
             'var cols = ["Name", "CustomerKey", "Status"];\n' +
@@ -265,7 +265,7 @@ export const WSPROXY_METHODS = [
             '}',
         isConfirmed: true,
         officialDocsNote:
-            'Runtime (CloudPage) proved the full paginated continuation: a natural retrieve of a Data Extension seeded with 2600 rows returned the first page with Status "MoreDataAvailable", HasMoreRows true, a RequestID, and exactly 2500 rows (the default page size); passing that objectType + RequestID to getNextBatch returned the next page with Status "OK", HasMoreRows false, and the remaining 100 rows, for a total of 2600 across two pages. Each Results row exposes a Properties array of { Name, Value } pairs. Pagination therefore happens naturally once a result set exceeds the 2500-row default page size. Calling getNextBatch with a completed/invalid RequestID returns Status "Error: The RequestID sent through ContinueRequest does not exist." The call maps to the SOAP ContinueRequest operation.',
+            'The full paginated continuation: a natural retrieve of a Data Extension holding 2600 rows returned the first page with Status "MoreDataAvailable", HasMoreRows true, a RequestID, and exactly 2500 rows (the default page size); passing that objectType + RequestID to getNextBatch returned the next page with Status "OK", HasMoreRows false, and the remaining 100 rows, for a total of 2600 across two pages. Each Results row exposes a Properties array of { Name, Value } pairs. Pagination therefore happens naturally once a result set exceeds the 2500-row default page size. Calling getNextBatch with a completed/invalid RequestID returns Status "Error: The RequestID sent through ContinueRequest does not exist." The call maps to the SOAP ContinueRequest operation.',
     },
     {
         name: 'performItem',
@@ -580,7 +580,7 @@ export const HTTPHEADER_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): reads INBOUND request headers (e.g. `Host`, `User-Agent`) and ' +
+            'On a CloudPage, reads INBOUND request headers (e.g. `Host`, `User-Agent`) and ' +
             'returns their string value. It does NOT read back a header you set earlier with ' +
             '`HTTPHeader.SetValue(...)` — GetValue for a just-set custom header returns `null`. ' +
             'Treat GetValue and SetValue as operating on separate (inbound vs outbound) header collections.',
@@ -604,7 +604,7 @@ export const HTTPHEADER_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): `content-length` cannot be changed (response keeps the real body ' +
+            'On a CloudPage, `content-length` cannot be changed (response keeps the real body ' +
             'length). Official docs also claim `host` is protected, but `SetValue("Host", …)` emits an outbound ' +
             '`Host` header. Boolean `value` is accepted but stringified with CLR capitalization (`True`/`False`).',
         description:
@@ -632,7 +632,7 @@ export const HTTPHEADER_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): returns `undefined` (typeof "undefined"), NOT the `"OK"` string ' +
+            'On a CloudPage, returns `undefined` (typeof "undefined"), NOT the `"OK"` string ' +
             'implied by some docs. Do not rely on the return value; call it for its side effect only.',
         description: 'Removes the specified entry from the HTTP header. Returns `undefined`.',
         params: [
@@ -824,8 +824,8 @@ export const SCRIPT_UTIL_REQUEST_METHODS = [
  * Writable config properties shared by the objects returned by
  * `new Script.Util.HttpGet(url)` and `new Script.Util.HttpRequest(url)`.
  *
- * `isConfirmed` marks a property whose runtime type/behaviour was validated with a
- * live CloudPage test (see docs/joern/http-introspection-*). `differsFromOfficialDocs`
+ * `isConfirmed` marks a property whose runtime type/behaviour has been confirmed on a
+ * CloudPage. `differsFromOfficialDocs`
  * flags an entry that contradicts the official Salesforce docs; `officialDocsNote`
  * describes that discrepancy in one sentence for rendering on ssjs.guide.
  *
@@ -1021,7 +1021,7 @@ export const WSPROXY_RESULT_PROPERTIES = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): Status is NOT limited to "OK"/"Error". A paged retrieve returns ' +
+            'On a CloudPage, Status is NOT limited to "OK"/"Error". A paged retrieve returns ' +
             '"MoreDataAvailable"; a rejected write returns "InvalidRequest"; an unknown object type returns the ' +
             'whole message as the status value (e.g. "Error: NoSuchObjectTypeXyz is not a valid ObjectType."). ' +
             'Test for equality with "OK" rather than testing for "Error".',
@@ -1041,7 +1041,7 @@ export const WSPROXY_RESULT_PROPERTIES = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the collection is array-LIKE but not a real JavaScript array — ' +
+            'On a CloudPage, the collection is array-LIKE but not a real JavaScript array — ' +
             '`Results instanceof Array` is false even though `.length` and `.slice` exist and index access works, ' +
             'so iterate with a classic for loop over `.length` instead of using instanceof. A retrieve that ' +
             'matches nothing yields a zero-length collection, but a rejected request (invalid ObjectType) sets ' +
@@ -1064,9 +1064,9 @@ export const WSPROXY_RESULT_PROPERTIES = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): the top-level StatusMessage was undefined on every retrieve, create, ' +
-            'update and delete result observed, and only present — as an EMPTY string — on performItem, where ' +
-            'the actual failure text was carried by Results[0].StatusMessage. Read per-item messages from the ' +
+            'On a CloudPage, the top-level StatusMessage is undefined on every retrieve, create, ' +
+            'update and delete result, and only present — as an EMPTY string — on performItem, where ' +
+            'the actual failure text is carried by Results[0].StatusMessage. Read per-item messages from the ' +
             'Results entries; do not rely on this field.',
     },
 ];
@@ -1074,7 +1074,7 @@ export const WSPROXY_RESULT_PROPERTIES = [
 // ── WSProxy per-item result entry shape ─────────────────────────────────────
 // Shape of each entry in the `Results` array returned by the CRUD/perform
 // methods (createItem/createBatch/updateItem/updateBatch/deleteItem/deleteBatch/
-// performItem/performBatch). Runtime-proven on live CloudPages. For retrieve()/
+// performItem/performBatch). Works on live CloudPages. For retrieve()/
 // getNextBatch(), `Results` instead holds retrieved rows, so entries are typed as
 // `WspResult` loosely (extra row fields are permitted via the index signature).
 // Emitted in the generated .d.ts as `interface WspResult`.
@@ -1100,7 +1100,7 @@ export const WSP_RESULT_ENTRY_PROPERTIES = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): success entries carry a descriptive message rather than an empty ' +
+            'On a CloudPage, success entries carry a descriptive message rather than an empty ' +
             'string, so a non-empty StatusMessage does not indicate failure. Always branch on StatusCode.',
     },
     {
@@ -1120,7 +1120,7 @@ export const WSP_RESULT_ENTRY_PROPERTIES = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): ErrorCode is a number (typeof "number"), not a string, and it stays 0 ' +
+            'On a CloudPage, ErrorCode is a number (typeof "number"), not a string, and it stays 0 ' +
             'even on failed items whose StatusCode is "Error". It is never absent or empty on success as the ' +
             'docs imply — it is simply 0 in both cases.',
     },
@@ -1162,7 +1162,7 @@ export const WSP_RESULT_ENTRY_PROPERTIES = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): Task.StatusCode can read "OK" and Task.InteractionObjectID can hold a ' +
+            'On a CloudPage, Task.StatusCode can read "OK" and Task.InteractionObjectID can hold a ' +
             'GUID even when the enclosing result Status is "InvalidRequest" and Results[0].StatusCode is ' +
             '"Error" — the task was created but not queued. Task.ID is null and Task.TblAsyncID is 0 in that ' +
             'state, so never treat a populated Task as proof the action ran; check the outer Status and ' +
@@ -1173,11 +1173,11 @@ export const WSP_RESULT_ENTRY_PROPERTIES = [
         type: 'string',
         optional: true,
         description:
-            'Per-entry request identifier. Observed as null on every result entry at runtime — read the top-level RequestID instead.',
+            'Per-entry request identifier. Null on every result entry at runtime — read the top-level RequestID instead.',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime-verified (CloudPage): present as a key on the entry but always null, on both success and ' +
+            'On a CloudPage, present as a key on the entry but always null, on both success and ' +
             'failure. The usable request identifier is the top-level RequestID on the result object.',
     },
 ];
