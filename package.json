@@ -1,6 +1,6 @@
 {
     "name": "ssjs-data",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "description": "Canonical SSJS (Server-Side JavaScript) function catalog, Core library objects, Platform methods, and globals for SFMC tooling",
     "type": "module",
     "main": "src/index.js",
@@ -10,10 +10,7 @@
         "./sfmc-globals.d.ts": "./dist/sfmc-globals.d.ts",
         "./site-index.json": "./dist/site-index.json"
     },
-    "files": [
-        "src",
-        "dist"
-    ],
+    "files": ["src", "dist"],
     "repository": {
         "type": "git",
         "url": "git+https://github.com/JoernBerkefeld/ssjs-data.git"
@@ -63,8 +60,6 @@
         "typescript": "^7.0.2"
     },
     "lint-staged": {
-        "*.{js,mjs,cjs}": [
-            "eslint --fix"
-        ]
+        "*.{js,mjs,cjs}": ["eslint --fix"]
     }
 }
