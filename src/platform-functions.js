@@ -1236,9 +1236,9 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'The official docs list a third options argument and type the return value as an object; at runtime the call takes exactly two arguments (a third throws) and the statusArray is inert (never populated). The documented OverallStatus string return does not occur: every two-argument call throws a catchable exception carrying only the generic wrapper message "An error occurred when attempting to evaluate an InvokeExtract function call.  See inner exception for details.", and the inner exception is not surfaced to SSJS, so the cause is not observable. The string return type is therefore per-docs only.',
+            'The official docs list a third options argument and type the return value as an object; at runtime the call takes exactly two arguments (a third throws) and the statusArray is inert (never populated). The documented OverallStatus string return was not reproduced: each tested two-argument call threw a catchable exception carrying only the generic wrapper message "An error occurred when attempting to evaluate an InvokeExtract function call.  See inner exception for details.", and the inner exception is not surfaced to SSJS, so the cause is not observable. The string return type is therefore per-docs only.',
         description:
-            'Invokes the Extract SOAP API method on the specified object. The docs describe the return as the OverallStatus message string; that string does not occur.',
+            'Invokes the Extract SOAP API method on the specified object. The docs describe the return as the OverallStatus message string; that string was not reproduced in testing.',
         params: [
             {
                 name: 'apiObject',
@@ -1309,13 +1309,13 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'On a CloudPage, Three corrections to the official docs. ' +
+            'On a CloudPage, three corrections to the official docs. ' +
             '(1) The docs state this returns a numeric status, but it actually returns the response body as a string. ' +
             '(2) The argument count is a discontinuous overload, not a simple range: only a 1-argument call (url only) or the full 6-argument call are valid. ' +
             'Calling with 2, 3, 4, or 5 arguments throws "Unable to retrieve security descriptor for this frame." ' +
             'The trailing five arguments (continueOnError, emptyContentHandling, headerNames, headerValues, statusVariable) form an all-or-nothing group — you must supply all five together or none. ' +
             'This contradicts the older claim that "all six arguments are required" (the 1-argument form works) as well as the docs listing arguments 3-6 as independently optional. ' +
-            '(3) Even on a successful 6-argument call the statusVariable out-parameter is empty (statusVariable.length === 0, statusVariable[0] === undefined), so the numeric status is not reliably delivered in a CloudPage context — read the returned body string and do not depend on statusVariable[0].',
+            '(3) In a tested successful 6-argument call the statusVariable out-parameter was empty (statusVariable.length === 0, statusVariable[0] === undefined), so the numeric status is not reliably delivered in a CloudPage context — read the returned body string and do not depend on statusVariable[0].',
         description:
             'Performs an HTTP GET request and returns the response body as a string. ' +
             'Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. ' +
@@ -1396,14 +1396,14 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'On a CloudPage, Three corrections to the official docs. ' +
+            'On a CloudPage, three corrections to the official docs. ' +
             '(1) The argument count is a discontinuous overload, not a simple range: only a 3-argument call (url, contentType, payload) or the full 6-argument call are valid. ' +
             'Calling with 4 or 5 arguments throws "Unable to retrieve security descriptor for this frame." ' +
             'The trailing three arguments (headerNames, headerValues, response) form an all-or-nothing group, so the docs listing them as independently optional is wrong. ' +
-            '(2) A 4xx or 5xx response is never handed back as a status code — it throws "An error occurred when attempting to evaluate a HTTPPost function call.  See inner exception for details." ' +
-            'The docs branch on statusCode == 200 as if a failing status were observable; it is not, so wrap the call in try/catch. ' +
+            '(2) In the tested 4xx and 5xx responses, no status code was returned; the call threw "An error occurred when attempting to evaluate a HTTPPost function call.  See inner exception for details." ' +
+            'The docs branch on statusCode == 200 as if a failing status were observable; it was not observable in these tests, so wrap the call in try/catch. ' +
             'Successful 2xx statuses (200, 201, 204) from the same host are returned normally, which rules out a transport-level explanation. ' +
-            '(3) Even on a successful call the response out-parameter is empty (response.length === 0, response[0] === undefined), so the body is not delivered in a CloudPage context — use HTTP.Post when you need the response body.',
+            '(3) In tested successful calls the response out-parameter was empty (response.length === 0, response[0] === undefined), so the body is not delivered in a CloudPage context — use HTTP.Post when you need the response body.',
         description:
             'Performs an HTTP POST request with a content type and payload. ' +
             'Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. ' +
@@ -1449,7 +1449,7 @@ export const PLATFORM_FUNCTIONS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'On a CloudPage, Two corrections to the official docs: ' +
+            'On a CloudPage, two corrections to the official docs: ' +
             '(1) The docs type the argument as `string or string[]` and describe passing an "array of strings"; ' +
             'at runtime passing an array (or any non-string object) throws `System.InvalidOperationException: ' +
             'Unable to retrieve security descriptor for this frame`. A single string, boolean, or number is accepted: ' +

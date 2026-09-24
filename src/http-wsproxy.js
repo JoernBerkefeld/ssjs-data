@@ -1064,9 +1064,9 @@ export const WSPROXY_RESULT_PROPERTIES = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'On a CloudPage, the top-level StatusMessage is undefined on every retrieve, create, ' +
-            'update and delete result, and only present — as an EMPTY string — on performItem, where ' +
-            'the actual failure text is carried by Results[0].StatusMessage. Read per-item messages from the ' +
+            'In the tested CloudPage calls, the top-level StatusMessage was undefined on each observed retrieve, create, ' +
+            'update and delete result, and was present — as an EMPTY string — on performItem, where ' +
+            'the actual failure text was carried by Results[0].StatusMessage. Read per-item messages from the ' +
             'Results entries; do not rely on this field.',
     },
 ];
@@ -1173,11 +1173,11 @@ export const WSP_RESULT_ENTRY_PROPERTIES = [
         type: 'string',
         optional: true,
         description:
-            'Per-entry request identifier. Null on every result entry at runtime — read the top-level RequestID instead.',
+            'Per-entry request identifier. Observed as null on each tested result entry — read the top-level RequestID instead.',
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'On a CloudPage, present as a key on the entry but always null, on both success and ' +
-            'failure. The usable request identifier is the top-level RequestID on the result object.',
+            'In the tested CloudPage calls, this was present as a key on the entry but null on both success and ' +
+            'failure. The usable request identifier was the top-level RequestID on the result object.',
     },
 ];

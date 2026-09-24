@@ -375,10 +375,10 @@ export const ACCOUNT_METHODS = [
         params: [{ name: 'key', description: 'External key of the account.', type: 'string' }],
         returnType: 'AccountInstance',
         returnDescription:
-            'An Account instance. The returned object exposes a single enumerable member, the Update method (Stringifies as {"Update":"function"}). It carries no readable account fields — inst.ID, inst.Name and inst.CustomerKey all read back undefined — and the same stub is returned for any key value (a CustomerKey GUID, a numeric MID, a name, or a nonsense string). Use the returned instance to call <AccountInstance>.Update(...); use Account.Retrieve to read account fields.',
+            'An Account instance. The returned object exposes a single enumerable member, the Update method (Stringifies as {"Update":"function"}). It carries no readable account fields — inst.ID, inst.Name and inst.CustomerKey all read back undefined — and the same stub was observed for each tested key value (a CustomerKey GUID, a numeric MID, a name, or a nonsense string). Use the returned instance to call <AccountInstance>.Update(...); use Account.Retrieve to read account fields.',
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Account.Init returns the same instance regardless of the key passed — a CustomerKey GUID, a numeric MID, a name, or a nonsense key all yield an identical stub exposing only an Update function ({"Update":"function"}). No account properties are readable from the instance (ID/Name/CustomerKey return undefined), so Init does not itself confirm whether the key resolves to a real account.',
+            'In the tested account, Account.Init returned the same instance for each key tried — a CustomerKey GUID, a numeric MID, a name, and a nonsense key each yielded an identical stub exposing only an Update function ({"Update":"function"}). No account properties were readable from the tested instances (ID/Name/CustomerKey returned undefined), so Init does not itself confirm whether the key resolves to a real account.',
         syntax: 'Account.Init(key)',
         example: 'Platform.Load("core", "1.1.5");\nvar myAccount = Account.Init("MyCustomerKey");',
         isConfirmed: true,
@@ -400,10 +400,10 @@ export const ACCOUNT_METHODS = [
         ],
         returnType: 'object[]',
         returnDescription:
-            'On a match returns an array-like collection of account rows (it exposes .length and .push and Stringifies as a JSON array with length 1), though it is not an instanceof Array in this engine. On no match returns the same array-like shape with .length of 0 (it still exposes .push, Stringifies as [] and has no enumerable keys); that zero-length collection is itself falsy in this engine, so both a truthy check and a .length check reject it. Filtering by Property "Name", "ID" (the running account MID or greaterThan 0), or "CustomerKey" each returns the running session\'s own account row. Filtering for any child BU — by Name, by ID, or by CustomerKey (GUID or plain-string key) — returns the empty [] shape, as did unrecognized properties "MID" and "AccountID". Only the running session\'s own account resolves. A matched row exposes the full Account SOAP object; exposed fields include AccountType, ParentID, BrandID, PrivateLabelID, ReportingParentID, Name, Email, FromName, BusinessName, Phone, Address, Fax, City, State, Zip, Country, IsActive, IsTestAccount, OrgID, DBID, ParentName, CustomerID, DeletedDate, EditionID, Children, Subscription, PrivateLabels, BusinessRules, AccountUsers, InheritAddress, IsTrialAccount, Locale, ParentAccount, TimeZone (a nested object with ID/Name/CustomerKey), Roles, StackID, SalesForceID, LanguageLocale, IndustryCode, Edition, SalesforceOrgID, AccountState, SubscriptionRestrictionFlags, Client, PartnerKey, PartnerProperties, CreatedDate, ModifiedDate, ID, ObjectID, CustomerKey, Owner, CorrelationID, ObjectState and IsPlatformObject, plus a *Specified boolean companion for many numeric/date fields.',
+            'On a match returns an array-like collection of account rows (it exposes .length and .push and Stringifies as a JSON array with length 1), though it is not an instanceof Array in this engine. On no match returns the same array-like shape with .length of 0 (it still exposes .push, Stringifies as [] and has no enumerable keys); that zero-length collection is itself falsy in this engine, so both a truthy check and a .length check reject it. Filtering by Property "Name", "ID" (the running account MID or greaterThan 0), or "CustomerKey" each returns the running session\'s own account row. Filtering for the tested child BU — by Name, by ID, or by CustomerKey (GUID or plain-string key) — returned the empty [] shape, as did the tested unrecognized properties "MID" and "AccountID". In these observations, only the running session\'s own account resolved. A matched row exposes the full Account SOAP object; exposed fields include AccountType, ParentID, BrandID, PrivateLabelID, ReportingParentID, Name, Email, FromName, BusinessName, Phone, Address, Fax, City, State, Zip, Country, IsActive, IsTestAccount, OrgID, DBID, ParentName, CustomerID, DeletedDate, EditionID, Children, Subscription, PrivateLabels, BusinessRules, AccountUsers, InheritAddress, IsTrialAccount, Locale, ParentAccount, TimeZone (a nested object with ID/Name/CustomerKey), Roles, StackID, SalesForceID, LanguageLocale, IndustryCode, Edition, SalesforceOrgID, AccountState, SubscriptionRestrictionFlags, Client, PartnerKey, PartnerProperties, CreatedDate, ModifiedDate, ID, ObjectID, CustomerKey, Owner, CorrelationID, ObjectState and IsPlatformObject, plus a *Specified boolean companion for many numeric/date fields.',
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Account.Retrieve resolves only the running session\'s own account, and it does so via Property "Name", "ID", or "CustomerKey". For "ID", both the numeric form and the string form of the running account\'s MID resolve. Requests for any other (child) business unit return a zero-length collection for every property and value tried — by Name, by ID, and by CustomerKey (both GUID keys and plain-string keys). The properties "MID", "AccountID" and "BusinessUnitID" are not recognized and always return empty. Neither the matched nor the empty collection is an instanceof Array in this engine, so guard with a truthy .length check before indexing.',
+            'In the tested account, Account.Retrieve resolved the running session\'s own account via Property "Name", "ID", or "CustomerKey". For "ID", both the numeric form and the string form of the running account\'s MID resolved. Requests for the tested child business unit returned a zero-length collection for each property and value tried — by Name, by ID, and by CustomerKey (both GUID keys and plain-string keys). The tested properties "MID", "AccountID" and "BusinessUnitID" returned empty. Neither the matched nor the empty collection is an instanceof Array in this engine, so guard with a truthy .length check before indexing.',
         syntax: 'Account.Retrieve(filter)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -430,9 +430,9 @@ export const ACCOUNT_METHODS = [
         returnType: 'string',
         returnEnum: ['OK', 'Error'],
         returnDescription:
-            'Returns a string. On failure it returns the plain string "Error"; for one payload shape it instead throws the plain string "Error Updating Account." (which one occurs depends on the payload). The documented success return is the string "OK"; that success return does not occur, and no field change persists. Because it can throw a plain string, wrap the call in try/catch and treat any non-"OK" return — and any throw — as failure.',
+            'Returns a string. In the tested failures it returned the plain string "Error"; for one tested payload shape it instead threw the plain string "Error Updating Account." The documented success return is the string "OK"; that success return was not reproduced, and no tested field change persisted. Because it can throw a plain string, wrap the call in try/catch and treat any non-"OK" return — and any throw — as failure.',
         officialDocsNote:
-            '<AccountInstance>.Update(...) returns the plain string "Error" (typeof "string") for each payload — { CustomerKey }, { FromName }, { BusinessName }, a CustomerKey-only object, an empty object {}, and an { ID, CustomerKey } object. None of these writes persist: each field reads back unchanged (CustomerKey keeps its original GUID; FromName and BusinessName keep their original values). CustomerKey is a safe, IsUpdatable field, yet updating it via the Init stub still returns "Error" and does not persist. The only object that carries an Update method is the Account.Init(...) stub; the row objects returned by Account.Retrieve have no Update method (typeof row.Update is "undefined"), and calling row.Update(...) throws a Jint "Object expected: Update" exception. A { Description } payload throws the plain string "Error Updating Account." instead of returning "Error" (Description is not a real SOAP Account field). The official-doc "OK" success return does not occur for any payload. Separately, a child business unit cannot be resolved from the current session (Account.Retrieve returns the empty [] shape) and Account.Init(<child BU name>).Update(...) also returns "Error".',
+            'In the tested account, <AccountInstance>.Update(...) returned the plain string "Error" (typeof "string") for each payload tried — { CustomerKey }, { FromName }, { BusinessName }, a CustomerKey-only object, an empty object {}, and an { ID, CustomerKey } object. None of these tested writes persisted: each field read back unchanged (CustomerKey kept its original GUID; FromName and BusinessName kept their original values). CustomerKey is a safe, IsUpdatable field, yet the tested update through the Init stub returned "Error" and did not persist. The tested Account.Init(...) stub carried an Update method; the row objects returned by Account.Retrieve had no Update method (typeof row.Update was "undefined"), and calling row.Update(...) threw a Jint "Object expected: Update" exception. A tested { Description } payload threw the plain string "Error Updating Account." instead of returning "Error" (Description is not a real SOAP Account field). The official-doc "OK" success return was not reproduced. Separately, the tested child business unit was not resolved from the current session (Account.Retrieve returned the empty [] shape), and Account.Init(<child BU name>).Update(...) also returned "Error".',
         syntax: '<AccountInstance>.Update(properties)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -810,9 +810,9 @@ export const PORTFOLIO_METHODS = [
             'DEPRECATED — the Portfolio is a legacy Classic Content / Classic Email Studio feature superseded by ' +
             'Content Builder (Classic Content reached end of life on 24 Apr 2023); prefer Content Builder Asset REST ' +
             'endpoints for new work. ' +
-            'The official docs state Update returns "OK" on success or throws on failure. The method is non-functional: ' +
-            'every call either returns the string "Error" or throws "Error Updating Portfolio", and the stored record never ' +
-            'changes — for instances created via Init(CustomerKey) and Init(ObjectID), payloads with a ' +
+            'The official docs state Update returns "OK" on success or throws on failure. No working invocation was observed: ' +
+            'each tested call either returned the string "Error" or threw "Error Updating Portfolio", and the stored record did not ' +
+            'change in the tested cases — for instances created via Init(CustomerKey) and Init(ObjectID), payloads with a ' +
             'single field ({DisplayName} / {Description}), payloads repeating the identifying fields ' +
             '({CustomerKey, DisplayName, CategoryID}), payloads carrying the ObjectID, the full Add-shaped payload ' +
             'including FileName + FileLocation, an array-wrapped payload, and a no-op update writing the current ' +
@@ -1687,13 +1687,13 @@ export const FILTER_DEFINITION_METHODS = [
         differsFromOfficialDocs: true,
         nonFunctionalAtRuntime: true,
         officialDocsNote:
-            '`FilterDefinition.Add` has no working invocation: the documented simple-filter payload (`Filter: {Property, SimpleOperator, Value}` + `DataSource: { Type: "DataExtension", CustomerKey }`) returns the plain string `"Error"` (`typeof === "string"`) and does not create a retrievable definition (Core `Retrieve` and WSProxy `retrieve` both stay empty for the key used). The same `"Error"` return occurs under Core `"1"`, `"1.1.1"`, and `"1.1.5"`, and with CategoryID / alternate DataSource shapes. A LeftOperand/LogicalOperator/RightOperand complex `Filter` also returns `"Error"` (does not throw). Using a `DataFilter` property instead of `Filter` throws the raw string `"Error adding FilterDefinition"` (`typeof e === "string"`). WSProxy facts: `createItem("FilterDefinition", …)` fails and `deleteItem` reports a permission error. Filters can still be created outside Core (e.g. via mcdev `dataFilter` support or SOAP). The official docs imply Add returns `"OK"` or throws; the success (`"OK"`) path does not occur. Note: `Add` is a STATIC method on `FilterDefinition`; the instance returned by `Init()` exposes only `Update` and `Remove`.',
+            'No working `FilterDefinition.Add` invocation was observed: the documented simple-filter payload (`Filter: {Property, SimpleOperator, Value}` + `DataSource: { Type: "DataExtension", CustomerKey }`) returns the plain string `"Error"` (`typeof === "string"`) and does not create a retrievable definition (Core `Retrieve` and WSProxy `retrieve` both stay empty for the key used). The same `"Error"` return occurs under Core `"1"`, `"1.1.1"`, and `"1.1.5"`, and with CategoryID / alternate DataSource shapes. A LeftOperand/LogicalOperator/RightOperand complex `Filter` also returns `"Error"` (does not throw). Using a `DataFilter` property instead of `Filter` throws the raw string `"Error adding FilterDefinition"` (`typeof e === "string"`). WSProxy facts: `createItem("FilterDefinition", …)` fails and `deleteItem` reports a permission error. Filters can still be created outside Core (e.g. via mcdev `dataFilter` support or SOAP). The official docs imply Add returns `"OK"` or throws; the success (`"OK"`) path was not reproduced. Note: `Add` is a STATIC method on `FilterDefinition`; the instance returned by `Init()` exposes only `Update` and `Remove`.',
         requiresCoreLoad: true,
         minArgs: 1,
         maxArgs: 1,
         description:
             'Creates a new filter definition from the supplied properties. ' +
-            'The documented simple-filter payload returns the string `"Error"` and does not create a row, so Core `Add` has no working invocation. ' +
+            'The documented simple-filter payload returns the string `"Error"` and does not create a row, so no working Core `Add` invocation was observed. ' +
             'A `DataFilter` property (instead of `Filter`) throws the raw string `"Error adding FilterDefinition"`. Prefer creating definitions via mcdev/`dataFilter` or SOAP when Core Add returns `"Error"`.',
         params: [
             {
@@ -1749,14 +1749,14 @@ export const FILTER_DEFINITION_METHODS = [
         differsFromOfficialDocs: true,
         nonFunctionalAtRuntime: true,
         officialDocsNote:
-            '`FilterDefinition.Init("ssjs-datafilter-test")` returns an instance that exposes `Update` (`typeof === "function"`). The write method is non-functional: no `Update` invocation works. ' +
-            'The method fails with all three payload shapes tried, so the failure is not a single malformed/incomplete payload: ' +
+            '`FilterDefinition.Init("ssjs-datafilter-test")` returns an instance that exposes `Update` (`typeof === "function"`). No working `Update` invocation was observed. ' +
+            'The method failed with all three payload shapes tried, so the observations were not limited to a single malformed/incomplete payload: ' +
             '(1) a FULL Add-style payload (Name + CustomerKey + Description + `Filter: {Property, SimpleOperator, Value}` + `DataSource: {Type, CustomerKey}`) THROWS the raw string "Error updating FilterDefinition" (`typeof === "string"`); ' +
             '(2) the same payload WITHOUT `DataSource` also THROWS the raw string "Error updating FilterDefinition"; ' +
             '(3) a metadata-only payload (Name + CustomerKey + Description, no Filter/DataSource) returns the string "Error" (`typeof === "string"`, no throw). ' +
-            'After each attempt a follow-up `FilterDefinition.Retrieve` confirms Description was NOT changed (stayed empty) and the ObjectID was unchanged. ' +
+            'After each attempt a follow-up `FilterDefinition.Retrieve` confirmed Description was NOT changed (stayed empty) and the ObjectID was unchanged. ' +
             'WSProxy fact: the equivalent `updateItem("FilterDefinition", { CustomerKey: "ssjs-datafilter-test", Description: "..." })` returns `Status="Error"`. ' +
-            'Note the SOAP describe (`mcdev soap FilterDefinition`) reports Name/Description/CustomerKey/DataFilter as `IsUpdatable: true`, i.e. the SOAP schema marks these fields editable, yet no working `Update` invocation exists. The official docs imply Update returns "OK" or throws; the success ("OK") path does not occur. On failure the return form varies: a payload containing `Filter` throws the raw string "Error updating FilterDefinition", while a metadata-only payload returns the string "Error".',
+            'Note the SOAP describe (`mcdev soap FilterDefinition`) reports Name/Description/CustomerKey/DataFilter as `IsUpdatable: true`, i.e. the SOAP schema marks these fields editable, yet no working `Update` invocation was reproduced. The official docs imply Update returns "OK" or throws; the success ("OK") path was not reproduced. On failure the return form varies: a payload containing `Filter` throws the raw string "Error updating FilterDefinition", while a metadata-only payload returns the string "Error".',
         requiresCoreLoad: true,
         minArgs: 1,
         maxArgs: 1,
@@ -1794,10 +1794,10 @@ export const FILTER_DEFINITION_METHODS = [
         differsFromOfficialDocs: true,
         nonFunctionalAtRuntime: true,
         officialDocsNote:
-            '`FilterDefinition.Init("ssjs-datafilter-test")` returns an instance that exposes `Remove` (`typeof === "function"`). The write method is non-functional: no `Remove` invocation works. ' +
-            'Against an existing filter, `<instance>.Remove()` returns the string "Error" (`typeof === "string"`) and does NOT throw, and a follow-up `FilterDefinition.Retrieve` confirms the object was NOT deleted (still returned, same ObjectID). ' +
+            '`FilterDefinition.Init("ssjs-datafilter-test")` returns an instance that exposes `Remove` (`typeof === "function"`). No working `Remove` invocation was observed. ' +
+            'Against the tested existing filter, `<instance>.Remove()` returned the string "Error" (`typeof === "string"`) and did NOT throw, and a follow-up `FilterDefinition.Retrieve` confirmed the object was NOT deleted (still returned, same ObjectID). ' +
             'WSProxy fact: the equivalent `deleteItem("FilterDefinition", …)` returns `Status="Error"`. ' +
-            'The success ("OK") path does not occur. Consistent with the sibling write methods, failure surfaces as the string "Error" rather than the docs\' "OK"/throw.',
+            'The success ("OK") path was not reproduced. Consistent with the sibling write methods, failure surfaces as the string "Error" rather than the docs\' "OK"/throw.',
         requiresCoreLoad: true,
         minArgs: 0,
         maxArgs: 0,
@@ -3146,15 +3146,15 @@ export const SEND_DEFINITION_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Runtime behaviour differs sharply from the docs: the call **always throws** the string ' +
+            'Runtime behaviour differed sharply from the docs in the tested calls: each invocation threw the string ' +
             '`"Error adding EmailSendDefinition."`, yet the send definition **is created anyway** and is ' +
             'immediately retrievable via `Send.Definition.Retrieve` on the same page. This also occurs with a ' +
             'valid filter definition key plus a real list ID, with the list ID passed as a number and as a ' +
             'single-element array, with a publication list name, with a Data Extension key, and with the fifth ' +
-            'argument omitted — every shape threw, and the shapes using a valid list ID still created the object. ' +
-            'Because the throw is indistinguishable from a genuine failure, the only reliable success check is to ' +
-            'call `Send.Definition.Retrieve` for the new key after catching. No invocation shape ' +
-            'returns normally.',
+            'argument omitted — each tested shape threw, and the shapes using a valid list ID still created the object. ' +
+            'Because the observed throw is indistinguishable from a genuine failure, verify success by ' +
+            'calling `Send.Definition.Retrieve` for the new key after catching. No tested invocation shape ' +
+            'returned normally.',
         minArgs: 4,
         maxArgs: 5,
         description:
@@ -3191,8 +3191,8 @@ export const SEND_DEFINITION_METHODS = [
         ],
         returnType: 'never',
         returnDescription:
-            'Never returns normally — always throws the string `"Error adding EmailSendDefinition."`, even when ' +
-            'the send definition is created successfully. Verify by retrieving the new key afterwards.',
+            'No tested call returned normally; each threw the string `"Error adding EmailSendDefinition."`, even when ' +
+            'the send definition was created successfully. Verify by retrieving the new key afterwards.',
         syntax: 'Send.Definition.AddWithFilterDefinition(esdParams, sendClassificationKey, emailKey, filterDefinitionKey, listId)',
         example:
             'Platform.Load("core", "1.1.5");\n' +
@@ -3200,7 +3200,7 @@ export const SEND_DEFINITION_METHODS = [
             'try {\n' +
             '    Send.Definition.AddWithFilterDefinition(esdParams, "scKey", "test_email", "fdKey", 144);\n' +
             '} catch (ex) {\n' +
-            '    // always throws "Error adding EmailSendDefinition." - check whether it was created anyway\n' +
+            '    // tested calls threw "Error adding EmailSendDefinition." - check whether it was created anyway\n' +
             '}\n' +
             'var created = Send.Definition.Retrieve({ Property: "CustomerKey", SimpleOperator: "equals", Value: "filterDef_esd" }).length > 0;',
     },
@@ -3349,7 +3349,7 @@ export const SEND_DEFINITION_METHODS = [
         differsFromOfficialDocs: true,
         officialDocsNote:
             'Undocumented instance method that exists at runtime on the object returned by ' +
-            '`Send.Definition.Init(key)`. The method has no working invocation. Calling it with no arguments returns ' +
+            '`Send.Definition.Init(key)`. No working invocation was observed. Calling it with no arguments returns ' +
             '`"An EmailSendDefinition cannot be used in a test send to a list or group without a test email ' +
             'address."` even after a test address was stored on the record — set both through this object\'s own ' +
             '`Update({ TestEmailAddr: … })` (which returned `"OK"`) and through a WSProxy ' +
@@ -3374,7 +3374,7 @@ export const SEND_DEFINITION_METHODS = [
         returnType: 'string',
         returnEnum: ['OK'],
         returnDescription:
-            'Expected to return "OK". In testing it only ever returned error text describing a missing test email ' +
+            'Expected to return "OK". In the tested calls it returned only error text describing a missing test email ' +
             'address or failed email content validation.',
         syntax: '<SendDefinitionInstance>.TestSend([emailAddress])',
         example:
@@ -3416,9 +3416,9 @@ export const TRIGGERED_SEND_METHODS = [
         nonFunctionalAtRuntime: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'Exists and resolves (`typeof TriggeredSend.Add === "function"`) but it has no working invocation. ' +
-            'Every invocation of `TriggeredSend.Add` throws the string `Error adding TSD.`; ' +
-            '`TriggeredSend.LastMessage` is then always `An error occurred when attempting to evaluate a SetObjectProperty function ' +
+            'Exists and resolves (`typeof TriggeredSend.Add === "function"`), but no working invocation was observed. ' +
+            'Each tested invocation of `TriggeredSend.Add` threw the string `Error adding TSD.`; ' +
+            '`TriggeredSend.LastMessage` was then consistently `An error occurred when attempting to evaluate a SetObjectProperty function ' +
             'call.  See inner exception for details.` for every payload shape (including flat-only payloads, where `LastErrorCode` ' +
             'is left `undefined`). The behaviour holds with a ' +
             'fully valid, publishable definition (a real Email, List, SendClassification and Category). No payload shape succeeded — ' +
@@ -3429,7 +3429,7 @@ export const TRIGGERED_SEND_METHODS = [
             '\'Char\' to \'Double\'.` cast seen on `Update("x")`). Decisive control: in the same request, `Script.Util.WSProxy().createItem("TriggeredSendDefinition", ' +
             'payload)` with the identical payload returns `Status: "OK"`, `ErrorCode: 0`, `StatusMessage: "TriggeredSendDefinition ' +
             'created"`, and the resulting definition then publishes, starts, sends, pauses and updates normally. Use WSProxy `createItem` ' +
-            'instead; `TriggeredSend.Add` has no working invocation.',
+            'instead; no working `TriggeredSend.Add` invocation was observed.',
         minArgs: 1,
         maxArgs: 1,
         description:
@@ -4302,10 +4302,10 @@ export const DATA_EXTENSION_ROWS_METHODS = [
         isConfirmed: true,
         differsFromOfficialDocs: true,
         officialDocsNote:
-            'On a CloudPage, calling `Retrieve()` without a filter DOES work and returns all rows — the widely-repeated claim that it returns empty on CloudPages is wrong. ' +
-            'A ComplexFilterPart with LogicalOperator "OR" also works and returns the union of both operands (it is NOT silently collapsed to AND) — the community claim that DE WHERE is AND-only is incorrect. ' +
-            'All field values are returned as strings (even Number/Boolean/Date columns), unlike Lookup which returns typed Number/Decimal/Boolean values (Lookup Date columns are ISO-8601 strings, not Date objects). ' +
-            'On no match, returns an empty host array (`.length === 0`), not `null`. The result is a host array where `instanceof Array` is `false`, but `.length` and index access work.',
+            'In CloudPage testing, calling `Retrieve()` without a filter returned all rows — the widely repeated empty-result behavior was not reproduced. ' +
+            'A tested ComplexFilterPart with LogicalOperator "OR" also returned the union of both operands; the reported collapse to AND was not reproduced. ' +
+            'In the tested rows, field values were returned as strings (including Number/Boolean/Date columns), unlike Lookup, where the tested Number/Decimal/Boolean values were typed (Lookup Date columns were ISO-8601 strings, not Date objects). ' +
+            'In the tested no-match case, the method returned an empty host array (`.length === 0`), not `null`. The observed result was a host array where `instanceof Array` was `false`, while `.length` and index access worked.',
         minArgs: 0,
         maxArgs: 1,
         description:
