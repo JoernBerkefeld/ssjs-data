@@ -1321,7 +1321,7 @@ export const PLATFORM_FUNCTIONS = [
             'Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. ' +
             'Valid call forms are exactly two: HTTPGet(url) with a single argument, or the full 6-argument form; ' +
             'passing 2-5 arguments is an argument count it does not accept and throws the generic "Unable to retrieve security descriptor for this frame." error. ' +
-            'The statusVariable out-parameter is unreliable (empty even on success), so read the body from the return value.',
+            'The statusVariable out-parameter was empty in the tested successful 6-argument call, so read the body from the return value.',
         params: [
             { name: 'url', description: 'URL to request', type: 'string' },
             {
@@ -1355,7 +1355,7 @@ export const PLATFORM_FUNCTIONS = [
             {
                 name: 'statusVariable',
                 description:
-                    'Array intended to receive the status code, but empty at runtime even on success — do not rely on it. Only valid in the 6-argument form (co-required with the other trailing arguments).',
+                    'Array intended to receive the status code, but observed empty in the tested successful 6-argument call — do not rely on it. Only valid in the 6-argument form (co-required with the other trailing arguments).',
                 type: 'number[]',
                 optional: true,
             },
@@ -1408,7 +1408,7 @@ export const PLATFORM_FUNCTIONS = [
             'Performs an HTTP POST request with a content type and payload. ' +
             'Only works with HTTP on port 80 and HTTPS on port 443. Times out after 30 seconds. ' +
             'Returns the HTTP status code as a number (e.g. 200 for success). ' +
-            'The optional response out-parameter is unreliable — it stays empty even for successful requests, so read the status code from the return value and use HTTP.Post / a WSProxy call when you need the response body.',
+            'The optional response out-parameter was empty in the tested successful requests, so read the status code from the return value and use HTTP.Post / a WSProxy call when you need the response body.',
         params: [
             { name: 'url', description: 'URL to post to', type: 'string' },
             { name: 'contentType', description: 'MIME type of the request body', type: 'string' },
@@ -1428,7 +1428,7 @@ export const PLATFORM_FUNCTIONS = [
             {
                 name: 'response',
                 description:
-                    'Array intended to receive the response body. Unreliable — empty even on successful (200) responses; do not depend on it.',
+                    'Array intended to receive the response body. Observed empty in the tested successful (200) response; do not depend on it.',
                 type: 'array',
                 optional: true,
             },

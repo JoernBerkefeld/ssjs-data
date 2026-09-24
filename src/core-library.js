@@ -1749,13 +1749,13 @@ export const FILTER_DEFINITION_METHODS = [
         differsFromOfficialDocs: true,
         nonFunctionalAtRuntime: true,
         officialDocsNote:
-            '`FilterDefinition.Init("ssjs-datafilter-test")` returns an instance that exposes `Update` (`typeof === "function"`). No working `Update` invocation was observed. ' +
+            'Initializing an existing filter definition returns an instance that exposes `Update` (`typeof === "function"`). No working `Update` invocation was observed. ' +
             'The method failed with all three payload shapes tried, so the observations were not limited to a single malformed/incomplete payload: ' +
             '(1) a FULL Add-style payload (Name + CustomerKey + Description + `Filter: {Property, SimpleOperator, Value}` + `DataSource: {Type, CustomerKey}`) THROWS the raw string "Error updating FilterDefinition" (`typeof === "string"`); ' +
             '(2) the same payload WITHOUT `DataSource` also THROWS the raw string "Error updating FilterDefinition"; ' +
             '(3) a metadata-only payload (Name + CustomerKey + Description, no Filter/DataSource) returns the string "Error" (`typeof === "string"`, no throw). ' +
             'After each attempt a follow-up `FilterDefinition.Retrieve` confirmed Description was NOT changed (stayed empty) and the ObjectID was unchanged. ' +
-            'WSProxy fact: the equivalent `updateItem("FilterDefinition", { CustomerKey: "ssjs-datafilter-test", Description: "..." })` returns `Status="Error"`. ' +
+            'WSProxy fact: the equivalent `updateItem("FilterDefinition", { CustomerKey: "<filter-key>", Description: "..." })` returns `Status="Error"`. ' +
             'Note the SOAP describe (`mcdev soap FilterDefinition`) reports Name/Description/CustomerKey/DataFilter as `IsUpdatable: true`, i.e. the SOAP schema marks these fields editable, yet no working `Update` invocation was reproduced. The official docs imply Update returns "OK" or throws; the success ("OK") path was not reproduced. On failure the return form varies: a payload containing `Filter` throws the raw string "Error updating FilterDefinition", while a metadata-only payload returns the string "Error".',
         requiresCoreLoad: true,
         minArgs: 1,
@@ -1794,7 +1794,7 @@ export const FILTER_DEFINITION_METHODS = [
         differsFromOfficialDocs: true,
         nonFunctionalAtRuntime: true,
         officialDocsNote:
-            '`FilterDefinition.Init("ssjs-datafilter-test")` returns an instance that exposes `Remove` (`typeof === "function"`). No working `Remove` invocation was observed. ' +
+            'Initializing an existing filter definition returns an instance that exposes `Remove` (`typeof === "function"`). No working `Remove` invocation was observed. ' +
             'Against the tested existing filter, `<instance>.Remove()` returned the string "Error" (`typeof === "string"`) and did NOT throw, and a follow-up `FilterDefinition.Retrieve` confirmed the object was NOT deleted (still returned, same ObjectID). ' +
             'WSProxy fact: the equivalent `deleteItem("FilterDefinition", …)` returns `Status="Error"`. ' +
             'The success ("OK") path was not reproduced. Consistent with the sibling write methods, failure surfaces as the string "Error" rather than the docs\' "OK"/throw.',
@@ -3421,7 +3421,7 @@ export const TRIGGERED_SEND_METHODS = [
             '`TriggeredSend.LastMessage` was then consistently `An error occurred when attempting to evaluate a SetObjectProperty function ' +
             'call.  See inner exception for details.` for every payload shape (including flat-only payloads, where `LastErrorCode` ' +
             'is left `undefined`). The behaviour holds with a ' +
-            'fully valid, publishable definition (a real Email, List, SendClassification and Category). No payload shape succeeded — ' +
+            'fully valid, publishable definition (a real Email, List, SendClassification and Category). None of the payload shapes tried succeeded — ' +
             'including the nested SOAP shape (`Email: {ID}`, `List: {ID}`, `SendClassification: {CustomerKey|ObjectID}`), the documented flat ' +
             'shape (`EmailID`, `ListID`, `SendClassificationID`), dotted keys (`"Email.ID"`), flat-scalar-only payloads, typed Core ' +
             'Library objects (`Email.Init()`, `List.Init()`, `SendClassification.Init()`), and the CLR object returned by ' +
