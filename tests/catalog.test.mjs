@@ -272,6 +272,14 @@ test('SSJS_GLOBALS: every entry has a name; SSJS_GLOBALS_MAP is a plain object',
     assert.ok(Object.keys(SSJS_GLOBALS_MAP).length > 0);
 });
 
+test('SSJS_GLOBALS: the HTTP object is listed, since HTTP_METHODS describes its methods', () => {
+    const http = SSJS_GLOBALS.filter((global) => global.name === 'HTTP');
+    assert.equal(http.length, 1);
+    assert.equal(http[0].type, 'object');
+    assert.equal(http[0].requiresCoreLoad, true);
+    assert.equal(SSJS_GLOBALS_MAP.HTTP, 'readonly');
+});
+
 // --- Derived lookups cover exactly their source arrays -----------------------
 
 test('platformFunctionLookup / platformFunctionNames cover all platform functions', () => {

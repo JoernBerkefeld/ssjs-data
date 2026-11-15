@@ -98,6 +98,14 @@ export const SSJS_GLOBALS = [
         requiresCoreLoad: true,
     },
     {
+        name: 'HTTP',
+        type: 'object',
+        description:
+            'Core library object for simple outbound web requests. ' +
+            'Call `HTTP.Get(url)` or `HTTP.Post(url, contentType, payload)`; see `HTTP_METHODS` for the signatures.',
+        requiresCoreLoad: true,
+    },
+    {
         name: 'Platform',
         type: 'object',
         isConfirmed: true,
