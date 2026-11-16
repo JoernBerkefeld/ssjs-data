@@ -50,6 +50,7 @@ export default [
             },
         },
         rules: {
+            'unicorn/no-asterisk-prefix-in-documentation-comments': 'off',
             'logical-assignment-operators': ['error', 'always'],
             // Kept off: the exported catalog uses `null` for fields like
             // `ampscriptEquivalent` (null = SSJS-only, no AMP equivalent). This is a
