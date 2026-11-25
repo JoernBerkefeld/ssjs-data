@@ -190,6 +190,22 @@ export const UNSUPPORTED_SYNTAX = [
         nodeType: 'Literal',
         test: (node) => typeof node.bigint === 'string' || typeof node.value === 'bigint',
     },
+    {
+        // Valid JavaScript, but a CloudPage containing it fails with HTTP 422 before any
+        // statement runs (runtime-verified for "\\", '\\', "a\\" and "\\\\"). A backslash
+        // anywhere else in the literal ("\\a", "a\\b", "\\ ") is fine.
+        feature: 'StringLiteralTrailingBackslash',
+        isConfirmed: true,
+        label: 'string literals ending in an escaped backslash',
+        suggestion:
+            'They can abort the whole page with HTTP 422. Build the backslash with ' +
+            'String.fromCharCode(92) and concatenate it instead.',
+        nodeType: 'Literal',
+        test: (node) =>
+            typeof node.value === 'string' &&
+            typeof node.raw === 'string' &&
+            /\\\\["']$/.test(node.raw),
+    },
 ];
 
 // ── Known-unsupported ECMAScript members (no polyfill shipped) ───────────────

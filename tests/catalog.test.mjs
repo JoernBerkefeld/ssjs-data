@@ -239,6 +239,56 @@ test('UNSUPPORTED_SYNTAX: every entry has feature, nodeType, and suggestion', ()
     }
 });
 
+/**
+ * Builds an ESTree-like string Literal node from its raw source text.
+ *
+ * @param {string} raw - Source text including the quotes.
+ * @returns {{type: string, raw: string, value: string}} The node.
+ */
+const lit = (raw) => ({ type: 'Literal', raw, value: raw.slice(1, -1) });
+
+test('UNSUPPORTED_SYNTAX: StringLiteralTrailingBackslash flags only literals ending in an escaped backslash', () => {
+    const entry = UNSUPPORTED_SYNTAX.find((e) => e.feature === 'StringLiteralTrailingBackslash');
+    assert.ok(entry, 'entry exists');
+    assert.equal(entry.nodeType, 'Literal');
+    const BS = '\\';
+    // Runtime-verified HTTP 422 forms.
+    for (const raw of [`"${BS}${BS}"`, `'${BS}${BS}'`, `"a${BS}${BS}"`, `"${BS}${BS}${BS}${BS}"`]) {
+        assert.equal(entry.test(lit(raw)), true, `flags ${raw}`);
+    }
+    // Runtime-verified safe forms, plus an escaped quote at the end.
+    for (const raw of [`"${BS}${BS}a"`, `"a${BS}${BS}b"`, `"${BS}${BS} "`, `"${BS}""`, '"abc"']) {
+        assert.equal(entry.test(lit(raw)), false, `does not flag ${raw}`);
+    }
+    assert.equal(entry.test({ type: 'Literal', raw: '42', value: 42 }), false, 'ignores numbers');
+});
+
+test('RegExp constructor: flags argument is documented as ignored', () => {
+    const entry = ECMASCRIPT_BUILTINS.find((e) => e.name === 'RegExp' && e.owner === 'Global');
+    assert.ok(entry, 'entry exists');
+    assert.equal(entry.isConfirmed, true);
+    assert.equal(entry.differsFromOfficialDocs, true);
+    assert.match(entry.officialDocsNote, /flags/);
+    assert.match(entry.caveat, /ignored/);
+    const flags = entry.params.find((p) => p.name === 'flags');
+    assert.equal(flags.optional, true);
+    assert.match(flags.description, /IGNORED/);
+    assert.doesNotMatch(entry.example, /new RegExp\([^)]*,\s*"[gim]+"\)/);
+});
+
+test('WSProxy retrieve: params document the runtime-tested filter and column behaviour', () => {
+    const entry = WSPROXY_METHODS.find((m) => m.name === 'retrieve');
+    assert.ok(entry, 'entry exists');
+    const columns = entry.params.find((p) => p.name === 'columns');
+    assert.match(columns.description, /order you asked/);
+    assert.match(columns.description, /does not throw/);
+    const filter = entry.params.find((p) => p.name === 'filter');
+    assert.match(filter.description, /%value%/);
+    assert.match(filter.description, /single-character wildcard/);
+    assert.match(filter.description, /Value "" is rejected/);
+    assert.match(filter.description, /ComplexFilterPart/);
+});
+
 test('CORE_LIBRARY_OBJECTS: every entry has name and a methods array', () => {
     assert.ok(CORE_LIBRARY_OBJECTS.length > 0);
     for (const object of CORE_LIBRARY_OBJECTS) {

@@ -187,10 +187,16 @@ export const WSPROXY_METHODS = [
             'Retrieves Marketing Cloud objects matching an optional filter via the SOAP API. The third parameter is a simple or complex filter; the fourth sets RetrieveOptions; the fifth sets additional request properties such as QueryAllAccounts.',
         params: [
             { name: 'objectType', description: 'SOAP API object type name', type: 'string' },
-            { name: 'columns', description: 'Array of property names to retrieve', type: 'array' },
+            {
+                name: 'columns',
+                description:
+                    'Array of property names to retrieve. For DataExtensionObject, every row lists the requested properties in the order you asked for them (runtime-tested with 30 columns). A column name that does not exist does not throw: Status holds the error text and Results is empty.',
+                type: 'array',
+            },
             {
                 name: 'filter',
-                description: 'Simple or complex filter object',
+                description:
+                    'Simple or complex filter object. The like operator always matches anywhere in the value (it is treated as %value%), ignores case, treats _ as a single-character wildcard, and [%] matches a literal %. equals/notEquals with Value "" is rejected (Status carries the error, no throw); a single space " " matches empty values. Nested ComplexFilterPart trees apply every condition (runtime-tested with left/right chains of 7 conditions and a balanced tree of 6).',
                 type: 'object',
                 optional: true,
             },

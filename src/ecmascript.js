@@ -1219,11 +1219,15 @@ export const ECMASCRIPT_BUILTINS = [
         name: 'RegExp',
         owner: 'Global',
         isConfirmed: true,
+        differsFromOfficialDocs: true,
+        officialDocsNote:
+            'MDN specifies that the flags argument of RegExp(pattern, flags) sets the g, i and m flags and throws a SyntaxError for an invalid flag. In the SFMC Jint engine the argument is silently dropped, with or without new: new RegExp("^gold$", "i").test("Gold") is false, "a1a2".replace(new RegExp("a", "g"), "x") yields "x1a2" and .global is false, and the m flag does not make ^/$ match line boundaries. Invalid flags do not throw. The same flags work in literal syntax.',
         esVersion: 3,
         description:
             'Creates a regular expression object for pattern matching. ' +
             'Prefer the literal syntax (/pattern/flags) when the pattern is known at write time. ' +
             'Use the constructor when the pattern must be built dynamically at runtime.',
+        caveat: 'In the SFMC engine the flags argument is ignored: the constructed pattern is always case-sensitive, non-global and single-line, whether or not new is used. Use a literal for static patterns; for a dynamic case-insensitive match lower-case both the pattern text and the subject; for a dynamic global replace of plain text use str.split(text).join(replacement). Starting the pattern with the inline options (?i) / (?m) also works in SFMC, but that is not standard JavaScript.',
         params: [
             {
                 name: 'pattern',
@@ -1232,7 +1236,8 @@ export const ECMASCRIPT_BUILTINS = [
             },
             {
                 name: 'flags',
-                description: 'Optional flags: g (global), i (case-insensitive), m (multiline)',
+                description:
+                    'Flags g (global), i (case-insensitive), m (multiline). Accepted but IGNORED by the SFMC engine — use literal syntax for flags.',
                 type: 'string',
                 optional: true,
             },
@@ -1243,7 +1248,7 @@ export const ECMASCRIPT_BUILTINS = [
         maxArgs: 2,
         example:
             'var fieldName = "email";\n' +
-            'var re = new RegExp(fieldName + "=([^&]+)", "i");\n' +
+            'var re = new RegExp(fieldName + "=([^&]+)"); // flags would be ignored\n' +
             'var match = queryString.match(re);\n' +
             'if (match) { Write(match[1]); }',
     },

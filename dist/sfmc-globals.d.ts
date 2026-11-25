@@ -4046,8 +4046,8 @@ declare namespace Script {
              *
              * @remarks ✅ Runtime-verified in a live SFMC test.
              * @param objectType - SOAP API object type name
-             * @param columns - Array of property names to retrieve
-             * @param filter - Simple or complex filter object
+             * @param columns - Array of property names to retrieve. For DataExtensionObject, every row lists the requested properties in the order you asked for them (runtime-tested with 30 columns). A column name that does not exist does not throw: Status holds the error text and Results is empty.
+             * @param filter - Simple or complex filter object. The like operator always matches anywhere in the value (it is treated as %value%), ignores case, treats _ as a single-character wildcard, and [%] matches a literal %. equals/notEquals with Value "" is rejected (Status carries the error, no throw); a single space " " matches empty values. Nested ComplexFilterPart trees apply every condition (runtime-tested with left/right chains of 7 conditions and a balanced tree of 6).
              * @param retrieveOptions - Properties to set on the SOAP RetrieveOptions object. Set BatchSize (1..2500) here to force paged results; a value above 2500 is ignored and the default page size applies.
              * @param requestProps - Additional request properties, e.g. QueryAllAccounts (boolean) and ContinueRequest (a RequestID string). Setting ContinueRequest to the RequestID from a prior paged retrieve fetches the next page — a retrieve-based alternative to getNextBatch.
              * @returns Object with Status, HasMoreRows, RequestID, and Results array. When a result set is paged, Status is "MoreDataAvailable" and HasMoreRows is true; the final page returns Status "OK" and HasMoreRows false.
@@ -6329,12 +6329,14 @@ interface RegExpConstructor {
     /**
      * Creates a regular expression object for pattern matching. Prefer the literal syntax (/pattern/flags) when the pattern is known at write time. Use the constructor when the pattern must be built dynamically at runtime.
      *
+     * @remarks ⚠️ In the SFMC engine the flags argument is ignored: the constructed pattern is always case-sensitive, non-global and single-line, whether or not new is used. Use a literal for static patterns; for a dynamic case-insensitive match lower-case both the pattern text and the subject; for a dynamic global replace of plain text use str.split(text).join(replacement). Starting the pattern with the inline options (?i) / (?m) also works in SFMC, but that is not standard JavaScript.
      * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies that the flags argument of RegExp(pattern, flags) sets the g, i and m flags and throws a SyntaxError for an invalid flag. In the SFMC Jint engine the argument is silently dropped, with or without new: new RegExp("^gold$", "i").test("Gold") is false, "a1a2".replace(new RegExp("a", "g"), "x") yields "x1a2" and .global is false, and the m flag does not make ^/$ match line boundaries. Invalid flags do not throw. The same flags work in literal syntax.
      * @param pattern - Regular expression pattern string
-     * @param flags - Optional flags: g (global), i (case-insensitive), m (multiline)
+     * @param flags - Flags g (global), i (case-insensitive), m (multiline). Accepted but IGNORED by the SFMC engine — use literal syntax for flags.
      * @example
      * var fieldName = "email";
-     * var re = new RegExp(fieldName + "=([^&]+)", "i");
+     * var re = new RegExp(fieldName + "=([^&]+)"); // flags would be ignored
      * var match = queryString.match(re);
      * if (match) { Write(match[1]); }
      */
@@ -6342,12 +6344,14 @@ interface RegExpConstructor {
     /**
      * Creates a regular expression object for pattern matching. Prefer the literal syntax (/pattern/flags) when the pattern is known at write time. Use the constructor when the pattern must be built dynamically at runtime.
      *
+     * @remarks ⚠️ In the SFMC engine the flags argument is ignored: the constructed pattern is always case-sensitive, non-global and single-line, whether or not new is used. Use a literal for static patterns; for a dynamic case-insensitive match lower-case both the pattern text and the subject; for a dynamic global replace of plain text use str.split(text).join(replacement). Starting the pattern with the inline options (?i) / (?m) also works in SFMC, but that is not standard JavaScript.
      * @remarks ✅ Runtime-verified in a live SFMC test.
+     * @remarks ⚠️ Differs from the official Salesforce docs. MDN specifies that the flags argument of RegExp(pattern, flags) sets the g, i and m flags and throws a SyntaxError for an invalid flag. In the SFMC Jint engine the argument is silently dropped, with or without new: new RegExp("^gold$", "i").test("Gold") is false, "a1a2".replace(new RegExp("a", "g"), "x") yields "x1a2" and .global is false, and the m flag does not make ^/$ match line boundaries. Invalid flags do not throw. The same flags work in literal syntax.
      * @param pattern - Regular expression pattern string
-     * @param flags - Optional flags: g (global), i (case-insensitive), m (multiline)
+     * @param flags - Flags g (global), i (case-insensitive), m (multiline). Accepted but IGNORED by the SFMC engine — use literal syntax for flags.
      * @example
      * var fieldName = "email";
-     * var re = new RegExp(fieldName + "=([^&]+)", "i");
+     * var re = new RegExp(fieldName + "=([^&]+)"); // flags would be ignored
      * var match = queryString.match(re);
      * if (match) { Write(match[1]); }
      */
